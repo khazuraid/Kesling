@@ -18,7 +18,7 @@ COPY . .
 RUN cd packages/database && npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN cd apps/web && npx next build
-RUN cp -r /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma /app/.prisma-engines 2>/dev/null || true
+RUN find /app/node_modules -name "libquery_engine-linux-musl*" -exec cp {} /app/prisma-engine.node \; 2>/dev/null || true
 
 FROM base AS runner
 WORKDIR /app
@@ -30,6 +30,7 @@ COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/prisma-engine.node ./apps/web/.next/server/libquery_engine-linux-musl-openssl-3.0.x.so.node
 
 USER nextjs
 EXPOSE 3000
