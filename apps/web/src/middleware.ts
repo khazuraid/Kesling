@@ -33,5 +33,5 @@ export default withAuth(async function middleware(req) {
 });
 
 export const config = {
-  matcher: ["/((?!login|api/health|api/cron|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!login|api/health|api/cron|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icon-.*|offline.html|workbox-.*).*)"],
 };
