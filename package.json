@@ -1,0 +1,22 @@
+{
+  "name": "apps-kes",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "db:migrate": "pnpm --filter @apps-kes/database migrate",
+    "db:seed": "pnpm --filter @apps-kes/database seed",
+    "db:studio": "pnpm --filter @apps-kes/database studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@commitlint/cli": "21.0.1",
+    "@commitlint/config-conventional": "21.0.1",
+    "lefthook": "2.1.6",
+    "turbo": "2.9.12"
+  },
+  "packageManager": "pnpm@11.1.0"
+}

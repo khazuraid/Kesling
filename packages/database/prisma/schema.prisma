@@ -1,0 +1,353 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  nama         String
+  email        String   @unique
+  password     String
+  role         Role     @default(OPERATOR)
+  puskesmasId  Int?
+  puskesmas    Puskesmas? @relation(fields: [puskesmasId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs    AuditLog[]
+  notifications Notification[]
+  changelogs   Changelog[]
+
+  @@map("user")
+}
+
+model Puskesmas {
+  id        Int      @id @default(autoincrement())
+  nama      String   @unique
+  urutan    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  laporanTpp    LaporanTpp[]
+  laporanSpal   LaporanSpal[]
+  laporanSab    LaporanSab[]
+  laporanRumah  LaporanRumah[]
+  laporanJamban LaporanJamban[]
+  laporanTtu    LaporanTtu[]
+  targets       Target[]
+
+  @@map("puskesmas")
+}
+
+model JenisTpp {
+  id        Int      @id @default(autoincrement())
+  nama      String   @unique
+  urutan    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  laporanTpp LaporanTpp[]
+
+  @@map("jenis_tpp")
+}
+
+model JenisSarana {
+  id        Int            @id @default(autoincrement())
+  nama      String
+  kategori  KategoriSarana
+  urutan    Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  laporanSpal   LaporanSpal[]
+  laporanSab    LaporanSab[]
+  laporanJamban LaporanJamban[]
+
+  @@unique([nama, kategori])
+  @@map("jenis_sarana")
+}
+
+model JenisTtu {
+  id        Int          @id @default(autoincrement())
+  nama      String
+  kategori  KategoriTtu
+  urutan    Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  laporanTtu LaporanTtu[]
+
+  @@unique([nama, kategori])
+  @@map("jenis_ttu")
+}
+
+model LaporanTpp {
+  id           Int         @id @default(autoincrement())
+  puskesmasId  Int
+  bulan        Int
+  tahun        Int
+  jenisTppId   Int
+  terdaftar    Int         @default(0)
+  diperiksa    Int         @default(0)
+  laikJumlah   Int         @default(0)
+  laikPersen   Float       @default(0)
+  status       StatusLaporan @default(DRAFT)
+  catatan      String?     @db.Text
+  createdBy    Int?
+  updatedBy    Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  puskesmas    Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisTpp     JenisTpp    @relation(fields: [jenisTppId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun, jenisTppId])
+  @@map("laporan_tpp")
+}
+
+model LaporanSpal {
+  id              Int         @id @default(autoincrement())
+  puskesmasId     Int
+  bulan           Int
+  tahun           Int
+  jenisSaranaId   Int
+  jumlah          Int         @default(0)
+  kk              Int         @default(0)
+  pddk            Int         @default(0)
+  diperiksaJumlah Int         @default(0)
+  diperiksaMs     Int         @default(0)
+  diperiksaKk     Int         @default(0)
+  diperiksaPddk   Int         @default(0)
+  status          StatusLaporan @default(DRAFT)
+  catatan         String?     @db.Text
+  createdBy       Int?
+  updatedBy       Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@map("laporan_spal")
+}
+
+model LaporanSab {
+  id              Int         @id @default(autoincrement())
+  puskesmasId     Int
+  bulan           Int
+  tahun           Int
+  jenisSaranaId   Int
+  jumlah          Int         @default(0)
+  kk              Int         @default(0)
+  pddk            Int         @default(0)
+  diperiksaJumlah Int         @default(0)
+  diperiksaMs     Int         @default(0)
+  diperiksaKk     Int         @default(0)
+  diperiksaPddk   Int         @default(0)
+  inspeksiR       Int         @default(0)
+  inspeksiS       Int         @default(0)
+  inspeksiT       Int         @default(0)
+  inspeksiAt      Int         @default(0)
+  status          StatusLaporan @default(DRAFT)
+  catatan         String?     @db.Text
+  createdBy       Int?
+  updatedBy       Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@map("laporan_sab")
+}
+
+model LaporanRumah {
+  id                  Int         @id @default(autoincrement())
+  puskesmasId         Int
+  bulan               Int
+  tahun               Int
+  jumlahRumahAda      Int         @default(0)
+  jumlahDiperiksa     Int         @default(0)
+  ventilasiMs         Int         @default(0)
+  ventilasiTms        Int         @default(0)
+  peneranganMs        Int         @default(0)
+  peneranganTms       Int         @default(0)
+  lantaiMs            Int         @default(0)
+  lantaiTms           Int         @default(0)
+  kepadatanHuniMs     Int         @default(0)
+  kepadatanHuniTms    Int         @default(0)
+  lubangAsapMs        Int         @default(0)
+  lubangAsapTms       Int         @default(0)
+  jambanMs            Int         @default(0)
+  jambanTms           Int         @default(0)
+  airBersihMs         Int         @default(0)
+  airBersihTms        Int         @default(0)
+  airLimbahMs         Int         @default(0)
+  airLimbahTms        Int         @default(0)
+  sampahMs            Int         @default(0)
+  sampahTms           Int         @default(0)
+  kandangMs           Int         @default(0)
+  kandangTms          Int         @default(0)
+  kandangTidakAda     Int         @default(0)
+  hasilMs             Int         @default(0)
+  hasilTms            Int         @default(0)
+  status              StatusLaporan @default(DRAFT)
+  catatan             String?     @db.Text
+  createdBy           Int?
+  updatedBy           Int?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  puskesmas           Puskesmas   @relation(fields: [puskesmasId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun])
+  @@map("laporan_rumah")
+}
+
+model LaporanJamban {
+  id              Int         @id @default(autoincrement())
+  puskesmasId     Int
+  bulan           Int
+  tahun           Int
+  jenisSaranaId   Int
+  jumlah          Int         @default(0)
+  kk              Int         @default(0)
+  pddk            Int         @default(0)
+  diperiksaJumlah Int         @default(0)
+  diperiksaMs     Int         @default(0)
+  diperiksaKk     Int         @default(0)
+  diperiksaPddk   Int         @default(0)
+  status          StatusLaporan @default(DRAFT)
+  catatan         String?     @db.Text
+  createdBy       Int?
+  updatedBy       Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@map("laporan_jamban")
+}
+
+model LaporanTtu {
+  id           Int         @id @default(autoincrement())
+  puskesmasId  Int
+  bulan        Int
+  tahun        Int
+  jenisTtuId   Int
+  jumlahTotal  Int         @default(0)
+  ms           Int         @default(0)
+  tms          Int         @default(0)
+  status       StatusLaporan @default(DRAFT)
+  catatan      String?     @db.Text
+  createdBy    Int?
+  updatedBy    Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  puskesmas    Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisTtu     JenisTtu    @relation(fields: [jenisTtuId], references: [id])
+
+  @@unique([puskesmasId, bulan, tahun, jenisTtuId])
+  @@map("laporan_ttu")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  action     Action
+  tableName  String
+  recordId   Int
+  oldData    Json?
+  newData    Json?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([tableName, recordId])
+  @@map("audit_log")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead, createdAt])
+  @@map("notification")
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+}
+
+enum StatusLaporan {
+  DRAFT
+  SUBMITTED
+  APPROVED
+}
+
+enum KategoriSarana {
+  SPAL
+  SAB
+  JAMBAN
+}
+
+enum KategoriTtu {
+  PRIORITAS
+  NON_PRIORITAS
+}
+
+enum Action {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model Target {
+  id          Int    @id @default(autoincrement())
+  tahun       Int
+  jenis       String // tpp, spal, sab, jamban, ttu, rumah
+  puskesmasId Int?
+  targetPersen Float @default(80)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  puskesmas   Puskesmas? @relation(fields: [puskesmasId], references: [id])
+
+  @@unique([tahun, jenis, puskesmasId])
+  @@map("target")
+}
+
+model Changelog {
+  id          Int      @id @default(autoincrement())
+  tableName   String   // laporan_tpp, laporan_spal, etc.
+  recordId    Int
+  userId      Int
+  field       String
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([tableName, recordId])
+  @@map("changelog")
+}
