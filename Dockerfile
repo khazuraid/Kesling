@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
+COPY packages/database/prisma/schema.prisma ./packages/database/prisma/
 COPY packages/config/package.json ./packages/config/
 RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild
 
