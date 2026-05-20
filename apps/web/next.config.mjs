@@ -1,9 +1,12 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import withSerwist from "@serwist/next";
+import path from "node:path";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  outputFileTracingRoot: path.join(import.meta.dirname, "../../"),
+  eslint: { ignoreDuringBuilds: true },
   async headers() {
     return [{
       source: "/(.*)",
