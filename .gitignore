@@ -9,3 +9,4 @@ dist
 apps/web/public/sw.js
 apps/web/public/workbox-*.js
 apps/web/public/sw.js.map
+deployment-*.txt
