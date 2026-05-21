@@ -7,6 +7,7 @@ import { LaporanFilter } from "@/components/laporan-filter";
 import { PdfExportButton } from "@/components/pdf-export-button";
 import { Button } from "@/components/ui/button";
 import { useLaporanData, useMasterList } from "@/hooks/use-laporan-data";
+import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 interface Props {
@@ -22,7 +23,7 @@ const HEADERS = ["Jml", "KK", "Pddk", "Prk", "MS", "KK", "Pddk"];
 export function LaporanSaranaPage({ title, jenis, apiUrl, kategori }: Props) {
   const { data, isLoading, bulan, tahun, submitMutation } = useLaporanData<any>(jenis, apiUrl);
   const { data: jenisList = [] } = useMasterList(`/api/master/jenis-sarana?kategori=${kategori}`);
-  const { data: puskesmasList = [] } = useMasterList("/api/master/puskesmas");
+  const { data: puskesmasList = [] } = usePuskesmasList();
   const [showForm, setShowForm] = useState(false);
   const [selectedRecordId, setSelectedRecordId] = useState(0);
   useUnsavedChanges(showForm);
