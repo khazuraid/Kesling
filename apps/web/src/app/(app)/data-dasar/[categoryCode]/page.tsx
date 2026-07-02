@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Database, Plus, Search, Settings2, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 
 interface Parameter {
   id: number;
@@ -39,6 +41,11 @@ export default function DataDasarSubCatPage() {
 
   const [selectedSubCatId, setSelectedSubCatId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const userPkmId = (session?.user as any)?.puskesmasId;
+  const { data: puskesmasList = [] } = usePuskesmasList();
+  const [selectedPkmFilter, setSelectedPkmFilter] = useState<number | null>(null);
 
   // Master-Detail State
   const [selectedId, setSelectedId] = useState<number | "new" | null>(null);
@@ -153,6 +160,7 @@ export default function DataDasarSubCatPage() {
   });
 
   const filteredSasarans = sasarans.filter((s) => {
+    if (selectedPkmFilter && s.puskesmasId !== selectedPkmFilter) return false;
     const q = searchTerm.toLowerCase();
     const dynamicText = Object.values(s.dataDinamis || {})
       .join(" ")
@@ -199,6 +207,7 @@ export default function DataDasarSubCatPage() {
       kontak: s.kontak || "",
       lat: s.lat ? String(s.lat) : "",
       lng: s.lng ? String(s.lng) : "",
+      puskesmasId: s.puskesmasId || userPkmId,
       dynamicValues: hydrateDynamicValues(s),
     });
   };
@@ -212,6 +221,7 @@ export default function DataDasarSubCatPage() {
       kontak: "",
       lat: "",
       lng: "",
+      puskesmasId: selectedPkmFilter || userPkmId || "",
       dynamicValues: hydrateDynamicValues({}),
     });
   };
@@ -282,6 +292,10 @@ export default function DataDasarSubCatPage() {
       toast.error("Sub-kategori belum dipilih");
       return;
     }
+    if (userRole !== "OPERATOR" && !formData.puskesmasId && !userPkmId) {
+      toast.error("Puskesmas pemilik wajib dipilih");
+      return;
+    }
 
     const dynamicAlamat = getCoreValue(["alamat", "alamat_lengkap"], formData.alamat || "");
     const dynamicPemilik = getCoreValue(["pemilik", "pengelola", "nama_pemilik"], formData.pemilik || "");
@@ -298,6 +312,7 @@ export default function DataDasarSubCatPage() {
       lat: dynamicLat ? parseFloat(dynamicLat) : null,
       lng: dynamicLng ? parseFloat(dynamicLng) : null,
       subCategoryId: selectedSubCatId,
+      puskesmasId: formData.puskesmasId || userPkmId,
       dataDinamis: formData.dynamicValues,
     });
   };
@@ -382,15 +397,31 @@ export default function DataDasarSubCatPage() {
               </button>
             </div>
             {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-              <input
-                type="text"
-                placeholder="Cari berdasarkan nama, pemilik, atau alamat..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-8 pl-8 pr-3 bg-[hsl(var(--muted))]/10 border border-[hsl(var(--border))] text-[11px] font-medium rounded-none focus:outline-none focus:border-[hsl(var(--foreground))] focus:bg-transparent transition-all"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan nama, pemilik, atau alamat..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full h-8 pl-8 pr-3 bg-[hsl(var(--muted))]/10 border border-[hsl(var(--border))] text-[11px] font-medium rounded-none focus:outline-none focus:border-[hsl(var(--foreground))] focus:bg-transparent transition-all"
+                />
+              </div>
+              {userRole !== "OPERATOR" && (
+                <select
+                  value={selectedPkmFilter || ""}
+                  onChange={(e) => setSelectedPkmFilter(e.target.value ? Number(e.target.value) : null)}
+                  className="h-8 px-2 bg-[hsl(var(--muted))]/10 border border-[hsl(var(--border))] text-[11px] font-medium text-[hsl(var(--foreground))] outline-none cursor-pointer shrink-0 max-w-[180px]"
+                >
+                  <option value="">Semua Puskesmas</option>
+                  {puskesmasList.map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
@@ -422,7 +453,14 @@ export default function DataDasarSubCatPage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[12px] font-black text-[hsl(var(--foreground))] truncate">{s.nama}</h3>
+                          <h3 className="text-[12px] font-black text-[hsl(var(--foreground))] truncate">
+                            {s.puskesmas?.nama && (
+                              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]/30 px-1.5 py-0.5 rounded mr-1.5">
+                                {s.puskesmas.nama}
+                              </span>
+                            )}
+                            {s.nama}
+                          </h3>
                           <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
                             {s.alamat || "Alamat belum diatur"}
                           </p>
@@ -537,6 +575,33 @@ export default function DataDasarSubCatPage() {
                         </span>
                       </div>
                       <div className="divide-y divide-[hsl(var(--border))]">
+                        {userRole !== "OPERATOR" && (
+                          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 px-4 py-4 bg-[hsl(var(--muted))]/10">
+                            <div>
+                              <label className="block text-[10px] font-black uppercase tracking-wider text-[hsl(var(--foreground))]">
+                                Puskesmas Pemilik *
+                              </label>
+                              <p className="text-[9px] font-mono text-[hsl(var(--muted-foreground))] mt-1">
+                                Entitas milik puskesmas mana
+                              </p>
+                            </div>
+                            <div>
+                              <select
+                                value={formData.puskesmasId || ""}
+                                onChange={(e) => setFormData({ ...formData, puskesmasId: Number(e.target.value) })}
+                                required
+                                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--foreground))] transition-all cursor-pointer"
+                              >
+                                <option value="">Pilih Puskesmas</option>
+                                {puskesmasList.map((p: any) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.nama}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        )}
                         {baselineParams.map((p) => (
                           <div key={p.code} className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 px-4 py-4">
                             <div>
