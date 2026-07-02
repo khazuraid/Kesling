@@ -12,13 +12,18 @@ function getConfig(param: any) {
 }
 
 async function upsertLaporanValue(laporanId: number, parameterId: number, subCategoryId: number | null, value: string) {
-  const existing = await prisma.dynamicLaporanValue.findFirst({
+  const existing = await prisma.dynamicLaporanValue.findMany({
     where: { laporanId, parameterId, subCategoryId },
     select: { id: true },
+    orderBy: { id: "asc" },
   });
 
-  if (existing) {
-    await prisma.dynamicLaporanValue.update({ where: { id: existing.id }, data: { value } });
+  if (existing.length > 0) {
+    const [primary, ...duplicates] = existing;
+    await prisma.dynamicLaporanValue.update({ where: { id: primary.id }, data: { value } });
+    if (duplicates.length > 0) {
+      await prisma.dynamicLaporanValue.deleteMany({ where: { id: { in: duplicates.map((d) => d.id) } } });
+    }
     return;
   }
 
@@ -75,9 +80,11 @@ export async function syncDataDasarToLaporan(subCategoryId: number, puskesmasId:
 
   for (const { source, config } of mappings) {
     const targetParamId = Number(config.syncToParamId);
-    if (!targetParamId || targetParamId === source.id) continue;
+    const target = subCategory.category.parameters.find((p: any) => p.id === targetParamId);
+    if (!targetParamId || targetParamId === source.id || !target || target.isBaseline) continue;
+    if (target.type !== "NUMBER" && target.type !== "DECIMAL") continue;
 
-    const mode = config.syncMode || "COUNT";
+    const mode = String(config.syncMode || "COUNT").toUpperCase();
     let value = 0;
 
     if (mode === "SUM") {

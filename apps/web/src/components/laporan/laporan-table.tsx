@@ -174,9 +174,7 @@ export function LaporanTable({
     if (!category.formula || laporanList.length === 0) return null;
     let sum = 0,
       count = 0;
-    for (const pkm of paginatedList) {
-      const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
-      if (!laporan) continue;
+    for (const laporan of laporanList) {
       const pct = calcCompliance(
         buildValueMap(laporan.values),
         category.parameters,
@@ -184,7 +182,7 @@ export function LaporanTable({
         category.formula,
         category.isRowBased,
       );
-      if (pct) {
+      if (pct !== null) {
         sum += Number(pct);
         count++;
       }

@@ -17,7 +17,7 @@ interface Category {
 
 export default function DataDasarIndexPage() {
   const { data: categories = [], isLoading } = useQuery<Category[]>({
-    queryKey: ["laporan-categories"],
+    queryKey: ["laporan-categories", "data-dasar-index"],
     queryFn: async () => {
       const res = await fetch("/api/laporan/categories?includeSub=true");
       if (!res.ok) throw new Error("Failed to fetch");
@@ -67,7 +67,7 @@ export default function DataDasarIndexPage() {
               return (
                 <Link
                   key={cat.id}
-                  href={`/data-dasar/${cat.code.toLowerCase()}`}
+                  href={`/data-dasar/${encodeURIComponent(cat.code.toLowerCase())}`}
                   className="group grid grid-cols-[1fr_auto] md:grid-cols-[1fr_120px_120px_120px_auto] gap-4 items-center px-4 py-4 hover:bg-[hsl(var(--muted))]/20 transition-colors"
                 >
                   <div className="min-w-0">

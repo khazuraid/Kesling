@@ -1,7 +1,6 @@
 "use client";
 
-import { Building2, ChevronLeft, ChevronRight, Database, Info, Save } from "lucide-react";
-import { useState } from "react";
+import { Building2, Database, Save } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -84,18 +83,16 @@ export function DataDasarModal({
   submitMutation,
   handleSubmit,
 }: DataDasarModalProps) {
-  const baselineParams = category.parameters.filter((p) => p.isBaseline);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const scList = category.subCategories;
-  const activeSc = scList[activeIdx];
-  const total = scList.length;
+  const baselineParams = category.parameters
+    .filter((p) => p.isBaseline)
+    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
 
   return (
     <Modal
       open={open}
       onClose={onClose}
       title="Data Dasar"
-      description={category.isRowBased ? `${total} sub-kategori • ${activeIdx + 1}/${total}` : category.nama}
+      description={`${category.nama} • ${baselineParams.length} field`}
       icon={<Database className="w-4 h-4" />}
       size="lg"
       footer={
@@ -149,7 +146,7 @@ export function DataDasarModal({
         )}
 
         <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2">
-          {category.parameters.map((p, idx) => {
+          {baselineParams.map((p, idx) => {
             const key = buildKey(p.id);
             const val = formValues[key] ?? "";
             return (
@@ -178,14 +175,11 @@ export function DataDasarModal({
                   required={p.required}
                   value={val}
                   onChange={(e) => setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))}
-                  readOnly={p.isBaseline}
                   placeholder="0"
                   className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-lg outline-none transition-all duration-150 ${
-                    p.isBaseline
-                      ? "bg-transparent text-[hsl(var(--muted-foreground))]/40 cursor-not-allowed border border-dashed border-[hsl(var(--border))]/20"
-                      : val !== ""
-                        ? "bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/30 text-[hsl(var(--foreground))] focus:border-[hsl(var(--accent))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.15)]"
-                        : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/20 focus:border-[hsl(var(--accent))] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
+                    val !== ""
+                      ? "bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/30 text-[hsl(var(--foreground))] focus:border-[hsl(var(--accent))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.15)]"
+                      : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/20 focus:border-[hsl(var(--accent))] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
                   }`}
                 />
               </div>

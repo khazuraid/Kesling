@@ -233,27 +233,39 @@ export default function LaporanBuilderPage() {
       type: form.type,
       required: form.required,
       isBaseline: form.isBaseline,
-      config: Object.keys(config).length > 0 ? config : undefined,
+      config: Object.keys(config).length > 0 ? config : null,
     });
   };
 
-  const moveParam = (index: number, direction: -1 | 1) => {
+  const moveParam = (paramId: number, direction: -1 | 1, group: "report" | "baseline" | "formula" = "report") => {
     if (!selectedModule) return;
     const params = [...selectedModule.parameters].sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
-    if (index + direction < 0 || index + direction >= params.length) return;
-    const temp = params[index];
-    params[index] = params[index + direction];
-    params[index + direction] = temp;
+    const inGroup = (p: any) =>
+      group === "formula"
+        ? p.type === "FORMULA"
+        : group === "baseline"
+          ? p.type !== "FORMULA" && p.isBaseline
+          : p.type !== "FORMULA" && !p.isBaseline;
+    const groupParams = params.filter(inGroup);
+    const index = groupParams.findIndex((p: any) => p.id === paramId);
+    if (index < 0 || index + direction < 0 || index + direction >= groupParams.length) return;
+
+    const a = groupParams[index];
+    const b = groupParams[index + direction];
     reorderMutation.mutate({
       table: "dynamicParameter",
-      items: params.map((p: any, i: number) => ({ id: p.id, urutan: i })),
+      items: params.map((p: any) => ({
+        id: p.id,
+        urutan: p.id === a.id ? b.urutan || 0 : p.id === b.id ? a.urutan || 0 : p.urutan || 0,
+      })),
     });
   };
 
   // Separate parameter lists based on function
   const reportParams = selectedModule?.parameters?.filter((p: any) => p.type !== "FORMULA" && !p.isBaseline) || [];
   const dataDasarParams = selectedModule?.parameters?.filter((p: any) => p.type !== "FORMULA" && p.isBaseline) || [];
-  const dataParams = selectedModule?.parameters?.filter((p: any) => p.type !== "FORMULA") || [];
+  const dataParams = reportParams;
+  const numericReportParams = reportParams.filter((p: any) => p.type === "NUMBER" || p.type === "DECIMAL");
   const formulaParams = selectedModule?.parameters?.filter((p: any) => p.type === "FORMULA") || [];
 
   return (
@@ -447,14 +459,14 @@ export default function LaporanBuilderPage() {
                             >
                               <div className="flex flex-col gap-1 shrink-0">
                                 <button
-                                  onClick={() => moveParam(idx, -1)}
+                                  onClick={() => moveParam(p.id, -1, "report")}
                                   disabled={idx === 0}
                                   className="w-5 h-5 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/40 disabled:opacity-30"
                                 >
                                   <ArrowUp className="w-3 h-3" />
                                 </button>
                                 <button
-                                  onClick={() => moveParam(idx, 1)}
+                                  onClick={() => moveParam(p.id, 1, "report")}
                                   disabled={idx === reportParams.length - 1}
                                   className="w-5 h-5 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/40 disabled:opacity-30"
                                 >
@@ -808,7 +820,7 @@ export default function LaporanBuilderPage() {
                                     const u = { ...localState, nama: e.target.value };
                                     setParamForm({ ...paramForm, [p.id]: u });
                                   }}
-                                  onBlur={() => saveParamSettings(p.id, localState)}
+                                  onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
                                   placeholder="Nama Formula (misal: Kepatuhan Sanitasi)"
                                 />
                                 <button
@@ -831,7 +843,7 @@ export default function LaporanBuilderPage() {
                                   }}
                                 >
                                   <option value="">+ Pembilang (Capaian)</option>
-                                  {dataParams.map((dp: any) => (
+                                  {numericReportParams.map((dp: any) => (
                                     <option key={dp.code} value={dp.code}>
                                       {dp.nama}
                                     </option>
@@ -849,7 +861,7 @@ export default function LaporanBuilderPage() {
                                   }}
                                 >
                                   <option value="">+ Penyebut (Target)</option>
-                                  {dataParams.map((dp: any) => (
+                                  {numericReportParams.map((dp: any) => (
                                     <option key={dp.code} value={dp.code}>
                                       {dp.nama}
                                     </option>

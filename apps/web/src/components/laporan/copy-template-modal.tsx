@@ -85,7 +85,7 @@ export function CopyTemplateModal({
               <select
                 value={copyPuskesmasId || ""}
                 onChange={(e) => setCopyPuskesmasId(Number(e.target.value))}
-                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none appearance-none cursor-pointer"
+                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none cursor-pointer"
               >
                 <option value="">Pilih Puskesmas</option>
                 {puskesmasList.map((p: any) => (
@@ -109,7 +109,7 @@ export function CopyTemplateModal({
               <select
                 value={copyBulanFrom}
                 onChange={(e) => setCopyBulanFrom(Number(e.target.value))}
-                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none appearance-none cursor-pointer"
+                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none cursor-pointer"
               >
                 {BULAN_NAMES.map((b, i) => (
                   <option key={i + 1} value={i + 1}>

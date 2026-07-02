@@ -22,7 +22,6 @@ model User {
   notifications     Notification[]
   inspectionResults InspectionResult[]
   changelogs        Changelog[]
-  sasarans          Sasaran[]
 
   @@map("user")
 }
@@ -45,6 +44,7 @@ model Puskesmas {
   dynamicLaporan      DynamicLaporan[]
   inspectionTemplates InspectionTemplate[]
   inspectionResults   InspectionResult[]
+  sasarans            Sasaran[]
 
   @@map("puskesmas")
 }
@@ -606,7 +606,7 @@ model Sasaran {
   kontak  String?
 
   puskesmasId Int // Milik puskesmas mana
-  puskesmas   User @relation(fields: [puskesmasId], references: [id], onDelete: Cascade)
+  puskesmas   Puskesmas @relation(fields: [puskesmasId], references: [id], onDelete: Cascade)
 
   subCategoryId Int // Relasi Kategori (Misal: Jasaboga, TTU, SAB)
   subCategory   DynamicSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)

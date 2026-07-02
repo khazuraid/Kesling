@@ -87,7 +87,7 @@ export const PUT = withAdmin(async (req: NextRequest) => {
         required: required !== undefined ? !!required : true,
         isBaseline: isBaseline !== undefined ? !!isBaseline : false,
         urutan: urutan !== undefined ? Number(urutan) : undefined,
-        config: config !== undefined ? config : undefined,
+        config: config !== undefined ? (config === null ? (null as any) : config) : undefined,
       },
     });
 

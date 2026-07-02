@@ -1,7 +1,6 @@
 "use client";
 
-import { Building2, ChevronLeft, ChevronRight, FilePenLine, Send, ShieldCheck, X } from "lucide-react";
-import { useState } from "react";
+import { Building2, FilePenLine, Send, ShieldCheck, X } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -82,9 +81,8 @@ export function LaporanFormModal({
   const reportParameters = category.parameters.filter(
     (p) => !p.isBaseline || p.type === "NUMBER" || p.type === "DECIMAL",
   );
-  const [activeIdx, setActiveIdx] = useState(0);
+  const activeIdx = 0;
   const scList = category.subCategories;
-  const activeSc = scList[activeIdx];
   const total = scList.length;
 
   const footer =

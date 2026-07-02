@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Database, Plus, Search, Settings2, Trash, X } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface Parameter {
@@ -35,7 +35,6 @@ interface Category {
 export default function DataDasarSubCatPage() {
   const queryClient = useQueryClient();
   const params = useParams();
-  const router = useRouter();
   const categoryCode = typeof params.categoryCode === "string" ? params.categoryCode : "";
 
   const [selectedSubCatId, setSelectedSubCatId] = useState<number | null>(null);
@@ -47,7 +46,7 @@ export default function DataDasarSubCatPage() {
 
   // 1. Fetch Kategori specific to code
   const { data: category, isLoading: loadingCats } = useQuery<Category>({
-    queryKey: ["laporan-category", categoryCode],
+    queryKey: ["laporan-category-page-data-dasar", categoryCode],
     queryFn: async () => {
       const res = await fetch(`/api/laporan/categories?includeSub=true`);
       if (!res.ok) throw new Error("Gagal mengambil data kategori");
@@ -56,13 +55,17 @@ export default function DataDasarSubCatPage() {
     },
   });
 
-  const allSubCats = category
-    ? category.subCategories.map((sc) => ({
-        ...sc,
-        categoryNama: category.nama,
-        parameters: category.parameters || [],
-      }))
-    : [];
+  const allSubCats = useMemo(
+    () =>
+      category
+        ? category.subCategories.map((sc) => ({
+            ...sc,
+            categoryNama: category.nama,
+            parameters: category.parameters || [],
+          }))
+        : [],
+    [category],
+  );
 
   const activeSubCat = allSubCats.find((sc) => sc.id === selectedSubCatId);
   const baselineParams = [...(activeSubCat?.parameters.filter((p) => p.isBaseline) || [])].sort(
@@ -130,8 +133,10 @@ export default function DataDasarSubCatPage() {
   };
 
   useEffect(() => {
-    if (!selectedSubCatId && allSubCats.length > 0) {
-      setSelectedSubCatId(allSubCats[0].id);
+    if (allSubCats.length > 0) {
+      if (!selectedSubCatId || !allSubCats.some((sc) => sc.id === selectedSubCatId)) {
+        setSelectedSubCatId(allSubCats[0].id);
+      }
     }
   }, [allSubCats, selectedSubCatId]);
 
@@ -147,12 +152,18 @@ export default function DataDasarSubCatPage() {
     enabled: !!selectedSubCatId,
   });
 
-  const filteredSasarans = sasarans.filter(
-    (s) =>
-      s.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.pemilik?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.alamat?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredSasarans = sasarans.filter((s) => {
+    const q = searchTerm.toLowerCase();
+    const dynamicText = Object.values(s.dataDinamis || {})
+      .join(" ")
+      .toLowerCase();
+    return (
+      s.nama?.toLowerCase().includes(q) ||
+      s.pemilik?.toLowerCase().includes(q) ||
+      s.alamat?.toLowerCase().includes(q) ||
+      dynamicText.includes(q)
+    );
+  });
 
   const hydrateDynamicValues = (source: any = {}) => {
     const existing = (source.dataDinamis || source.dynamicValues || {}) as Record<string, string>;
@@ -560,7 +571,7 @@ export default function DataDasarSubCatPage() {
                   </button>
                   <button
                     form="editor-form"
-                    disabled={saveMutation.isPending}
+                    disabled={saveMutation.isPending || baselineParams.length === 0}
                     className="h-9 px-6 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[10px] font-black uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {saveMutation.isPending ? "Menyimpan..." : "Simpan Data"}
