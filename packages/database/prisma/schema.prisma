@@ -5,23 +5,24 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  nama         String
-  email        String   @unique
-  password     String
-  role         Role     @default(OPERATOR)
-  puskesmasId  Int?
-  puskesmas    Puskesmas? @relation(fields: [puskesmasId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          Int        @id @default(autoincrement())
+  nama        String
+  email       String     @unique
+  password    String
+  role        Role       @default(OPERATOR)
+  puskesmasId Int?
+  puskesmas   Puskesmas? @relation(fields: [puskesmasId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  auditLogs    AuditLog[]
-  notifications Notification[]
-  changelogs   Changelog[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  inspectionResults InspectionResult[]
+  changelogs        Changelog[]
+  sasarans          Sasaran[]
 
   @@map("user")
 }
@@ -33,14 +34,17 @@ model Puskesmas {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users         User[]
-  laporanTpp    LaporanTpp[]
-  laporanSpal   LaporanSpal[]
-  laporanSab    LaporanSab[]
-  laporanRumah  LaporanRumah[]
-  laporanJamban LaporanJamban[]
-  laporanTtu    LaporanTtu[]
-  targets       Target[]
+  users               User[]
+  laporanTpp          LaporanTpp[]
+  laporanSpal         LaporanSpal[]
+  laporanSab          LaporanSab[]
+  laporanRumah        LaporanRumah[]
+  laporanJamban       LaporanJamban[]
+  laporanTtu          LaporanTtu[]
+  targets             Target[]
+  dynamicLaporan      DynamicLaporan[]
+  inspectionTemplates InspectionTemplate[]
+  inspectionResults   InspectionResult[]
 
   @@map("puskesmas")
 }
@@ -74,12 +78,12 @@ model JenisSarana {
 }
 
 model JenisTtu {
-  id        Int          @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   nama      String
   kategori  KategoriTtu
-  urutan    Int          @default(0)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  urutan    Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   laporanTtu LaporanTtu[]
 
@@ -88,195 +92,221 @@ model JenisTtu {
 }
 
 model LaporanTpp {
-  id           Int         @id @default(autoincrement())
-  puskesmasId  Int
-  bulan        Int
-  tahun        Int
-  jenisTppId   Int
-  terdaftar    Int         @default(0)
-  diperiksa    Int         @default(0)
-  laikJumlah   Int         @default(0)
-  laikPersen   Float       @default(0)
-  status       StatusLaporan @default(DRAFT)
-  catatan      String?     @db.Text
-  createdBy    Int?
-  updatedBy    Int?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id          Int           @id @default(autoincrement())
+  puskesmasId Int
+  bulan       Int
+  tahun       Int
+  jenisTppId  Int
+  terdaftar   Int           @default(0)
+  diperiksa   Int           @default(0)
+  laikJumlah  Int           @default(0)
+  laikPersen  Float         @default(0)
+  status      StatusLaporan @default(DRAFT)
+  catatan     String?       @db.Text
+  createdBy   Int?
+  updatedBy   Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  puskesmas    Puskesmas   @relation(fields: [puskesmasId], references: [id])
-  jenisTpp     JenisTpp    @relation(fields: [jenisTppId], references: [id])
+  puskesmas Puskesmas @relation(fields: [puskesmasId], references: [id])
+  jenisTpp  JenisTpp  @relation(fields: [jenisTppId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun, jenisTppId])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_tpp")
 }
 
 model LaporanSpal {
-  id              Int         @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   puskesmasId     Int
   bulan           Int
   tahun           Int
   jenisSaranaId   Int
-  jumlah          Int         @default(0)
-  kk              Int         @default(0)
-  pddk            Int         @default(0)
-  diperiksaJumlah Int         @default(0)
-  diperiksaMs     Int         @default(0)
-  diperiksaKk     Int         @default(0)
-  diperiksaPddk   Int         @default(0)
+  jumlah          Int           @default(0)
+  kk              Int           @default(0)
+  pddk            Int           @default(0)
+  diperiksaJumlah Int           @default(0)
+  diperiksaMs     Int           @default(0)
+  diperiksaKk     Int           @default(0)
+  diperiksaPddk   Int           @default(0)
   status          StatusLaporan @default(DRAFT)
-  catatan         String?     @db.Text
+  catatan         String?       @db.Text
   createdBy       Int?
   updatedBy       Int?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
-  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+  puskesmas   Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana JenisSarana @relation(fields: [jenisSaranaId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_spal")
 }
 
 model LaporanSab {
-  id              Int         @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   puskesmasId     Int
   bulan           Int
   tahun           Int
   jenisSaranaId   Int
-  jumlah          Int         @default(0)
-  kk              Int         @default(0)
-  pddk            Int         @default(0)
-  diperiksaJumlah Int         @default(0)
-  diperiksaMs     Int         @default(0)
-  diperiksaKk     Int         @default(0)
-  diperiksaPddk   Int         @default(0)
-  inspeksiR       Int         @default(0)
-  inspeksiS       Int         @default(0)
-  inspeksiT       Int         @default(0)
-  inspeksiAt      Int         @default(0)
+  jumlah          Int           @default(0)
+  kk              Int           @default(0)
+  pddk            Int           @default(0)
+  diperiksaJumlah Int           @default(0)
+  diperiksaMs     Int           @default(0)
+  diperiksaKk     Int           @default(0)
+  diperiksaPddk   Int           @default(0)
+  inspeksiR       Int           @default(0)
+  inspeksiS       Int           @default(0)
+  inspeksiT       Int           @default(0)
+  inspeksiAt      Int           @default(0)
   status          StatusLaporan @default(DRAFT)
-  catatan         String?     @db.Text
+  catatan         String?       @db.Text
   createdBy       Int?
   updatedBy       Int?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
-  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+  puskesmas   Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana JenisSarana @relation(fields: [jenisSaranaId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_sab")
 }
 
 model LaporanRumah {
-  id                  Int         @id @default(autoincrement())
-  puskesmasId         Int
-  bulan               Int
-  tahun               Int
-  jumlahRumahAda      Int         @default(0)
-  jumlahDiperiksa     Int         @default(0)
-  ventilasiMs         Int         @default(0)
-  ventilasiTms        Int         @default(0)
-  peneranganMs        Int         @default(0)
-  peneranganTms       Int         @default(0)
-  lantaiMs            Int         @default(0)
-  lantaiTms           Int         @default(0)
-  kepadatanHuniMs     Int         @default(0)
-  kepadatanHuniTms    Int         @default(0)
-  lubangAsapMs        Int         @default(0)
-  lubangAsapTms       Int         @default(0)
-  jambanMs            Int         @default(0)
-  jambanTms           Int         @default(0)
-  airBersihMs         Int         @default(0)
-  airBersihTms        Int         @default(0)
-  airLimbahMs         Int         @default(0)
-  airLimbahTms        Int         @default(0)
-  sampahMs            Int         @default(0)
-  sampahTms           Int         @default(0)
-  kandangMs           Int         @default(0)
-  kandangTms          Int         @default(0)
-  kandangTidakAda     Int         @default(0)
-  hasilMs             Int         @default(0)
-  hasilTms            Int         @default(0)
-  status              StatusLaporan @default(DRAFT)
-  catatan             String?     @db.Text
-  createdBy           Int?
-  updatedBy           Int?
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  id               Int           @id @default(autoincrement())
+  puskesmasId      Int
+  bulan            Int
+  tahun            Int
+  jumlahRumahAda   Int           @default(0)
+  jumlahDiperiksa  Int           @default(0)
+  ventilasiMs      Int           @default(0)
+  ventilasiTms     Int           @default(0)
+  peneranganMs     Int           @default(0)
+  peneranganTms    Int           @default(0)
+  lantaiMs         Int           @default(0)
+  lantaiTms        Int           @default(0)
+  kepadatanHuniMs  Int           @default(0)
+  kepadatanHuniTms Int           @default(0)
+  lubangAsapMs     Int           @default(0)
+  lubangAsapTms    Int           @default(0)
+  jambanMs         Int           @default(0)
+  jambanTms        Int           @default(0)
+  airBersihMs      Int           @default(0)
+  airBersihTms     Int           @default(0)
+  airLimbahMs      Int           @default(0)
+  airLimbahTms     Int           @default(0)
+  sampahMs         Int           @default(0)
+  sampahTms        Int           @default(0)
+  kandangMs        Int           @default(0)
+  kandangTms       Int           @default(0)
+  kandangTidakAda  Int           @default(0)
+  hasilMs          Int           @default(0)
+  hasilTms         Int           @default(0)
+  status           StatusLaporan @default(DRAFT)
+  catatan          String?       @db.Text
+  createdBy        Int?
+  updatedBy        Int?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  puskesmas           Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  puskesmas Puskesmas @relation(fields: [puskesmasId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_rumah")
 }
 
 model LaporanJamban {
-  id              Int         @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   puskesmasId     Int
   bulan           Int
   tahun           Int
   jenisSaranaId   Int
-  jumlah          Int         @default(0)
-  kk              Int         @default(0)
-  pddk            Int         @default(0)
-  diperiksaJumlah Int         @default(0)
-  diperiksaMs     Int         @default(0)
-  diperiksaKk     Int         @default(0)
-  diperiksaPddk   Int         @default(0)
+  jumlah          Int           @default(0)
+  kk              Int           @default(0)
+  pddk            Int           @default(0)
+  diperiksaJumlah Int           @default(0)
+  diperiksaMs     Int           @default(0)
+  diperiksaKk     Int           @default(0)
+  diperiksaPddk   Int           @default(0)
   status          StatusLaporan @default(DRAFT)
-  catatan         String?     @db.Text
+  catatan         String?       @db.Text
   createdBy       Int?
   updatedBy       Int?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  puskesmas       Puskesmas   @relation(fields: [puskesmasId], references: [id])
-  jenisSarana     JenisSarana @relation(fields: [jenisSaranaId], references: [id])
+  puskesmas   Puskesmas   @relation(fields: [puskesmasId], references: [id])
+  jenisSarana JenisSarana @relation(fields: [jenisSaranaId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun, jenisSaranaId])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_jamban")
 }
 
 model LaporanTtu {
-  id           Int         @id @default(autoincrement())
-  puskesmasId  Int
-  bulan        Int
-  tahun        Int
-  jenisTtuId   Int
-  jumlahTotal  Int         @default(0)
-  ms           Int         @default(0)
-  tms          Int         @default(0)
-  status       StatusLaporan @default(DRAFT)
-  catatan      String?     @db.Text
-  createdBy    Int?
-  updatedBy    Int?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id          Int           @id @default(autoincrement())
+  puskesmasId Int
+  bulan       Int
+  tahun       Int
+  jenisTtuId  Int
+  jumlahTotal Int           @default(0)
+  ms          Int           @default(0)
+  tms         Int           @default(0)
+  status      StatusLaporan @default(DRAFT)
+  catatan     String?       @db.Text
+  createdBy   Int?
+  updatedBy   Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  puskesmas    Puskesmas   @relation(fields: [puskesmasId], references: [id])
-  jenisTtu     JenisTtu    @relation(fields: [jenisTtuId], references: [id])
+  puskesmas Puskesmas @relation(fields: [puskesmasId], references: [id])
+  jenisTtu  JenisTtu  @relation(fields: [jenisTtuId], references: [id])
 
   @@unique([puskesmasId, bulan, tahun, jenisTtuId])
+  @@index([bulan, tahun])
+  @@index([puskesmasId])
   @@map("laporan_ttu")
 }
 
 model AuditLog {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  action     Action
-  tableName  String
-  recordId   Int
-  oldData    Json?
-  newData    Json?
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    Action
+  tableName String
+  recordId  Int
+  oldData   Json?
+  newData   Json?
+  createdAt DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId, createdAt])
   @@index([tableName, recordId])
   @@map("audit_log")
+}
+
+model SecurityLog {
+  id        Int      @id @default(autoincrement())
+  eventType String // LOGIN_FAILED, RATE_LIMIT, BRUTE_FORCE, SUSPICIOUS
+  ip        String
+  path      String?
+  userAgent String?  @db.Text
+  detail    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([ip, createdAt])
+  @@map("security_log")
 }
 
 model Notification {
@@ -287,7 +317,7 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId, isRead, createdAt])
   @@map("notification")
@@ -322,32 +352,272 @@ enum Action {
 }
 
 model Target {
-  id          Int    @id @default(autoincrement())
-  tahun       Int
-  jenis       String // tpp, spal, sab, jamban, ttu, rumah
-  puskesmasId Int?
-  targetPersen Float @default(80)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  tahun        Int
+  jenis        String // tpp, spal, sab, jamban, ttu, rumah
+  puskesmasId  Int?
+  targetPersen Float    @default(80)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  puskesmas   Puskesmas? @relation(fields: [puskesmasId], references: [id])
+  puskesmas Puskesmas? @relation(fields: [puskesmasId], references: [id])
 
   @@unique([tahun, jenis, puskesmasId])
   @@map("target")
 }
 
 model Changelog {
-  id          Int      @id @default(autoincrement())
-  tableName   String   // laporan_tpp, laporan_spal, etc.
-  recordId    Int
-  userId      Int
-  field       String
-  oldValue    String?
-  newValue    String?
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  tableName String // laporan_tpp, laporan_spal, etc.
+  recordId  Int
+  userId    Int
+  field     String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([tableName, recordId])
   @@map("changelog")
+}
+
+// Kategori Indikator Laporan (e.g. TPP, SPAL, SAB, Kualitas Udara)
+model DynamicCategory {
+  id         Int      @id @default(autoincrement())
+  nama       String   @unique
+  code       String   @unique // e.g. "tpp", "spal", "kualitas_udara"
+  deskripsi  String?  @db.Text
+  icon       String   @default("📋") // Emoji atau ikon class
+  urutan     Int      @default(0)
+  isRowBased Boolean  @default(true) // True = spreadsheet grid (TPP/SPAL), False = single card form (Rumah Sehat)
+  isActive   Boolean  @default(true) // False = tidak tampil di sidebar/menu
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  subCategories DynamicSubCategory[]
+  parameters    DynamicParameter[]
+  laporan       DynamicLaporan[]
+  formula       DynamicComplianceFormula?
+  targets       DynamicTarget[]
+
+  @@map("dynamic_category")
+}
+
+// Sub-Kategori / Baris Spreadsheet (e.g. Jasa Boga, Depot Air Minum, dll)
+model DynamicSubCategory {
+  id         Int      @id @default(autoincrement())
+  categoryId Int
+  nama       String
+  grup       String? // e.g. "PRIORITAS", "NON_PRIORITAS" — untuk grouping baris
+  urutan     Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category            DynamicCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  values              DynamicLaporanValue[]
+  inspectionTemplates InspectionTemplate[]
+  sasarans            Sasaran[]
+
+  @@unique([categoryId, nama])
+  @@map("dynamic_sub_category")
+}
+
+// Parameter / Field Input di dalam Kategori (e.g. "Jumlah Diperiksa", "Laik Jumlah")
+model DynamicParameter {
+  id         Int      @id @default(autoincrement())
+  categoryId Int
+  nama       String
+  code       String // e.g. "diperiksa", "laik_jumlah"
+  type       String   @default("NUMBER") // NUMBER, TEXT, BOOLEAN, DECIMAL
+  required   Boolean  @default(true)
+  isBaseline Boolean  @default(false) // True = data dasar/awal tahun, harus diisi sebelum laporan
+  urutan     Int      @default(0)
+  config     Json? // Untuk opsi pilihan (select), validasi batas min/max, dll
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category DynamicCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  values   DynamicLaporanValue[]
+
+  @@unique([categoryId, code])
+  @@map("dynamic_parameter")
+}
+
+// Rumus Perhitungan Persentase Capaian Kepatuhan
+model DynamicComplianceFormula {
+  id              Int      @id @default(autoincrement())
+  categoryId      Int      @unique
+  numeratorCode   String // Kode parameter pembilang, e.g. "laik_jumlah"
+  denominatorCode String // Kode parameter penyebut, e.g. "diperiksa"
+  description     String? // Penjelasan rumus, e.g. "(Laik / Diperiksa) * 100"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category DynamicCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("dynamic_compliance_formula")
+}
+
+// Data Utama Laporan Bulanan Puskesmas
+model DynamicLaporan {
+  id          Int           @id @default(autoincrement())
+  puskesmasId Int
+  categoryId  Int
+  bulan       Int
+  tahun       Int
+  status      StatusLaporan @default(DRAFT)
+  catatan     String?       @db.Text
+  createdBy   Int?
+  updatedBy   Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  puskesmas Puskesmas             @relation(fields: [puskesmasId], references: [id])
+  category  DynamicCategory       @relation(fields: [categoryId], references: [id])
+  values    DynamicLaporanValue[]
+
+  @@unique([puskesmasId, categoryId, bulan, tahun])
+  @@index([categoryId, bulan, tahun])
+  @@index([puskesmasId])
+  @@map("dynamic_laporan")
+}
+
+// Nilai Riil Parameter Laporan
+model DynamicLaporanValue {
+  id            Int      @id @default(autoincrement())
+  laporanId     Int
+  parameterId   Int
+  subCategoryId Int? // Null jika kategori isRowBased = false (e.g. Rumah Sehat)
+  value         String // Nilai disimpan sebagai string, diparsing di aplikasi sesuai tipe parameter
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  laporan     DynamicLaporan      @relation(fields: [laporanId], references: [id], onDelete: Cascade)
+  parameter   DynamicParameter    @relation(fields: [parameterId], references: [id])
+  subCategory DynamicSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([laporanId, parameterId, subCategoryId])
+  @@index([laporanId])
+  @@index([parameterId])
+  @@map("dynamic_laporan_value")
+}
+
+// Target Bulanan Khusus Puskesmas berbasis Kategori Dinamis
+model DynamicTarget {
+  id           Int      @id @default(autoincrement())
+  tahun        Int
+  categoryId   Int
+  puskesmasId  Int? // Null jika Target Global baseline
+  targetPersen Float    @default(80.0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category DynamicCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([tahun, categoryId, puskesmasId])
+  @@map("dynamic_target")
+}
+
+// -----------------------------------------------------------------------------
+// 📋 FORM PEMERIKSAAN LAPANGAN (INSPECTIONS)
+// -----------------------------------------------------------------------------
+
+model InspectionTemplate {
+  id            Int      @id @default(autoincrement())
+  nama          String // Misal: "Pemeriksaan TPP Restoran"
+  deskripsi     String?
+  isActive      Boolean  @default(true)
+  puskesmasId   Int? // Jika null = Template Global dari Dinas. Jika ada = Custom Puskesmas
+  subCategoryId Int? // Link ke DynamicSubCategory → tiap entitas punya form ceklis sendiri
+  config        Json? // Rumus perhitungan skor: { rumus: "sum" | "percentage" | "weighted" }
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  fields  InspectionField[]
+  results InspectionResult[]
+
+  subCategory DynamicSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  puskesmas   Puskesmas?          @relation(fields: [puskesmasId], references: [id])
+}
+
+model InspectionField {
+  id         Int     @id @default(autoincrement())
+  templateId Int
+  pertanyaan String // Misal: "Apakah tempat sampah tertutup?"
+  tipe       String // "BOOLEAN", "NUMBER", "TEXT", "DROPDOWN", "DATE", "PHOTO", "SIGNATURE", "GPS"
+  options    String? // JSON array untuk opsi dropdown jika tipe DROPDOWN
+  isRequired Boolean @default(true)
+  urutan     Int     @default(0)
+  grup       String? // Grup field, misal: "Kebersihan", "Sanitasi", "Umum"
+  config     Json? // { skor, skorBenar, skorSalah, bobot } — Nilai ✓/✗ untuk scoring
+
+  template InspectionTemplate      @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  values   InspectionResultValue[]
+}
+
+model InspectionResult {
+  id            Int       @id @default(autoincrement())
+  templateId    Int
+  puskesmasId   Int
+  userId        Int // Petugas yang mengisi
+  sasaranId     Int? // Relasi ke Data Dasar Sasaran (baru)
+  sasaran       Sasaran?  @relation(fields: [sasaranId], references: [id], onDelete: SetNull)
+  namaSasaran   String? // Fallback/legacy (opsional)
+  alamatSasaran String?
+  lat           Float? // Koordinat GPS jika isi dari lapangan
+  lng           Float?
+  status        String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED
+  catatan       String? // Catatan reviewer/dinas
+  bulan         Int       @default(0) // Bulan pemeriksaan (untuk agregasi ke Laporan Bulanan)
+  tahun         Int       @default(0) // Tahun pemeriksaan
+  tanggal       DateTime? // Tanggal pemeriksaan (jika kosong, pakai createdAt)
+  signatureData Json? // Data tanda tangan digital: { petugas: "...", kepala: "...", timestamp: "..." }
+  fotoPaths     Json?     @default("[]") // Array path foto dokumentasi: ["/uploads/foto1.jpg", ...]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  template  InspectionTemplate      @relation(fields: [templateId], references: [id])
+  puskesmas Puskesmas               @relation(fields: [puskesmasId], references: [id])
+  user      User                    @relation(fields: [userId], references: [id])
+  values    InspectionResultValue[]
+}
+
+model InspectionResultValue {
+  id          Int     @id @default(autoincrement())
+  resultId    Int
+  fieldId     Int
+  valueString String? @db.Text // Jawaban text/dropdown/boolean (True/False) / base64 signature / photo path
+  valueNumber Float? // Jawaban numerik
+  valueJson   Json? // Jawaban kompleks (multi-photo paths, signature object, GPS data)
+
+  result InspectionResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  field  InspectionField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------------------------------------------
+// ENTITAS BARU: DATA DASAR SASARAN
+// -------------------------------------------------------------------------------------------------
+model Sasaran {
+  id      Int     @id @default(autoincrement())
+  nama    String // "Warteg Barokah"
+  alamat  String?
+  pemilik String?
+  kontak  String?
+
+  puskesmasId Int // Milik puskesmas mana
+  puskesmas   User @relation(fields: [puskesmasId], references: [id], onDelete: Cascade)
+
+  subCategoryId Int // Relasi Kategori (Misal: Jasaboga, TTU, SAB)
+  subCategory   DynamicSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  lat Float?
+  lng Float?
+
+  dataDinamis Json? // Field dinamis dari Laporan Builder (isBaseline = true)
+
+  results InspectionResult[] // History IKL tempat ini
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
