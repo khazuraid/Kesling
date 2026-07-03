@@ -41,6 +41,8 @@ export default function DataDasarSubCatPage() {
 
   const [selectedSubCatId, setSelectedSubCatId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role;
   const userPkmId = (session?.user as any)?.puskesmasId;
@@ -147,31 +149,41 @@ export default function DataDasarSubCatPage() {
     }
   }, [allSubCats, selectedSubCatId]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearchTerm(searchTerm.trim()), 350);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedSubCatId, selectedPkmFilter, debouncedSearchTerm]);
+
   // 2. Fetch Data Sasaran
-  const { data: sasarans = [], isLoading: loadingSasaran } = useQuery<any[]>({
-    queryKey: ["sasaran", selectedSubCatId],
+  const {
+    data: sasaranPage = { data: [], total: 0, page: 1, totalPages: 1 },
+    isLoading: loadingSasaran,
+    isFetching: fetchingSasaran,
+  } = useQuery<{ data: any[]; total: number; page: number; totalPages: number }>({
+    queryKey: ["sasaran", selectedSubCatId, selectedPkmFilter, debouncedSearchTerm, page],
     queryFn: async () => {
-      if (!selectedSubCatId) return [];
-      const res = await fetch(`/api/sasaran?subCategoryId=${selectedSubCatId}`);
+      if (!selectedSubCatId) return { data: [], total: 0, page: 1, totalPages: 1 };
+      const params = new URLSearchParams({
+        subCategoryId: String(selectedSubCatId),
+        paginated: "1",
+        page: String(page),
+        limit: "25",
+      });
+      if (selectedPkmFilter) params.set("puskesmasId", String(selectedPkmFilter));
+      if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
+      const res = await fetch(`/api/sasaran?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal mengambil data sasaran");
       return res.json();
     },
     enabled: !!selectedSubCatId,
+    staleTime: 30_000,
   });
 
-  const filteredSasarans = sasarans.filter((s) => {
-    if (selectedPkmFilter && s.puskesmasId !== selectedPkmFilter) return false;
-    const q = searchTerm.toLowerCase();
-    const dynamicText = Object.values(s.dataDinamis || {})
-      .join(" ")
-      .toLowerCase();
-    return (
-      s.nama?.toLowerCase().includes(q) ||
-      s.pemilik?.toLowerCase().includes(q) ||
-      s.alamat?.toLowerCase().includes(q) ||
-      dynamicText.includes(q)
-    );
-  });
+  const filteredSasarans = sasaranPage.data;
 
   const hydrateDynamicValues = (source: any = {}) => {
     const existing = (source.dataDinamis || source.dynamicValues || {}) as Record<string, string>;
@@ -533,10 +545,31 @@ export default function DataDasarSubCatPage() {
                   </table>
                 </div>
                 <div className="h-10 shrink-0 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 flex items-center justify-between text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                  <span>{filteredSasarans.length} entitas</span>
                   <span>
-                    {baselineParams.length} field Data Dasar · {syncedParams.length} sync laporan
+                    {sasaranPage.total} entitas · halaman {sasaranPage.page}/{Math.max(1, sasaranPage.totalPages)}
+                    {fetchingSasaran ? " · sinkronisasi..." : ""}
                   </span>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {baselineParams.length} field · {syncedParams.length} sync
+                    </span>
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="h-6 px-2 border border-[hsl(var(--border))] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[hsl(var(--foreground))]"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      type="button"
+                      disabled={page >= sasaranPage.totalPages}
+                      onClick={() => setPage((p) => Math.min(sasaranPage.totalPages, p + 1))}
+                      className="h-6 px-2 border border-[hsl(var(--border))] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[hsl(var(--foreground))]"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

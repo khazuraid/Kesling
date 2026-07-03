@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api-auth";
+import { getPaginationParams, paginatedResponse } from "@/lib/pagination";
 import { syncDataDasarToLaporan } from "@/lib/sync-data-dasar";
 
 function optionalFloat(value: unknown) {
@@ -16,11 +17,22 @@ function isEmpty(value: unknown) {
 export const GET = withAuth(async (req: NextRequest) => {
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
-  const url = new URL(req.url);
-  const subCatId = url.searchParams.get("subCategoryId");
+  const sp = req.nextUrl.searchParams;
+  const { page, limit, skip } = getPaginationParams(sp, 25);
+  const subCatId = sp.get("subCategoryId");
+  const search = (sp.get("search") || "").trim();
+  const puskesmasId = sp.get("puskesmasId");
+  const paginated = sp.get("paginated") === "1";
 
   const where: any = {};
   if (role !== "ADMIN" && pkmId) where.puskesmasId = pkmId;
+  if (role === "ADMIN" && puskesmasId) {
+    const parsedPuskesmasId = Number(puskesmasId);
+    if (!Number.isInteger(parsedPuskesmasId)) {
+      return NextResponse.json({ error: "puskesmasId tidak valid" }, { status: 400 });
+    }
+    where.puskesmasId = parsedPuskesmasId;
+  }
   if (subCatId) {
     const parsedSubCatId = Number(subCatId);
     if (!Number.isInteger(parsedSubCatId)) {
@@ -28,8 +40,16 @@ export const GET = withAuth(async (req: NextRequest) => {
     }
     where.subCategoryId = parsedSubCatId;
   }
+  if (search) {
+    where.OR = [
+      { nama: { contains: search, mode: "insensitive" } },
+      { alamat: { contains: search, mode: "insensitive" } },
+      { pemilik: { contains: search, mode: "insensitive" } },
+      { kontak: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
-  const data = await prisma.sasaran.findMany({
+  const query = {
     where,
     include: {
       subCategory: { include: { category: true } },
@@ -37,9 +57,12 @@ export const GET = withAuth(async (req: NextRequest) => {
       _count: { select: { results: true } },
     },
     orderBy: { createdAt: "desc" },
-  });
+    ...(paginated ? { skip, take: limit } : {}),
+  } as const;
 
-  return NextResponse.json(data);
+  const [total, data] = await prisma.$transaction([prisma.sasaran.count({ where }), prisma.sasaran.findMany(query)]);
+
+  return NextResponse.json(paginated ? paginatedResponse(data, total, page, limit) : data);
 });
 
 export const POST = withAuth(async (req: NextRequest) => {
