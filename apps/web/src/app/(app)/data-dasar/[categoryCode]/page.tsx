@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, Database, Plus, Search, Settings2, Trash, X } from "lucide-react";
+import { ArrowLeft, Database, Plus, Search, Settings2, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -425,70 +425,119 @@ export default function DataDasarSubCatPage() {
             </div>
           </div>
 
-          {/* List Area */}
-          <div className="flex-1 overflow-y-auto bg-[hsl(var(--muted))]/5">
+          {/* Data Table */}
+          <div className="flex-1 overflow-hidden bg-[hsl(var(--background))]">
             {loadingSasaran ? (
               <div className="p-6 text-center text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
                 Memuat data...
               </div>
             ) : filteredSasarans.length === 0 ? (
-              <div className="p-10 flex flex-col items-center text-center gap-3 opacity-50">
+              <div className="h-full p-10 flex flex-col items-center justify-center text-center gap-3 border-t border-[hsl(var(--border))]">
                 <Database className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
-                <p className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">Tidak ada data ditemukan.</p>
+                <div>
+                  <p className="text-[12px] font-black text-[hsl(var(--foreground))]">Belum ada data</p>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
+                    Tambah entitas pertama untuk modul ini.
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col">
-                {filteredSasarans.map((s) => {
-                  const dyn = (s.dataDinamis as Record<string, string>) || {};
-                  const isSelected = selectedId === s.id;
-                  return (
-                    <div
-                      key={s.id}
-                      onClick={() => handleSelect(s)}
-                      className={`group flex flex-col p-4 border-b border-[hsl(var(--border))] cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-[hsl(var(--background))] border-l-2 border-l-[hsl(var(--foreground))]"
-                          : "hover:bg-[hsl(var(--muted))]/10 border-l-2 border-l-transparent"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-[12px] font-black text-[hsl(var(--foreground))] truncate">
-                            {s.puskesmas?.nama && (
-                              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]/30 px-1.5 py-0.5 rounded mr-1.5">
-                                {s.puskesmas.nama}
-                              </span>
-                            )}
-                            {s.nama}
-                          </h3>
-                          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                            {s.alamat || "Alamat belum diatur"}
-                          </p>
-                        </div>
-                        <ChevronRight
-                          className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? "text-[hsl(var(--foreground))] translate-x-1" : "text-transparent group-hover:text-[hsl(var(--muted-foreground))]"}`}
-                        />
-                      </div>
-
-                      {/* Pill Tags for baseline values */}
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {baselineParams.slice(0, 3).map((p) => (
-                          <span
-                            key={p.code}
-                            className="px-1.5 py-0.5 border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider truncate max-w-[120px]"
-                          >
-                            {p.nama}: {dyn[p.code] || "-"}
-                          </span>
-                        ))}
-                        {baselineParams.length > 3 && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-[hsl(var(--muted-foreground))]">
-                            +{baselineParams.length - 3}
-                          </span>
+              <div className="h-full flex flex-col border-t border-[hsl(var(--border))]">
+                <div className="flex-1 overflow-auto">
+                  <table className="w-full min-w-[980px] border-collapse text-left">
+                    <thead className="sticky top-0 z-10 bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]">
+                      <tr>
+                        {userRole !== "OPERATOR" && (
+                          <th className="w-[180px] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                            Puskesmas
+                          </th>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
+                        <th className="w-[260px] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                          Nama Entitas
+                        </th>
+                        <th className="w-[260px] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                          Alamat
+                        </th>
+                        <th className="w-[180px] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                          Pemilik
+                        </th>
+                        {baselineParams.slice(0, 5).map((p) => (
+                          <th
+                            key={p.code}
+                            className="w-[160px] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]"
+                          >
+                            {p.nama}
+                          </th>
+                        ))}
+                        <th className="w-[100px] px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                          Aksi
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[hsl(var(--border))]">
+                      {filteredSasarans.map((s) => {
+                        const dyn = (s.dataDinamis as Record<string, string>) || {};
+                        const isSelected = selectedId === s.id;
+                        return (
+                          <tr
+                            key={s.id}
+                            onClick={() => handleSelect(s)}
+                            className={`group cursor-pointer transition-colors ${
+                              isSelected ? "bg-[hsl(var(--muted))]/20" : "hover:bg-[hsl(var(--muted))]/10"
+                            }`}
+                          >
+                            {userRole !== "OPERATOR" && (
+                              <td className="px-4 py-3 align-top text-[11px] font-semibold text-[hsl(var(--muted-foreground))] whitespace-nowrap">
+                                {s.puskesmas?.nama || "-"}
+                              </td>
+                            )}
+                            <td className="px-4 py-3 align-top">
+                              <div className="text-[12px] font-black text-[hsl(var(--foreground))] truncate max-w-[240px]">
+                                {s.nama}
+                              </div>
+                              <div className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] mt-1">
+                                ID #{s.id}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 align-top text-[11px] text-[hsl(var(--muted-foreground))] max-w-[260px] truncate">
+                              {s.alamat || "-"}
+                            </td>
+                            <td className="px-4 py-3 align-top text-[11px] text-[hsl(var(--foreground))] whitespace-nowrap">
+                              {s.pemilik || "-"}
+                            </td>
+                            {baselineParams.slice(0, 5).map((p) => (
+                              <td
+                                key={p.code}
+                                className="px-4 py-3 align-top text-[11px] text-[hsl(var(--foreground))] max-w-[160px] truncate"
+                                title={String(dyn[p.code] || "")}
+                              >
+                                {dyn[p.code] || "-"}
+                              </td>
+                            ))}
+                            <td className="px-4 py-3 align-top text-right">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelect(s);
+                                }}
+                                className="h-7 px-2 border border-[hsl(var(--border))] text-[10px] font-black uppercase tracking-wider text-[hsl(var(--foreground))] hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] transition-colors"
+                              >
+                                Edit
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="h-10 shrink-0 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 flex items-center justify-between text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                  <span>{filteredSasarans.length} entitas</span>
+                  <span>
+                    {baselineParams.length} field Data Dasar · {syncedParams.length} sync laporan
+                  </span>
+                </div>
               </div>
             )}
           </div>
