@@ -1,46 +1,107 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kes-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env.docker
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@kes-postgres:5432/kesling_cirebon"
+      DIRECT_DATABASE_URL: "postgresql://postgres:password@kes-postgres:5432/kesling_cirebon"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - kes-net
+
+  worker:
+    profiles: ["worker"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kes-worker
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
+      DIRECT_DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
+      RUN_MIGRATIONS: "0"
+      HEAVY_QUEUE_KEY: "queue:heavy"
+    command: ["node", "apps/web/worker.js"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - kes-net
+
+  pgbouncer:
+    profiles: ["pooler"]
+    image: edoburu/pgbouncer:latest
+    container_name: kes-pgbouncer
+    restart: unless-stopped
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: kesling_cirebon
+      POOL_MODE: transaction
+      AUTH_TYPE: plain
+      MAX_CLIENT_CONN: 500
+      DEFAULT_POOL_SIZE: 20
+      RESERVE_POOL_SIZE: 5
+      SERVER_RESET_QUERY: DISCARD ALL
+    ports:
+      - "6432:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kes-net
+
   postgres:
-    image: postgres:17-alpine
-    container_name: kesling-postgres
+    image: postgres:16-alpine
+    container_name: kes-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: kesling_cirebon
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - kes-net
 
   redis:
     image: redis:7-alpine
-    container_name: kesling-redis
+    container_name: kes-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  web:
-    build: .
-    container_name: kesling-web
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/kesling_cirebon
-      REDIS_URL: redis://redis:6379
-      NEXTAUTH_SECRET: change-this-in-production  # ⚠️ WAJIB GANTI! Gunakan: openssl rand -base64 32
-      NEXTAUTH_URL: http://localhost:3000
-    depends_on:
-      postgres:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kes-net
 
 volumes:
-  postgres_data:
-  redis_data:
+  pgdata:
+
+networks:
+  kes-net:
