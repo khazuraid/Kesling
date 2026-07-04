@@ -25,7 +25,29 @@ echo "✅ PostgreSQL ready!"
 
 # Build psql connection string from direct DB URL (bypass PgBouncer for migrations/DDL)
 # DATABASE_URL is runtime pooled URL; DIRECT_DATABASE_URL is direct Postgres URL.
-PSQL_URL="${DIRECT_DATABASE_URL:-$DATABASE_URL}"
+# We use Node.js to safely validate and normalize the database URL (replacing localhost with postgres container hostname).
+PSQL_URL=$(node -e "
+const { URL } = require('url');
+let urlStr = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL;
+if (!urlStr || urlStr.trim() === '') {
+  const password = process.env.SERVICE_PASSWORD_POSTGRES || '';
+  urlStr = 'postgresql://postgres:' + encodeURIComponent(password) + '@postgres:5432/kesling_cirebon';
+} else {
+  try {
+    const parsed = new URL(urlStr);
+    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || !parsed.hostname) {
+      parsed.hostname = 'postgres';
+    }
+    urlStr = parsed.toString();
+  } catch (e) {
+    const password = process.env.SERVICE_PASSWORD_POSTGRES || '';
+    urlStr = 'postgresql://postgres:' + encodeURIComponent(password) + '@postgres:5432/kesling_cirebon';
+  }
+}
+console.log(urlStr);
+")
+
+echo "🔍 Connection URL configured: $(echo "$PSQL_URL" | sed 's/:[^@]*@/:***@/')"
 
 # Run migrations via psql (avoids @prisma/config dependency in runner)
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
