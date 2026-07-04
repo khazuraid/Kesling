@@ -14,7 +14,10 @@ const DialogOverlay = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof
   ({ className, ...props }, ref) => (
     <DialogPrimitive.Overlay
       ref={ref}
-      className={cn("fixed inset-0 z-50 bg-black/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className)}
+      className={cn(
+        "fixed inset-0 z-50 bg-black/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        className,
+      )}
       {...props}
     />
   ),
@@ -29,14 +32,13 @@ const DialogContent = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof
         ref={ref}
         aria-describedby={undefined}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-[hsl(var(--card))] p-6 rounded-xl",
-          "shadow-[0_8px_30px_rgba(0,0,0,0.12)]",
+          "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-6 ",
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-1 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors">
+        <DialogPrimitive.Close className="absolute right-4 top-4  p-1 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors">
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

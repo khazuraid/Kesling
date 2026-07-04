@@ -11,29 +11,44 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // previous month
+  // FIX: previous month calculation was wrong for January edge case
+  const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // 1-12
   const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
 
-  const _puskesmasList = await prisma.puskesmas.findMany();
-  const operators = await prisma.user.findMany({ where: { role: "OPERATOR", puskesmasId: { not: null } } });
+  const operators = await prisma.user.findMany({
+    where: { role: "OPERATOR", puskesmasId: { not: null } },
+  });
+
+  // FIX: Check ALL active dynamic categories, not just static TPP
+  const activeCategories = await prisma.dynamicCategory.findMany({
+    where: { isActive: true },
+  });
 
   let notified = 0;
 
   for (const op of operators) {
-    // Check if puskesmas has submitted TPP for previous month
-    const count = await prisma.laporanTpp.count({
-      where: { puskesmasId: op.puskesmasId ?? 0, bulan: prevMonth, tahun: prevYear },
-    });
+    if (!op.puskesmasId) continue;
 
-    if (count === 0) {
-      await prisma.notification.create({
-        data: {
-          userId: op.id,
-          title: "Deadline Laporan",
-          message: `Laporan bulan ${prevMonth}/${prevYear} belum diinput. Segera lengkapi data.`,
+    for (const cat of activeCategories) {
+      const count = await prisma.dynamicLaporan.count({
+        where: {
+          puskesmasId: op.puskesmasId,
+          categoryId: cat.id,
+          bulan: prevMonth,
+          tahun: prevYear,
         },
       });
-      notified++;
+
+      if (count === 0) {
+        await prisma.notification.create({
+          data: {
+            userId: op.id,
+            title: `Deadline Laporan ${cat.nama}`,
+            message: `Laporan ${cat.nama} bulan ${prevMonth}/${prevYear} belum diinput. Segera lengkapi data.`,
+          },
+        });
+        notified++;
+      }
     }
   }
 

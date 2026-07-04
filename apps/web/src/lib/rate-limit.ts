@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { redis } from "./redis";
+import { logSecurityEvent } from "./security-logger";
 
 interface RateLimitConfig {
   windowMs?: number; // default 60s
@@ -16,6 +17,14 @@ export async function rateLimit(req: NextRequest, config: RateLimitConfig = {}) 
     const current = await redis.incr(key);
     if (current === 1) await redis.expire(key, windowSec);
     if (current > max) {
+      // Log rate limit hit
+      logSecurityEvent({
+        eventType: "RATE_LIMIT",
+        ip,
+        path: req.nextUrl.pathname,
+        userAgent: req.headers.get("user-agent") || undefined,
+        detail: `${current} requests in ${windowSec}s window (limit: ${max})`,
+      });
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
   } catch {

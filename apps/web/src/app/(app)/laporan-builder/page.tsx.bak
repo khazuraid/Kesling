@@ -1,0 +1,1051 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronRight,
+  Component,
+  Hash,
+  Layers,
+  Layout,
+  LayoutTemplate,
+  List,
+  Plus,
+  Settings2,
+  Trash2,
+  Type,
+  X,
+  Eye,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
+
+export default function LaporanBuilderPage() {
+  const queryClient = useQueryClient();
+
+  // Save status state
+  type SaveStatus = "idle" | "saving" | "saved";
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
+  const [selectedItemType, setSelectedItemType] = useState<"MODULE" | "PARAM" | "ENTITY">("MODULE");
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+
+  // New Module State (when not created yet)
+  const [isCreatingModule, setIsCreatingModule] = useState(false);
+
+  // Deletion Confirm State
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "MODULE" | "PARAM" | "ENTITY", id: number, text: string } | null>(null);
+
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ["master-categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/master/dynamic-categories");
+      if (!res.ok) throw new Error("Failed to fetch dynamic categories");
+      return res.json();
+    },
+  });
+
+  const selectedModule = categories.find((c) => c.id === selectedModuleId) || null;
+
+  // --- Mutations ---
+  const createModuleMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success("Module created");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedModuleId(data.id);
+      setIsCreatingModule(false);
+      setSelectedItemType("MODULE");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const updateModuleMutation = useMutation({
+    mutationFn: async ({ id, payload }: any) => {
+      const res = await fetch(`/api/master/dynamic-categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to update");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const deleteModuleMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/master/dynamic-categories/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to delete");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Module deleted");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedModuleId(null);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const addParamMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-parameters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success("Field added");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedItemType("PARAM");
+      setSelectedItemId(data.id);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const updateParamMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-parameters", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const deleteParamMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/master/dynamic-parameters?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Field deleted");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedItemType("MODULE");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const addEntityMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-subcategories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success("Entity added");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedItemType("ENTITY");
+      setSelectedItemId(data.id);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const updateEntityMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-subcategories", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["master-categories"] }),
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const deleteEntityMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/master/dynamic-subcategories?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Entity deleted");
+      queryClient.invalidateQueries({ queryKey: ["master-categories"] });
+      setSelectedItemType("MODULE");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const reorderMutation = useMutation({
+    mutationFn: async (payload: { table: string; items: any[] }) => {
+      const res = await fetch("/api/master/reorder", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to reorder");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["master-categories"] }),
+  });
+
+  const moveParam = (index: number, direction: -1 | 1) => {
+    if (!selectedModule) return;
+    const params = [...selectedModule.parameters].sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+    if (index + direction < 0 || index + direction >= params.length) return;
+    const temp = params[index];
+    params[index] = params[index + direction];
+    params[index + direction] = temp;
+    reorderMutation.mutate({
+      table: "dynamicParameter",
+      items: params.map((p: any, i: number) => ({ id: p.id, urutan: i })),
+    });
+  };
+
+  const moveEntity = (index: number, direction: -1 | 1) => {
+    if (!selectedModule) return;
+    const subs = [...selectedModule.subCategories].sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+    if (index + direction < 0 || index + direction >= subs.length) return;
+    const temp = subs[index];
+    subs[index] = subs[index + direction];
+    subs[index + direction] = temp;
+    reorderMutation.mutate({
+      table: "dynamicSubCategory",
+      items: subs.map((s: any, i: number) => ({ id: s.id, urutan: i })),
+    });
+  };
+
+  const [modForm, setModForm] = useState<any>({});
+  const [paramForm, setParamForm] = useState<any>({});
+  const [entityForm, setEntityForm] = useState<any>({});
+
+  const [showAddParamModal, setShowAddParamModal] = useState(false);
+  const [newParamForm, setNewParamForm] = useState({ nama: "", type: "NUMBER" });
+
+  const [showAddEntityModal, setShowAddEntityModal] = useState(false);
+  const [newEntityForm, setNewEntityForm] = useState({ nama: "", grup: "" });
+
+  useEffect(() => {
+    if (selectedItemType === "MODULE" && selectedModule) {
+      setModForm({
+        nama: selectedModule.nama,
+        code: selectedModule.code,
+        deskripsi: selectedModule.deskripsi || "",
+        icon: selectedModule.icon || "",
+        isActive: selectedModule.isActive,
+        isRowBased: selectedModule.isRowBased,
+        formula: selectedModule.formula || { numeratorCode: "", denominatorCode: "", description: "" },
+      });
+    } else if (selectedItemType === "PARAM" && selectedModule) {
+      const p = selectedModule.parameters.find((x: any) => x.id === selectedItemId);
+      if (p) {
+        setParamForm({
+          nama: p.nama,
+          code: p.code,
+          type: p.type,
+          required: p.required,
+          isBaseline: p.isBaseline,
+          min: p.config?.min || "",
+          max: p.config?.max || "",
+          options: p.config?.options || "",
+        });
+      }
+    } else if (selectedItemType === "ENTITY" && selectedModule) {
+      const e = selectedModule.subCategories.find((x: any) => x.id === selectedItemId);
+      if (e) {
+        setEntityForm({
+          nama: e.nama,
+          grup: e.grup || "",
+        });
+      }
+    }
+  }, [selectedItemType, selectedItemId, selectedModuleId, categories]);
+
+  const saveModuleSettings = () => {
+    if (!selectedModule) return;
+    updateModuleMutation.mutate({ id: selectedModule.id, payload: modForm });
+  };
+
+  const saveParamSettings = () => {
+    if (!selectedModule || !selectedItemId) return;
+    const config: any = {};
+    if (paramForm.type === "NUMBER" || paramForm.type === "DECIMAL") {
+      if (paramForm.min !== "") config.min = Number(paramForm.min);
+      if (paramForm.max !== "") config.max = Number(paramForm.max);
+    }
+    if (paramForm.type === "SELECT" && paramForm.options) {
+      config.options = paramForm.options;
+    }
+    updateParamMutation.mutate({
+      id: selectedItemId,
+      nama: paramForm.nama,
+      code: paramForm.code,
+      type: paramForm.type,
+      required: paramForm.required,
+      isBaseline: paramForm.isBaseline,
+      config: Object.keys(config).length > 0 ? config : undefined,
+    });
+  };
+
+  const saveEntitySettings = () => {
+    if (!selectedModule || !selectedItemId) return;
+    updateEntityMutation.mutate({
+      id: selectedItemId,
+      nama: entityForm.nama,
+      grup: entityForm.grup || undefined,
+    });
+  };
+
+
+  return (
+    <div className="flex h-[calc(100dvh-4rem)] overflow-hidden -mx-4 md:-mx-6 -mb-4 md:-mb-6 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+
+      {/* ═══ LEFT SIDEBAR: Module List ═══ */}
+      <aside className="w-60 shrink-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col">
+        {/* Header */}
+        <div className="h-14 px-4 flex items-center gap-2 border-b border-[hsl(var(--border))]">
+          <LayoutTemplate className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+          <span className="text-[13px] font-bold tracking-tight">Laporan Builder</span>
+        </div>
+
+        {/* Module List */}
+        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+          <div className="px-2 py-1.5 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Modul</span>
+            <button
+              onClick={() => { setIsCreatingModule(true); setSelectedModuleId(null); }}
+              className="w-5 h-5 rounded flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {categories.length === 0 && (
+            <div className="px-3 py-6 text-center">
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Belum ada modul</p>
+            </div>
+          )}
+
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => { setSelectedModuleId(cat.id); setSelectedItemType("MODULE"); setSelectedItemId(null); }}
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 text-[12px] font-medium transition-colors ${
+                selectedModuleId === cat.id
+                  ? "bg-[hsl(var(--accent))]/10 text-[hsl(var(--accent))]"
+                  : "text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/50"
+              }`}
+            >
+              <span className="text-[14px] shrink-0">{cat.icon || "📋"}</span>
+              <span className="truncate">{cat.nama}</span>
+              {!cat.isActive && (
+                <span className="ml-auto w-1.5 h-1.5 bg-[hsl(var(--muted-foreground))]" />
+              )}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      {/* ═══ RIGHT: Main Content ═══ */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* ── Top Bar ── */}
+        <header className="h-14 shrink-0 border-b border-[hsl(var(--border))] flex items-center justify-between px-6">
+          {selectedModule ? (
+            <>
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{selectedModule.icon || "📋"}</span>
+                <div>
+                  <h1 className="text-[14px] font-bold tracking-tight leading-none">{selectedModule.nama}</h1>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <code className="text-[10px] font-mono text-[hsl(var(--muted-foreground))]">{selectedModule.code}</code>
+                    {selectedModule.isRowBased && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] uppercase">Matrix</span>
+                    )}
+                    {selectedModule.isActive ? (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] uppercase">Aktif</span>
+                    ) : (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] uppercase">Nonaktif</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Preview
+                </button>
+                {updateModuleMutation.isPending || updateParamMutation.isPending || updateEntityMutation.isPending || reorderMutation.isPending ? (
+                  <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1.5">
+                    <span className="w-3 h-3 border-[1.5px] border-[hsl(var(--border))] border-t-[hsl(var(--accent))] rounded-full animate-spin" />
+                    Menyimpan
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-[hsl(var(--success))]" /> Tersimpan
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <h1 className="text-[14px] font-bold tracking-tight text-[hsl(var(--muted-foreground))]">Pilih atau buat modul</h1>
+          )}
+        </header>
+
+        {/* ── Scrollable Content ── */}
+        <div className="flex-1 overflow-y-auto">
+          {!selectedModule ? (
+            /* Empty State */
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="w-14 h-14 border border-[hsl(var(--border))] flex items-center justify-center mb-4">
+                <LayoutTemplate className="w-6 h-6 text-[hsl(var(--muted-foreground))] opacity-50" />
+              </div>
+              <p className="text-[13px] font-semibold text-[hsl(var(--foreground))]">Laporan Builder</p>
+              <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Pilih modul dari sidebar atau buat baru</p>
+              <button
+                onClick={() => setIsCreatingModule(true)}
+                className="mt-4 flex items-center gap-1.5 text-[12px] font-semibold px-4 py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-4 h-4" /> Buat Modul Baru
+              </button>
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto px-6 py-6 space-y-4">
+
+              {/* ═══ SECTION: GENERAL ═══ */}
+              <div className="border border-[hsl(var(--border))]">
+                <button
+                  onClick={() => { setSelectedItemType("MODULE"); setSelectedItemId(null); }}
+                  className={`w-full flex items-center gap-2 px-4 py-2.5 text-left border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 ${selectedItemType === "MODULE" ? "!bg-[hsl(var(--accent))]/8" : ""}`}
+                >
+                  <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                  <span className="text-[13px] font-bold">Umum</span>
+                  <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] ml-auto">Nama, kode, deskripsi</span>
+                </button>
+                <div className="px-4 pb-4 pt-1 space-y-3 border-t border-[hsl(var(--border))]">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama Modul</label>
+                      <Input
+                        value={modForm.nama || ""}
+                        onChange={(e) => setModForm({ ...modForm, nama: e.target.value })}
+                        onBlur={saveModuleSettings}
+                        className="w-full text-[13px] h-9"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Kode</label>
+                      <Input
+                        value={modForm.code || ""}
+                        onChange={(e) => setModForm({ ...modForm, code: e.target.value })}
+                        onBlur={saveModuleSettings}
+                        className="w-full text-[13px] h-9 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Icon (Emoji)</label>
+                      <Input
+                        value={modForm.icon || ""}
+                        onChange={(e) => setModForm({ ...modForm, icon: e.target.value })}
+                        onBlur={saveModuleSettings}
+                        className="w-full text-[14px] h-9"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Status</label>
+                      <button
+                        onClick={() => { setModForm({ ...modForm, isActive: !modForm.isActive }); setTimeout(saveModuleSettings, 50); }}
+                        className={`w-full h-9 border flex items-center justify-between px-3 text-[12px] font-medium transition-colors ${
+                          modForm.isActive
+                            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5 text-[hsl(var(--success))]"
+                            : "border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))]"
+                        }`}
+                      >
+                        {modForm.isActive ? "Aktif" : "Nonaktif"}
+                        <span className={`w-8 h-4 rounded-full relative transition-colors ${modForm.isActive ? "bg-[hsl(var(--success))]" : "bg-[hsl(var(--muted))]"}`}>
+                          <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${modForm.isActive ? "left-4" : "left-0.5"}`} />
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Deskripsi</label>
+                    <textarea
+                      value={modForm.deskripsi || ""}
+                      onChange={(e) => setModForm({ ...modForm, deskripsi: e.target.value })}
+                      onBlur={saveModuleSettings}
+                      rows={2}
+                      className="w-full text-[13px] px-3 py-2 border border-[hsl(var(--border))] bg-[hsl(var(--background))] resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ═══ SECTION: FIELDS ═══ */}
+              <div className="border border-[hsl(var(--border))]">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+                  <Hash className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                  <span className="text-[13px] font-bold">Field / Parameter</span>
+                  <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] ml-auto">{selectedModule.parameters?.length || 0} field</span>
+                  <button
+                    onClick={() => setShowAddParamModal(true)}
+                    className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Tambah
+                  </button>
+                </div>
+                <div className="border-t border-[hsl(var(--border))]">
+                  {selectedModule.parameters?.length === 0 ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Belum ada field. Klik "Tambah" untuk menambah.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[hsl(var(--border))]/50">
+                        {selectedModule.parameters
+                        ?.sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0))
+                        .map((p: any, idx: number, arr: any[]) => {
+                          const isExpanded = selectedItemType === "PARAM" && selectedItemId === p.id;
+                          return (
+                            <div key={p.id}>
+                              {/* Row */}
+                              <button
+                                onClick={() => {
+                                  if (isExpanded) {
+                                    setSelectedItemType("MODULE");
+                                    setSelectedItemId(null);
+                                  } else {
+                                    setSelectedItemType("PARAM");
+                                    setSelectedItemId(p.id);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                                  isExpanded ? "bg-[hsl(var(--accent))]/5" : "hover:bg-[hsl(var(--muted))]/30"
+                                }`}
+                              >
+                                {p.type === "NUMBER" || p.type === "DECIMAL" ? (
+                                  <Hash className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+                                ) : p.type === "SELECT" ? (
+                                  <List className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+                                ) : (
+                                  <Type className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+                                )}
+                                <span className="text-[12px] font-semibold flex-1 truncate">{p.nama}</span>
+                                <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))]">{p.type}</span>
+                                {p.required && <span className="text-[9px] font-bold text-[hsl(var(--error))]">REQ</span>}
+                                <div className="flex gap-0.5">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); moveParam(idx, -1); }}
+                                    disabled={idx === 0}
+                                    className="w-5 h-5 rounded flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30"
+                                  >
+                                    <ArrowUp className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); moveParam(idx, 1); }}
+                                    disabled={idx === arr.length - 1}
+                                    className="w-5 h-5 rounded flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30"
+                                  >
+                                    <ArrowDown className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <ChevronRight className={`w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                              </button>
+
+                              {/* Expanded Panel */}
+                              {isExpanded && (
+                                <div className="pl-4 py-3 bg-[hsl(var(--accent))]/4 border-l-2 border-l-[hsl(var(--accent))] space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama</label>
+                                      <Input
+                                        value={paramForm.nama || ""}
+                                        onChange={(e) => setParamForm({ ...paramForm, nama: e.target.value })}
+                                        onBlur={saveParamSettings}
+                                        className="w-full text-[12px] h-8"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Tipe</label>
+                                      <select
+                                        value={paramForm.type || "NUMBER"}
+                                        onChange={(e) => { setParamForm({ ...paramForm, type: e.target.value }); setTimeout(saveParamSettings, 50); }}
+                                        className="w-full text-[12px] h-8 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+                                      >
+                                        <option value="NUMBER">Angka Bulat</option>
+                                        <option value="DECIMAL">Desimal</option>
+                                        <option value="TEXT">Teks</option>
+                                        <option value="SELECT">Dropdown</option>
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  {(paramForm.type === "NUMBER" || paramForm.type === "DECIMAL") && (
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Min</label>
+                                        <Input
+                                          type="number"
+                                          value={paramForm.min || ""}
+                                          onChange={(e) => setParamForm({ ...paramForm, min: e.target.value })}
+                                          onBlur={saveParamSettings}
+                                          className="w-full text-[12px] h-8"
+                                          placeholder="0"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Max</label>
+                                        <Input
+                                          type="number"
+                                          value={paramForm.max || ""}
+                                          onChange={(e) => setParamForm({ ...paramForm, max: e.target.value })}
+                                          onBlur={saveParamSettings}
+                                          className="w-full text-[12px] h-8"
+                                          placeholder="100"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {paramForm.type === "SELECT" && (
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Opsi (pisahkan dengan koma)</label>
+                                      <textarea
+                                        value={paramForm.options || ""}
+                                        onChange={(e) => setParamForm({ ...paramForm, options: e.target.value })}
+                                        onBlur={saveParamSettings}
+                                        rows={2}
+                                        className="w-full text-[12px] px-3 py-2 border border-[hsl(var(--border))] bg-[hsl(var(--card))] resize-none"
+                                        placeholder="Opsi 1, Opsi 2, Opsi 3"
+                                      />
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={paramForm.required || false}
+                                        onChange={(e) => { setParamForm({ ...paramForm, required: e.target.checked }); setTimeout(saveParamSettings, 50); }}
+                                        className="rounded border-[hsl(var(--border))] text-[hsl(var(--accent))] focus:ring-[hsl(var(--accent))] w-3.5 h-3.5"
+                                      />
+                                      <span className="text-[11px] font-medium">Wajib diisi</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={paramForm.isBaseline || false}
+                                        onChange={(e) => { setParamForm({ ...paramForm, isBaseline: e.target.checked }); setTimeout(saveParamSettings, 50); }}
+                                        className="rounded border-[hsl(var(--border))] text-[hsl(var(--accent))] focus:ring-[hsl(var(--accent))] w-3.5 h-3.5"
+                                      />
+                                      <span className="text-[11px] font-medium">Data baseline</span>
+                                    </label>
+                                  </div>
+
+                                  <button
+                                    onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: `Hapus field "${p.nama}"?` })}
+                                    className="flex items-center gap-1.5 text-[11px] font-semibold text-[hsl(var(--error))] hover:underline"
+                                  >
+                                    <Trash2 className="w-3 h-3" /> Hapus field
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ═══ SECTION: ENTITIES (if row-based) ═══ */}
+              {selectedModule.isRowBased && (
+                <div className="border border-[hsl(var(--border))]">
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <Layout className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                    <span className="text-[13px] font-bold">Entitas / Baris</span>
+                    <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] ml-auto">{selectedModule.subCategories?.length || 0} entitas</span>
+                    <button
+                      onClick={() => setShowAddEntityModal(true)}
+                      className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" /> Tambah
+                    </button>
+                  </div>
+                  <div className="border-t border-[hsl(var(--border))]">
+                    {selectedModule.subCategories?.length === 0 ? (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Belum ada entitas.</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-[hsl(var(--border))]/50">
+                        {selectedModule.subCategories
+                          ?.sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0))
+                          .map((sub: any, idx: number, arr: any[]) => {
+                            const isExpanded = selectedItemType === "ENTITY" && selectedItemId === sub.id;
+                            return (
+                              <div key={sub.id}>
+                                <button
+                                  onClick={() => {
+                                    if (isExpanded) {
+                                      setSelectedItemType("MODULE");
+                                      setSelectedItemId(null);
+                                    } else {
+                                      setSelectedItemType("ENTITY");
+                                      setSelectedItemId(sub.id);
+                                    }
+                                  }}
+                                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                                    isExpanded ? "bg-[hsl(var(--accent))]/5" : "hover:bg-[hsl(var(--muted))]/30"
+                                  }`}
+                                >
+                                  <span className="text-[14px]">{sub.grup === "PRIORITAS" ? "🔴" : sub.grup === "NON_PRIORITAS" ? "⚪" : "📍"}</span>
+                                  <span className="text-[12px] font-semibold flex-1 truncate">{sub.nama}</span>
+                                  {sub.grup && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] uppercase">{sub.grup.replace("_", " ")}</span>
+                                  )}
+                                  <div className="flex gap-0.5">
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); moveEntity(idx, -1); }}
+                                      disabled={idx === 0}
+                                      className="w-5 h-5 rounded flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30"
+                                    >
+                                      <ArrowUp className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); moveEntity(idx, 1); }}
+                                      disabled={idx === arr.length - 1}
+                                      className="w-5 h-5 rounded flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30"
+                                    >
+                                      <ArrowDown className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                  <ChevronRight className={`w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                                </button>
+
+                                {isExpanded && (
+                                  <div className="px-4 py-3 bg-[hsl(var(--background))] space-y-3 border-t border-[hsl(var(--border))]/50">
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama Entitas</label>
+                                        <Input
+                                          value={entityForm.nama || ""}
+                                          onChange={(e) => setEntityForm({ ...entityForm, nama: e.target.value })}
+                                          onBlur={saveEntitySettings}
+                                          className="w-full text-[12px] h-8"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Grup</label>
+                                        <select
+                                          value={entityForm.grup || ""}
+                                          onChange={(e) => { setEntityForm({ ...entityForm, grup: e.target.value }); setTimeout(saveEntitySettings, 50); }}
+                                          className="w-full text-[12px] h-8 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+                                        >
+                                          <option value="">Tanpa Grup</option>
+                                          <option value="PRIORITAS">Prioritas</option>
+                                          <option value="NON_PRIORITAS">Non-Prioritas</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: `Hapus entitas "${sub.nama}"?` })}
+                                      className="flex items-center gap-1.5 text-[11px] font-semibold text-[hsl(var(--error))] hover:underline"
+                                    >
+                                      <Trash2 className="w-3 h-3" /> Hapus entitas
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ═══ SECTION: FORMULA ═══ */}
+              <div className="border border-[hsl(var(--border))]">
+                <div className="flex items-center gap-2 px-4 py-3">
+                  <Component className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                  <span className="text-[13px] font-bold">Formula Compliance</span>
+                </div>
+                <div className="px-4 pb-4 pt-1 border-t border-[hsl(var(--border))] space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Numerator (Capaian)</label>
+                      <select
+                        value={modForm.formula?.numeratorCode || ""}
+                        onChange={(e) => setModForm({ ...modForm, formula: { ...modForm.formula, numeratorCode: e.target.value } })}
+                        onBlur={saveModuleSettings}
+                        className="w-full text-[12px] h-9 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--background))]"
+                      >
+                        <option value="">— Pilih field —</option>
+                        {selectedModule.parameters?.filter((p: any) => p.type === "NUMBER" || p.type === "DECIMAL").map((p: any) => (
+                          <option key={p.code} value={p.code}>{p.nama}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Denominator (Target)</label>
+                      <select
+                        value={modForm.formula?.denominatorCode || ""}
+                        onChange={(e) => setModForm({ ...modForm, formula: { ...modForm.formula, denominatorCode: e.target.value } })}
+                        onBlur={saveModuleSettings}
+                        className="w-full text-[12px] h-9 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--background))]"
+                      >
+                        <option value="">— Pilih field —</option>
+                        {selectedModule.parameters?.filter((p: any) => p.type === "NUMBER" || p.type === "DECIMAL").map((p: any) => (
+                          <option key={p.code} value={p.code}>{p.nama}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-2 px-3 bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]/50">
+                    <code className="text-[12px] font-mono font-bold text-[hsl(var(--foreground))]">
+                      ({modForm.formula?.numeratorCode || "—"} / {modForm.formula?.denominatorCode || "—"})
+                    </code>
+                    <span className="text-[12px] font-bold text-[hsl(var(--muted-foreground))]">× 100%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ═══ DANGER ZONE ═══ */}
+              <div className="border border-[hsl(var(--error))]/30">
+                <div className="px-4 py-3">
+                  <button
+                    onClick={() => setDeleteConfirm({ type: "MODULE", id: selectedModule.id, text: `Hapus modul "${selectedModule.nama}"? Tidak bisa dibatalkan.` })}
+                    className="flex items-center gap-1.5 text-[12px] font-semibold text-[hsl(var(--error))] hover:underline"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Hapus modul ini
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-4" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ MODALS ═══ */}
+
+      {/* Add Field Modal */}
+      {showAddParamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--border))]">
+              <h3 className="text-[13px] font-bold">Tambah Field</h3>
+              <button onClick={() => setShowAddParamModal(false)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-[hsl(var(--muted))]" >
+                <X className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama Field</label>
+                <Input
+                  value={newParamForm.nama}
+                  onChange={(e) => setNewParamForm({ ...newParamForm, nama: e.target.value })}
+                  placeholder="contoh: Jumlah Jendela"
+                  className="w-full text-[13px] h-9"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Tipe</label>
+                <select
+                  value={newParamForm.type}
+                  onChange={(e) => setNewParamForm({ ...newParamForm, type: e.target.value })}
+                  className="w-full text-[13px] h-9 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--background))]"
+                >
+                  <option value="NUMBER">Angka Bulat</option>
+                  <option value="DECIMAL">Desimal</option>
+                  <option value="TEXT">Teks</option>
+                  <option value="SELECT">Dropdown</option>
+                </select>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => setShowAddParamModal(false)} className="flex-1 text-[12px] font-semibold py-2 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors">
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newParamForm.nama) return;
+                    addParamMutation.mutate({
+                      categoryId: selectedModule?.id,
+                      nama: newParamForm.nama,
+                      code: newParamForm.nama.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+                      type: newParamForm.type,
+                    });
+                    setShowAddParamModal(false);
+                    setNewParamForm({ nama: "", type: "NUMBER" });
+                  }}
+                  className="flex-1 text-[12px] font-semibold py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
+                >
+                  Tambah
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Entity Modal */}
+      {showAddEntityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--border))]">
+              <h3 className="text-[13px] font-bold">Tambah Entitas</h3>
+              <button onClick={() => setShowAddEntityModal(false)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-[hsl(var(--muted))]" >
+                <X className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama Entitas</label>
+                <Input
+                  value={newEntityForm.nama}
+                  onChange={(e) => setNewEntityForm({ ...newEntityForm, nama: e.target.value })}
+                  placeholder="contoh: Ruang Kelas 1"
+                  className="w-full text-[13px] h-9"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Grup</label>
+                <select
+                  value={newEntityForm.grup}
+                  onChange={(e) => setNewEntityForm({ ...newEntityForm, grup: e.target.value })}
+                  className="w-full text-[13px] h-9 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--background))]"
+                >
+                  <option value="">Tanpa Grup</option>
+                  <option value="PRIORITAS">Prioritas</option>
+                  <option value="NON_PRIORITAS">Non-Prioritas</option>
+                </select>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => setShowAddEntityModal(false)} className="flex-1 text-[12px] font-semibold py-2 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors">
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newEntityForm.nama) return;
+                    addEntityMutation.mutate({
+                      categoryId: selectedModule?.id,
+                      nama: newEntityForm.nama,
+                      grup: newEntityForm.grup || undefined,
+                    });
+                    setShowAddEntityModal(false);
+                    setNewEntityForm({ nama: "", grup: "" });
+                  }}
+                  className="flex-1 text-[12px] font-semibold py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
+                >
+                  Tambah
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Module Modal */}
+      {isCreatingModule && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--border))]">
+              <h3 className="text-[13px] font-bold">Buat Modul Baru</h3>
+              <button onClick={() => setIsCreatingModule(false)} className="w-6 h-6 rounded flex items-center justify-center hover:bg-[hsl(var(--muted))]" >
+                <X className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">Nama Modul</label>
+                <Input id="new-mod-name-modal" placeholder="contoh: Inspeksi Air Bersih" className="w-full text-[13px] h-9" autoFocus />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => setIsCreatingModule(false)} className="flex-1 text-[12px] font-semibold py-2 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors">
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("new-mod-name-modal") as HTMLInputElement;
+                    if (!el.value) return;
+                    createModuleMutation.mutate({
+                      nama: el.value,
+                      code: el.value.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+                      isRowBased: true,
+                    });
+                  }}
+                  className="flex-1 text-[12px] font-semibold py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
+                >
+                  Buat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Drawer */}
+      <LaporanBuilderPreview module={selectedModule} isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-xs bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
+            <div className="p-4">
+              <h3 className="text-[13px] font-bold mb-1">Konfirmasi Hapus</h3>
+              <p className="text-[12px] text-[hsl(var(--muted-foreground))] mb-4">{deleteConfirm.text}</p>
+              <div className="flex gap-2">
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 text-[12px] font-semibold py-2 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 transition-colors">
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    if (deleteConfirm.type === "MODULE") deleteModuleMutation.mutate(deleteConfirm.id);
+                    if (deleteConfirm.type === "PARAM") deleteParamMutation.mutate(deleteConfirm.id);
+                    if (deleteConfirm.type === "ENTITY") deleteEntityMutation.mutate(deleteConfirm.id);
+                    setDeleteConfirm(null);
+                  }}
+                  className="flex-1 text-[12px] font-semibold py-2 bg-[hsl(var(--error))] text-white hover:opacity-90 transition-opacity"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

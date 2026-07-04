@@ -12,11 +12,16 @@
     "db:studio": "pnpm --filter @apps-kes/database studio"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
-    "@commitlint/cli": "21.0.1",
-    "@commitlint/config-conventional": "21.0.1",
-    "lefthook": "2.1.6",
-    "turbo": "2.9.12"
+    "@biomejs/biome": "2.5.0",
+    "@commitlint/cli": "21.0.2",
+    "@commitlint/config-conventional": "21.0.2",
+    "@types/pg": "^8.20.0",
+    "lefthook": "2.1.9",
+    "turbo": "2.9.18"
   },
-  "packageManager": "pnpm@11.1.0"
+  "packageManager": "pnpm@11.1.0",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.22.0"
+  }
 }

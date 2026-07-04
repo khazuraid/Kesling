@@ -1,29 +1,47 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const pages = [
-  { label: "Dashboard", href: "/" },
-  { label: "Master Puskesmas", href: "/master/puskesmas" },
-  { label: "Master Jenis TPP", href: "/master/jenis-tpp" },
-  { label: "Master Jenis Sarana", href: "/master/jenis-sarana" },
-  { label: "Master Jenis TTU", href: "/master/jenis-ttu" },
-  { label: "Laporan TPP", href: "/laporan/tpp" },
-  { label: "Laporan SPAL", href: "/laporan/spal" },
-  { label: "Laporan SAB", href: "/laporan/sab" },
-  { label: "Laporan Rumah", href: "/laporan/rumah" },
-  { label: "Laporan Jamban", href: "/laporan/jamban" },
-  { label: "Laporan TTU", href: "/laporan/ttu" },
-  { label: "Rekap Tahunan", href: "/rekap" },
-  { label: "Import Excel", href: "/settings/import" },
-  { label: "Audit Log", href: "/audit-log" },
-];
-
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+
+  // Fetch dynamic categories for navigation
+  const { data: categories = [] } = useQuery({
+    queryKey: ["laporan-categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/laporan/categories");
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: open,
+  });
+
+  const staticPages = [
+    { label: "Dashboard Overview", href: "/", group: "Dashboard" },
+    { label: "Dashboard Puskesmas", href: "/dashboard-pkm", group: "Dashboard" },
+    { label: "Perbandingan Puskesmas", href: "/perbandingan", group: "Dashboard" },
+    { label: "Rekap Tahunan", href: "/rekap", group: "Laporan" },
+    { label: "Laporan Builder", href: "/laporan-builder", group: "Admin" },
+    { label: "Approval Laporan", href: "/approval", group: "Admin" },
+    { label: "Settings", href: "/settings", group: "Admin" },
+    { label: "Manajemen User", href: "/settings/users", group: "Admin" },
+    { label: "Import Excel", href: "/settings/import", group: "Admin" },
+    { label: "Audit Log", href: "/audit-log", group: "Admin" },
+    { label: "Profile", href: "/profile", group: "User" },
+  ];
+
+  const dynamicPages = categories.map((c: any) => ({
+    label: `Laporan ${c.nama}`,
+    href: `/laporan/${c.code}`,
+    group: "Laporan",
+  }));
+
+  const allPages = [...staticPages, ...dynamicPages];
+  const groups = ["Dashboard", "Laporan", "Admin", "User"];
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -40,33 +58,41 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-[20vh]"
+      className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-start justify-center pt-[20vh]"
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-lg bg-white rounded-lg shadow-xl border"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-zinc-200 animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <Command>
           <Command.Input
-            placeholder="Cari halaman..."
-            className="w-full px-4 py-3 border-b bg-transparent outline-none"
+            placeholder="Cari halaman atau aksi..."
+            className="w-full px-6 py-4 border-b border-zinc-100 bg-transparent outline-none text-[14px] font-semibold text-zinc-950 placeholder:text-zinc-400"
           />
-          <Command.List className="max-h-64 overflow-y-auto p-2">
-            <Command.Empty className="px-4 py-2 text-sm text-slate-400">Tidak ditemukan.</Command.Empty>
-            {pages.map((p) => (
-              <Command.Item
-                key={p.href}
-                value={p.label}
-                onSelect={() => {
-                  router.push(p.href);
-                  setOpen(false);
-                }}
-                className="px-4 py-2 rounded cursor-pointer text-sm hover:bg-slate-100 data-[selected=true]:bg-slate-100"
-              >
-                {p.label}
-              </Command.Item>
-            ))}
+          <Command.List className="max-h-72 overflow-y-auto p-3">
+            <Command.Empty className="px-4 py-3 text-[13px] font-medium text-zinc-400">Tidak ditemukan.</Command.Empty>
+            {groups.map((group) => {
+              const items = allPages.filter((p) => p.group === group);
+              if (items.length === 0) return null;
+              return (
+                <Command.Group key={group} heading={group} className="mb-2">
+                  {items.map((p) => (
+                    <Command.Item
+                      key={p.href}
+                      value={p.label}
+                      onSelect={() => {
+                        router.push(p.href);
+                        setOpen(false);
+                      }}
+                      className="px-4 py-2.5 rounded-xl cursor-pointer text-[13px] font-semibold text-zinc-700 hover:bg-zinc-100 data-[selected=true]:bg-zinc-950 data-[selected=true]:text-white transition-colors"
+                    >
+                      {p.label}
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              );
+            })}
           </Command.List>
         </Command>
       </div>

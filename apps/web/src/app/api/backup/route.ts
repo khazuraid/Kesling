@@ -17,6 +17,14 @@ export const GET = withRateLimit(
       laporanRumah,
       laporanJamban,
       laporanTtu,
+      // FIX: Include dynamic tables that were previously missing
+      dynamicCategories,
+      dynamicSubCategories,
+      dynamicParameters,
+      dynamicComplianceFormulas,
+      dynamicLaporan,
+      dynamicLaporanValues,
+      dynamicTargets,
     ] = await Promise.all([
       prisma.puskesmas.findMany(),
       prisma.jenisTpp.findMany(),
@@ -29,10 +37,17 @@ export const GET = withRateLimit(
       prisma.laporanRumah.findMany(),
       prisma.laporanJamban.findMany(),
       prisma.laporanTtu.findMany(),
+      prisma.dynamicCategory.findMany(),
+      prisma.dynamicSubCategory.findMany(),
+      prisma.dynamicParameter.findMany(),
+      prisma.dynamicComplianceFormula.findMany(),
+      prisma.dynamicLaporan.findMany(),
+      prisma.dynamicLaporanValue.findMany(),
+      prisma.dynamicTarget.findMany(),
     ]);
 
     const backup = {
-      version: 1,
+      version: 2, // bumped version since schema changed
       exportedAt: new Date().toISOString(),
       data: {
         puskesmas,
@@ -40,12 +55,21 @@ export const GET = withRateLimit(
         jenisSarana,
         jenisTtu,
         users,
+        // Static model data (legacy)
         laporanTpp,
         laporanSpal,
         laporanSab,
         laporanRumah,
         laporanJamban,
         laporanTtu,
+        // Dynamic model data -- was missing, caused data loss on restore
+        dynamicCategories,
+        dynamicSubCategories,
+        dynamicParameters,
+        dynamicComplianceFormulas,
+        dynamicLaporan,
+        dynamicLaporanValues,
+        dynamicTargets,
       },
     };
 

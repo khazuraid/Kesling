@@ -14,11 +14,23 @@ export async function GET() {
 }
 
 export const POST = withAdmin(async (req: NextRequest) => {
+  const adminUser = (req as any).user;
   const body = await req.json();
   const count = await prisma.puskesmas.count();
   const data = await prisma.puskesmas.create({
     data: { nama: body.nama, urutan: count + 1 },
   });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: adminUser.id,
+      action: "CREATE",
+      tableName: "puskesmas",
+      recordId: data.id,
+      newData: { nama: data.nama },
+    },
+  });
+
   await cacheInvalidate("master:puskesmas");
   return NextResponse.json(data, { status: 201 });
 });

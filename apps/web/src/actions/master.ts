@@ -30,7 +30,14 @@ export const deleteMasterItem = authActionClient
     }),
   )
   .action(async ({ parsedInput: { table, id }, ctx: { user } }) => {
+    const oldItem = await (prisma as any)[table].findUnique({ where: { id } });
     await (prisma as any)[table].delete({ where: { id } });
-    await createAuditLog({ userId: user.id, action: "DELETE", tableName: table, recordId: id });
+    await createAuditLog({
+      userId: user.id,
+      action: "DELETE",
+      tableName: table,
+      recordId: id,
+      oldData: oldItem,
+    });
     return { success: true };
   });

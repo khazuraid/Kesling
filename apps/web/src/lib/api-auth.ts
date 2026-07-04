@@ -3,14 +3,15 @@ import { getCurrentUser } from "./session";
 
 type RouteHandler = (req: NextRequest, ctx: any) => Promise<NextResponse>;
 
-/** Wraps handler with try/catch for consistent error responses */
+/** Wraps handler with try/catch for consistent error responses — never leaks internal errors */
 export function withErrorHandler(handler: RouteHandler): RouteHandler {
   return async (req, ctx) => {
     try {
       return await handler(req, ctx);
     } catch (e: any) {
       const status = e?.code === "P2025" ? 404 : 500;
-      return NextResponse.json({ error: e?.message || "Internal server error" }, { status });
+      const message = status === 404 ? "Data tidak ditemukan" : "Terjadi kesalahan server";
+      return NextResponse.json({ error: message }, { status });
     }
   };
 }

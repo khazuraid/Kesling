@@ -19,13 +19,14 @@ export function KeyboardHints() {
   if (!visible) return null;
 
   return (
-    <div className="hidden md:block fixed bottom-4 right-4 z-50 bg-white border rounded-lg shadow-lg p-3 text-xs space-y-1">
+    <div className="hidden md:block fixed bottom-4 right-4 z-50 bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-3 text-xs space-y-1">
       <div className="font-semibold mb-1">⌨️ Shortcuts</div>
       <div>
-        <kbd className="px-1 py-0.5 bg-slate-100 rounded">Ctrl+K</kbd> Command Palette
+        <kbd className="px-1 py-0.5 bg-[hsl(var(--muted))] border border-[hsl(var(--border))]">Ctrl+K</kbd> Command
+        Palette
       </div>
       <div>
-        <kbd className="px-1 py-0.5 bg-slate-100 rounded">Ctrl+/</kbd> Toggle hints
+        <kbd className="px-1 py-0.5 bg-[hsl(var(--muted))] border border-[hsl(var(--border))]">Ctrl+/</kbd> Toggle hints
       </div>
     </div>
   );

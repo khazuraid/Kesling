@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-03T09:37:00Z",
+  "title": "Design System: Kesling Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Zinc Ink", "canonical": "hsl(230 25% 10%)" },
+      "background": { "role": "neutral", "displayName": "Off-White Paper", "canonical": "hsl(240 5% 98%)" },
+      "brand-primary": { "role": "primary", "displayName": "Deep Mahogany", "canonical": "oklch(0.32 0.08 5)" }
+    },
+    "shadows": [
+      { "name": "var(--shadow)", "value": "0 1px 2px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.03)", "purpose": "Premium ambient shadow for floating cards." },
+      { "name": "var(--shadow-md)", "value": "0 2px 4px rgba(0,0,0,0.02), 0 8px 32px rgba(0,0,0,0.04)", "purpose": "Deeper floating elevation." }
+    ],
+    "motion": [
+      { "name": "var(--ease-out)", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Emil Kowalski fast smooth ease-out." },
+      { "name": "var(--ease-in-out)", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Emil Kowalski symetric ease." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Premium Button",
+      "kind": "button",
+      "refersTo": "btn-premium",
+      "description": "Primary action button with micro-interactions.",
+      "html": "<button class=\"ds-btn-premium\">SIMPAN DATA</button>",
+      "css": ".ds-btn-premium { border-radius: 9999px; background-color: #09090b; color: white; font-weight: 600; font-size: 13px; letter-spacing: 0.025em; padding: 12px 24px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; } .ds-btn-premium:hover { background-color: #27272a; } .ds-btn-premium:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "btn-secondary",
+      "description": "Secondary action button.",
+      "html": "<button class=\"ds-btn-secondary\">BATAL</button>",
+      "css": ".ds-btn-secondary { border-radius: 9999px; background-color: white; border: 1px solid #e4e4e7; color: #09090b; font-weight: 600; font-size: 13px; padding: 12px 24px; display: inline-flex; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; } .ds-btn-secondary:hover { background-color: #fafafa; border-color: #d4d4d8; } .ds-btn-secondary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Premium Card",
+      "kind": "card",
+      "refersTo": "card-premium",
+      "description": "Doppelrand layout wrapper with ambient shadows and inner highlight.",
+      "html": "<div class=\"ds-card-premium\"><div class=\"ds-card-inner\">Konten Form atau Data</div></div>",
+      "css": ".ds-card-premium { border-radius: 2rem; background-color: white; border: 1px solid #f4f4f5; padding: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.03); } .ds-card-inner { border-radius: calc(2rem - 0.375rem); background-color: rgba(250, 250, 250, 0.5); padding: 24px; box-shadow: inset 0 1px 1px rgba(255,255,255,0.7); }"
+    },
+    {
+      "name": "Premium Input",
+      "kind": "input",
+      "refersTo": "input-premium",
+      "description": "Form fields with subtle glow and clean borders.",
+      "html": "<input class=\"ds-input-premium\" placeholder=\"Masukkan nama faskes\" />",
+      "css": ".ds-input-premium { width: 100%; height: 48px; background-color: #fafafa; border: 1px solid rgba(228, 228, 231, 0.8); border-radius: 0.75rem; padding: 0 16px; font-size: 13px; font-weight: 600; color: #09090b; outline: none; transition: border-color 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-input-premium:focus { border-color: #a1a1aa; background-color: white; box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Minimalis, Elegan, Tenang",
+    "overview": "Antarmuka ini dirancang untuk profesional, suportif, dan meminimalisir stres bagi pekerja administratif. Sistem ini menolak visual yang bising dan berfokus murni pada produktivitas tanpa hambatan. Tampilannya seperti dokumen editorial yang rapi atau spreadsheet modern, bukan template SaaS generik.",
+    "keyCharacteristics": [
+      "Fokus pada konten utama dengan tipografi sebagai pemisah ruang.",
+      "Bayangan ambient (ambient shadows) tinggi dipadukan dengan latar putih presisi.",
+      "Penggunaan batas ganda (Doppelrand) yang memberikan kedalaman visual mewah tanpa terasa sumpek.",
+      "Interaksi tenang dengan animasi ease-out yang halus dan cepat."
+    ],
+    "rules": [
+      {
+        "name": "The Calm Contrast Rule",
+        "body": "Warna-warni mencolok dilarang keras. Status (Sukses/Error/Info) harus menggunakan pastel yang diredam agar tidak memancing stres operasional.",
+        "section": "colors"
+      },
+      {
+        "name": "The Wide Sub-label Rule",
+        "body": "Selalu gunakan tracking-widest dan uppercase untuk label kecil agar terbaca jelas meskipun ukurannya mikro.",
+        "section": "typography"
+      },
+      {
+        "name": "The Glass Precision Rule",
+        "body": "Penggunaan glassmorphism (blur/transparansi) harus terkalibrasi presisi. Bukan untuk dekorasi norak, melainkan untuk menegaskan struktur (contoh: inner borders).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do gunakan ruang putih (whitespace) dan tipografi tebal untuk memisahkan area antarmuka.",
+      "Do gunakan animasi yang cepat dan halus (kurva ease-out kustom) tanpa efek melompat (bouncy).",
+      "Do pertahankan kontras teks terhadap latar yang kuat, khusus warna gelap seperti zinc-950 di atas zinc-50."
+    ],
+    "donts": [
+      "Don't gunakan elemen visual yang berisik atau warna-warni mencolok yang mengganggu fokus.",
+      "Don't gunakan layout bertumpuk (nested cards) yang membuat antarmuka terasa sumpek.",
+      "Don't aplikasikan gaya SaaS dashboard template yang terlalu generik dengan border tebal di mana-mana.",
+      "Don't gunakan bayangan gelap, keras, dan tidak di-blur. Gunakan variabel bayangan kustom yang telah ditentukan."
+    ]
+  }
+}

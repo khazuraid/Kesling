@@ -19,7 +19,8 @@ export async function PUT(req: NextRequest) {
     const isValid = await compare(currentPassword, dbUser.password);
     if (!isValid) return NextResponse.json({ error: "Password saat ini salah" }, { status: 400 });
 
-    if (newPassword.length < 6) return NextResponse.json({ error: "Password baru minimal 6 karakter" }, { status: 400 });
+    if (newPassword.length < 6)
+      return NextResponse.json({ error: "Password baru minimal 6 karakter" }, { status: 400 });
     data.password = await hash(newPassword, 12);
   }
 

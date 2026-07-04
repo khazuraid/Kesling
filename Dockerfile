@@ -9,7 +9,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # ─── Build stage ──────────────────────────────────────────────
 FROM base AS builder

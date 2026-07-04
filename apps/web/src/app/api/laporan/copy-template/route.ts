@@ -2,10 +2,10 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/api-auth";
-import { validateBody } from "@/lib/validations";
+import { cacheInvalidate } from "@/lib/redis";
 
 const copyTemplateSchema = z.object({
-  jenis: z.enum(["tpp", "spal", "jamban", "ttu"]),
+  categoryCode: z.string().min(1), // dynamic category code
   puskesmasId: z.number().int().positive(),
   bulanFrom: z.number().int().min(1).max(12),
   tahunFrom: z.number().int().min(2020).max(2100),
@@ -14,93 +14,138 @@ const copyTemplateSchema = z.object({
 });
 
 export const POST = withAuth(async (req: NextRequest) => {
+  const user = (req as any).user;
   const raw = await req.json();
-  const parsed = validateBody(copyTemplateSchema, raw);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error }, { status: 400 });
-  const { jenis, puskesmasId, bulanFrom, tahunFrom, bulanTo, tahunTo } = parsed.data;
+  const parsed = copyTemplateSchema.safeParse(raw);
 
-  let copied = 0;
-
-  if (jenis === "tpp") {
-    const source = await prisma.laporanTpp.findMany({ where: { puskesmasId, bulan: bulanFrom, tahun: tahunFrom } });
-    for (const s of source) {
-      await prisma.laporanTpp.upsert({
-        where: {
-          puskesmasId_bulan_tahun_jenisTppId: { puskesmasId, bulan: bulanTo, tahun: tahunTo, jenisTppId: s.jenisTppId },
-        },
-        update: { terdaftar: s.terdaftar, diperiksa: s.diperiksa, laikJumlah: s.laikJumlah, laikPersen: s.laikPersen },
-        create: {
-          puskesmasId,
-          bulan: bulanTo,
-          tahun: tahunTo,
-          jenisTppId: s.jenisTppId,
-          terdaftar: s.terdaftar,
-          diperiksa: s.diperiksa,
-          laikJumlah: s.laikJumlah,
-          laikPersen: s.laikPersen,
-        },
-      });
-      copied++;
-    }
-  } else if (jenis === "spal" || jenis === "jamban") {
-    const model = jenis === "spal" ? prisma.laporanSpal : prisma.laporanJamban;
-    const source = await (model as any).findMany({ where: { puskesmasId, bulan: bulanFrom, tahun: tahunFrom } });
-    for (const s of source) {
-      await (model as any).upsert({
-        where: {
-          puskesmasId_bulan_tahun_jenisSaranaId: {
-            puskesmasId,
-            bulan: bulanTo,
-            tahun: tahunTo,
-            jenisSaranaId: s.jenisSaranaId,
-          },
-        },
-        update: {
-          jumlah: s.jumlah,
-          kk: s.kk,
-          pddk: s.pddk,
-          diperiksaJumlah: s.diperiksaJumlah,
-          diperiksaMs: s.diperiksaMs,
-          diperiksaKk: s.diperiksaKk,
-          diperiksaPddk: s.diperiksaPddk,
-        },
-        create: {
-          puskesmasId,
-          bulan: bulanTo,
-          tahun: tahunTo,
-          jenisSaranaId: s.jenisSaranaId,
-          jumlah: s.jumlah,
-          kk: s.kk,
-          pddk: s.pddk,
-          diperiksaJumlah: s.diperiksaJumlah,
-          diperiksaMs: s.diperiksaMs,
-          diperiksaKk: s.diperiksaKk,
-          diperiksaPddk: s.diperiksaPddk,
-        },
-      });
-      copied++;
-    }
-  } else if (jenis === "ttu") {
-    const source = await prisma.laporanTtu.findMany({ where: { puskesmasId, bulan: bulanFrom, tahun: tahunFrom } });
-    for (const s of source) {
-      await prisma.laporanTtu.upsert({
-        where: {
-          puskesmasId_bulan_tahun_jenisTtuId: { puskesmasId, bulan: bulanTo, tahun: tahunTo, jenisTtuId: s.jenisTtuId },
-        },
-        update: { jumlahTotal: s.jumlahTotal, ms: s.ms, tms: s.tms },
-        create: {
-          puskesmasId,
-          bulan: bulanTo,
-          tahun: tahunTo,
-          jenisTtuId: s.jenisTtuId,
-          jumlahTotal: s.jumlahTotal,
-          ms: s.ms,
-          tms: s.tms,
-        },
-      });
-      copied++;
-    }
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues?.[0]?.message || "Input tidak valid" }, { status: 400 });
   }
 
-  return NextResponse.json({ copied, message: `${copied} data berhasil dicopy` });
+  const { categoryCode, puskesmasId, bulanFrom, tahunFrom, bulanTo, tahunTo } = parsed.data;
+
+  // Operator hanya bisa copy data milik puskesmasnya sendiri
+  if (user.role === "OPERATOR" && puskesmasId !== user.puskesmasId) {
+    return NextResponse.json({ error: "Forbidden: bukan puskesmas Anda" }, { status: 403 });
+  }
+
+  // Prevent copy to same period
+  if (bulanFrom === bulanTo && tahunFrom === tahunTo) {
+    return NextResponse.json({ error: "Periode sumber dan tujuan tidak boleh sama" }, { status: 400 });
+  }
+
+  // Find dynamic category
+  const category = await prisma.dynamicCategory.findFirst({
+    where: { code: { equals: categoryCode, mode: "insensitive" } },
+  });
+
+  if (!category) {
+    return NextResponse.json({ error: `Kategori "${categoryCode}" tidak ditemukan` }, { status: 404 });
+  }
+
+  // Find source laporan
+  const sourceLaporan = await prisma.dynamicLaporan.findUnique({
+    where: {
+      puskesmasId_categoryId_bulan_tahun: {
+        puskesmasId,
+        categoryId: category.id,
+        bulan: bulanFrom,
+        tahun: tahunFrom,
+      },
+    },
+    include: { values: true },
+  });
+
+  if (!sourceLaporan) {
+    return NextResponse.json(
+      { error: `Tidak ada data laporan ${category.nama} untuk bulan ${bulanFrom}/${tahunFrom}` },
+      { status: 404 },
+    );
+  }
+
+  if (sourceLaporan.values.length === 0) {
+    return NextResponse.json({ error: "Data sumber tidak memiliki nilai yang bisa disalin" }, { status: 400 });
+  }
+
+  // Upsert target laporan
+  const result = await prisma.$transaction(async (tx) => {
+    const targetLaporan = await tx.dynamicLaporan.upsert({
+      where: {
+        puskesmasId_categoryId_bulan_tahun: {
+          puskesmasId,
+          categoryId: category.id,
+          bulan: bulanTo,
+          tahun: tahunTo,
+        },
+      },
+      update: {
+        status: "DRAFT",
+        updatedBy: user.id,
+        catatan: `Disalin dari ${bulanFrom}/${tahunFrom}`,
+      },
+      create: {
+        puskesmasId,
+        categoryId: category.id,
+        bulan: bulanTo,
+        tahun: tahunTo,
+        status: "DRAFT",
+        createdBy: user.id,
+        updatedBy: user.id,
+        catatan: `Disalin dari ${bulanFrom}/${tahunFrom}`,
+      },
+    });
+
+    // Copy all values from source to target
+    let copied = 0;
+    for (const val of sourceLaporan.values) {
+      const subCatId = val.subCategoryId ?? undefined;
+      // Use findFirst for nullable composite key (subCategoryId can be null)
+      const existing = await tx.dynamicLaporanValue.findFirst({
+        where: {
+          laporanId: targetLaporan.id,
+          parameterId: val.parameterId,
+          subCategoryId: subCatId,
+        },
+      });
+
+      if (existing) {
+        await tx.dynamicLaporanValue.update({
+          where: { id: existing.id },
+          data: { value: val.value },
+        });
+      } else {
+        await tx.dynamicLaporanValue.create({
+          data: {
+            laporanId: targetLaporan.id,
+            parameterId: val.parameterId,
+            subCategoryId: subCatId ?? null,
+            value: val.value,
+          },
+        });
+      }
+      copied++;
+    }
+
+    // Audit log
+    await tx.auditLog.create({
+      data: {
+        userId: user.id,
+        action: "CREATE",
+        tableName: "dynamic_laporan",
+        recordId: targetLaporan.id,
+        newData: { copied_from: `${bulanFrom}/${tahunFrom}`, values_copied: copied },
+      },
+    });
+
+    return { laporanId: targetLaporan.id, copied };
+  });
+
+  await cacheInvalidate(`laporan:${categoryCode}:*`);
+  await cacheInvalidate("dashboard:*");
+
+  return NextResponse.json({
+    copied: result.copied,
+    laporanId: result.laporanId,
+    message: `${result.copied} nilai berhasil disalin dari ${bulanFrom}/${tahunFrom} ke ${bulanTo}/${tahunTo}`,
+  });
 });

@@ -6,7 +6,7 @@ const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElem
     <select
       ref={ref}
       className={cn(
-        "flex h-10 w-full appearance-none rounded-lg border border-[hsl(220,13%,82%)] bg-white px-4 pr-10 py-2 text-sm text-[hsl(var(--foreground))] transition-all duration-200",
+        "flex h-10 w-full appearance-none  border border-[hsl(220,13%,82%)] bg-white px-4 pr-10 py-2 text-sm text-[hsl(var(--foreground))] transition-all duration-200",
         "hover:border-[hsl(220,13%,70%)]",
         "focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15",
         "disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400",

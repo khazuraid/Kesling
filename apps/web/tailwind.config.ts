@@ -13,6 +13,12 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        brand: {
+          primary: "oklch(0.32 0.08 5)", // Deep mahogany
+          accent: "oklch(0.92 0.02 15)", // Warm grey/blush
+          ink: "oklch(0.18 0.02 10)", // Warm charcoal
+          surface: "oklch(0.98 0.01 15)", // Tinted surface
+        },
       },
     },
   },

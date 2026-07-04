@@ -5,8 +5,15 @@ import path from "node:path";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  compress: true,
+  productionBrowserSourceMaps: false,
   outputFileTracingRoot: path.join(import.meta.dirname, "../../"),
-  eslint: { ignoreDuringBuilds: true },
+  experimental: {
+    optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query"],
+  },
+  // Transpile internal workspace packages so Turbopack resolves their deps correctly
+  // Fixes "Package @prisma/client can't be external" warnings in Turbopack
+  transpilePackages: ["@apps-kes/database"],
   async headers() {
     return [{
       source: "/(.*)",
@@ -23,7 +30,7 @@ const nextConfig = {
 const withPWA = withSerwist({
   swSrc: "src/sw.ts",
   swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development",
+  disable: true,
 });
 
 export default withSentryConfig(withPWA(nextConfig), {

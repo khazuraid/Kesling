@@ -3,7 +3,21 @@ set -e
 
 # Wait for PostgreSQL
 echo "⏳ Waiting for PostgreSQL..."
-until node -e "const net=require('net');const c=net.createConnection({host:'kes-postgres',port:5432},()=>{c.end();process.exit(0)});c.on('error',()=>{c.end();process.exit(1)});setTimeout(()=>process.exit(1),2000)" 2>/dev/null; do
+until node -e "
+const { URL } = require('url');
+const net = require('net');
+try {
+  const urlStr = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres:password@postgres:5432/kesling_cirebon';
+  const parsed = new URL(urlStr);
+  const host = parsed.hostname;
+  const port = parsed.port || 5432;
+  const c = net.createConnection({host, port}, () => { c.end(); process.exit(0); });
+  c.on('error', () => { c.end(); process.exit(1); });
+  setTimeout(() => { c.end(); process.exit(1); }, 2000);
+} catch (e) {
+  process.exit(1);
+}
+" 2>/dev/null; do
   echo "  PostgreSQL unavailable - retrying..."
   sleep 2
 done

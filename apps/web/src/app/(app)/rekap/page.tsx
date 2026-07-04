@@ -1,233 +1,353 @@
-import { prisma } from "@apps-kes/database";
-import { getCurrentUser } from "@/lib/session";
-import { redirect } from "next/navigation";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BarChart3,
+  Building2,
+  Calendar,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Minus,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const BULAN_FULL = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
 
-function pctColor(pct: number) {
-  if (pct >= 80) return "bg-green-100 text-green-800";
-  if (pct >= 60) return "bg-yellow-100 text-yellow-800";
-  if (pct > 0) return "bg-red-100 text-red-800";
-  return "text-[hsl(var(--muted-foreground))]/40";
+type CellColor = "good" | "warn" | "low" | "empty";
+
+function pctTier(pct: number | null): CellColor {
+  if (pct === null || pct === 0) return "empty";
+  if (pct >= 80) return "good";
+  if (pct >= 60) return "warn";
+  return "low";
 }
 
-export default async function RekapPage({ searchParams }: { searchParams: Promise<{ tahun?: string; puskesmasId?: string }> }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+const CELL_BG: Record<CellColor, string> = {
+  good: "hsl(var(--success))",
+  warn: "hsl(var(--warning))",
+  low: "hsl(var(--error))",
+  empty: "hsl(var(--muted))",
+};
 
-  const { tahun: tahunParam, puskesmasId: pkmParam } = await searchParams;
-  const tahun = Number(tahunParam) || new Date().getFullYear();
+const CELL_TEXT: Record<CellColor, string> = {
+  good: "text-[hsl(var(--success))]",
+  warn: "text-[hsl(var(--warning))]",
+  low: "text-[hsl(var(--error))]",
+  empty: "text-[hsl(var(--muted-foreground))]/40",
+};
 
-  // Operator hanya bisa lihat puskesmasnya sendiri
-  const puskesmasId = user.role === "OPERATOR" && user.puskesmasId
-    ? user.puskesmasId
-    : pkmParam ? Number(pkmParam) : undefined;
+interface RekapData {
+  tahun: number;
+  puskesmasId?: number;
+  selectedPkm?: { nama: string };
+  puskesmasList: { id: number; nama: string }[];
+  categories: {
+    id: number;
+    icon: string;
+    nama: string;
+    pctMonthly: number[];
+    pctTotalYear: number;
+  }[];
+  overallPct: number;
+  goodCount: number;
+  warnCount: number;
+  badCount: number;
+  overallLabel: string;
+}
 
-  const puskesmasList = await prisma.puskesmas.findMany({ orderBy: { urutan: "asc" } });
-  const selectedPkm = puskesmasId ? puskesmasList.find((p) => p.id === puskesmasId) : undefined;
+export default function RekapPage() {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const { data: session } = useSession();
+  const user = session?.user as any;
 
-  const where: any = { tahun };
-  if (puskesmasId) where.puskesmasId = puskesmasId;
+  const tahunParam = sp.get("tahun");
+  const pkmParam = sp.get("puskesmasId");
 
-  const [tpp, spal, sab, rumah, jamban, ttu] = await Promise.all([
-    prisma.laporanTpp.groupBy({ by: ["bulan"], where, _sum: { terdaftar: true, diperiksa: true, laikJumlah: true } }),
-    prisma.laporanSpal.groupBy({ by: ["bulan"], where, _sum: { jumlah: true, diperiksaJumlah: true, diperiksaMs: true } }),
-    prisma.laporanSab.groupBy({ by: ["bulan"], where, _sum: { jumlah: true, diperiksaJumlah: true, diperiksaMs: true } }),
-    prisma.laporanRumah.groupBy({ by: ["bulan"], where, _sum: { jumlahRumahAda: true, jumlahDiperiksa: true, hasilMs: true } }),
-    prisma.laporanJamban.groupBy({ by: ["bulan"], where, _sum: { jumlah: true, diperiksaJumlah: true, diperiksaMs: true } }),
-    prisma.laporanTtu.groupBy({ by: ["bulan"], where, _sum: { jumlahTotal: true, ms: true } }),
-  ]);
+  const [tahun, setTahun] = useState(Number(tahunParam) || new Date().getFullYear());
+  const [puskesmasId, setPuskesmasId] = useState(pkmParam || "");
+  const _currentYear = new Date().getFullYear();
 
-  const laporan = [
-    {
-      label: "TPP",
-      rows: BULAN.map((_, i) => {
-        const d = tpp.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.terdaftar || 0;
-        const diperiksa = d?._sum.diperiksa || 0;
-        const ms = d?._sum.laikJumlah || 0;
-        const pct = diperiksa > 0 ? (ms / diperiksa) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
+  // Sync URL when state changes
+  const updateUrl = useCallback(
+    (t: number, p: string) => {
+      const params = new URLSearchParams();
+      params.set("tahun", String(t));
+      if (p) params.set("puskesmasId", p);
+      router.replace(`/rekap?${params}`, { scroll: false });
     },
-    {
-      label: "SPAL",
-      rows: BULAN.map((_, i) => {
-        const d = spal.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.jumlah || 0;
-        const diperiksa = d?._sum.diperiksaJumlah || 0;
-        const ms = d?._sum.diperiksaMs || 0;
-        const pct = diperiksa > 0 ? (ms / diperiksa) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
+    [router],
+  );
+
+  useEffect(() => {
+    updateUrl(tahun, puskesmasId);
+  }, [tahun, puskesmasId, updateUrl]);
+
+  const { data, isLoading } = useQuery<RekapData>({
+    queryKey: ["rekap", tahun, puskesmasId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("tahun", String(tahun));
+      if (puskesmasId) params.set("puskesmasId", puskesmasId);
+      const res = await fetch(`/api/rekap?${params}`);
+      if (!res.ok) throw new Error("Gagal");
+      return res.json();
     },
-    {
-      label: "SAB",
-      rows: BULAN.map((_, i) => {
-        const d = sab.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.jumlah || 0;
-        const diperiksa = d?._sum.diperiksaJumlah || 0;
-        const ms = d?._sum.diperiksaMs || 0;
-        const pct = diperiksa > 0 ? (ms / diperiksa) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
-    },
-    {
-      label: "Rumah",
-      rows: BULAN.map((_, i) => {
-        const d = rumah.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.jumlahRumahAda || 0;
-        const diperiksa = d?._sum.jumlahDiperiksa || 0;
-        const ms = d?._sum.hasilMs || 0;
-        const pct = diperiksa > 0 ? (ms / diperiksa) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
-    },
-    {
-      label: "Jamban",
-      rows: BULAN.map((_, i) => {
-        const d = jamban.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.jumlah || 0;
-        const diperiksa = d?._sum.diperiksaJumlah || 0;
-        const ms = d?._sum.diperiksaMs || 0;
-        const pct = diperiksa > 0 ? (ms / diperiksa) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
-    },
-    {
-      label: "TTU",
-      rows: BULAN.map((_, i) => {
-        const d = ttu.find((r) => r.bulan === i + 1);
-        const sasaran = d?._sum.jumlahTotal || 0;
-        const diperiksa = sasaran;
-        const ms = d?._sum.ms || 0;
-        const pct = sasaran > 0 ? (ms / sasaran) * 100 : 0;
-        return { sasaran, diperiksa, ms, pct };
-      }),
-    },
-  ];
+  });
+
+  const catsWithPct = data?.categories || [];
+  const overallPct = data?.overallPct || 0;
+  const goodCount = data?.goodCount || 0;
+  const warnCount = data?.warnCount || 0;
+  const badCount = data?.badCount || 0;
+  const overallTier = pctTier(overallPct || null);
+  const overallLabel = data?.overallLabel || "Perlu Perhatian";
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
+      {/* HEADER */}
+      <div className="flex items-center gap-3">
+        <BarChart3 className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
         <div>
-          <h1 className="text-2xl font-bold">Rekap Tahunan</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
-            {selectedPkm ? `Puskesmas ${selectedPkm.nama}` : "Semua Puskesmas"} — Tahun {tahun}
+          <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
+            {data?.selectedPkm ? `Puskesmas ${data.selectedPkm.nama}` : "Rekapitulasi Tahunan"}
+          </h1>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+            Tahun {tahun} • {catsWithPct.length} kategori
           </p>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="card p-4">
-        <form className="flex flex-wrap items-center gap-3">
+      {/* FILTERS with year navigation */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Year navigation */}
+        <div className="flex items-center border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <button
+            onClick={() => setTahun((t) => t - 1)}
+            className="w-8 h-9 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors border-r border-[hsl(var(--border))]"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
           <input
             type="number"
-            name="tahun"
-            defaultValue={tahun}
-            className="w-24 h-10 px-3 text-sm rounded-lg border border-[hsl(220,13%,82%)] bg-white hover:border-[hsl(220,13%,70%)] focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15"
+            value={tahun}
+            onChange={(e) => setTahun(Number(e.target.value))}
+            className="w-[80px] h-9 px-3 bg-transparent text-[14px] font-bold text-[hsl(var(--foreground))] text-center outline-none tabular-nums"
           />
-          {user.role === "ADMIN" && (
+          <button
+            onClick={() => setTahun((t) => t + 1)}
+            className="w-8 h-9 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors border-l border-[hsl(var(--border))]"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Puskesmas filter */}
+        {user?.role === "ADMIN" && data?.puskesmasList && (
+          <div className="relative">
+            <Building2 className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
             <select
-              name="puskesmasId"
-              defaultValue={puskesmasId || ""}
-              className="h-10 px-3 pr-8 text-sm rounded-lg border border-[hsl(220,13%,82%)] bg-white appearance-none hover:border-[hsl(220,13%,70%)] focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+              value={puskesmasId}
+              onChange={(e) => setPuskesmasId(e.target.value)}
+              className="h-9 pl-8 pr-8 bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none cursor-pointer"
             >
               <option value="">Semua Puskesmas</option>
-              {puskesmasList.map((p) => (
-                <option key={p.id} value={p.id}>{p.nama}</option>
+              {data.puskesmasList.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nama}
+                </option>
               ))}
             </select>
-          )}
-          <button type="submit" className="h-10 px-4 text-sm font-medium bg-[hsl(var(--primary))] text-white rounded-lg hover:opacity-90 transition-opacity">
-            Filter
-          </button>
-        </form>
-      </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs px-1">
-        <span className="font-medium text-[hsl(var(--muted-foreground))]">Indikator:</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-green-100 border border-green-300" /> ≥ 80% (Baik)</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-yellow-100 border border-yellow-300" /> 60-79% (Cukup)</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-red-100 border border-red-300" /> &lt; 60% (Kurang)</span>
-      </div>
-
-      {/* Table per jenis laporan */}
-      {laporan.map((l) => {
-        const totalSasaran = l.rows.reduce((s, r) => s + r.sasaran, 0);
-        const totalDiperiksa = l.rows.reduce((s, r) => s + r.diperiksa, 0);
-        const totalMs = l.rows.reduce((s, r) => s + r.ms, 0);
-        const totalPct = totalDiperiksa > 0 ? (totalMs / totalDiperiksa) * 100 : 0;
-
-        return (
-          <div key={l.label} className="card overflow-hidden">
-            <div className="px-4 py-3 border-b border-[hsl(var(--border))] flex items-center justify-between">
-              <h2 className="text-sm font-bold">Laporan {l.label}</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[hsl(var(--muted-foreground))]">Capaian:</span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded ${pctColor(totalPct)}`}>
-                  {totalPct > 0 ? `${totalPct.toFixed(1)}%` : "—"}
-                </span>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs whitespace-nowrap">
-                <thead>
-                  <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
-                    <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider w-24">Uraian</th>
-                    {BULAN.map((b) => (
-                      <th key={b} className="px-2 py-2.5 text-center text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase">{b}</th>
-                    ))}
-                    <th className="px-3 py-2.5 text-center text-[10px] font-bold text-[hsl(var(--primary))] uppercase">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <td className="px-3 py-2 font-medium text-[hsl(var(--muted-foreground))]">Sasaran</td>
-                    {l.rows.map((r, i) => (
-                      <td key={i} className={`px-2 py-2 text-center ${r.sasaran ? "" : "text-[hsl(var(--muted-foreground))]/40"}`}>{r.sasaran || "—"}</td>
-                    ))}
-                    <td className="px-3 py-2 text-center font-bold">{totalSasaran || "—"}</td>
-                  </tr>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <td className="px-3 py-2 font-medium text-[hsl(var(--muted-foreground))]">Diperiksa</td>
-                    {l.rows.map((r, i) => (
-                      <td key={i} className={`px-2 py-2 text-center ${r.diperiksa ? "" : "text-[hsl(var(--muted-foreground))]/40"}`}>{r.diperiksa || "—"}</td>
-                    ))}
-                    <td className="px-3 py-2 text-center font-bold">{totalDiperiksa || "—"}</td>
-                  </tr>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <td className="px-3 py-2 font-medium text-[hsl(var(--muted-foreground))]">MS/Laik</td>
-                    {l.rows.map((r, i) => (
-                      <td key={i} className={`px-2 py-2 text-center ${r.ms ? "" : "text-[hsl(var(--muted-foreground))]/40"}`}>{r.ms || "—"}</td>
-                    ))}
-                    <td className="px-3 py-2 text-center font-bold">{totalMs || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-3 py-2 font-bold">% Capaian</td>
-                    {l.rows.map((r, i) => (
-                      <td key={i} className="px-1 py-1.5 text-center">
-                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${pctColor(r.pct)}`}>
-                          {r.pct > 0 ? `${r.pct.toFixed(0)}%` : "—"}
-                        </span>
-                      </td>
-                    ))}
-                    <td className="px-2 py-1.5 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${pctColor(totalPct)}`}>
-                        {totalPct > 0 ? `${totalPct.toFixed(1)}%` : "—"}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-        );
-      })}
+        )}
+
+        <a
+          href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}
+          className="h-9 px-3 flex items-center gap-1.5 border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors ml-auto"
+        >
+          <Download className="w-3 h-3" /> Export Excel
+        </a>
+      </div>
+
+      {/* Loading or data */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* SUMMARY CARDS */}
+          <div className="grid grid-cols-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            {[
+              {
+                label: "Rata-rata",
+                value: `${overallPct.toFixed(1)}%`,
+                sub: overallLabel,
+                color: overallTier === "good" ? "success" : overallTier === "warn" ? "warning" : "error",
+              },
+              {
+                label: "Baik",
+                value: String(goodCount),
+                sub: "≥ 80%",
+                color: "success",
+              },
+              {
+                label: "Cukup",
+                value: String(warnCount),
+                sub: "60–79%",
+                color: "warning",
+              },
+              {
+                label: "Kurang",
+                value: String(badCount),
+                sub: "< 60%",
+                color: "error",
+              },
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                className={`flex flex-col items-center justify-center py-4 px-2 ${i < 3 ? "border-r border-[hsl(var(--border))]" : ""}`}
+              >
+                <span className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-1">
+                  {stat.label}
+                </span>
+                <span className={`text-[22px] font-bold tabular-nums leading-none text-[hsl(var(--${stat.color}))]`}>
+                  {stat.value}
+                </span>
+                <span className="text-[9px] text-[hsl(var(--muted-foreground))] mt-0.5">{stat.sub}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CATEGORY CARDS */}
+          {catsWithPct.length === 0 ? (
+            <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col items-center justify-center py-20 gap-2">
+              <Calendar className="w-8 h-8 text-[hsl(var(--muted-foreground))] opacity-30" />
+              <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum ada data</p>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                Tidak ada laporan tersubmit untuk tahun {tahun}.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {catsWithPct.map((cat) => {
+                const pct = cat.pctTotalYear || 0;
+                const tier = pctTier(pct);
+                const maxMonthly = Math.max(...(cat.pctMonthly || []), 1);
+                const trend =
+                  cat.pctMonthly && cat.pctMonthly.length >= 2
+                    ? cat.pctMonthly[cat.pctMonthly.length - 1] - cat.pctMonthly[cat.pctMonthly.length - 2]
+                    : 0;
+
+                return (
+                  <div key={cat.id} className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+                    <div className="flex items-center gap-4 px-4 py-3">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <span className="text-lg shrink-0">{cat.icon}</span>
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">{cat.nama}</p>
+                          <div className="flex items-center gap-1.5">
+                            {trend > 1 ? (
+                              <TrendingUp className="w-3 h-3 text-[hsl(var(--success))]" />
+                            ) : trend < -1 ? (
+                              <TrendingDown className="w-3 h-3 text-[hsl(var(--error))]" />
+                            ) : (
+                              <Minus className="w-3 h-3 text-[hsl(var(--muted-foreground))]" />
+                            )}
+                            <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))]">
+                              {trend > 0 ? `+${trend.toFixed(0)}%` : trend < 0 ? `${trend.toFixed(0)}%` : "stabil"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="hidden sm:flex items-end gap-0.5 h-8 shrink-0">
+                        {cat.pctMonthly?.map((m, i) => {
+                          const h = maxMonthly > 0 ? Math.max(2, (m / maxMonthly) * 32) : 2;
+                          const mTier = pctTier(m || null);
+                          return (
+                            <div
+                              key={i}
+                              className="group relative"
+                              title={`${BULAN_FULL[i]}: ${m > 0 ? m.toFixed(1) : 0}%`}
+                            >
+                              <div
+                                className="w-2.5"
+                                style={{
+                                  height: `${h}px`,
+                                  background: CELL_BG[mTier],
+                                  opacity: m > 0 ? 1 : 0.2,
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="text-right shrink-0 w-20">
+                        <span className={`text-[20px] font-bold tabular-nums ${CELL_TEXT[tier]}`}>
+                          {pct.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="px-4 pb-3 hidden sm:block">
+                      <div className="flex gap-0.5">
+                        {cat.pctMonthly?.map((m, i) => {
+                          const mTier = pctTier(m || null);
+                          return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                              <span className="text-[8px] font-bold text-[hsl(var(--muted-foreground))]">
+                                {BULAN[i]}
+                              </span>
+                              <div className="w-full h-2" style={{ background: `hsl(var(--muted))` }}>
+                                <div
+                                  className="h-full transition-all"
+                                  style={{
+                                    width: `${Math.min(m, 100)}%`,
+                                    background: CELL_BG[mTier],
+                                    opacity: m > 0 ? 1 : 0.15,
+                                  }}
+                                />
+                              </div>
+                              <span
+                                className={`text-[8px] font-bold tabular-nums ${m > 0 ? CELL_TEXT[mTier] : "text-[hsl(var(--muted-foreground))]/30"}`}
+                              >
+                                {m > 0 ? m.toFixed(0) : "—"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

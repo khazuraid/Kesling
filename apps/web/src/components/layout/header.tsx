@@ -1,34 +1,24 @@
 "use client";
 
+import { ChevronRight, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebarStore } from "@/stores/sidebar";
 
 const breadcrumbMap: Record<string, string> = {
-  "/": "Dashboard",
-  "/dashboard-pkm": "Dashboard PKM",
-  "/master": "Master Data",
-  "/master/puskesmas": "Puskesmas",
-  "/master/jenis-tpp": "Jenis TPP",
-  "/master/jenis-sarana": "Jenis Sarana",
-  "/master/jenis-ttu": "Jenis TTU",
-  "/laporan": "Laporan",
-  "/laporan/tpp": "TPP",
-  "/laporan/spal": "SPAL",
-  "/laporan/sab": "SAB",
-  "/laporan/rumah": "Rumah",
-  "/laporan/jamban": "Jamban",
-  "/laporan/ttu": "TTU",
-  "/laporan/bulk": "Bulk Input",
+  "/": "Overview",
+  "/dashboard-pkm": "Command Center",
   "/rekap": "Rekap Tahunan",
   "/perbandingan": "Perbandingan",
-  "/target": "Target & Capaian",
   "/audit-log": "Audit Log",
-  "/settings": "Settings",
-  "/settings/users": "Users",
-  "/settings/import": "Import",
+  "/approval": "Approval Laporan",
+  "/laporan-builder": "Form Builder",
+  "/settings": "Pengaturan",
+  "/settings/users": "Pengguna",
+  "/settings/import": "Impor Data",
+  "/profile": "Profil",
 };
 
 function getBreadcrumbs(pathname: string) {
@@ -37,69 +27,48 @@ function getBreadcrumbs(pathname: string) {
   let path = "";
   for (const seg of segments) {
     path += `/${seg}`;
-    crumbs.push({ label: breadcrumbMap[path] || seg.charAt(0).toUpperCase() + seg.slice(1), href: path });
+    crumbs.push({
+      label: breadcrumbMap[path] || seg.charAt(0).toUpperCase() + seg.slice(1),
+      href: path,
+    });
   }
   return crumbs;
 }
 
 export function Header() {
   const pathname = usePathname();
-  const { data: session } = useSession();
   const { toggle } = useSidebarStore();
   const breadcrumbs = getBreadcrumbs(pathname);
-  const pageTitle = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : "Dashboard";
+  const pageTitle = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : "Overview";
 
   return (
-    <header
-      className="sticky top-0 z-30 h-16 flex items-center gap-4 px-4 lg:px-6 bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]"
-      style={{ boxShadow: "0 1px 4px rgba(76,78,100,0.05)" }}
-    >
-      {/* Mobile menu */}
+    <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-5 md:px-6 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
+      {/* Mobile menu toggle */}
       <button
         onClick={toggle}
-        className="lg:hidden p-2 rounded-lg hover:bg-[hsl(var(--muted))]"
+        className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
         aria-label="Toggle menu"
       >
-        <svg
-          aria-hidden="true"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M3 6h18M3 12h18M3 18h18" />
-        </svg>
+        <Menu className="w-[18px] h-[18px]" />
       </button>
 
       {/* Breadcrumb */}
-      <nav className="hidden md:flex items-center gap-1.5 text-sm">
+      <nav className="hidden md:flex items-center gap-1 text-[12px] font-semibold">
         <Link
           href="/"
-          className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+          className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
         >
-          <svg
-            aria-hidden="true"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          </svg>
+          Kesling
         </Link>
         {breadcrumbs.map((crumb, i) => (
-          <span key={crumb.href} className="flex items-center gap-1.5">
-            <span className="text-[hsl(var(--border))]">/</span>
+          <span key={crumb.href} className="flex items-center gap-1">
+            <ChevronRight className="w-3 h-3 text-[hsl(var(--border))]" />
             {i === breadcrumbs.length - 1 ? (
-              <span className="font-medium text-[hsl(var(--foreground))]">{crumb.label}</span>
+              <span className="text-[hsl(var(--foreground))]">{crumb.label}</span>
             ) : (
               <Link
                 href={crumb.href}
-                className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+                className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
               >
                 {crumb.label}
               </Link>
@@ -109,20 +78,17 @@ export function Header() {
       </nav>
 
       {/* Mobile title */}
-      <h1 className="md:hidden text-sm font-semibold">{pageTitle}</h1>
+      <h1 className="md:hidden text-[14px] font-bold text-[hsl(var(--foreground))] tracking-tight truncate">
+        {pageTitle}
+      </h1>
 
-      {/* Right */}
-      <div className="ml-auto flex items-center gap-3">
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Right actions */}
+      <div className="flex items-center gap-1">
         <NotificationBell />
-        <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-[hsl(var(--border))]">
-          <div>
-            <p className="text-sm font-medium leading-none text-right">{session?.user?.name}</p>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] text-right">{(session?.user as any)?.role}</p>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-[hsl(var(--primary))]/10 flex items-center justify-center text-sm font-bold text-[hsl(var(--primary))]">
-            {session?.user?.name?.charAt(0) || "U"}
-          </div>
-        </div>
+        <ThemeToggle />
       </div>
     </header>
   );
