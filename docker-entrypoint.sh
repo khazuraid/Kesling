@@ -26,7 +26,6 @@ echo "✅ PostgreSQL ready!"
 # Build psql connection string from direct DB URL (bypass PgBouncer for migrations/DDL)
 # DATABASE_URL is runtime pooled URL; DIRECT_DATABASE_URL is direct Postgres URL.
 PSQL_URL="${DIRECT_DATABASE_URL:-$DATABASE_URL}"
-PSQL_CMD="psql \"$PSQL_URL\""
 
 # Run migrations via psql (avoids @prisma/config dependency in runner)
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
@@ -38,7 +37,7 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
       if [ -f "$migration_file" ]; then
         migration_name=$(basename "$migration_dir")
         echo "  Applying: $migration_name"
-        eval "$PSQL_CMD -f \"$migration_file\"" 2>&1 || echo "  ⚠️  $migration_name had warnings (may already exist)"
+        psql "$PSQL_URL" -f "$migration_file" 2>&1 || echo "  ⚠️  $migration_name had warnings (may already exist)"
       fi
     done
     echo "✅ Migrations done!"
@@ -50,7 +49,7 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   SEED_FILE="/app/packages/database/prisma/seed-complete.sql"
   if [ -f "$SEED_FILE" ]; then
     echo "🌱 Running seed..."
-    eval "$PSQL_CMD -f \"$SEED_FILE\"" 2>&1 || echo "⚠️ Seed completed with warnings (expected if data exists)."
+    psql "$PSQL_URL" -f "$SEED_FILE" 2>&1 || echo "⚠️ Seed completed with warnings (expected if data exists)."
     echo "✅ Seed done!"
   else
     echo "⚠️ No seed file found at $SEED_FILE, skipping."
