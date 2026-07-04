@@ -56,6 +56,9 @@ RUN mkdir -p /app/apps/web/node_modules/.prisma/client && \
 # Install postgresql-client for migration/seed via psql (no prisma CLI needed)
 RUN apk add --no-cache postgresql-client
 
+# Install ioredis for worker.js runtime
+RUN npm install ioredis
+
 # Copy Prisma migrations + seed for runtime
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 
