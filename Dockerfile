@@ -9,11 +9,13 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
-RUN pnpm install
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+RUN pnpm install --frozen-lockfile --child-concurrency=1 --network-concurrency=1
 
 # ─── Build stage ──────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
