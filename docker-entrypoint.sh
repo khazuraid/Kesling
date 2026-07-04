@@ -1,6 +1,18 @@
 #!/bin/sh
 set -e
 
+# Print masked environment variables for debugging
+node -e "
+const envs = process.env;
+for (const key in envs) {
+  if (key.includes('URL') || key.includes('PASSWORD') || key.includes('SECRET') || key.includes('POSTGRES') || key.includes('DB')) {
+    const val = envs[key];
+    const masked = val ? val.replace(/:[^@]*@/g, ':***@') : 'undefined/empty';
+    console.log('🔍 Env: ' + key + ' = ' + masked);
+  }
+}
+"
+
 # Wait for PostgreSQL
 echo "⏳ Waiting for PostgreSQL..."
 until node -e "
