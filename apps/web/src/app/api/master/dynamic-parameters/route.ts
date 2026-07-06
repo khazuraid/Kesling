@@ -1,10 +1,10 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { withAdmin } from "@/lib/api-auth";
+import { withRoles } from "@/lib/api-auth";
 import { cacheInvalidate } from "@/lib/redis";
 
 // POST a new parameter
-export const POST = withAdmin(async (req: NextRequest) => {
+export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const userId = (req as any).user?.id;
   try {
     const body = await req.json();
@@ -66,7 +66,7 @@ export const POST = withAdmin(async (req: NextRequest) => {
 });
 
 // PUT to update a parameter
-export const PUT = withAdmin(async (req: NextRequest) => {
+export const PUT = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const userId = (req as any).user?.id;
   try {
     const body = await req.json();
@@ -105,7 +105,7 @@ export const PUT = withAdmin(async (req: NextRequest) => {
 });
 
 // DELETE a parameter
-export const DELETE = withAdmin(async (req: NextRequest) => {
+export const DELETE = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const userId = (req as any).user?.id;
   const { searchParams } = new URL(req.url);
   const idStr = searchParams.get("id");

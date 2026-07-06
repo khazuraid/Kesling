@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/api-auth";
 import { aggregateInspectionToLaporan } from "@/lib/aggregate-inspection";
+import { withAuth } from "@/lib/api-auth";
 
 // GET List hasil pemeriksaan
 export const GET = withAuth(async (req: NextRequest) => {

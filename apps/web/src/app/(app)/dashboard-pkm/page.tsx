@@ -1,26 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertCircle,
-  ArrowUpRight,
-  BarChart3,
-  Building2,
-  CheckCircle2,
-  Download,
-  TrendingUp,
-  Info,
-} from "lucide-react";
+import { AlertCircle, ArrowUpRight, Building2, CheckCircle2, Download, Info, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { ComplianceBar } from "@/components/ui/compliance-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
-import { cn } from "@/lib/utils";
 
 const BULAN_NAMES = [
   "",
@@ -124,12 +113,12 @@ export default function DashboardPkmPage() {
     );
   }
 
-  let statusClass = "bg-[hsl(var(--error)/0.06)] text-[hsl(var(--error))] border-[hsl(var(--error)/0.15)]";
-  let statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--error))] stroke-[2]" />;
+  let _statusClass = "bg-[hsl(var(--error)/0.06)] text-[hsl(var(--error))] border-[hsl(var(--error)/0.15)]";
+  let _statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--error))] stroke-[2]" />;
   let statusTitle = "Data Belum Lengkap";
   let statusMsg = "Silakan lengkapi input laporan bulanan.";
   let statusAccent = "error";
-  let statusShell = "card-shell";
+  let _statusShell = "card-shell";
 
   async function handleExportPDF() {
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
@@ -183,29 +172,29 @@ export default function DashboardPkmPage() {
   }
 
   if (totalWithData === 0) {
-    statusClass = "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]";
-    statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--muted-foreground))] opacity-40" />;
+    _statusClass = "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]";
+    _statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--muted-foreground))] opacity-40" />;
     statusTitle = "Belum Ada Data";
     statusMsg = `Belum ada laporan yang disubmit untuk ${BULAN_NAMES[bulan]} ${tahun}.`;
     statusAccent = "neutral";
-    statusShell = "card-flat";
+    _statusShell = "card-flat";
   } else if (achievedCount === totalWithData && totalWithData > 0) {
-    statusClass = "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border-[hsl(var(--accent)/0.15)]";
-    statusIcon = <CheckCircle2 className="w-5 h-5 text-[hsl(var(--accent))] stroke-[2]" />;
+    _statusClass = "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border-[hsl(var(--accent)/0.15)]";
+    _statusIcon = <CheckCircle2 className="w-5 h-5 text-[hsl(var(--accent))] stroke-[2]" />;
     statusTitle = "Semua Target Tercapai!";
     statusMsg = "Seluruh indikator kesehatan lingkungan memenuhi target wilayah.";
     statusAccent = "success";
-    statusShell = "card-accent";
+    _statusShell = "card-accent";
   } else if (achievedCount > 0) {
-    statusClass = "bg-[hsl(var(--warning)/0.06)] text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.15)]";
-    statusIcon = <TrendingUp className="w-5 h-5 text-[hsl(var(--warning))] stroke-[2]" />;
+    _statusClass = "bg-[hsl(var(--warning)/0.06)] text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.15)]";
+    _statusIcon = <TrendingUp className="w-5 h-5 text-[hsl(var(--warning))] stroke-[2]" />;
     statusTitle = `${achievedCount} dari ${totalWithData} Target Tercapai`;
     statusMsg = "Fokuskan pembinaan pada indikator yang masih di bawah target.";
     statusAccent = "warning";
-    statusShell = "card-shell";
+    _statusShell = "card-shell";
   }
 
-  const getStatusBadge = (status: string | null, hasData: boolean) => {
+  const _getStatusBadge = (status: string | null, hasData: boolean) => {
     if (!hasData) return <span className="stat-label">Belum Ada</span>;
     return <StatusBadge status={status || "DRAFT"} />;
   };
@@ -449,7 +438,7 @@ export default function DashboardPkmPage() {
                         if (!active || !payload?.length) return null;
                         const capaian = payload[0]?.value as number;
                         const targetVal = (payload[1]?.value as number) ?? 80;
-                        const diff = capaian - targetVal;
+                        const _diff = capaian - targetVal;
                         return (
                           <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg shadow-xl p-3">
                             <p className="text-[11px] font-bold uppercase tracking-widest mb-2 pb-2 border-b border-[hsl(var(--border))]/50">

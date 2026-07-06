@@ -326,6 +326,7 @@ model Notification {
 enum Role {
   ADMIN
   OPERATOR
+  DINKES
 }
 
 enum StatusLaporan {
@@ -349,6 +350,19 @@ enum Action {
   CREATE
   UPDATE
   DELETE
+}
+
+model SystemErrorLog {
+  id        Int      @id @default(autoincrement())
+  message   String   @db.Text
+  stack     String?  @db.Text
+  path      String?
+  userId    Int?
+  userEmail String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("system_error_log")
 }
 
 model Target {

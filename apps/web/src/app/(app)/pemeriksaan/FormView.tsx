@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, MapPin, Upload } from "lucide-react";
+import { ArrowLeft, MapPin, Upload } from "lucide-react";
 import { SignaturePad } from "@/components/ui/signature-pad";
 import { toRoman } from "./helpers";
 
@@ -22,9 +22,20 @@ interface FormViewProps {
 }
 
 export function FormView({
-  activeForm, editingId, formValues, metaValues,
-  liveSkor, canSubmit, isPending, tanggalPemeriksaan,
-  onBack, onFieldChange, onMetaChange, onGPS, onTanggalChange, onSubmit,
+  activeForm,
+  editingId,
+  formValues,
+  metaValues,
+  liveSkor,
+  canSubmit,
+  isPending,
+  tanggalPemeriksaan,
+  onBack,
+  onFieldChange,
+  onMetaChange,
+  onGPS,
+  onTanggalChange,
+  onSubmit,
 }: FormViewProps) {
   const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
   const penilaianFields = activeForm.fields.filter((f: any) => f.grup !== "__META__");
@@ -34,7 +45,7 @@ export function FormView({
   penilaianFields.forEach((f: any) => {
     const g = f.grup || "Lainnya";
     if (!groupMap.has(g)) groupMap.set(g, []);
-    groupMap.get(g)!.push(f);
+    groupMap.get(g)?.push(f);
   });
   groupMap.forEach((fields, grup) => groups.push({ grup, fields }));
 
@@ -55,23 +66,17 @@ export function FormView({
       <div className="border-b border-[hsl(var(--border))] pb-6 mb-8">
         <h1 className="text-[24px] font-bold mb-2">{activeForm.nama}</h1>
         {activeForm.deskripsi && (
-          <p className="text-[13px] text-[hsl(var(--muted-foreground))] mb-4">
-            {activeForm.deskripsi}
-          </p>
+          <p className="text-[13px] text-[hsl(var(--muted-foreground))] mb-4">{activeForm.deskripsi}</p>
         )}
-        
+
         {liveSkor.max > 0 && (
           <div className="flex items-center gap-4">
             <div className="flex items-baseline gap-2">
               <span className="text-[28px] font-bold tabular-nums">{liveSkor.valueText}</span>
-              <span className="text-[13px] text-[hsl(var(--muted-foreground))]">
-                / {liveSkor.max}
-              </span>
+              <span className="text-[13px] text-[hsl(var(--muted-foreground))]">/ {liveSkor.max}</span>
             </div>
             {activeForm.config?.thresholdOperator && (
-              <span className={`text-[12px] font-medium ${
-                liveSkor.pass ? "text-green-700" : "text-red-700"
-              }`}>
+              <span className={`text-[12px] font-medium ${liveSkor.pass ? "text-green-700" : "text-red-700"}`}>
                 {liveSkor.text}
               </span>
             )}
@@ -81,13 +86,13 @@ export function FormView({
 
       {/* Meta Fields */}
       <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 mb-6">
-        <h2 className="text-[14px] font-semibold mb-4 pb-3 border-b border-[hsl(var(--border))]">
-          Informasi Sasaran
-        </h2>
+        <h2 className="text-[14px] font-semibold mb-4 pb-3 border-b border-[hsl(var(--border))]">Informasi Sasaran</h2>
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-3">
-              <label className="text-[13px] font-medium leading-relaxed">Tanggal Pemeriksaan <span className="ml-1 text-red-500">*</span></label>
+              <label className="text-[13px] font-medium leading-relaxed">
+                Tanggal Pemeriksaan <span className="ml-1 text-red-500">*</span>
+              </label>
             </div>
             <input
               type="date"
@@ -115,9 +120,7 @@ export function FormView({
             {/* Group Header */}
             <div className="px-6 py-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
               <h2 className="text-[14px] font-semibold flex items-center gap-2">
-                <span className="text-[13px] text-[hsl(var(--muted-foreground))]">
-                  {toRoman(gi + 1)}.
-                </span>
+                <span className="text-[13px] text-[hsl(var(--muted-foreground))]">{toRoman(gi + 1)}.</span>
                 {group.grup}
               </h2>
             </div>
@@ -246,13 +249,10 @@ function FieldInput({
           className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
         >
           <option value="">— Pilih —</option>
-          {(f.options
-            ? typeof f.options === "string"
-              ? JSON.parse(f.options)
-              : f.options
-            : []
-          ).map((opt: string) => (
-            <option key={opt} value={opt}>{opt}</option>
+          {(f.options ? (typeof f.options === "string" ? JSON.parse(f.options) : f.options) : []).map((opt: string) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
           ))}
         </select>
       )}
@@ -267,11 +267,7 @@ function FieldInput({
             <MapPin className="w-3.5 h-3.5" />
             {hasValue ? "Perbarui Lokasi" : "Ambil Lokasi"}
           </button>
-          {hasValue && (
-            <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))]">
-              {value}
-            </span>
-          )}
+          {hasValue && <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))]">{value}</span>}
         </div>
       )}
 

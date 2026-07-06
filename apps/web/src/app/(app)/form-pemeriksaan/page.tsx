@@ -6,18 +6,17 @@ import {
   ArrowUp,
   Check,
   FileText,
-  GripVertical,
-  Plus,
-  Settings2,
-  Trash2,
-  X,
   FolderPlus,
   Hash,
+  Plus,
+  Settings2,
   ShieldAlert,
+  Trash2,
+  X,
 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 const FIELD_TYPES = [
   { value: "BOOLEAN", label: "Ceklis" },
@@ -139,8 +138,8 @@ export default function FormPemeriksaanPage() {
       nama,
       deskripsi,
       subCategoryId,
-      config: { 
-        rumus, 
+      config: {
+        rumus,
         customFormula: rumus === "custom" ? customFormula : undefined,
         thresholdOperator,
         thresholdValue,
@@ -149,8 +148,8 @@ export default function FormPemeriksaanPage() {
         agregasi: {
           paramDiperiksaId,
           paramMsId,
-          paramTmsId
-        }
+          paramTmsId,
+        },
       },
       fields: cleanFields,
     });
@@ -203,9 +202,7 @@ export default function FormPemeriksaanPage() {
 
   function renameGrup(oldName: string, newName: string) {
     if (!newName.trim()) return;
-    setFields(
-      fields.map((f) => (f.grup === oldName ? { ...f, grup: newName } : f)),
-    );
+    setFields(fields.map((f) => (f.grup === oldName ? { ...f, grup: newName } : f)));
   }
 
   function deleteGrup(grupName: string) {
@@ -225,7 +222,7 @@ export default function FormPemeriksaanPage() {
     fields.forEach((f, i) => {
       const g = f.grup || "Tanpa Grup";
       if (!groupMap.has(g)) groupMap.set(g, []);
-      groupMap.get(g)!.push({ field: f, index: i });
+      groupMap.get(g)?.push({ field: f, index: i });
     });
 
     groupMap.forEach((items, grup) => {
@@ -289,9 +286,7 @@ export default function FormPemeriksaanPage() {
       <div className="w-full mx-auto pt-0 pb-4 flex flex-col items-center justify-center min-h-[50vh] gap-3">
         <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
         <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Akses Ditolak</p>
-        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-          Halaman ini hanya untuk Puskesmas.
-        </p>
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Puskesmas.</p>
       </div>
     );
   }
@@ -305,9 +300,7 @@ export default function FormPemeriksaanPage() {
         <div className="flex items-center gap-3">
           <FileText className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
           <div>
-            <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
-              Form Pemeriksaan
-            </h1>
+            <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Form Pemeriksaan</h1>
             <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
               Template formulir inspeksi — format tabel ceklis
             </p>
@@ -343,9 +336,7 @@ export default function FormPemeriksaanPage() {
         ) : templates.length === 0 ? (
           <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col items-center justify-center py-20 gap-2">
             <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))] opacity-30" />
-            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
-              Belum ada template
-            </p>
+            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum ada template</p>
             <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
               Klik "Template Baru" untuk membuat formulir pertama.
             </p>
@@ -365,7 +356,7 @@ export default function FormPemeriksaanPage() {
                   setThresholdValue(tpl.config?.thresholdValue ?? 80);
                   setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
                   setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
-                  
+
                   // Set Agregasi Config
                   setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
                   setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
@@ -391,13 +382,9 @@ export default function FormPemeriksaanPage() {
                     {tpl.fields?.length || 0} field
                   </span>
                 </div>
-                <h3 className="text-[12px] font-bold text-[hsl(var(--foreground))] mb-1">
-                  {tpl.nama}
-                </h3>
+                <h3 className="text-[12px] font-bold text-[hsl(var(--foreground))] mb-1">{tpl.nama}</h3>
                 {tpl.deskripsi && (
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] line-clamp-2 mb-2">
-                    {tpl.deskripsi}
-                  </p>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] line-clamp-2 mb-2">{tpl.deskripsi}</p>
                 )}
                 {/* Metadata: Pembuat & Koneksi Laporan */}
                 <div className="flex flex-wrap gap-1.5 mt-auto">
@@ -485,11 +472,12 @@ export default function FormPemeriksaanPage() {
                   <option key={sub.id} value={sub.id}>
                     {cat.icon} {cat.nama} &rarr; {sub.nama}
                   </option>
-                ))
+                )),
               )}
             </select>
             <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1.5">
-              Hubungkan template ini ke jenis laporan bulanan. Skor hasil pemeriksaan lapangan akan diintegrasikan langsung sebagai data input/referensi laporan bulanan.
+              Hubungkan template ini ke jenis laporan bulanan. Skor hasil pemeriksaan lapangan akan diintegrasikan
+              langsung sebagai data input/referensi laporan bulanan.
             </p>
           </div>
         </div>
@@ -500,9 +488,7 @@ export default function FormPemeriksaanPage() {
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
           <Hash className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
           <span className="text-[13px] font-bold">Rumus Penilaian</span>
-          <span className="ml-auto text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-            {rumusLabel}
-          </span>
+          <span className="ml-auto text-[10px] font-bold text-[hsl(var(--muted-foreground))]">{rumusLabel}</span>
         </div>
         <div className="flex items-center gap-4 px-4 py-3">
           <div className="flex-1">
@@ -526,13 +512,48 @@ export default function FormPemeriksaanPage() {
                   Rumus Kustom
                 </label>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <button onClick={() => setCustomFormula((prev) => prev + "SUM()")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">SUM</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "AVG()")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">AVG</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "MIN()")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">MIN</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "MAX()")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">MAX</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "COUNT()")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">COUNT</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "✓")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">✓ (Benar)</button>
-                  <button onClick={() => setCustomFormula((prev) => prev + "✗")} className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors">✗ (Salah)</button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}SUM()`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    SUM
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}AVG()`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    AVG
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}MIN()`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    MIN
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}MAX()`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    MAX
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}COUNT()`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    COUNT
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}✓`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    ✓ (Benar)
+                  </button>
+                  <button
+                    onClick={() => setCustomFormula((prev) => `${prev}✗`)}
+                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
+                  >
+                    ✗ (Salah)
+                  </button>
                 </div>
                 <textarea
                   value={customFormula}
@@ -577,25 +598,17 @@ export default function FormPemeriksaanPage() {
                     {demoPersentase}
                   </span>
                   <span className="text-[11px] text-[hsl(var(--muted-foreground))]">%</span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                    (est. nilai tertimbang)
-                  </span>
+                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">(est. nilai tertimbang)</span>
                 </>
               )}
               {rumus === "custom" && (
                 <>
-                  <span className="text-[14px] font-extrabold text-[hsl(var(--foreground))] italic">
-                    ƒ(x)
-                  </span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                    Rumus manual
-                  </span>
+                  <span className="text-[14px] font-extrabold text-[hsl(var(--foreground))] italic">ƒ(x)</span>
+                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Rumus manual</span>
                 </>
               )}
             </div>
-            <p className="text-[9px] text-[hsl(var(--muted-foreground))] mt-1">
-              {rumusDesc}
-            </p>
+            <p className="text-[9px] text-[hsl(var(--muted-foreground))] mt-1">{rumusDesc}</p>
           </div>
         </div>
 
@@ -608,7 +621,7 @@ export default function FormPemeriksaanPage() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Jika Nilai Akhir</span>
-                <select 
+                <select
                   value={thresholdOperator}
                   onChange={(e) => setThresholdOperator(e.target.value)}
                   className="h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none"
@@ -617,10 +630,10 @@ export default function FormPemeriksaanPage() {
                   <option value=">">&gt; (Lebih dari)</option>
                   <option value="=">= (Sama dengan)</option>
                 </select>
-                <input 
+                <input
                   type="number"
                   value={thresholdValue}
-                  onChange={(e) => setThresholdValue(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setThresholdValue(parseInt(e.target.value, 10) || 0)}
                   className="w-16 h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none"
                 />
               </div>
@@ -654,54 +667,66 @@ export default function FormPemeriksaanPage() {
               Koneksi Agregasi Laporan Bulanan
             </label>
             <p className="text-[9px] text-[hsl(var(--muted-foreground))] mb-3 leading-relaxed">
-              Petakan nilai dari form ini agar masuk secara akurat ke kolom Parameter Laporan Bulanan yang tepat. 
-              Sistem akan otomatis menambahkan angka +1 ke kolom Laporan Bulanan yang Anda pilih.
+              Petakan nilai dari form ini agar masuk secara akurat ke kolom Parameter Laporan Bulanan yang tepat. Sistem
+              akan otomatis menambahkan angka +1 ke kolom Laporan Bulanan yang Anda pilih.
             </p>
             <div className="grid gap-3">
               <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-[hsl(var(--foreground))] w-[120px] shrink-0">1. Jumlah Diperiksa</span>
-                <select 
+                <span className="text-[11px] font-bold text-[hsl(var(--foreground))] w-[120px] shrink-0">
+                  1. Jumlah Diperiksa
+                </span>
+                <select
                   value={paramDiperiksaId || ""}
                   onChange={(e) => setParamDiperiksaId(e.target.value ? Number(e.target.value) : null)}
                   className="flex-1 h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none focus:border-[hsl(var(--accent))]"
                 >
                   <option value="">— Jangan agregasi —</option>
                   {categories
-                    .find(c => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
+                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
                     ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.nama} (Kode: {p.code})</option>
+                      <option key={p.id} value={p.id}>
+                        {p.nama} (Kode: {p.code})
+                      </option>
                     ))}
                 </select>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-green-700 w-[120px] shrink-0">2. {thresholdPassText || "Memenuhi Syarat"}</span>
-                <select 
+                <span className="text-[11px] font-bold text-green-700 w-[120px] shrink-0">
+                  2. {thresholdPassText || "Memenuhi Syarat"}
+                </span>
+                <select
                   value={paramMsId || ""}
                   onChange={(e) => setParamMsId(e.target.value ? Number(e.target.value) : null)}
                   className="flex-1 h-8 px-2 text-[11px] font-bold border border-green-200 bg-green-50 outline-none focus:border-green-400 text-green-800"
                 >
                   <option value="">— Jangan agregasi —</option>
                   {categories
-                    .find(c => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
+                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
                     ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.nama} (Kode: {p.code})</option>
+                      <option key={p.id} value={p.id}>
+                        {p.nama} (Kode: {p.code})
+                      </option>
                     ))}
                 </select>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-red-700 w-[120px] shrink-0">3. {thresholdFailText || "Tdk Memenuhi Syarat"}</span>
-                <select 
+                <span className="text-[11px] font-bold text-red-700 w-[120px] shrink-0">
+                  3. {thresholdFailText || "Tdk Memenuhi Syarat"}
+                </span>
+                <select
                   value={paramTmsId || ""}
                   onChange={(e) => setParamTmsId(e.target.value ? Number(e.target.value) : null)}
                   className="flex-1 h-8 px-2 text-[11px] font-bold border border-red-200 bg-red-50 outline-none focus:border-red-400 text-red-800"
                 >
                   <option value="">— Jangan agregasi —</option>
                   {categories
-                    .find(c => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
+                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
                     ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.nama} (Kode: {p.code})</option>
+                      <option key={p.id} value={p.id}>
+                        {p.nama} (Kode: {p.code})
+                      </option>
                     ))}
                 </select>
               </div>
@@ -788,7 +813,6 @@ export default function FormPemeriksaanPage() {
                       }
                     }}
                     className="flex-1 text-[11px] font-bold bg-transparent border-b border-[hsl(var(--accent))] outline-none px-1 py-0"
-                    autoFocus
                   />
                 ) : (
                   <span
@@ -801,9 +825,7 @@ export default function FormPemeriksaanPage() {
                     {group.grup.toUpperCase()}
                   </span>
                 )}
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                  {group.fields.length} item
-                </span>
+                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{group.fields.length} item</span>
                 <button
                   onClick={() => addField(group.grup)}
                   className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--card))] transition-colors"
@@ -898,9 +920,7 @@ export default function FormPemeriksaanPage() {
                           <input
                             type="checkbox"
                             checked={field.isRequired}
-                            onChange={(e) =>
-                              updateField(index, "isRequired", e.target.checked)
-                            }
+                            onChange={(e) => updateField(index, "isRequired", e.target.checked)}
                             className="w-4 h-4 border-[hsl(var(--border))] accent-[hsl(var(--foreground))] cursor-pointer"
                           />
                         </td>
@@ -911,9 +931,7 @@ export default function FormPemeriksaanPage() {
                             <input
                               type="number"
                               value={field.skorBenar ?? 1}
-                              onChange={(e) =>
-                                updateField(index, "skorBenar", parseInt(e.target.value) || 0)
-                              }
+                              onChange={(e) => updateField(index, "skorBenar", parseInt(e.target.value, 10) || 0)}
                               className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-green-50 text-green-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               title="Nilai jika terpenuhi (Ya)"
                             />
@@ -926,9 +944,7 @@ export default function FormPemeriksaanPage() {
                             <input
                               type="number"
                               value={field.skorSalah ?? 0}
-                              onChange={(e) =>
-                                updateField(index, "skorSalah", parseInt(e.target.value) || 0)
-                              }
+                              onChange={(e) => updateField(index, "skorSalah", parseInt(e.target.value, 10) || 0)}
                               className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-red-50 text-red-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               title="Nilai jika tidak terpenuhi (Tidak)"
                             />
@@ -940,9 +956,7 @@ export default function FormPemeriksaanPage() {
                           <input
                             type="number"
                             value={field.skor ?? 0}
-                            onChange={(e) =>
-                              updateField(index, "skor", parseInt(e.target.value) || 0)
-                            }
+                            onChange={(e) => updateField(index, "skor", parseInt(e.target.value, 10) || 0)}
                             min={0}
                             className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-[hsl(var(--card))] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             title={field.tipe === "BOOLEAN" ? "Bobot pengali" : "Nilai/Bobot"}
@@ -1021,12 +1035,8 @@ export default function FormPemeriksaanPage() {
 
             {/* Total Score */}
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
-                Total Bobot
-              </span>
-              <span className="text-[18px] font-bold text-[hsl(var(--foreground))]">
-                {totalSkor}
-              </span>
+              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Total Bobot</span>
+              <span className="text-[18px] font-bold text-[hsl(var(--foreground))]">{totalSkor}</span>
             </div>
           </div>
         )}

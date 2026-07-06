@@ -1,10 +1,10 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { withAdmin } from "@/lib/api-auth";
+import { withRoles } from "@/lib/api-auth";
 import { cacheInvalidate } from "@/lib/redis";
 
 // GET -- list laporan untuk approval (semua status, filter client-side)
-export const GET = withAdmin(async (req: NextRequest) => {
+export const GET = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const { searchParams } = req.nextUrl;
   const bulan = searchParams.get("bulan") ? Number(searchParams.get("bulan")) : undefined;
   const tahun = Number(searchParams.get("tahun")) || new Date().getFullYear();
@@ -40,7 +40,7 @@ export const GET = withAdmin(async (req: NextRequest) => {
 });
 
 // PATCH -- approve atau reject satu laporan
-export const PATCH = withAdmin(async (req: NextRequest) => {
+export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const user = (req as any).user;
   const { laporanId, action, catatan } = await req.json();
 
@@ -132,7 +132,7 @@ export const PATCH = withAdmin(async (req: NextRequest) => {
 });
 
 // POST -- bulk approve/reject
-export const POST = withAdmin(async (req: NextRequest) => {
+export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const user = (req as any).user;
   const { laporanIds, action } = await req.json();
 

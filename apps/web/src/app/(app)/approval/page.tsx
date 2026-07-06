@@ -119,9 +119,7 @@ export default function ApprovalPage() {
         <CheckCircle2 className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
         <div>
           <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Pusat Approval</h1>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-            Verifikasi laporan bulanan dari Puskesmas
-          </p>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Verifikasi laporan bulanan dari Puskesmas</p>
         </div>
       </div>
 
@@ -165,9 +163,7 @@ export default function ApprovalPage() {
             <span className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-1">
               {label}
             </span>
-            <span className="text-[22px] font-bold tabular-nums leading-none text-[hsl(var(--foreground))]">
-              {val}
-            </span>
+            <span className="text-[22px] font-bold tabular-nums leading-none text-[hsl(var(--foreground))]">{val}</span>
           </button>
         ))}
       </div>
@@ -230,11 +226,7 @@ export default function ApprovalPage() {
                           <span
                             className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 ${statusStyle(l.status)}`}
                           >
-                            {l.status === "SUBMITTED"
-                              ? "Diajukan"
-                              : l.status === "APPROVED"
-                                ? "Disetujui"
-                                : l.status}
+                            {l.status === "SUBMITTED" ? "Diajukan" : l.status === "APPROVED" ? "Disetujui" : l.status}
                           </span>
                           <button
                             onClick={() => setExpandedId(expandedId === l.id ? null : l.id)}
@@ -260,10 +252,7 @@ export default function ApprovalPage() {
                                         Entitas/Sasaran
                                       </th>
                                       {l.category.parameters?.map((p: any) => (
-                                        <th
-                                          key={p.id}
-                                          className="p-2 font-bold text-[hsl(var(--muted-foreground))]"
-                                        >
+                                        <th key={p.id} className="p-2 font-bold text-[hsl(var(--muted-foreground))]">
                                           {p.nama}
                                         </th>
                                       ))}
@@ -299,9 +288,7 @@ export default function ApprovalPage() {
                                       <span className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
                                         {p.nama}
                                       </span>
-                                      <span className="block text-[12px] font-semibold">
-                                        {valObj?.value || "—"}
-                                      </span>
+                                      <span className="block text-[12px] font-semibold">{valObj?.value || "—"}</span>
                                     </div>
                                   );
                                 })}
@@ -311,9 +298,7 @@ export default function ApprovalPage() {
 
                           {l.catatan && (
                             <div className="p-3 border border-red-200 bg-red-50">
-                              <span className="text-[10px] font-bold text-red-700 block mb-1">
-                                Catatan Verifikasi:
-                              </span>
+                              <span className="text-[10px] font-bold text-red-700 block mb-1">Catatan Verifikasi:</span>
                               <p className="text-[11px] text-red-600">{l.catatan}</p>
                             </div>
                           )}

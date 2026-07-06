@@ -9,12 +9,28 @@
       "brand-primary": { "role": "primary", "displayName": "Deep Mahogany", "canonical": "oklch(0.32 0.08 5)" }
     },
     "shadows": [
-      { "name": "var(--shadow)", "value": "0 1px 2px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.03)", "purpose": "Premium ambient shadow for floating cards." },
-      { "name": "var(--shadow-md)", "value": "0 2px 4px rgba(0,0,0,0.02), 0 8px 32px rgba(0,0,0,0.04)", "purpose": "Deeper floating elevation." }
+      {
+        "name": "var(--shadow)",
+        "value": "0 1px 2px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.03)",
+        "purpose": "Premium ambient shadow for floating cards."
+      },
+      {
+        "name": "var(--shadow-md)",
+        "value": "0 2px 4px rgba(0,0,0,0.02), 0 8px 32px rgba(0,0,0,0.04)",
+        "purpose": "Deeper floating elevation."
+      }
     ],
     "motion": [
-      { "name": "var(--ease-out)", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Emil Kowalski fast smooth ease-out." },
-      { "name": "var(--ease-in-out)", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Emil Kowalski symetric ease." }
+      {
+        "name": "var(--ease-out)",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Emil Kowalski fast smooth ease-out."
+      },
+      {
+        "name": "var(--ease-in-out)",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Emil Kowalski symetric ease."
+      }
     ]
   },
   "components": [

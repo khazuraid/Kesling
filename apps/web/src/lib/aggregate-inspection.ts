@@ -6,13 +6,14 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     include: { template: true },
   });
 
-  if (!result || result.status !== "APPROVED" || !result.template.subCategoryId) return;
+  if (result?.status !== "APPROVED" || !result.template.subCategoryId) return;
 
   const bulan = result.bulan;
   const tahun = result.tahun;
   const pkmId = result.puskesmasId;
   const subCatId = result.template.subCategoryId;
-  const catId = result.template.categoryId || (await prisma.dynamicSubCategory.findUnique({ where: { id: subCatId } }))?.categoryId;
+  const catId =
+    result.template.categoryId || (await prisma.dynamicSubCategory.findUnique({ where: { id: subCatId } }))?.categoryId;
 
   if (!catId) return;
 
@@ -28,16 +29,16 @@ export async function aggregateInspectionToLaporan(resultId: number) {
 
   // 1. Ambil SEMUA Inspection Result yang APPROVED, pada bulan & tahun & puskesmas & subKategori ini
   const allResults: any[] = await prisma.inspectionResult.findMany({
-    where: { 
-      puskesmasId: pkmId, 
-      bulan, 
-      tahun, 
+    where: {
+      puskesmasId: pkmId,
+      bulan,
+      tahun,
       status: "APPROVED",
-      template: { subCategoryId: subCatId }
+      template: { subCategoryId: subCatId },
     },
-    include: { 
+    include: {
       template: true,
-      values: { include: { field: true } }
+      values: { include: { field: true } },
     },
   });
 
@@ -67,12 +68,17 @@ export async function aggregateInspectionToLaporan(resultId: number) {
       max += Math.max(skorBenar, skorSalah);
 
       if (v.field.tipe === "BOOLEAN") {
-        if (v.valueString === "TRUE") { gained += skorBenar; countBenar++; }
-        else if (v.valueString === "FALSE") { gained += skorSalah; countSalah++; }
+        if (v.valueString === "TRUE") {
+          gained += skorBenar;
+          countBenar++;
+        } else if (v.valueString === "FALSE") {
+          gained += skorSalah;
+          countSalah++;
+        }
       } else if (v.field.tipe === "NUMBER") {
         gained += (v.valueNumber || 0) * (fConfig.skor ?? 0);
       } else if (v.valueString || v.valueNumber) {
-        gained += (fConfig.skor ?? 0);
+        gained += fConfig.skor ?? 0;
       }
     }
 
@@ -81,14 +87,14 @@ export async function aggregateInspectionToLaporan(resultId: number) {
       finalValue = max > 0 ? (gained / max) * 100 : 0;
     } else if (rumus === "custom" && config.customFormula) {
       try {
-        let evalStr = config.customFormula
+        const evalStr = config.customFormula
           .replace(/SUM\(\)/g, String(gained))
           .replace(/AVG\(\)/g, String(countTotal > 0 ? gained / countTotal : 0))
           .replace(/COUNT\(\)/g, String(countTotal))
           .replace(/✓/g, String(countBenar))
           .replace(/✗/g, String(countSalah));
         const res = new Function(`return ${evalStr}`)();
-        if (!isNaN(res)) finalValue = res;
+        if (!Number.isNaN(res)) finalValue = res;
       } catch {}
     }
 
@@ -104,26 +110,35 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     else sumTms += 1;
   }
 
-  // 2. Sekarang kita update nilainya ke database Laporan Bulanan 
+  // 2. Sekarang kita update nilainya ke database Laporan Bulanan
   // Pertama, temukan ID Parameter untuk Diperiksa, MS, dan TMS
   const parameters = await prisma.dynamicParameter.findMany({
-    where: { categoryId: catId }
+    where: { categoryId: catId },
   });
 
-  const configBuilder = ((result.template as any)?.config)?.agregasi || {};
-  
+  const configBuilder = (result.template as any)?.config?.agregasi || {};
+
   // Resolve ID Parameter (Pakai mapping builder jika ada, jika tidak fallback ke NAMA/CODE)
-  let paramDiperiksaId = configBuilder.paramDiperiksaId || 
-    parameters.find(p => p.code === "diperiksa" || p.code === "diperiksaJumlah")?.id ||
-    parameters.find(p => p.nama.toLowerCase().includes("diperiksa") && !p.nama.toLowerCase().includes("kk"))?.id;
+  const paramDiperiksaId =
+    configBuilder.paramDiperiksaId ||
+    parameters.find((p) => p.code === "diperiksa" || p.code === "diperiksaJumlah")?.id ||
+    parameters.find((p) => p.nama.toLowerCase().includes("diperiksa") && !p.nama.toLowerCase().includes("kk"))?.id;
 
-  let paramMsId = configBuilder.paramMsId || 
-    parameters.find(p => p.code === "laikJumlah" || p.code === "diperiksaMs")?.id ||
-    parameters.find(p => p.nama.toLowerCase().includes("ms") || p.nama.toLowerCase().includes("laik") || p.nama.toLowerCase() === "memenuhi syarat")?.id;
+  const paramMsId =
+    configBuilder.paramMsId ||
+    parameters.find((p) => p.code === "laikJumlah" || p.code === "diperiksaMs")?.id ||
+    parameters.find(
+      (p) =>
+        p.nama.toLowerCase().includes("ms") ||
+        p.nama.toLowerCase().includes("laik") ||
+        p.nama.toLowerCase() === "memenuhi syarat",
+    )?.id;
 
-  let paramTmsId = configBuilder.paramTmsId || 
-    parameters.find(p => p.code === "diperiksaTms")?.id ||
-    parameters.find(p => p.nama.toLowerCase().includes("tms") || p.nama.toLowerCase() === "tidak memenuhi syarat")?.id;
+  const paramTmsId =
+    configBuilder.paramTmsId ||
+    parameters.find((p) => p.code === "diperiksaTms")?.id ||
+    parameters.find((p) => p.nama.toLowerCase().includes("tms") || p.nama.toLowerCase() === "tidak memenuhi syarat")
+      ?.id;
 
   // 3. Update database nilai dengan sum total (override total, jangan nambah-nambah buta)
   const updates = [];
@@ -141,7 +156,7 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     paramMsId,
     paramTmsId,
     subCatId,
-    catId
+    catId,
   });
 
   for (const up of updates) {

@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/api-auth";
 import { aggregateInspectionToLaporan } from "@/lib/aggregate-inspection";
+import { withAuth } from "@/lib/api-auth";
 
 // PUT - Edit hasil pemeriksaan
 export const PUT = withAuth(async (req: NextRequest, context: any) => {
@@ -10,9 +10,9 @@ export const PUT = withAuth(async (req: NextRequest, context: any) => {
   const userId = (req as any).user?.id;
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
-  const resultId = parseInt(id);
+  const resultId = parseInt(id, 10);
 
-  if (isNaN(resultId)) {
+  if (Number.isNaN(resultId)) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
   }
 
@@ -88,9 +88,9 @@ export const DELETE = withAuth(async (req: NextRequest, context: any) => {
   const userId = (req as any).user?.id;
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
-  const resultId = parseInt(id);
+  const resultId = parseInt(id, 10);
 
-  if (isNaN(resultId)) {
+  if (Number.isNaN(resultId)) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
   }
 

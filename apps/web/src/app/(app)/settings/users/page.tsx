@@ -267,6 +267,7 @@ export default function UsersPage() {
             >
               <option value="ADMIN">Admin</option>
               <option value="OPERATOR">Operator</option>
+              <option value="DINKES">Dinkes</option>
             </select>
           </div>
           {form.role === "OPERATOR" && (

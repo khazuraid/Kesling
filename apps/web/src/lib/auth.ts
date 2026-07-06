@@ -1,7 +1,9 @@
 import { prisma } from "@apps-kes/database";
 import { compare } from "bcryptjs";
+import { headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { logSecurityEvent } from "./security-logger";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -37,6 +39,22 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.puskesmasId = user.puskesmasId;
         token.puskesmasNama = user.puskesmasNama;
+
+        try {
+          const reqHeaders = await headers();
+          const ip = reqHeaders.get("x-forwarded-for") || reqHeaders.get("x-real-ip") || "127.0.0.1";
+          const userAgent = reqHeaders.get("user-agent") || undefined;
+
+          await logSecurityEvent({
+            eventType: "LOGIN_SUCCESS",
+            ip,
+            path: "/api/auth/callback/credentials",
+            userAgent,
+            detail: `User ${user.email || "unknown"} (Role: ${String(user.role || "-")}) sukses login`,
+          });
+        } catch (err) {
+          console.error("Gagal mencatat log login sukses:", err);
+        }
       }
       return token;
     },

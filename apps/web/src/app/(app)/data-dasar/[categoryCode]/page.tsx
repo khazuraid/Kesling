@@ -65,6 +65,15 @@ export default function DataDasarSubCatPage() {
     },
   });
 
+  const { data: masterJenis = { tpp: [], sarana: [], ttu: [] } } = useQuery<any>({
+    queryKey: ["master-jenis"],
+    queryFn: async () => {
+      const res = await fetch("/api/master/jenis");
+      if (!res.ok) throw new Error("Failed to fetch master jenis");
+      return res.json();
+    },
+  });
+
   const allSubCats = useMemo(
     () =>
       category
@@ -78,11 +87,11 @@ export default function DataDasarSubCatPage() {
   );
 
   const activeSubCat = allSubCats.find((sc) => sc.id === selectedSubCatId);
-  const baselineParams = [...(activeSubCat?.parameters.filter((p) => p.isBaseline) || [])].sort(
+
+  const baselineParams = [...(category?.parameters?.filter((p) => p.isBaseline) || [])].sort(
     (a, b) => (a.urutan || 0) - (b.urutan || 0),
   );
   const syncedParams = baselineParams.filter((p) => p.config?.syncToParamId);
-
   const getOptions = (p: Parameter) => {
     const raw = p.config?.options;
     if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
@@ -108,10 +117,34 @@ export default function DataDasarSubCatPage() {
       "w-full h-9 bg-[hsl(var(--background))] border border-[hsl(var(--border))] px-3 text-[12px] font-medium focus:ring-0 focus:outline-none focus:border-[hsl(var(--foreground))] transition-colors";
 
     if (p.type === "SELECT") {
+      const source = p.config?.optionsSource || "auto_category";
+      let optionsList: string[] = [];
+
+      const resolvedSource =
+        source === "auto_category"
+          ? categoryCode?.toLowerCase() === "tpp"
+            ? "master_tpp"
+            : categoryCode?.toLowerCase() === "ttu"
+              ? "master_ttu"
+              : "master_sarana"
+          : source;
+
+      if (resolvedSource === "master_tpp") {
+        optionsList = (masterJenis.tpp || []).map((j: any) => j.nama);
+      } else if (resolvedSource === "master_ttu") {
+        optionsList = (masterJenis.ttu || []).map((j: any) => j.nama);
+      } else if (resolvedSource === "master_sarana") {
+        optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
+      } else if (resolvedSource === "entities") {
+        optionsList = allSubCats.map((sc) => sc.nama);
+      } else {
+        optionsList = getOptions(p);
+      }
+
       return (
         <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
           <option value="">Pilih...</option>
-          {getOptions(p).map((opt) => (
+          {optionsList.map((opt) => (
             <option key={opt} value={opt}>
               {opt}
             </option>
@@ -119,6 +152,7 @@ export default function DataDasarSubCatPage() {
         </select>
       );
     }
+
     if (p.type === "TEXTAREA") {
       return (
         <textarea
@@ -221,6 +255,7 @@ export default function DataDasarSubCatPage() {
       lat: s.lat ? String(s.lat) : "",
       lng: s.lng ? String(s.lng) : "",
       puskesmasId: s.puskesmasId || userPkmId,
+      subCategoryId: s.subCategoryId || selectedSubCatId,
       dynamicValues: hydrateDynamicValues(s),
     });
   };
@@ -235,6 +270,7 @@ export default function DataDasarSubCatPage() {
       lat: "",
       lng: "",
       puskesmasId: selectedPkmFilter || userPkmId || "",
+      subCategoryId: selectedSubCatId,
       dynamicValues: hydrateDynamicValues({}),
     });
   };
@@ -310,8 +346,8 @@ export default function DataDasarSubCatPage() {
     const displayName =
       (baselineParams.length > 0 ? dynamicName || String(firstDynamicValue || "") : formData.nama) || "Data Dasar";
 
-    if (!selectedSubCatId) {
-      toast.error("Sub-kategori belum dipilih");
+    if (!formData.subCategoryId && !selectedSubCatId) {
+      toast.error("Jenis entitas belum dipilih");
       return;
     }
     if (userRole !== "OPERATOR" && !formData.puskesmasId && !userPkmId) {
@@ -333,11 +369,35 @@ export default function DataDasarSubCatPage() {
       kontak: dynamicKontak,
       lat: dynamicLat ? parseFloat(dynamicLat) : null,
       lng: dynamicLng ? parseFloat(dynamicLng) : null,
-      subCategoryId: selectedSubCatId,
+      subCategoryId: formData.subCategoryId || selectedSubCatId,
       puskesmasId: formData.puskesmasId || userPkmId,
       dataDinamis: formData.dynamicValues,
     });
   };
+
+  if (session && userRole !== "OPERATOR") {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4 bg-[hsl(var(--background))] border-t border-[hsl(var(--border))]">
+        <div className="w-12 h-12 rounded-none border border-[hsl(var(--border))] flex items-center justify-center bg-[hsl(var(--card))] text-red-500">
+          ⚠️
+        </div>
+        <div className="space-y-1">
+          <h1 className="text-[12px] font-black uppercase tracking-widest text-[hsl(var(--foreground))]">
+            Akses Ditolak
+          </h1>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] max-w-sm mx-auto">
+            Halaman ini hanya dapat diakses oleh petugas Puskesmas (Operator).
+          </p>
+        </div>
+        <Link
+          href="/dashboard-pkm"
+          className="h-9 px-4 inline-flex items-center border border-[hsl(var(--foreground))] text-[10px] font-black uppercase tracking-wider hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] transition-colors"
+        >
+          Kembali ke Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   if (!category && !loadingCats) {
     return (
@@ -679,6 +739,40 @@ export default function DataDasarSubCatPage() {
                         </span>
                       </div>
                       <div className="divide-y divide-[hsl(var(--border))]">
+                        {/* 1. Dropdown Jenis/Kategori Entitas */}
+                        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 px-4 py-4 bg-[hsl(var(--muted))]/10 border-b border-[hsl(var(--border))]">
+                          <div>
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-[hsl(var(--foreground))]">
+                              Jenis / Tipe Entitas *
+                            </label>
+                            <p className="text-[9px] font-mono text-[hsl(var(--muted-foreground))] mt-1">
+                              Menentukan skema form & jenis data dasar
+                            </p>
+                          </div>
+                          <div>
+                            <select
+                              value={formData.subCategoryId || ""}
+                              onChange={(e) => {
+                                const nextSubCatId = Number(e.target.value);
+                                setFormData((prev: any) => ({
+                                  ...prev,
+                                  subCategoryId: nextSubCatId,
+                                }));
+                              }}
+                              required
+                              className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--foreground))] transition-all cursor-pointer"
+                            >
+                              <option value="">Pilih Jenis</option>
+                              {allSubCats.map((sc: any) => (
+                                <option key={sc.id} value={sc.id}>
+                                  {sc.grup ? `[${sc.grup}] ` : ""}
+                                  {sc.nama}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
                         {userRole !== "OPERATOR" && (
                           <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 px-4 py-4 bg-[hsl(var(--muted))]/10">
                             <div>

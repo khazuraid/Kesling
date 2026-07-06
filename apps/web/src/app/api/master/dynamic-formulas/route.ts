@@ -1,10 +1,10 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { withAdmin } from "@/lib/api-auth";
+import { withRoles } from "@/lib/api-auth";
 import { cacheInvalidate } from "@/lib/redis";
 
 // POST or PUT to upsert compliance formula for a category
-export const POST = withAdmin(async (req: NextRequest) => {
+export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const userId = (req as any).user?.id;
   try {
     const body = await req.json();

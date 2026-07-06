@@ -6,7 +6,9 @@ export async function getCurrentUser() {
   if (!session?.user) return null;
   return {
     id: Number(session.user.id),
-    role: session.user.role as "ADMIN" | "OPERATOR",
+    email: session.user.email,
+    name: session.user.name,
+    role: session.user.role as "ADMIN" | "OPERATOR" | "DINKES",
     puskesmasId: session.user.puskesmasId,
   };
 }

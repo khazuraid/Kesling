@@ -2,6 +2,6 @@
 // Uses DATABASE_URL environment variable
 export default {
   datasource: {
-    url: process.env.DATABASE_URL
-  }
+    url: process.env.DATABASE_URL,
+  },
 };

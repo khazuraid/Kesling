@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { withAdmin } from "@/lib/api-auth";
+import { withRoles } from "@/lib/api-auth";
 import { validateBody } from "@/lib/validations";
 
 const reorderSchema = z.object({
@@ -9,7 +9,7 @@ const reorderSchema = z.object({
   items: z.array(z.object({ id: z.number().int().positive(), urutan: z.number().int().min(0) })).min(1),
 });
 
-export const PATCH = withAdmin(async (req: NextRequest) => {
+export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
   const userId = (req as any).user?.id;
   const raw = await req.json();
   const parsed = validateBody(reorderSchema, raw);

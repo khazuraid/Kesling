@@ -53,6 +53,7 @@ const ACTION_STYLES: Record<string, string> = {
   DELETE: "text-[hsl(var(--error))] bg-[hsl(var(--error))]/10 border-[hsl(var(--error))]/20",
 };
 const SECURITY_STYLES: Record<string, string> = {
+  LOGIN_SUCCESS: "text-[hsl(var(--success))] bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20",
   LOGIN_FAILED: "text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20",
   RATE_LIMIT: "text-[hsl(var(--info))] bg-[hsl(var(--info))]/10 border-[hsl(var(--info))]/20",
   BRUTE_FORCE: "text-[hsl(var(--error))] bg-[hsl(var(--error))]/10 border-[hsl(var(--error))]/20",
@@ -127,7 +128,11 @@ export default function AuditLogPage() {
 
   function parseJson(v: any) {
     if (!v) return null;
-    try { return typeof v === "string" ? JSON.parse(v) : v; } catch { return null; }
+    try {
+      return typeof v === "string" ? JSON.parse(v) : v;
+    } catch {
+      return null;
+    }
   }
 
   function formatChanges(item: any) {
@@ -136,17 +141,22 @@ export default function AuditLogPage() {
 
     if (item?.action === "UPDATE") {
       const allKeys = Array.from(new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]));
-      const changed = allKeys.filter((k) => JSON.stringify((oldData || {})[k]) !== JSON.stringify((newData || {})[k]));
-      if (changed.length === 0) return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada perubahan tercatat</span>;
+      const changed = allKeys.filter((k) => JSON.stringify(oldData?.[k]) !== JSON.stringify(newData?.[k]));
+      if (changed.length === 0)
+        return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada perubahan tercatat</span>;
       return (
         <div className="space-y-2">
           {changed.map((k) => (
             <div key={k}>
-              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-0.5">{k}</span>
+              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-0.5">
+                {k}
+              </span>
               <div className="flex gap-2 items-center text-[11px] font-mono">
-                <span className="text-red-500 line-through">{(oldData || {})[k] !== undefined ? String((oldData || {})[k]) : "—"}</span>
+                <span className="text-red-500 line-through">
+                  {oldData?.[k] !== undefined ? String(oldData?.[k]) : "—"}
+                </span>
                 <span className="text-[hsl(var(--muted-foreground))]">→</span>
-                <span className="text-green-600">{(newData || {})[k] !== undefined ? String((newData || {})[k]) : "—"}</span>
+                <span className="text-green-600">{newData?.[k] !== undefined ? String(newData?.[k]) : "—"}</span>
               </div>
             </div>
           ))}
@@ -155,7 +165,8 @@ export default function AuditLogPage() {
     }
 
     const data = item?.action === "DELETE" ? oldData : newData;
-    if (!data || Object.keys(data).length === 0) return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada detail</span>;
+    if (!data || Object.keys(data).length === 0)
+      return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada detail</span>;
     return (
       <div className="space-y-0.5">
         {Object.entries(data).map(([k, v]) => (

@@ -27,7 +27,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 export default function LaporanListPage() {
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role || "OPERATOR";
-  const isAdmin = userRole === "ADMIN";
+  const _isAdmin = userRole === "ADMIN";
 
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["laporan-categories"],

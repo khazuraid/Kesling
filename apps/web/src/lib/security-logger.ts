@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 
 interface SecurityEvent {
-  eventType: "LOGIN_FAILED" | "RATE_LIMIT" | "BRUTE_FORCE" | "SUSPICIOUS";
+  eventType: "LOGIN_SUCCESS" | "LOGIN_FAILED" | "RATE_LIMIT" | "BRUTE_FORCE" | "SUSPICIOUS";
   ip: string;
   path?: string;
   userAgent?: string;

@@ -32,7 +32,25 @@ export default function LaporanBuilderPage() {
     },
   });
 
+  const { data: masterJenis = { tpp: [], sarana: [], ttu: [] } } = useQuery<any>({
+    queryKey: ["master-jenis"],
+    queryFn: async () => {
+      const res = await fetch("/api/master/jenis");
+      if (!res.ok) throw new Error("Failed to fetch master jenis");
+      return res.json();
+    },
+  });
+
   const selectedModule = categories.find((c) => c.id === selectedModuleId) || null;
+  const moduleCode = String(selectedModule?.code || "").toLowerCase();
+  const availableJenisList =
+    moduleCode === "tpp"
+      ? masterJenis.tpp || []
+      : moduleCode === "ttu"
+        ? masterJenis.ttu || []
+        : ["spal", "sab", "jamban", "rumah"].includes(moduleCode)
+          ? masterJenis.sarana || []
+          : [];
 
   // Mutations
   const createModuleMutation = useMutation({
@@ -146,7 +164,6 @@ export default function LaporanBuilderPage() {
           },
         }));
       }
-      setEntityGroupDraft((prev) => (selectedModuleId !== null ? prev : ""));
       queryClient.invalidateQueries({ queryKey: ["master-categories"] });
     },
   });
@@ -194,7 +211,6 @@ export default function LaporanBuilderPage() {
   const [modForm, setModForm] = useState<any>({});
   const [paramForm, setParamForm] = useState<Record<number, any>>({});
   const [entityForm, setEntityForm] = useState<Record<number, any>>({});
-  const [entityGroupDraft, setEntityGroupDraft] = useState("");
 
   const uniqueEntityGroups: string[] = Array.from(
     new Set<string>((selectedModule?.subCategories || []).map((sub: any) => (sub.grup || "").trim()).filter(Boolean)),
@@ -222,9 +238,11 @@ export default function LaporanBuilderPage() {
           min: p.config?.min || "",
           max: p.config?.max || "",
           options: p.config?.options || "",
+          optionsSource: p.config?.optionsSource || "",
           syncToParamId: p.config?.syncToParamId || "",
           syncMode: p.config?.syncMode || "COUNT",
           syncToEntityField: p.config?.syncToEntityField || "",
+          entitySubCategoryNama: p.config?.entitySubCategoryNama || "",
           numeratorCode: p.config?.formula?.numeratorCode || "",
           denominatorCode: p.config?.formula?.denominatorCode || "",
         };
@@ -239,7 +257,6 @@ export default function LaporanBuilderPage() {
         };
       });
       setEntityForm(eMap);
-      setEntityGroupDraft("");
     }
   }, [selectedModuleId]);
 
@@ -255,13 +272,19 @@ export default function LaporanBuilderPage() {
       if (form.min !== "") config.min = Number(form.min);
       if (form.max !== "") config.max = Number(form.max);
     }
-    if (form.type === "SELECT" && form.options) config.options = form.options;
+    if (form.type === "SELECT") {
+      if (form.options) config.options = form.options;
+      if (form.optionsSource) config.optionsSource = form.optionsSource;
+    }
     if (form.isBaseline && form.syncToParamId) {
       config.syncToParamId = Number(form.syncToParamId);
       config.syncMode = form.syncMode || "COUNT";
     }
     if (form.isBaseline && form.syncToEntityField) {
       config.syncToEntityField = form.syncToEntityField;
+    }
+    if (form.isBaseline && form.entitySubCategoryNama) {
+      config.entitySubCategoryNama = form.entitySubCategoryNama;
     }
     if (form.type === "FORMULA") {
       config.formula = {
@@ -621,56 +644,31 @@ export default function LaporanBuilderPage() {
                   {activeTab === "entitas" && (
                     <div className="space-y-4 max-w-3xl">
                       <div className="p-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
-                        Kategori entitas dipakai untuk mengelompokkan tab/jenis entitas di Data Dasar. Contoh: Rumah
-                        Makan, Depot Air Minum, Sekolah. Kosongkan jika tidak perlu grup.
+                        Entitas dipakai untuk mengelompokkan data di halaman Data Dasar. Kosongkan kolom Kategori jika
+                        tidak perlu pengelompokan.
                       </div>
 
-                      <div className="flex flex-col gap-2 p-3 border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                          Kategori Entitas Baru
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={entityGroupDraft}
-                            onChange={(e) => setEntityGroupDraft(e.target.value)}
-                            className="flex-1 h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] outline-none focus:border-black"
-                            placeholder="Contoh: TPP, TTU, Fasyankes"
-                          />
-                          <button
-                            onClick={() => {
-                              const group = entityGroupDraft.trim();
-                              if (!group) {
-                                toast.error("Nama kategori entitas tidak boleh kosong");
-                                return;
-                              }
-                              addEntityMutation.mutate({
-                                categoryId: selectedModule.id,
-                                nama: `Entitas ${group}`,
-                                grup: group,
-                              });
-                              setEntityGroupDraft("");
-                            }}
-                            className="h-8 px-3 text-[10px] font-black uppercase tracking-wider border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
-                          >
-                            Tambah Kategori
-                          </button>
-                        </div>
-                      </div>
-
+                      {/* Tambah entitas custom */}
                       <button
                         onClick={() =>
                           addEntityMutation.mutate({
                             categoryId: selectedModule.id,
                             nama: "Entitas Baru",
-                            grup: uniqueEntityGroups[0] || null,
+                            grup: null,
                           })
                         }
                         className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Baris Entitas
+                        <Plus className="w-3.5 h-3.5" /> Tambah Entitas Manual
                       </button>
+
+                      {/* Daftar entitas */}
                       <div className="space-y-2">
+                        {selectedModule.subCategories?.length === 0 && (
+                          <div className="py-8 text-center text-[12px] text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))]">
+                            Belum ada entitas. Klik dari daftar standar di atas atau &quot;Tambah Entitas Manual&quot;.
+                          </div>
+                        )}
                         {selectedModule.subCategories?.map((sub: any) => {
                           const localState = entityForm[sub.id] || { nama: sub.nama, grup: sub.grup || "" };
                           return (
@@ -696,20 +694,44 @@ export default function LaporanBuilderPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                  Kategori Entitas
+                                  Kategori / Grup
                                 </label>
-                                <input
-                                  list={`entity-groups-${selectedModule.id}`}
-                                  className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs outline-none focus:border-black"
-                                  value={localState.grup || ""}
-                                  onChange={(e) =>
-                                    setEntityForm({ ...entityForm, [sub.id]: { ...localState, grup: e.target.value } })
-                                  }
-                                  onBlur={() =>
-                                    updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
-                                  }
-                                  placeholder="Tanpa kategori"
-                                />
+                                {availableJenisList.length > 0 ? (
+                                  <select
+                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] outline-none focus:border-black"
+                                    value={localState.grup || ""}
+                                    onChange={(e) => {
+                                      const u = { ...localState, grup: e.target.value };
+                                      setEntityForm({ ...entityForm, [sub.id]: u });
+                                      updateEntityMutation.mutate({ id: sub.id, ...u });
+                                    }}
+                                  >
+                                    <option value="">— Tanpa Kategori —</option>
+                                    {Array.from(
+                                      new Set<string>(availableJenisList.map((j: any) => j.kategori).filter(Boolean)),
+                                    ).map((kat) => (
+                                      <option key={String(kat)} value={String(kat)}>
+                                        {String(kat)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <input
+                                    list={`entity-groups-${selectedModule.id}`}
+                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs outline-none focus:border-black"
+                                    value={localState.grup || ""}
+                                    onChange={(e) =>
+                                      setEntityForm({
+                                        ...entityForm,
+                                        [sub.id]: { ...localState, grup: e.target.value },
+                                      })
+                                    }
+                                    onBlur={() =>
+                                      updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
+                                    }
+                                    placeholder="Tanpa kategori"
+                                  />
+                                )}
                                 <datalist id={`entity-groups-${selectedModule.id}`}>
                                   {uniqueEntityGroups.map((group) => (
                                     <option key={group} value={group} />
@@ -910,23 +932,54 @@ export default function LaporanBuilderPage() {
                               </div>
 
                               {localState.type === "SELECT" && (
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Opsi Dropdown
-                                  </label>
-                                  <textarea
-                                    rows={2}
-                                    className="w-full px-2 py-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] resize-none"
-                                    value={localState.options || ""}
-                                    onChange={(e) =>
-                                      setParamForm({
-                                        ...paramForm,
-                                        [p.id]: { ...localState, options: e.target.value, isBaseline: true },
-                                      })
-                                    }
-                                    onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                    placeholder="Aktif, Tidak Aktif, Proses"
-                                  />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
+                                      Sumber Pilihan Dropdown
+                                    </label>
+                                    <select
+                                      className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
+                                      value={localState.optionsSource || "manual"}
+                                      onChange={(e) => {
+                                        const u = {
+                                          ...localState,
+                                          optionsSource: e.target.value,
+                                          isBaseline: true,
+                                        };
+                                        setParamForm({ ...paramForm, [p.id]: u });
+                                        saveParamSettings(p.id, u);
+                                      }}
+                                    >
+                                      <option value="auto_category">Kategori Sesuai Modul Ini</option>
+                                      <option value="manual">Opsi Manual (Ketik di sebelah kanan)</option>
+                                      <option value="entities">Daftar Entitas dari Builder Ini</option>
+                                      <option value="master_tpp">Master Jenis TPP</option>
+                                      <option value="master_ttu">Master Jenis TTU</option>
+                                      <option value="master_sarana">Master Jenis Sarana</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    {(!localState.optionsSource || localState.optionsSource === "manual") && (
+                                      <>
+                                        <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
+                                          Opsi Dropdown (Satu opsi per baris / pisah koma)
+                                        </label>
+                                        <textarea
+                                          rows={2}
+                                          className="w-full px-2 py-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] resize-none"
+                                          value={localState.options || ""}
+                                          onChange={(e) =>
+                                            setParamForm({
+                                              ...paramForm,
+                                              [p.id]: { ...localState, options: e.target.value, isBaseline: true },
+                                            })
+                                          }
+                                          onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                                          placeholder="Aktif, Tidak Aktif, Proses"
+                                        />
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                             </div>

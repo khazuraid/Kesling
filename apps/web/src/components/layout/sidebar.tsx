@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
+  AlertOctagon,
   BarChart3,
   Building2,
   ChevronDown,
@@ -60,7 +61,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const { data: session } = useSession();
   const [openMenus, setOpenMenus] = useState<string[]>(["Laporan"]);
   const userRole = (session?.user as any)?.role || "OPERATOR";
-  const isAdmin = userRole === "ADMIN";
+  const _isAdmin = userRole === "ADMIN";
 
   const { data: categories = [] } = useQuery<DynamicCategory[]>({
     queryKey: ["laporan-categories"],
@@ -71,7 +72,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     },
   });
 
-  const laporanChildren =
+  const _laporanChildren =
     categories.length > 0
       ? categories.map((cat) => ({
           label: SHORT_NAMES[cat.code.toLowerCase()] || cat.nama,
@@ -89,7 +90,8 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     href?: string;
     icon: React.ReactNode;
     children?: { label: string; href: string; code: string }[];
-    role?: "ADMIN" | "OPERATOR";
+    role?: "ADMIN" | "OPERATOR" | "DINKES";
+    roles?: ("ADMIN" | "OPERATOR" | "DINKES")[];
     puskesmasOnly?: boolean;
   };
 
@@ -98,7 +100,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       label: "Overview",
       href: "/",
       icon: <LayoutDashboard className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
+      roles: ["ADMIN", "DINKES"],
     },
     {
       label: "Command Center",
@@ -125,7 +127,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       label: "Format Laporan Bulanan",
       href: "/laporan-builder",
       icon: <LayoutTemplate className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
+      roles: ["ADMIN", "DINKES"],
     },
     {
       label: "Form Pemeriksaan Lapangan",
@@ -145,17 +147,25 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       label: "Data Dasar",
       href: "/data-dasar",
       icon: <Database className="w-[17px] h-[17px]" />,
+      role: "OPERATOR",
+      puskesmasOnly: true,
     },
     {
       label: "Approval",
       href: "/approval",
       icon: <ShieldCheck className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
+      roles: ["ADMIN", "DINKES"],
     },
     {
       label: "Audit Log",
       href: "/audit-log",
-      icon: <ShieldCheck className="w-[17px] h-[17px]" />,
+      icon: <ClipboardCheck className="w-[17px] h-[17px]" />,
+      role: "ADMIN",
+    },
+    {
+      label: "Error Logs",
+      href: "/settings/errors",
+      icon: <AlertOctagon className="w-[17px] h-[17px]" />,
       role: "ADMIN",
     },
     {
@@ -167,8 +177,9 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   ];
 
   const filteredMenu = menuItems.filter((item) => {
-    if (item.puskesmasOnly && isAdmin) return false;
-    return !item.role || item.role === userRole || isAdmin;
+    if (item.puskesmasOnly && userRole !== "OPERATOR") return false;
+    if (item.roles) return item.roles.includes(userRole as "ADMIN" | "OPERATOR" | "DINKES");
+    return !item.role || item.role === userRole;
   });
 
   function toggleMenu(label: string) {

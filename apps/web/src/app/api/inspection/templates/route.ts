@@ -13,7 +13,11 @@ export const GET = withAuth(async (req: NextRequest) => {
 
   const templates = await prisma.inspectionTemplate.findMany({
     where,
-    include: { subCategory: { include: { category: true } }, fields: { orderBy: { urutan: "asc" } }, puskesmas: { select: { nama: true } } },
+    include: {
+      subCategory: { include: { category: true } },
+      fields: { orderBy: { urutan: "asc" } },
+      puskesmas: { select: { nama: true } },
+    },
     orderBy: { id: "desc" },
   });
   return NextResponse.json(templates);
@@ -48,7 +52,11 @@ export const POST = withAuth(async (req: NextRequest) => {
               urutan: f.urutan,
               grup: f.grup,
               options: f.options ? JSON.stringify(f.options) : null,
-              config: f.config || { skor: f.skor ?? 0, skorBenar: f.skorBenar ?? f.skor ?? 1, skorSalah: f.skorSalah ?? 0 },
+              config: f.config || {
+                skor: f.skor ?? 0,
+                skorBenar: f.skorBenar ?? f.skor ?? 1,
+                skorSalah: f.skorSalah ?? 0,
+              },
             })),
           },
         },
@@ -76,7 +84,11 @@ export const POST = withAuth(async (req: NextRequest) => {
             urutan: f.urutan,
             grup: f.grup,
             options: f.options ? JSON.stringify(f.options) : null,
-            config: f.config || { skor: f.skor ?? 0, skorBenar: f.skorBenar ?? f.skor ?? 1, skorSalah: f.skorSalah ?? 0 },
+            config: f.config || {
+              skor: f.skor ?? 0,
+              skorBenar: f.skorBenar ?? f.skor ?? 1,
+              skorSalah: f.skorSalah ?? 0,
+            },
           })),
         },
       },
