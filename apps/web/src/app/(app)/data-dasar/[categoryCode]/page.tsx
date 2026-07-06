@@ -24,6 +24,7 @@ interface SubCategory {
   id: number;
   nama: string;
   categoryId: number;
+  grup?: string | null;
 }
 
 interface Category {
@@ -283,8 +284,17 @@ export default function DataDasarSubCatPage() {
     onError: (err: any) => toast.error(err.message || "Gagal menghapus"),
   });
 
-  const getCoreValue = (keys: string[], fallback = "") => {
-    for (const key of keys) {
+  const getMappedEntityValue = (field: string, fallback = "") => {
+    const mappedParam = baselineParams.find((p) => p.config?.syncToEntityField === field);
+    if (!mappedParam) return fallback;
+    const value = formData.dynamicValues?.[mappedParam.code];
+    return value !== undefined && value !== null && String(value).trim() !== "" ? String(value).trim() : fallback;
+  };
+
+  const getCoreValue = (field: string, legacyKeys: string[], fallback = "") => {
+    const mapped = getMappedEntityValue(field, "");
+    if (mapped) return mapped;
+    for (const key of legacyKeys) {
       const value = formData.dynamicValues?.[key];
       if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
     }
@@ -293,7 +303,7 @@ export default function DataDasarSubCatPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const dynamicName = getCoreValue(["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"]);
+    const dynamicName = getCoreValue("nama", ["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"]);
     const firstDynamicValue = Object.values(formData.dynamicValues || {}).find(
       (v) => v !== undefined && v !== null && String(v).trim() !== "",
     );
@@ -309,11 +319,11 @@ export default function DataDasarSubCatPage() {
       return;
     }
 
-    const dynamicAlamat = getCoreValue(["alamat", "alamat_lengkap"], formData.alamat || "");
-    const dynamicPemilik = getCoreValue(["pemilik", "pengelola", "nama_pemilik"], formData.pemilik || "");
-    const dynamicKontak = getCoreValue(["kontak", "telepon", "no_hp", "hp"], formData.kontak || "");
-    const dynamicLat = getCoreValue(["lat", "latitude"], formData.lat || "");
-    const dynamicLng = getCoreValue(["lng", "longitude"], formData.lng || "");
+    const dynamicAlamat = getCoreValue("alamat", ["alamat", "alamat_lengkap"], formData.alamat || "");
+    const dynamicPemilik = getCoreValue("pemilik", ["pemilik", "pengelola", "nama_pemilik"], formData.pemilik || "");
+    const dynamicKontak = getCoreValue("kontak", ["kontak", "telepon", "no_hp", "hp"], formData.kontak || "");
+    const dynamicLat = getCoreValue("lat", ["lat", "latitude"], formData.lat || "");
+    const dynamicLng = getCoreValue("lng", ["lng", "longitude"], formData.lng || "");
 
     saveMutation.mutate({
       ...formData,
@@ -357,23 +367,30 @@ export default function DataDasarSubCatPage() {
           {loadingCats ? (
             <span className="text-[11px] px-4 text-[hsl(var(--muted-foreground))]">Memuat modul...</span>
           ) : (
-            allSubCats.map((sc) => (
-              <button
-                key={sc.id}
-                onClick={() => {
-                  setSelectedSubCatId(sc.id);
-                  setSearchTerm("");
-                  closeEdit();
-                }}
-                className={`flex flex-col justify-center h-full px-4 border-b-2 transition-colors whitespace-nowrap ${
-                  selectedSubCatId === sc.id
-                    ? "border-[hsl(var(--foreground))] text-[hsl(var(--foreground))]"
-                    : "border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-                }`}
-              >
-                <span className="text-[11px] font-black uppercase tracking-wider">{sc.nama}</span>
-              </button>
-            ))
+            <div className="flex items-center h-full">
+              {allSubCats.map((sc) => (
+                <button
+                  key={sc.id}
+                  onClick={() => {
+                    setSelectedSubCatId(sc.id);
+                    setSearchTerm("");
+                    closeEdit();
+                  }}
+                  className={`flex flex-col justify-center h-full px-4 border-b-2 transition-colors whitespace-nowrap ${
+                    selectedSubCatId === sc.id
+                      ? "border-[hsl(var(--foreground))] text-[hsl(var(--foreground))]"
+                      : "border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  }`}
+                >
+                  {sc.grup && (
+                    <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(var(--muted-foreground))] leading-none mb-1">
+                      {sc.grup}
+                    </span>
+                  )}
+                  <span className="text-[11px] font-black uppercase tracking-wider">{sc.nama}</span>
+                </button>
+              ))}
+            </div>
           )}
         </div>
         <Link
@@ -395,6 +412,11 @@ export default function DataDasarSubCatPage() {
                 <h1 className="text-[14px] font-black uppercase tracking-tight">
                   Data Dasar {activeSubCat?.nama || ""}
                 </h1>
+                {activeSubCat?.grup && (
+                  <div className="mt-1 inline-flex h-5 items-center border border-[hsl(var(--border))] px-2 text-[9px] font-black uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                    Kategori Entitas: {activeSubCat.grup}
+                  </div>
+                )}
                 <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
                   Total {filteredSasarans.length} entitas terdaftar
                 </p>

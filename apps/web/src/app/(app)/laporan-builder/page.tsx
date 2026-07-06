@@ -135,10 +135,33 @@ export default function LaporanBuilderPage() {
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Entitas ditambahkan");
+      if (data?.id) {
+        setEntityForm((prev) => ({
+          ...prev,
+          [data.id]: {
+            nama: data.nama ?? prev[data.id]?.nama ?? "",
+            grup: data.grup ?? prev[data.id]?.grup ?? "",
+          },
+        }));
+      }
+      setEntityGroupDraft((prev) => (selectedModuleId !== null ? prev : ""));
       queryClient.invalidateQueries({ queryKey: ["master-categories"] });
     },
+  });
+
+  const updateEntityMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch("/api/master/dynamic-subcategories", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to update entity");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["master-categories"] }),
   });
 
   const deleteEntityMutation = useMutation({
@@ -170,6 +193,12 @@ export default function LaporanBuilderPage() {
   // State forms
   const [modForm, setModForm] = useState<any>({});
   const [paramForm, setParamForm] = useState<Record<number, any>>({});
+  const [entityForm, setEntityForm] = useState<Record<number, any>>({});
+  const [entityGroupDraft, setEntityGroupDraft] = useState("");
+
+  const uniqueEntityGroups: string[] = Array.from(
+    new Set<string>((selectedModule?.subCategories || []).map((sub: any) => (sub.grup || "").trim()).filter(Boolean)),
+  );
 
   useEffect(() => {
     if (selectedModule && selectedModuleId !== null) {
@@ -195,11 +224,22 @@ export default function LaporanBuilderPage() {
           options: p.config?.options || "",
           syncToParamId: p.config?.syncToParamId || "",
           syncMode: p.config?.syncMode || "COUNT",
+          syncToEntityField: p.config?.syncToEntityField || "",
           numeratorCode: p.config?.formula?.numeratorCode || "",
           denominatorCode: p.config?.formula?.denominatorCode || "",
         };
       });
       setParamForm(pMap);
+
+      const eMap: any = {};
+      selectedModule.subCategories?.forEach((sub: any) => {
+        eMap[sub.id] = {
+          nama: sub.nama,
+          grup: sub.grup || "",
+        };
+      });
+      setEntityForm(eMap);
+      setEntityGroupDraft("");
     }
   }, [selectedModuleId]);
 
@@ -219,6 +259,9 @@ export default function LaporanBuilderPage() {
     if (form.isBaseline && form.syncToParamId) {
       config.syncToParamId = Number(form.syncToParamId);
       config.syncMode = form.syncMode || "COUNT";
+    }
+    if (form.isBaseline && form.syncToEntityField) {
+      config.syncToEntityField = form.syncToEntityField;
     }
     if (form.type === "FORMULA") {
       config.formula = {
@@ -576,37 +619,112 @@ export default function LaporanBuilderPage() {
 
                   {/* TAB: ENTITAS */}
                   {activeTab === "entitas" && (
-                    <div className="space-y-4 max-w-2xl">
+                    <div className="space-y-4 max-w-3xl">
+                      <div className="p-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                        Kategori entitas dipakai untuk mengelompokkan tab/jenis entitas di Data Dasar. Contoh: Rumah
+                        Makan, Depot Air Minum, Sekolah. Kosongkan jika tidak perlu grup.
+                      </div>
+
+                      <div className="flex flex-col gap-2 p-3 border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                          Kategori Entitas Baru
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={entityGroupDraft}
+                            onChange={(e) => setEntityGroupDraft(e.target.value)}
+                            className="flex-1 h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] outline-none focus:border-black"
+                            placeholder="Contoh: TPP, TTU, Fasyankes"
+                          />
+                          <button
+                            onClick={() => {
+                              const group = entityGroupDraft.trim();
+                              if (!group) {
+                                toast.error("Nama kategori entitas tidak boleh kosong");
+                                return;
+                              }
+                              addEntityMutation.mutate({
+                                categoryId: selectedModule.id,
+                                nama: `Entitas ${group}`,
+                                grup: group,
+                              });
+                              setEntityGroupDraft("");
+                            }}
+                            className="h-8 px-3 text-[10px] font-black uppercase tracking-wider border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
+                          >
+                            Tambah Kategori
+                          </button>
+                        </div>
+                      </div>
+
                       <button
                         onClick={() =>
-                          addEntityMutation.mutate({ categoryId: selectedModule.id, nama: "Entitas Baru" })
+                          addEntityMutation.mutate({
+                            categoryId: selectedModule.id,
+                            nama: "Entitas Baru",
+                            grup: uniqueEntityGroups[0] || null,
+                          })
                         }
                         className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Baris Entitas{" "}
+                        <Plus className="w-3.5 h-3.5" /> Tambah Baris Entitas
                       </button>
                       <div className="space-y-2">
-                        {selectedModule.subCategories?.map((sub: any) => (
-                          <div
-                            key={sub.id}
-                            className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex items-center px-4 py-2 gap-3"
-                          >
-                            <input
-                              type="text"
-                              className="flex-1 text-sm outline-none font-medium"
-                              defaultValue={sub.nama}
-                              onBlur={(e) => {
-                                sub.nama = e.target.value;
-                              }}
-                            />
-                            <button
-                              onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
-                              className="text-red-400 hover:text-red-600"
+                        {selectedModule.subCategories?.map((sub: any) => {
+                          const localState = entityForm[sub.id] || { nama: sub.nama, grup: sub.grup || "" };
+                          return (
+                            <div
+                              key={sub.id}
+                              className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] grid grid-cols-1 md:grid-cols-[1fr_220px_auto] items-end px-4 py-3 gap-3"
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
+                              <div>
+                                <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
+                                  Nama Entitas
+                                </label>
+                                <input
+                                  type="text"
+                                  className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-medium outline-none focus:border-black"
+                                  value={localState.nama || ""}
+                                  onChange={(e) =>
+                                    setEntityForm({ ...entityForm, [sub.id]: { ...localState, nama: e.target.value } })
+                                  }
+                                  onBlur={() =>
+                                    updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
+                                  Kategori Entitas
+                                </label>
+                                <input
+                                  list={`entity-groups-${selectedModule.id}`}
+                                  className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs outline-none focus:border-black"
+                                  value={localState.grup || ""}
+                                  onChange={(e) =>
+                                    setEntityForm({ ...entityForm, [sub.id]: { ...localState, grup: e.target.value } })
+                                  }
+                                  onBlur={() =>
+                                    updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
+                                  }
+                                  placeholder="Tanpa kategori"
+                                />
+                                <datalist id={`entity-groups-${selectedModule.id}`}>
+                                  {uniqueEntityGroups.map((group) => (
+                                    <option key={group} value={group} />
+                                  ))}
+                                </datalist>
+                              </div>
+                              <button
+                                onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
+                                className="h-8 w-8 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 border border-[hsl(var(--border))]"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -643,9 +761,16 @@ export default function LaporanBuilderPage() {
                             >
                               <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_140px_auto] gap-3 items-end">
                                 <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Nama Field
-                                  </label>
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+                                      Nama Field
+                                    </label>
+                                    {localState.syncToEntityField && (
+                                      <span className="text-[9px] px-1 bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border border-[hsl(var(--accent)/0.25)] font-bold uppercase tracking-wide">
+                                        🔗 {localState.syncToEntityField}
+                                      </span>
+                                    )}
+                                  </div>
                                   <input
                                     className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-medium"
                                     value={localState.nama || ""}
@@ -713,7 +838,7 @@ export default function LaporanBuilderPage() {
                                 </label>
                               </div>
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
                                 <div>
                                   <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
                                     Sinkron ke Parameter Laporan
@@ -737,27 +862,51 @@ export default function LaporanBuilderPage() {
                                       ))}
                                   </select>
                                 </div>
-                                {localState.syncToParamId && (
-                                  <div>
-                                    <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
-                                      Metode Hitung
-                                    </label>
-                                    <select
-                                      className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                      value={localState.syncMode || "COUNT"}
-                                      onChange={(e) => {
-                                        const u = { ...localState, syncMode: e.target.value, isBaseline: true };
-                                        setParamForm({ ...paramForm, [p.id]: u });
-                                        saveParamSettings(p.id, u);
-                                      }}
-                                    >
-                                      <option value="COUNT">Hitung jumlah entri</option>
-                                      {(localState.type === "NUMBER" || localState.type === "DECIMAL") && (
-                                        <option value="SUM">Jumlahkan nilai field ini</option>
-                                      )}
-                                    </select>
-                                  </div>
-                                )}
+                                <div>
+                                  <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
+                                    Sinkron ke Field Entitas
+                                  </label>
+                                  <select
+                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
+                                    value={localState.syncToEntityField || ""}
+                                    onChange={(e) => {
+                                      const u = { ...localState, syncToEntityField: e.target.value, isBaseline: true };
+                                      setParamForm({ ...paramForm, [p.id]: u });
+                                      saveParamSettings(p.id, u);
+                                    }}
+                                  >
+                                    <option value="">Tidak dihubungkan (Field Dinamis)</option>
+                                    <option value="nama">Nama Entitas</option>
+                                    <option value="alamat">Alamat</option>
+                                    <option value="pemilik">Pemilik / Pengelola</option>
+                                    <option value="kontak">Kontak / Telepon</option>
+                                    <option value="lat">Latitude (Koordinat Y)</option>
+                                    <option value="lng">Longitude (Koordinat X)</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  {localState.syncToParamId && (
+                                    <>
+                                      <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
+                                        Metode Hitung
+                                      </label>
+                                      <select
+                                        className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
+                                        value={localState.syncMode || "COUNT"}
+                                        onChange={(e) => {
+                                          const u = { ...localState, syncMode: e.target.value, isBaseline: true };
+                                          setParamForm({ ...paramForm, [p.id]: u });
+                                          saveParamSettings(p.id, u);
+                                        }}
+                                      >
+                                        <option value="COUNT">Hitung jumlah entri</option>
+                                        {(localState.type === "NUMBER" || localState.type === "DECIMAL") && (
+                                          <option value="SUM">Jumlahkan nilai field ini</option>
+                                        )}
+                                      </select>
+                                    </>
+                                  )}
+                                </div>
                               </div>
 
                               {localState.type === "SELECT" && (
