@@ -11,6 +11,7 @@ export const GET = withAdmin(async () => {
       email: true,
       role: true,
       puskesmasId: true,
+      telegramChatId: true,
       puskesmas: { select: { nama: true } },
     },
     orderBy: { nama: "asc" },
@@ -27,8 +28,8 @@ export const POST = withAdmin(async (req: NextRequest) => {
     return NextResponse.json({ error: "nama, email, password, dan role wajib diisi" }, { status: 400 });
   }
 
-  if (!["ADMIN", "OPERATOR"].includes(body.role)) {
-    return NextResponse.json({ error: "Role harus ADMIN atau OPERATOR" }, { status: 400 });
+  if (!["ADMIN", "OPERATOR", "DINKES"].includes(body.role)) {
+    return NextResponse.json({ error: "Role harus ADMIN, OPERATOR, atau DINKES" }, { status: 400 });
   }
 
   if (body.role === "OPERATOR" && !body.puskesmasId) {
@@ -49,6 +50,7 @@ export const POST = withAdmin(async (req: NextRequest) => {
       password: hashedPassword,
       role: body.role,
       puskesmasId: body.puskesmasId || null,
+      telegramChatId: body.telegramChatId || null,
     },
   });
 

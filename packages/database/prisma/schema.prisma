@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id          Int        @id @default(autoincrement())
-  nama        String
-  email       String     @unique
-  password    String
-  role        Role       @default(OPERATOR)
-  puskesmasId Int?
-  puskesmas   Puskesmas? @relation(fields: [puskesmasId], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id               Int        @id @default(autoincrement())
+  nama             String
+  email            String     @unique
+  password         String
+  role             Role       @default(OPERATOR)
+  puskesmasId      Int?
+  puskesmas        Puskesmas? @relation(fields: [puskesmasId], references: [id])
+  telegramChatId   String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   auditLogs         AuditLog[]
   notifications     Notification[]

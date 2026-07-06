@@ -9,7 +9,14 @@ import { Modal } from "@/components/ui/modal";
 export default function UsersPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ nama: "", email: "", password: "", role: "OPERATOR", puskesmasId: "" });
+  const [form, setForm] = useState({
+    nama: "",
+    email: "",
+    password: "",
+    role: "OPERATOR",
+    puskesmasId: "",
+    telegramChatId: "",
+  });
   const [editId, setEditId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
@@ -56,13 +63,20 @@ export default function UsersPage() {
 
   function openEdit(user: any) {
     setEditId(user.id);
-    setForm({ nama: user.nama, email: user.email, password: "", role: user.role, puskesmasId: user.puskesmasId || "" });
+    setForm({
+      nama: user.nama,
+      email: user.email,
+      password: "",
+      role: user.role,
+      puskesmasId: user.puskesmasId || "",
+      telegramChatId: user.telegramChatId || "",
+    });
     setShowForm(true);
   }
 
   function openAdd() {
     setEditId(null);
-    setForm({ nama: "", email: "", password: "", role: "OPERATOR", puskesmasId: "" });
+    setForm({ nama: "", email: "", password: "", role: "OPERATOR", puskesmasId: "", telegramChatId: "" });
     setShowForm(true);
   }
 
@@ -289,6 +303,17 @@ export default function UsersPage() {
               </select>
             </div>
           )}
+          <div>
+            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
+              Telegram Chat ID <span className="font-medium normal-case">(opsional, untuk notifikasi)</span>
+            </label>
+            <input
+              value={form.telegramChatId}
+              onChange={(e) => setForm({ ...form, telegramChatId: e.target.value })}
+              placeholder="Contoh: 123456789"
+              className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors placeholder:text-[hsl(var(--muted-foreground))]"
+            />
+          </div>
         </div>
       </Modal>
     </div>

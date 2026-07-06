@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
 import { cacheInvalidate } from "@/lib/redis";
+import { notifyOperatorLaporanApproved, notifyOperatorLaporanRejected } from "@/lib/telegram/notify";
 
 // GET -- list laporan untuk approval (semua status, filter client-side)
 export const GET = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
@@ -118,6 +119,32 @@ export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => 
         }),
       ),
     );
+
+    // Kirim notifikasi Telegram ke setiap operator yang punya telegramChatId
+    const dinkesUser = await prisma.user.findUnique({ where: { id: user.id }, select: { nama: true } });
+    for (const op of operators) {
+      if (!op.telegramChatId) continue;
+      if (isApproved) {
+        await notifyOperatorLaporanApproved({
+          operatorChatId: op.telegramChatId,
+          puskesmasName: laporan.puskesmas.nama,
+          bulan: bulanNama,
+          tahun: laporan.tahun,
+          categoryName: laporan.category.nama,
+          dinkesName: dinkesUser?.nama || "Dinas",
+        });
+      } else {
+        await notifyOperatorLaporanRejected({
+          operatorChatId: op.telegramChatId,
+          puskesmasName: laporan.puskesmas.nama,
+          bulan: bulanNama,
+          tahun: laporan.tahun,
+          categoryName: laporan.category.nama,
+          dinkesName: dinkesUser?.nama || "Dinas",
+          catatan: catatan || "Tidak ada catatan",
+        });
+      }
+    }
   } catch (err) {
     console.error("Gagal mengirim notifikasi approval:", err);
   }

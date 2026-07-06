@@ -12,7 +12,13 @@ export const PUT = withAdmin(async (req: NextRequest, { params }: { params: Prom
     where: { id: Number(id) },
     select: { nama: true, email: true, role: true },
   });
-  const data: any = { nama: body.nama, email: body.email, role: body.role, puskesmasId: body.puskesmasId || null };
+  const data: any = {
+    nama: body.nama,
+    email: body.email,
+    role: body.role,
+    puskesmasId: body.puskesmasId || null,
+    telegramChatId: body.telegramChatId || null,
+  };
   if (body.password) data.password = await hash(body.password, 12);
   const user = await prisma.user.update({ where: { id: Number(id) }, data });
 

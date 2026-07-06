@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "./session";
+import { notifyAdminSystemError } from "./telegram/notify";
 
 type RouteHandler = (req: NextRequest, ctx: any) => Promise<NextResponse>;
 
@@ -8,16 +9,20 @@ async function logErrorToDb(e: any, req: NextRequest) {
   try {
     const user = await getCurrentUser().catch(() => null);
     const path = req.nextUrl.pathname + req.nextUrl.search;
+    const message = e?.message || String(e || "Unknown Error");
 
     await prisma.systemErrorLog.create({
       data: {
-        message: e?.message || String(e || "Unknown Error"),
+        message,
         stack: e?.stack || null,
         path,
         userId: user?.id || null,
         userEmail: user?.email || null,
       },
     });
+
+    // Kirim notifikasi Telegram ke Admin
+    await notifyAdminSystemError({ message, path, email: user?.email });
   } catch (err) {
     console.error("Gagal menulis log error ke database:", err);
   }
