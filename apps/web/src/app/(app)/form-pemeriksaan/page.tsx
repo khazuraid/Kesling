@@ -12,6 +12,7 @@ import {
   Settings2,
   ShieldAlert,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -54,6 +55,7 @@ export default function FormPemeriksaanPage() {
   const queryClient = useQueryClient();
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Form state
   const [nama, setNama] = useState("");
@@ -153,6 +155,41 @@ export default function FormPemeriksaanPage() {
       },
       fields: cleanFields,
     });
+  }
+
+  async function handleImportFile(file: File) {
+    setIsImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/inspection/templates/import", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Gagal import file");
+
+      setSelectedTemplateId(null);
+      setIsCreating(true);
+      setNama(data.nama || file.name.replace(/\.(pdf|docx?)$/i, ""));
+      setDeskripsi(data.deskripsi || `Diimpor dari file ${file.name}`);
+      setSubCategoryId(null);
+      setRumus("sum");
+      setCustomFormula("");
+      setThresholdOperator(">=");
+      setThresholdValue(80);
+      setThresholdPassText("Memenuhi Syarat");
+      setThresholdFailText("Tidak Memenuhi Syarat");
+      setParamDiperiksaId(null);
+      setParamMsId(null);
+      setParamTmsId(null);
+      setFields(data.fields || []);
+      toast.success(`Import berhasil: ${(data.fields || []).length} butir pemeriksaan`);
+    } catch (error: any) {
+      toast.error(error?.message || "Gagal import file");
+    } finally {
+      setIsImporting(false);
+    }
   }
 
   // ─── Field Helpers ───────────────────────
@@ -305,27 +342,44 @@ export default function FormPemeriksaanPage() {
               Template formulir inspeksi — format tabel ceklis
             </p>
           </div>
-          <button
-            onClick={() => {
-              setIsCreating(true);
-              setNama("");
-              setDeskripsi("");
-              setSubCategoryId(null);
-              setRumus("sum");
-              setCustomFormula("");
-              setThresholdOperator(">=");
-              setThresholdValue(80);
-              setThresholdPassText("Memenuhi Syarat");
-              setThresholdFailText("Tidak Memenuhi Syarat");
-              setParamDiperiksaId(null);
-              setParamMsId(null);
-              setParamTmsId(null);
-              setFields([]);
-            }}
-            className="ml-auto flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" /> Template Baru
-          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <label className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors cursor-pointer">
+              <Upload className="w-3.5 h-3.5" />
+              {isImporting ? "Mengimpor..." : "Import PDF/Word"}
+              <input
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                disabled={isImporting}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImportFile(file);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <button
+              onClick={() => {
+                setIsCreating(true);
+                setNama("");
+                setDeskripsi("");
+                setSubCategoryId(null);
+                setRumus("sum");
+                setCustomFormula("");
+                setThresholdOperator(">=");
+                setThresholdValue(80);
+                setThresholdPassText("Memenuhi Syarat");
+                setThresholdFailText("Tidak Memenuhi Syarat");
+                setParamDiperiksaId(null);
+                setParamMsId(null);
+                setParamTmsId(null);
+                setFields([]);
+              }}
+              className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Template Baru
+            </button>
+          </div>
         </div>
 
         {/* Template List */}
