@@ -9,8 +9,9 @@ interface TelegramAuthGuardProps {
 }
 
 export function TelegramAuthGuard({ children }: TelegramAuthGuardProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [loading, setLoading] = useState(true);
+  const [telegramAuthenticated, setTelegramAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function TelegramAuthGuard({ children }: TelegramAuthGuardProps) {
     tg.expand();
 
     // 2. Jika NextAuth sudah login, selesai
-    if (status === "authenticated") {
+    if (status === "authenticated" || telegramAuthenticated) {
       setLoading(false);
       return;
     }
@@ -51,6 +52,8 @@ export function TelegramAuthGuard({ children }: TelegramAuthGuardProps) {
             "Akun Telegram Anda belum terhubung dengan akun Kesling.\n\n" +
               "Silakan ketik /login di bot Telegram Anda terlebih dahulu untuk pairing.",
           );
+        } else {
+          setTelegramAuthenticated(true);
         }
       })
       .catch(() => {
@@ -59,9 +62,9 @@ export function TelegramAuthGuard({ children }: TelegramAuthGuardProps) {
       .finally(() => {
         setLoading(false);
       });
-  }, [status]);
+  }, [status, telegramAuthenticated]);
 
-  if (loading || status === "loading") {
+  if (loading || (status === "loading" && !telegramAuthenticated)) {
     return (
       <div className="fixed inset-0 bg-[hsl(var(--background))] flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="w-8 h-8 text-[hsl(var(--accent))] animate-spin" />
