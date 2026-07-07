@@ -11,3 +11,6 @@ apps/web/public/workbox-*.js
 apps/web/public/sw.js.map
 deployment-*.txt
 coba.txt
+
+# Local sample documents
+*.pdf
