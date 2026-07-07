@@ -1,9 +1,34 @@
+import { prisma } from "@apps-kes/database";
 import { Bot } from "grammy";
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
+// Token cache
+let botInstance: Bot | null = null;
+let currentToken: string | null = null;
 
-if (!token) {
-  console.warn("[Telegram] TELEGRAM_BOT_TOKEN tidak diset. Bot tidak aktif.");
+export async function getBotInstance() {
+  try {
+    // Cari token di database
+    const tokenSetting = await prisma.appSetting.findUnique({
+      where: { key: "telegram_bot_token" },
+    });
+
+    const dbToken = tokenSetting?.value || process.env.TELEGRAM_BOT_TOKEN;
+
+    if (!dbToken) {
+      botInstance = null;
+      currentToken = null;
+      return null;
+    }
+
+    // Jika token berubah, buat instance baru
+    if (dbToken !== currentToken || !botInstance) {
+      currentToken = dbToken;
+      botInstance = new Bot(dbToken);
+    }
+
+    return botInstance;
+  } catch (e) {
+    console.error("[Telegram] Gagal memuat instance bot:", e);
+    return null;
+  }
 }
-
-export const bot = token ? new Bot(token) : null;

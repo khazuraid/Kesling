@@ -1,13 +1,21 @@
-import { bot } from "./bot";
+import { prisma } from "@apps-kes/database";
+import { getBotInstance } from "./bot";
 
-/**
- * Mengirim pesan teks umum ke telegram chat ID
- */
+async function getChatIdSetting(key: string, envKey: string) {
+  try {
+    const s = await prisma.appSetting.findUnique({ where: { key } });
+    return s?.value || process.env[envKey] || null;
+  } catch {
+    return process.env[envKey] || null;
+  }
+}
+
 export async function sendTelegramMessage(
   chatId: string | number,
   text: string,
   parseMode: "Markdown" | "HTML" = "Markdown",
 ) {
+  const bot = await getBotInstance();
   if (!bot) return false;
   try {
     await bot.api.sendMessage(chatId, text, { parse_mode: parseMode });
@@ -18,16 +26,13 @@ export async function sendTelegramMessage(
   }
 }
 
-/**
- * Notifikasi ke Dinkes (Dinas Kesehatan) saat ada Puskesmas menyerahkan laporan baru
- */
 export async function notifyDinkesNewLaporan(params: {
   puskesmasName: string;
   bulan: string;
   tahun: number;
   categoryName: string;
 }) {
-  const dinkesChatId = process.env.TELEGRAM_DINKES_CHAT_ID;
+  const dinkesChatId = await getChatIdSetting("telegram_dinkes_chat_id", "TELEGRAM_DINKES_CHAT_ID");
   if (!dinkesChatId) return;
 
   const text =
@@ -40,9 +45,6 @@ export async function notifyDinkesNewLaporan(params: {
   await sendTelegramMessage(dinkesChatId, text);
 }
 
-/**
- * Notifikasi ke Operator Puskesmas saat laporannya disetujui (Approved)
- */
 export async function notifyOperatorLaporanApproved(params: {
   operatorChatId: string | number;
   puskesmasName: string;
@@ -62,9 +64,6 @@ export async function notifyOperatorLaporanApproved(params: {
   await sendTelegramMessage(params.operatorChatId, text);
 }
 
-/**
- * Notifikasi ke Operator Puskesmas saat laporannya dikembalikan (Rejected/Returned)
- */
 export async function notifyOperatorLaporanRejected(params: {
   operatorChatId: string | number;
   puskesmasName: string;
@@ -86,11 +85,8 @@ export async function notifyOperatorLaporanRejected(params: {
   await sendTelegramMessage(params.operatorChatId, text);
 }
 
-/**
- * Notifikasi ke Admin (Developer/IT) saat sistem mendeteksi error fatal
- */
 export async function notifyAdminSystemError(params: { message: string; path: string; email?: string | null }) {
-  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const adminChatId = await getChatIdSetting("telegram_admin_chat_id", "TELEGRAM_ADMIN_CHAT_ID");
   if (!adminChatId) return;
 
   const text =

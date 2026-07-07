@@ -639,3 +639,13 @@ model Sasaran {
   @@index([subCategoryId, puskesmasId])
   @@index([createdAt])
 }
+
+// Konfigurasi Aplikasi (key-value)
+model AppSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String?  @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("app_setting")
+}

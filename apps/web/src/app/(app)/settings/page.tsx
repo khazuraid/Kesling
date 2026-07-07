@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Copy, Settings2, ShieldAlert, Target, Users } from "lucide-react";
+import { Bot, Building2, Copy, Settings2, ShieldAlert, Target, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MasterCrud } from "@/components/master-crud";
 import { EmptyState } from "@/components/ui/empty-state";
+import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
 
 interface DynamicCategory {
@@ -231,6 +232,7 @@ export default function SettingsPage() {
     { key: "puskesmas", label: "Puskesmas", icon: <Building2 className="w-3.5 h-3.5" /> },
     { key: "target", label: "Target", icon: <Target className="w-3.5 h-3.5" /> },
     { key: "users", label: "Pengguna", icon: <Users className="w-3.5 h-3.5" /> },
+    { key: "telegram", label: "Telegram", icon: <Bot className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -266,6 +268,7 @@ export default function SettingsPage() {
       {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
       {activeTab === "target" && <TargetManagement />}
       {activeTab === "users" && <UsersPage />}
+      {activeTab === "telegram" && <TelegramSettingsPage />}
     </div>
   );
 }
