@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { logSecurityEvent } from "./security-logger";
+import { validateTelegramInitData } from "./telegram/bot";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -22,6 +23,33 @@ export const authOptions: NextAuthOptions = {
         if (!user) return null;
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) return null;
+        return {
+          id: String(user.id),
+          name: user.nama,
+          email: user.email,
+          role: user.role,
+          puskesmasId: user.puskesmasId,
+          puskesmasNama: user.puskesmas?.nama,
+        };
+      },
+    }),
+    CredentialsProvider({
+      id: "telegram",
+      name: "telegram",
+      credentials: {
+        initData: { label: "Init Data", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.initData) return null;
+        const tgUser = await validateTelegramInitData(credentials.initData);
+        if (!tgUser?.id) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { telegramUserId: String(tgUser.id) },
+          include: { puskesmas: true },
+        });
+        if (!user) return null;
+
         return {
           id: String(user.id),
           name: user.nama,
