@@ -1,3 +1,4 @@
+import { prisma } from "@apps-kes/database";
 import mammoth from "mammoth";
 import { type NextRequest, NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
@@ -211,24 +212,87 @@ async function aiNormalize(
   fileName: string,
   fallback: ImportedTemplate,
 ): Promise<ImportedTemplate | null> {
-  const openRouterKey = process.env.OPENROUTER_API_KEY;
-  const openAiKey = process.env.OPENAI_API_KEY;
-  if (!openRouterKey && !openAiKey) return null;
+  // 1. Ambil setting dari database
+  const dbSettings = await prisma.appSetting.findMany({
+    where: {
+      key: {
+        in: ["ai_provider", "ai_api_key", "ai_model"],
+      },
+    },
+  });
 
+  const map: Record<string, string> = {};
+  for (const s of dbSettings) {
+    map[s.key] = s.value || "";
+  }
+
+  const provider = map.ai_provider || process.env.AI_PROVIDER || "openrouter";
+  const apiKey =
+    map.ai_api_key || (provider === "openrouter" ? process.env.OPENROUTER_API_KEY : process.env.OPENAI_API_KEY);
+  const model =
+    map.ai_model ||
+    (provider === "openrouter" ? process.env.OPENROUTER_MODEL : process.env.OPENAI_MODEL) ||
+    "google/gemini-2.5-flash";
+
+  if (provider === "disabled") {
+    console.log("[AI Import] AI dinonaktifkan via pengaturan");
+    return null;
+  }
+
+  if (!apiKey) {
+    console.warn("[AI Import] API Key AI kosong, menggunakan parser lokal");
+    return null;
+  }
+
+  const systemInstruction =
+    "Anda adalah normalizer dokumen inspeksi kesehatan lingkungan. Kembalikan hanya JSON valid sesuai skema yang diminta. Jangan mengarang pertanyaan yang tidak ada dalam teks dokumen.";
   const prompt = buildPrompt(text, fileName, fallback);
-  const endpoint = openRouterKey
-    ? "https://openrouter.ai/api/v1/chat/completions"
-    : "https://api.openai.com/v1/chat/completions";
-  const model = openRouterKey
-    ? process.env.OPENROUTER_MODEL || "openai/gpt-4.1-mini"
-    : process.env.OPENAI_MODEL || "gpt-4.1-mini";
+
+  // 2. Kirim request sesuai Provider
+  if (provider === "gemini") {
+    const geminiModel = model.includes("/") ? model.split("/").pop() : model;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel || "gemini-2.5-flash"}:generateContent?key=${apiKey}`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `${systemInstruction}\n\n${prompt}`,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Gemini API gagal: ${res.status} ${await res.text()}`);
+    const data = await res.json();
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) throw new Error("Gemini tidak mengembalikan konten");
+    return JSON.parse(stripJsonFence(content));
+  }
+
+  // OpenAI & OpenRouter (Format Chat/Completions Standar)
+  const endpoint =
+    provider === "openrouter"
+      ? "https://openrouter.ai/api/v1/chat/completions"
+      : "https://api.openai.com/v1/chat/completions";
 
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${openRouterKey || openAiKey}`,
-      ...(openRouterKey
+      Authorization: `Bearer ${apiKey}`,
+      ...(provider === "openrouter"
         ? { "HTTP-Referer": process.env.NEXTAUTH_URL || "https://kesling.biz.id", "X-Title": "Kesling Cirebon" }
         : {}),
     },
@@ -239,15 +303,14 @@ async function aiNormalize(
       messages: [
         {
           role: "system",
-          content:
-            "Anda adalah normalizer dokumen inspeksi kesehatan lingkungan. Kembalikan hanya JSON valid. Jangan menambah pertanyaan yang tidak ada di dokumen.",
+          content: systemInstruction,
         },
         { role: "user", content: prompt },
       ],
     }),
   });
 
-  if (!res.ok) throw new Error(`AI normalizer gagal: ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`AI Provider ${provider} gagal: ${res.status} ${await res.text()}`);
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (!content) throw new Error("AI tidak mengembalikan konten");
