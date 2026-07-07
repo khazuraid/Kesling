@@ -328,6 +328,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    if (!bot.isInited()) {
+      await bot.init();
+    }
     await setupHandlers(bot);
     await bot.handleUpdate(await req.json());
     return NextResponse.json({ status: "ok" });
