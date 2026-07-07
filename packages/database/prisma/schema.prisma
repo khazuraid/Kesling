@@ -16,6 +16,8 @@ model User {
   puskesmasId      Int?
   puskesmas        Puskesmas? @relation(fields: [puskesmasId], references: [id])
   telegramChatId   String?
+  telegramUserId   String?    @unique
+  telegramUsername String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 

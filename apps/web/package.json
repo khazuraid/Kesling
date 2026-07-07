@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@apps-kes/database": "workspace:*",
+    "@grammyjs/conversations": "^2.1.1",
     "@hello-pangea/dnd": "18.0.1",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-dialog": "^1.1.17",
