@@ -33,7 +33,7 @@ export async function getBotInstance() {
   }
 }
 
-import { createHmac } from "crypto";
+import { createHmac } from "node:crypto";
 
 export async function validateTelegramInitData(initData: string): Promise<{
   id: number;
@@ -43,9 +43,20 @@ export async function validateTelegramInitData(initData: string): Promise<{
   language_code?: string;
 } | null> {
   try {
-    const bot = await getBotInstance();
-    const token = bot?.token || process.env.TELEGRAM_BOT_TOKEN;
-    if (!token) return null;
+    // Ambil token dari cache global currentToken, database, atau env
+    const token =
+      currentToken ||
+      (
+        await prisma.appSetting.findUnique({
+          where: { key: "telegram_bot_token" },
+        })
+      )?.value ||
+      process.env.TELEGRAM_BOT_TOKEN;
+
+    if (!token) {
+      console.warn("[Telegram Auth] Token bot tidak ditemukan");
+      return null;
+    }
 
     const params = new URLSearchParams(initData);
     const hash = params.get("hash");
