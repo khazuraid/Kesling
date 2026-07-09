@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Check, Lock, ShieldCheck, User } from "lucide-react";
+import { Activity, Check, Lock, QrCode, RefreshCw, ShieldCheck, Smartphone, User } from "lucide-react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 export default function ProfilePage() {
   const { data: session, update } = useSession();
   const user = session?.user as any;
-  const [tab, setTab] = useState<"overview" | "security">("overview");
+  const [tab, setTab] = useState<"overview" | "security" | "mobile">("overview");
   const [nama, setNama] = useState(user?.name || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -24,6 +25,22 @@ export default function ProfilePage() {
       return json.data || [];
     },
     refetchInterval: 5000,
+  });
+
+  const {
+    data: mobileLink,
+    isLoading: mobileLinkLoading,
+    refetch: refreshMobileLink,
+  } = useQuery<{ qrDataUrl: string; expiresInDays: number }>({
+    queryKey: ["mobile-link-qr"],
+    queryFn: async () => {
+      const res = await fetch("/api/mobile/v1/auth/link", { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Gagal membuat QR mobile");
+      return json;
+    },
+    enabled: !!user?.id,
+    staleTime: 60_000,
   });
 
   async function handleUpdateProfile(e: React.FormEvent) {
@@ -75,6 +92,7 @@ export default function ProfilePage() {
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: <User className="w-4 h-4" /> },
     { id: "security" as const, label: "Security", icon: <Lock className="w-4 h-4" /> },
+    { id: "mobile" as const, label: "Akses Mobile", icon: <Smartphone className="w-4 h-4" /> },
   ];
 
   return (
@@ -370,6 +388,83 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </form>
+              )}
+
+              {tab === "mobile" && (
+                <div className="space-y-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <QrCode className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                        <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))] tracking-tight">
+                          Hubungkan iPhone / iPad
+                        </h3>
+                      </div>
+                      <p className="text-[12px] leading-5 text-[hsl(var(--muted-foreground))] max-w-xl">
+                        Buka aplikasi Kesling Mobile di iPhone, pilih <b>Scan QR Code dari Web Profil</b>, lalu arahkan
+                        kamera ke kode ini.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshMobileLink()}
+                      className="h-9 px-3 inline-flex items-center gap-2 border border-[hsl(var(--border))] text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                    </button>
+                  </div>
+
+                  <div className="grid md:grid-cols-[240px_1fr] gap-5 items-start">
+                    <div className="border border-[hsl(var(--border))] bg-white p-4 flex items-center justify-center min-h-[240px]">
+                      {mobileLinkLoading ? (
+                        <span className="text-[12px] font-bold text-[hsl(var(--muted-foreground))]">Membuat QR...</span>
+                      ) : mobileLink?.qrDataUrl ? (
+                        <Image
+                          src={mobileLink.qrDataUrl}
+                          alt="QR Code akses mobile"
+                          width={208}
+                          height={208}
+                          unoptimized
+                          className="w-full h-auto"
+                        />
+                      ) : (
+                        <span className="text-[12px] font-bold text-[hsl(var(--destructive))]">QR belum tersedia</span>
+                      )}
+                    </div>
+
+                    <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                          Alur Web ke iPhone
+                        </span>
+                        <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
+                          Web membuat sesi mobile aman untuk akun yang sedang login.
+                        </p>
+                      </div>
+
+                      <ol className="space-y-3">
+                        {[
+                          "Buka Kesling Mobile di iPhone",
+                          "Pilih tombol Scan QR dari Web Profil",
+                          "Scan QR ini sampai aplikasi otomatis masuk",
+                          "Akun tersimpan untuk perangkat bersama Puskesmas",
+                        ].map((item, index) => (
+                          <li key={item} className="flex gap-3 text-[12px] text-[hsl(var(--muted-foreground))]">
+                            <span className="w-5 h-5 shrink-0 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[10px] font-bold">
+                              {index + 1}
+                            </span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ol>
+
+                      <div className="border-t border-[hsl(var(--border))] pt-4 text-[11px] leading-5 text-[hsl(var(--muted-foreground))]">
+                        Token berlaku {mobileLink?.expiresInDays ?? 30} hari dan disimpan terenkripsi di SecureStore
+                        perangkat. Jika iPhone hilang, hapus akun dari perangkat atau ganti password.
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>

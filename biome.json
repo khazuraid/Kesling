@@ -40,7 +40,9 @@
       "!**/.next",
       "!**/dist",
       "!**/.turbo",
-      "!**/prisma/migrations"
+      "!**/prisma/migrations",
+      "!**/.expo",
+      "!**/expo-env.d.ts"
     ]
   }
 }

@@ -9,7 +9,9 @@
     "format": "biome format --write .",
     "db:migrate": "pnpm --filter @apps-kes/database migrate",
     "db:seed": "pnpm --filter @apps-kes/database seed",
-    "db:studio": "pnpm --filter @apps-kes/database studio"
+    "db:studio": "pnpm --filter @apps-kes/database studio",
+    "mobile:start": "pnpm --filter @apps-kes/mobile start",
+    "mobile:ios": "pnpm --filter @apps-kes/mobile ios"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
@@ -22,6 +24,7 @@
   "packageManager": "pnpm@11.1.0",
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
+    "metro-runtime": "0.83.3",
     "pg": "^8.22.0"
   }
 }
