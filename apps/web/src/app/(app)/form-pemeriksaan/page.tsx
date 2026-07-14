@@ -56,11 +56,14 @@ export default function FormPemeriksaanPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importStage, setImportStage] = useState("");
+  const [importProgress, setImportProgress] = useState(0);
 
   // Form state
   const [nama, setNama] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [subCategoryId, setSubCategoryId] = useState<number | null>(null);
+  const [dataDasarCategoryId, setDataDasarCategoryId] = useState<number | null>(null);
   const [fields, setFields] = useState<any[]>([]);
 
   // Agregasi Laporan State
@@ -141,6 +144,7 @@ export default function FormPemeriksaanPage() {
       deskripsi,
       subCategoryId,
       config: {
+        dataDasarCategoryId,
         rumus,
         customFormula: rumus === "custom" ? customFormula : undefined,
         thresholdOperator,
@@ -159,21 +163,55 @@ export default function FormPemeriksaanPage() {
 
   async function handleImportFile(file: File) {
     setIsImporting(true);
+    setImportStage("Mengunggah file ke server...");
+    setImportProgress(10);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/inspection/templates/import", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Gagal import file");
+      const res = await fetch("/api/inspection/templates/import", { method: "POST", body: formData });
+      const initData = await res.json();
+      if (!res.ok) throw new Error(initData?.error || "Gagal import file");
 
+      const jobId = initData.jobId;
+      setImportStage("File diterima; menunggu worker...");
+      setImportProgress(20);
+
+      const poll = async () => {
+        return new Promise<any>((resolve, reject) => {
+          const interval = setInterval(async () => {
+            try {
+              const checkRes = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
+              const statusData = await checkRes.json();
+              if (!checkRes.ok) {
+                clearInterval(interval);
+                reject(new Error(statusData?.error || "Gagal memantau job import"));
+                return;
+              }
+              if (statusData.status === "processing") {
+                setImportStage(statusData.message || "Memproses...");
+                setImportProgress(statusData.progress || 50);
+              } else if (statusData.status === "complete") {
+                clearInterval(interval);
+                resolve(statusData.result);
+              } else if (statusData.status === "failed") {
+                clearInterval(interval);
+                reject(new Error(statusData.error || "Gagal memproses file di worker"));
+              }
+            } catch (err) {
+              clearInterval(interval);
+              reject(err);
+            }
+          }, 2000);
+        });
+      };
+
+      const result = await poll();
       setSelectedTemplateId(null);
       setIsCreating(true);
-      setNama(data.nama || file.name.replace(/\.(pdf|docx?)$/i, ""));
-      setDeskripsi(data.deskripsi || `Diimpor dari file ${file.name}`);
+      setNama(result.nama || file.name.replace(/\.(pdf|docx?)$/i, ""));
+      setDeskripsi(result.deskripsi || `Diimpor dari file ${file.name}`);
       setSubCategoryId(null);
+      setDataDasarCategoryId(null);
       setRumus("sum");
       setCustomFormula("");
       setThresholdOperator(">=");
@@ -183,12 +221,14 @@ export default function FormPemeriksaanPage() {
       setParamDiperiksaId(null);
       setParamMsId(null);
       setParamTmsId(null);
-      setFields(data.fields || []);
-      toast.success(`Import berhasil: ${(data.fields || []).length} butir pemeriksaan`);
+      setFields(result.fields || []);
+      toast.success(`Import berhasil: ${(result.fields || []).length} butir pemeriksaan`);
     } catch (error: any) {
       toast.error(error?.message || "Gagal import file");
     } finally {
       setIsImporting(false);
+      setImportStage("");
+      setImportProgress(0);
     }
   }
 
@@ -237,6 +277,19 @@ export default function FormPemeriksaanPage() {
     toast.success(`Grup "${name}" ditambahkan`);
   }
 
+  function addSubbagian(area: string) {
+    const name = prompt(`Nama subbagian untuk "${area}":`);
+    if (!name?.trim()) return;
+    const cleanName = name.trim().replace(/\s+—\s+/g, " - ");
+    const grup = `${area} — ${cleanName}`;
+    if (fields.some((field) => field.grup === grup)) {
+      toast.error(`Subbagian "${cleanName}" sudah ada`);
+      return;
+    }
+    addField(grup);
+    toast.success(`Subbagian "${cleanName}" ditambahkan`);
+  }
+
   function renameGrup(oldName: string, newName: string) {
     if (!newName.trim()) return;
     setFields(fields.map((f) => (f.grup === oldName ? { ...f, grup: newName } : f)));
@@ -253,7 +306,14 @@ export default function FormPemeriksaanPage() {
   // ─── Grouping ────────────────────────────
 
   const groupedFields = useMemo(() => {
-    const groups: { grup: string; fields: { field: any; index: number }[] }[] = [];
+    const groups: {
+      grup: string;
+      area: string;
+      subbagian: string | null;
+      areaIndex: number;
+      firstInArea: boolean;
+      fields: { field: any; index: number }[];
+    }[] = [];
     const groupMap = new Map<string, { field: any; index: number }[]>();
 
     fields.forEach((f, i) => {
@@ -262,8 +322,20 @@ export default function FormPemeriksaanPage() {
       groupMap.get(g)?.push({ field: f, index: i });
     });
 
+    const areaIndexes = new Map<string, number>();
     groupMap.forEach((items, grup) => {
-      groups.push({ grup, fields: items });
+      const delimiterIndex = grup.indexOf(" — ");
+      const area = delimiterIndex >= 0 ? grup.slice(0, delimiterIndex).trim() : grup;
+      const subbagian = delimiterIndex >= 0 ? grup.slice(delimiterIndex + 3).trim() || null : null;
+      if (!areaIndexes.has(area)) areaIndexes.set(area, areaIndexes.size + 1);
+      groups.push({
+        grup,
+        area,
+        subbagian,
+        areaIndex: areaIndexes.get(area)!,
+        firstInArea: !groups.some((group) => group.area === area),
+        fields: items,
+      });
     });
 
     return groups;
@@ -333,6 +405,46 @@ export default function FormPemeriksaanPage() {
   if (!selectedTemplateId && !isCreating) {
     return (
       <div className="w-full mx-auto pb-4 space-y-4 fade-in">
+        {isImporting && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="w-[420px] max-w-[calc(100vw-32px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-2xl">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 shrink-0 animate-spin border-2 border-[hsl(var(--border))] border-t-[hsl(var(--foreground))]" />
+                <div className="space-y-1">
+                  <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">Memproses Import Template...</h3>
+                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                    Status:{" "}
+                    <span className="font-medium text-[hsl(var(--foreground))]">{importStage || "Menyiapkan..."}</span>{" "}
+                    ({importProgress}%)
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 w-full bg-[hsl(var(--border))] h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-[hsl(var(--foreground))] h-full transition-all duration-300"
+                  style={{ width: `${importProgress}%` }}
+                />
+              </div>
+              <div className="mt-4 space-y-2 text-[11px] text-[hsl(var(--muted-foreground))]">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+                  <span>Mengunggah file ke server...</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+                  <span>Membaca PDF dengan Docling dan model tabel...</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+                  <span>Menyusun butir pertanyaan ke Form Pemeriksaan...</span>
+                </div>
+              </div>
+              <p className="mt-4 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                Proses PDF besar bisa memakan waktu 30-120 detik. Jangan tutup halaman ini.
+              </p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center gap-3">
           <FileText className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
@@ -364,6 +476,7 @@ export default function FormPemeriksaanPage() {
                 setNama("");
                 setDeskripsi("");
                 setSubCategoryId(null);
+                setDataDasarCategoryId(null);
                 setRumus("sum");
                 setCustomFormula("");
                 setThresholdOperator(">=");
@@ -425,6 +538,7 @@ export default function FormPemeriksaanPage() {
                     })),
                   );
                   setSubCategoryId(tpl.subCategoryId || null);
+                  setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
                 }}
                 className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-left hover:border-[hsl(var(--accent))] transition-colors"
               >
@@ -510,6 +624,28 @@ export default function FormPemeriksaanPage() {
               rows={2}
               className="w-full text-[12px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border border-[hsl(var(--border))] px-3 py-2 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none"
             />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
+              Kategori Data Dasar
+            </label>
+            <select
+              value={dataDasarCategoryId || ""}
+              onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
+              className="w-full h-9 px-3 text-[12px] font-medium border border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none"
+            >
+              <option value="">— Tidak terhubung —</option>
+              {categories
+                .filter((category: any) => (category.parameters ?? []).some((parameter: any) => parameter.isBaseline))
+                .map((category: any) => (
+                  <option key={category.id} value={category.id}>
+                    {category.nama}
+                  </option>
+                ))}
+            </select>
+            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1.5">
+              Menentukan daftar sasaran Data Dasar dan sumber autofill saat pemeriksaan.
+            </p>
           </div>
           <div>
             <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
@@ -830,16 +966,36 @@ export default function FormPemeriksaanPage() {
           </div>
         )}
 
-        {groupedFields.map((group, groupIndex) => {
-          const romanIndex = groupIndex + 1;
+        {groupedFields.map((group) => {
+          const romanIndex = group.areaIndex;
 
           return (
             <div key={group.grup} className="border-b border-[hsl(var(--border))] last:border-b-0">
-              {/* Group Header — Roman numeral + Editable name */}
-              <div className="flex items-center gap-3 px-4 py-3 bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))]">
-                <div className="w-7 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[9px] font-black shrink-0">
-                  {toRoman(romanIndex)}
+              {group.subbagian && group.firstInArea && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))]">
+                  <div className="w-7 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[9px] font-black shrink-0">
+                    {toRoman(romanIndex)}
+                  </div>
+                  <span className="flex-1 text-[11px] font-bold text-[hsl(var(--foreground))] uppercase tracking-wide">
+                    {group.area}
+                  </span>
+                  <button
+                    onClick={() => addSubbagian(group.area)}
+                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:opacity-80 transition-colors"
+                  >
+                    <FolderPlus className="w-3 h-3" /> Tambah Subbagian
+                  </button>
                 </div>
+              )}
+              {/* Group Header — Roman numeral + Editable name */}
+              <div
+                className={`flex items-center gap-3 px-4 py-3 border-b border-[hsl(var(--border))] ${group.subbagian ? "pl-14 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]"}`}
+              >
+                {!group.subbagian && (
+                  <div className="w-7 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[9px] font-black shrink-0">
+                    {toRoman(romanIndex)}
+                  </div>
+                )}
                 {group.grup === "__META__" ? (
                   <span className="flex-1 text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">
                     Data Pokok
@@ -850,15 +1006,21 @@ export default function FormPemeriksaanPage() {
                     value={grupEditValue}
                     onChange={(e) => setGrupEditValue(e.target.value)}
                     onBlur={() => {
-                      if (grupEditValue.trim() && grupEditValue !== group.grup) {
-                        renameGrup(group.grup, grupEditValue.trim());
+                      if (grupEditValue.trim() && grupEditValue !== (group.subbagian ?? group.grup)) {
+                        renameGrup(
+                          group.grup,
+                          group.subbagian ? `${group.area} — ${grupEditValue.trim()}` : grupEditValue.trim(),
+                        );
                       }
                       setEditingGrup(null);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        if (grupEditValue.trim() && grupEditValue !== group.grup) {
-                          renameGrup(group.grup, grupEditValue.trim());
+                        if (grupEditValue.trim() && grupEditValue !== (group.subbagian ?? group.grup)) {
+                          renameGrup(
+                            group.grup,
+                            group.subbagian ? `${group.area} — ${grupEditValue.trim()}` : grupEditValue.trim(),
+                          );
                         }
                         setEditingGrup(null);
                       }
@@ -873,13 +1035,21 @@ export default function FormPemeriksaanPage() {
                     className="flex-1 text-[11px] font-bold text-[hsl(var(--foreground))] cursor-pointer hover:text-[hsl(var(--accent))] transition-colors uppercase tracking-wide"
                     onClick={() => {
                       setEditingGrup(group.grup);
-                      setGrupEditValue(group.grup);
+                      setGrupEditValue(group.subbagian ?? group.grup);
                     }}
                   >
-                    {group.grup.toUpperCase()}
+                    {(group.subbagian ?? group.grup).toUpperCase()}
                   </span>
                 )}
                 <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{group.fields.length} item</span>
+                {!group.subbagian && group.grup !== "__META__" && (
+                  <button
+                    onClick={() => addSubbagian(group.area)}
+                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--card))] transition-colors"
+                  >
+                    <FolderPlus className="w-3 h-3" /> Tambah Subbagian
+                  </button>
+                )}
                 <button
                   onClick={() => addField(group.grup)}
                   className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--card))] transition-colors"

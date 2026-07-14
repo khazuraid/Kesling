@@ -20,6 +20,7 @@ export const GET = withAuth(async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const { page, limit, skip } = getPaginationParams(sp, 25);
   const subCatId = sp.get("subCategoryId");
+  const categoryId = sp.get("categoryId");
   const search = (sp.get("search") || "").trim();
   const puskesmasId = sp.get("puskesmasId");
   const paginated = sp.get("paginated") === "1";
@@ -39,6 +40,13 @@ export const GET = withAuth(async (req: NextRequest) => {
       return NextResponse.json({ error: "subCategoryId tidak valid" }, { status: 400 });
     }
     where.subCategoryId = parsedSubCatId;
+  }
+  if (categoryId) {
+    const parsedCategoryId = Number(categoryId);
+    if (!Number.isInteger(parsedCategoryId)) {
+      return NextResponse.json({ error: "categoryId tidak valid" }, { status: 400 });
+    }
+    where.subCategory = { categoryId: parsedCategoryId };
   }
   if (search) {
     where.OR = [

@@ -20,7 +20,6 @@ services:
       - kes-net
 
   worker:
-    profiles: ["worker"]
     build:
       context: .
       dockerfile: Dockerfile
@@ -31,7 +30,7 @@ services:
       DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
       DIRECT_DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
       RUN_MIGRATIONS: "0"
-      HEAVY_QUEUE_KEY: "queue:heavy"
+
     command: ["node", "apps/web/worker.js"]
     depends_on:
       redis:

@@ -14,13 +14,45 @@ export const GET = withAuth(async (req: NextRequest) => {
   const templates = await prisma.inspectionTemplate.findMany({
     where,
     include: {
-      subCategory: { include: { category: true } },
+      subCategory: {
+        include: {
+          category: { include: { parameters: { where: { isBaseline: true }, orderBy: { urutan: "asc" } } } },
+        },
+      },
       fields: { orderBy: { urutan: "asc" } },
       puskesmas: { select: { nama: true } },
     },
     orderBy: { id: "desc" },
   });
-  return NextResponse.json(templates);
+  const categoryIds = [
+    ...new Set(
+      templates
+        .map((template: any) => Number(template.config?.dataDasarCategoryId))
+        .filter((id: number) => Number.isInteger(id) && id > 0),
+    ),
+  ];
+  const dataDasarCategories = categoryIds.length
+    ? await prisma.dynamicCategory.findMany({
+        where: { id: { in: categoryIds } },
+        select: {
+          id: true,
+          nama: true,
+          code: true,
+          parameters: {
+            where: { isBaseline: true },
+            orderBy: { urutan: "asc" },
+            select: { id: true, code: true, nama: true, config: true },
+          },
+        },
+      })
+    : [];
+  const categoryById = new Map(dataDasarCategories.map((category) => [category.id, category]));
+  return NextResponse.json(
+    templates.map((template: any) => ({
+      ...template,
+      dataDasarCategory: categoryById.get(Number(template.config?.dataDasarCategoryId)) ?? null,
+    })),
+  );
 });
 
 export const POST = withAuth(async (req: NextRequest) => {

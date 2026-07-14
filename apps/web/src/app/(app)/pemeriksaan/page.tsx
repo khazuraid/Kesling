@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit3, FileText, ShieldAlert, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Database, Edit3, FileText, Search, ShieldAlert, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ export default function PemeriksaanPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [activeForm, setActiveForm] = useState<any>(null);
+  const [pendingForm, setPendingForm] = useState<any>(null);
+  const [sasaranSearch, setSasaranSearch] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formValues, setFormValues] = useState<Record<number, any>>({});
   const [metaValues, setMetaValues] = useState<Record<number, any>>({});
@@ -20,19 +22,24 @@ export default function PemeriksaanPage() {
 
   const [sasaranId, setSasaranId] = useState<number | null>(null);
 
-  // Fetch sasaran data (Data Dasar) untuk SubCategory form yang sedang aktif
-  const { data: sasarans = [] } = useQuery<any[]>({
-    queryKey: ["sasarans", activeForm?.subCategoryId],
+  // Same Sasaran register and category semantics as /data-dasar/[categoryCode].
+  // API auth applies the identical Puskesmas visibility rule and createdAt ordering.
+  const { data: sasaranResult = { data: [], total: 0, page: 1, totalPages: 1 } } = useQuery<any>({
+    queryKey: ["sasarans-data-dasar", pendingForm?.config?.dataDasarCategoryId],
     queryFn: async () => {
-      if (!activeForm?.subCategoryId) return [];
-      const res = await fetch(`/api/sasaran?subCategoryId=${activeForm.subCategoryId}`);
-      if (!res.ok) return [];
+      const categoryId = pendingForm?.config?.dataDasarCategoryId;
+      if (!categoryId) return { data: [], total: 0, page: 1, totalPages: 1 };
+      const params = new URLSearchParams({ categoryId: String(categoryId), paginated: "1", page: "1", limit: "100" });
+      const res = await fetch(`/api/sasaran?${params.toString()}`);
+      if (!res.ok) throw new Error("Gagal memuat Data Dasar");
       return res.json();
     },
-    enabled: !!activeForm?.subCategoryId,
+    enabled: !!pendingForm?.config?.dataDasarCategoryId,
+    staleTime: 30_000,
   });
+  const sasarans = sasaranResult.data || [];
 
-  const { data: templates = [], isLoading } = useQuery<any[]>({
+  const { data: templates = [] } = useQuery<any[]>({
     queryKey: ["inspection-templates"],
     queryFn: () => fetch("/api/inspection/templates").then((r) => r.json()),
   });
@@ -92,14 +99,44 @@ export default function PemeriksaanPage() {
 
   function handleOpenForm(template: any) {
     setEditingId(null);
+    setSasaranId(null);
+    setSasaranSearch("");
+    const dataDasarCategoryId = Number(template.config?.dataDasarCategoryId ?? template.dataDasarCategory?.id);
+    if (!Number.isInteger(dataDasarCategoryId) || dataDasarCategoryId <= 0) {
+      toast.error("Form belum terhubung ke kategori Data Dasar");
+      return;
+    }
+    setPendingForm({
+      ...template,
+      config: { ...template.config, dataDasarCategoryId },
+    });
+  }
+
+  function openFormWithSasaran(template: any, sasaran: any) {
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
+    const dynamicSource = (sasaran?.dataDinamis || {}) as Record<string, unknown>;
+    const baselineParams = template.dataDasarCategory?.parameters || [];
     template.fields.forEach((f: any) => {
-      if (f.grup === "__META__") initMeta[f.id] = "";
-      else initVal[f.id] = null;
+      if (f.grup === "__META__") {
+        const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
+        const configuredEntityField = f.config?.syncToEntityField;
+        const parameter = baselineParams.find(
+          (p: any) =>
+            p.code === configuredCode ||
+            (configuredEntityField && p.config?.syncToEntityField === configuredEntityField),
+        );
+        const entityField = configuredEntityField || parameter?.config?.syncToEntityField;
+        initMeta[f.id] =
+          (parameter?.code ? dynamicSource[parameter.code] : undefined) ??
+          (entityField ? sasaran?.[entityField] : undefined) ??
+          "";
+      } else initVal[f.id] = null;
     });
+    setSasaranId(sasaran.id);
     setFormValues(initVal);
     setMetaValues(initMeta);
+    setPendingForm(null);
     setActiveForm(template);
   }
 
@@ -122,6 +159,8 @@ export default function PemeriksaanPage() {
     });
     setFormValues(initVal);
     setMetaValues(initMeta);
+    setSasaranId(result.sasaranId ?? null);
+    setPendingForm(null);
     setActiveForm(template);
   }
 
@@ -218,7 +257,9 @@ export default function PemeriksaanPage() {
       if (!groupMap.has(g)) groupMap.set(g, []);
       groupMap.get(g)?.push(f);
     });
-    groupMap.forEach((fields, grup) => groups.push({ grup, fields }));
+    groupMap.forEach((fields, grup) => {
+      groups.push({ grup, fields });
+    });
     return groups;
   }, [activeForm, fieldsToChecklist]);
 
@@ -301,6 +342,87 @@ export default function PemeriksaanPage() {
         <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
         <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Akses Ditolak</p>
         <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Operator / Puskesmas</p>
+      </div>
+    );
+  }
+
+  const filteredSasarans = sasarans.filter((sasaran: any) => {
+    const term = sasaranSearch.trim().toLowerCase();
+    return (
+      !term ||
+      [sasaran.nama, sasaran.alamat, sasaran.pemilik].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(term),
+      )
+    );
+  });
+
+  // ================= DATA DASAR CHOOSER =================
+  if (pendingForm) {
+    return (
+      <div className="w-full pb-6 fade-in">
+        <button
+          onClick={() => setPendingForm(null)}
+          className="mb-5 flex items-center gap-2 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+        >
+          <ArrowLeft className="h-4 w-4" /> Kembali ke formulir
+        </button>
+        <div className="border-b border-[hsl(var(--border))] pb-5">
+          <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">
+            <FileText className="h-3.5 w-3.5" /> {pendingForm.nama} <ChevronRight className="h-3 w-3" /> Data Dasar
+          </div>
+          <h1 className="text-[22px] font-bold tracking-tight">Pilih Sasaran Pemeriksaan</h1>
+          <p className="mt-1 text-[12px] text-[hsl(var(--muted-foreground))]">
+            Menampilkan Data Dasar modul {pendingForm.dataDasarCategory?.nama} untuk seluruh jenis entitas. Pilih satu
+            sasaran untuk membuka formulir.
+          </p>
+        </div>
+        <div className="flex items-center border-x border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3">
+          <Search className="mr-2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+          <input
+            value={sasaranSearch}
+            onChange={(event) => setSasaranSearch(event.target.value)}
+            placeholder="Cari nama, alamat, atau pemilik..."
+            className="w-full bg-transparent text-[12px] outline-none"
+          />
+          <span className="whitespace-nowrap text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
+            {filteredSasarans.length} data
+          </span>
+        </div>
+        <div className="border-x border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          {filteredSasarans.length === 0 ? (
+            <div className="px-5 py-12 text-center">
+              <Database className="mx-auto mb-3 h-6 w-6 text-[hsl(var(--muted-foreground))]" />
+              <p className="text-[12px] font-bold">Data Dasar tidak ditemukan</p>
+              <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">
+                Tambahkan sasaran pada menu Data Dasar untuk kategori ini.
+              </p>
+            </div>
+          ) : (
+            filteredSasarans.map((sasaran: any, index: number) => (
+              <button
+                key={sasaran.id}
+                onClick={() => openFormWithSasaran(pendingForm, sasaran)}
+                className="group flex w-full items-center gap-4 border-b border-[hsl(var(--border))] px-4 py-3 text-left last:border-b-0 hover:bg-[hsl(var(--muted))]/40"
+              >
+                <span className="w-8 text-center text-[10px] font-bold tabular-nums text-[hsl(var(--muted-foreground))]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-bold">{sasaran.nama}</span>
+                  <span className="mt-0.5 block truncate text-[11px] text-[hsl(var(--muted-foreground))]">
+                    {sasaran.alamat || "Alamat belum diisi"}
+                  </span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))]">
+                  Pilih
+                </span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            ))
+          )}
+        </div>
       </div>
     );
   }
@@ -442,28 +564,6 @@ export default function PemeriksaanPage() {
   // ================= FORM CHECKLIST VIEW =================
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* DROPDOWN DATA DASAR (SASARAN) */}
-      <div className="px-5 pt-4 pb-2 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]">
-        <label className="block text-[10px] font-black uppercase text-[hsl(var(--muted-foreground))] mb-1">
-          Pilih Data Dasar (Sasaran)
-        </label>
-        <select
-          value={sasaranId || ""}
-          onChange={(e) => setSasaranId(e.target.value ? Number(e.target.value) : null)}
-          className="w-full max-w-sm px-3 py-2 border border-[hsl(var(--border))] bg-transparent text-[12px] font-bold"
-        >
-          <option value="">-- Pilih Sasaran dari Data Dasar --</option>
-          {sasarans.map((s: any) => (
-            <option key={s.id} value={s.id}>
-              {s.nama}
-            </option>
-          ))}
-        </select>
-        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
-          Atau isi info manual di form meta bawah ini jika belum terdaftar.
-        </p>
-      </div>
-
       <FormView
         activeForm={activeForm}
         editingId={editingId}

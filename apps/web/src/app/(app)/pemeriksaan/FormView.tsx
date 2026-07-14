@@ -40,14 +40,35 @@ export function FormView({
   const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
   const penilaianFields = activeForm.fields.filter((f: any) => f.grup !== "__META__");
 
-  const groups: { grup: string; fields: any[] }[] = [];
+  const groups: {
+    grup: string;
+    area: string;
+    subbagian: string | null;
+    areaIndex: number;
+    firstInArea: boolean;
+    fields: any[];
+  }[] = [];
   const groupMap = new Map<string, any[]>();
   penilaianFields.forEach((f: any) => {
     const g = f.grup || "Lainnya";
     if (!groupMap.has(g)) groupMap.set(g, []);
     groupMap.get(g)?.push(f);
   });
-  groupMap.forEach((fields, grup) => groups.push({ grup, fields }));
+  const areaIndexes = new Map<string, number>();
+  groupMap.forEach((fields, grup) => {
+    const delimiterIndex = grup.indexOf(" — ");
+    const area = delimiterIndex >= 0 ? grup.slice(0, delimiterIndex).trim() : grup;
+    const subbagian = delimiterIndex >= 0 ? grup.slice(delimiterIndex + 3).trim() || null : null;
+    if (!areaIndexes.has(area)) areaIndexes.set(area, areaIndexes.size + 1);
+    groups.push({
+      grup,
+      area,
+      subbagian,
+      areaIndex: areaIndexes.get(area) ?? 1,
+      firstInArea: !groups.some((group) => group.area === area),
+      fields,
+    });
+  });
 
   return (
     <div className="w-full pb-8">
@@ -115,13 +136,25 @@ export function FormView({
 
       {/* Penilaian Groups */}
       <div className="space-y-6">
-        {groups.map((group, gi) => (
+        {groups.map((group) => (
           <div key={group.grup} className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            {group.subbagian && group.firstInArea && (
+              <div className="flex items-center gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-6 py-3">
+                <span className="flex h-7 w-7 items-center justify-center bg-[hsl(var(--foreground))] text-[9px] font-black text-[hsl(var(--background))]">
+                  {toRoman(group.areaIndex)}
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-wide">{group.area}</span>
+              </div>
+            )}
             {/* Group Header */}
-            <div className="px-6 py-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
-              <h2 className="text-[14px] font-semibold flex items-center gap-2">
-                <span className="text-[13px] text-[hsl(var(--muted-foreground))]">{toRoman(gi + 1)}.</span>
-                {group.grup}
+            <div
+              className={`border-b border-[hsl(var(--border))] px-6 py-3 ${group.subbagian ? "bg-[hsl(var(--muted))]/40 pl-14" : "bg-[hsl(var(--muted))]"}`}
+            >
+              <h2 className="flex items-center gap-2 text-[13px] font-semibold">
+                {!group.subbagian && (
+                  <span className="text-[12px] text-[hsl(var(--muted-foreground))]">{toRoman(group.areaIndex)}.</span>
+                )}
+                {group.subbagian || group.area}
               </h2>
             </div>
 
