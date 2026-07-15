@@ -14,6 +14,14 @@ dist
 .gemini
 .impeccable
 .DS_Store
+apps/mobile
+docs
+*.pdf
+*.png
+*.jpg
+*.jpeg
+seed-*.js
+start-local-backend.js
 apps/web/test-*.js
 apps/web/public/sw.js
 apps/web/src/**/*.js
