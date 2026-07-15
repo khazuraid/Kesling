@@ -9,9 +9,6 @@ services:
     ports:
       - "3000:3000"
     env_file: .env.docker
-    environment:
-      DATABASE_URL: "postgresql://postgres:password@kes-postgres:5432/kesling_cirebon"
-      DIRECT_DATABASE_URL: "postgresql://postgres:password@kes-postgres:5432/kesling_cirebon"
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,8 +26,6 @@ services:
     restart: unless-stopped
     env_file: .env.docker
     environment:
-      DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
-      DIRECT_DATABASE_URL: "postgresql://postgres:***@kes-postgres:5432/kesling_cirebon"
       RUN_MIGRATIONS: "0"
 
     command: ["node", "apps/web/worker.js"]
