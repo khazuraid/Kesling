@@ -21,6 +21,7 @@ services:
       - kes-net
 
   worker:
+    profiles: ["worker"]
     build:
       context: .
       dockerfile: Dockerfile
