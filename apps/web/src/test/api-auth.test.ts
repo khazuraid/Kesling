@@ -26,7 +26,7 @@ describe("withAuth", () => {
   });
 
   it("calls handler if user exists", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 1, role: "OPERATOR", puskesmasId: 1 });
+    mockGetCurrentUser.mockResolvedValue({ id: 1, email: "op@test.com", name: "Op", role: "OPERATOR", puskesmasId: 1 });
     const wrapped = withAuth(handler);
     await wrapped(new NextRequest("http://localhost/api/test"), {});
     expect(handler).toHaveBeenCalled();
@@ -47,13 +47,19 @@ describe("withAdmin", () => {
   });
 
   it("returns 403 if not admin", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 1, role: "OPERATOR", puskesmasId: 1 });
+    mockGetCurrentUser.mockResolvedValue({ id: 1, email: "op@test.com", name: "Op", role: "OPERATOR", puskesmasId: 1 });
     const res = await withAdmin(handler)(new NextRequest("http://localhost/api/test"), {});
     expect(res.status).toBe(403);
   });
 
   it("calls handler if admin", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 1, role: "ADMIN", puskesmasId: null });
+    mockGetCurrentUser.mockResolvedValue({
+      id: 1,
+      email: "admin@test.com",
+      name: "Admin",
+      role: "ADMIN",
+      puskesmasId: null,
+    });
     await withAdmin(handler)(new NextRequest("http://localhost/api/test"), {});
     expect(handler).toHaveBeenCalled();
   });
@@ -67,7 +73,7 @@ describe("withLaporanAuth", () => {
   });
 
   it("returns 403 if operator writes to different puskesmas", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 2, role: "OPERATOR", puskesmasId: 1 });
+    mockGetCurrentUser.mockResolvedValue({ id: 2, email: "op@test.com", name: "Op", role: "OPERATOR", puskesmasId: 1 });
     const req = new NextRequest("http://localhost/api/laporan/tpp", {
       method: "POST",
       body: JSON.stringify({ puskesmasId: 99 }),
@@ -78,7 +84,7 @@ describe("withLaporanAuth", () => {
   });
 
   it("allows operator to write to own puskesmas", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 2, role: "OPERATOR", puskesmasId: 1 });
+    mockGetCurrentUser.mockResolvedValue({ id: 2, email: "op@test.com", name: "Op", role: "OPERATOR", puskesmasId: 1 });
     const req = new NextRequest("http://localhost/api/laporan/tpp", {
       method: "POST",
       body: JSON.stringify({ puskesmasId: 1 }),
@@ -89,7 +95,13 @@ describe("withLaporanAuth", () => {
   });
 
   it("allows admin to write to any puskesmas", async () => {
-    mockGetCurrentUser.mockResolvedValue({ id: 1, role: "ADMIN", puskesmasId: null });
+    mockGetCurrentUser.mockResolvedValue({
+      id: 1,
+      email: "admin@test.com",
+      name: "Admin",
+      role: "ADMIN",
+      puskesmasId: null,
+    });
     const req = new NextRequest("http://localhost/api/laporan/tpp", {
       method: "POST",
       body: JSON.stringify({ puskesmasId: 99 }),

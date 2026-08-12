@@ -10,14 +10,14 @@
     "studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "7.8.0",
+    "@prisma/client": "7.9.1",
     "bcryptjs": "3.0.3"
   },
   "devDependencies": {
-    "@prisma/config": "^7.8.0",
-    "@types/node": "^26.0.0",
-    "prisma": "7.8.0",
-    "tsx": "4.22.4",
-    "typescript": "6.0.3"
+    "@prisma/config": "^7.9.1",
+    "@types/node": "^26.2.0",
+    "prisma": "7.9.1",
+    "tsx": "4.23.12",
+    "typescript": "7.0.2"
   }
 }

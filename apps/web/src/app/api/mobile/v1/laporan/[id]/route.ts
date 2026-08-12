@@ -104,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const allowedStatuses = user.role === "ADMIN" ? ["DRAFT", "SUBMITTED", "APPROVED"] : ["DRAFT", "SUBMITTED"];
   const finalStatus = status && allowedStatuses.includes(status) ? status : "DRAFT";
 
-  await prisma.$transaction(async (tx: typeof prisma) => {
+  await prisma.$transaction(async (tx: any) => {
     await tx.dynamicLaporan.update({
       where: { id: laporanId },
       data: {
