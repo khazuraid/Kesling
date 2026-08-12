@@ -1081,6 +1081,9 @@ export default function FormPemeriksaanPage() {
                     <th className="w-16 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
                       Tipe
                     </th>
+                    <th className="px-2 py-2 text-left text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                      Opsi
+                    </th>
                     <th className="w-14 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
                       Wajib
                     </th>
@@ -1137,6 +1140,26 @@ export default function FormPemeriksaanPage() {
                               </option>
                             ))}
                           </select>
+                        </td>
+
+                        {/* Opsi (untuk SELECT/DROPDOWN) */}
+                        <td className="px-2 py-2">
+                          {field.tipe === "SELECT" || field.tipe === "DROPDOWN" ? (
+                            <input
+                              value={
+                                typeof field.options === "string"
+                                  ? field.options
+                                  : Array.isArray(field.options)
+                                    ? field.options.join(", ")
+                                    : ""
+                              }
+                              onChange={(e) => updateField(index, "options", e.target.value)}
+                              placeholder="Opsi, pisahkan dengan koma"
+                              className="w-full max-w-[220px] text-[10px] border border-[hsl(var(--border))] px-1.5 py-1 outline-none bg-[hsl(var(--card))]"
+                            />
+                          ) : (
+                            <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-40">-</span>
+                          )}
                         </td>
 
                         {/* Wajib */}

@@ -2,6 +2,25 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api-auth";
 
+// options bisa array (["A","B"]) atau string ("A, B") → selalu jadi string[] bersih
+function normalizeOptions(options: unknown): string[] {
+  if (Array.isArray(options)) return options.map((o) => String(o).trim()).filter(Boolean);
+  if (typeof options === "string") {
+    // sudah JSON array string
+    try {
+      const parsed = JSON.parse(options);
+      if (Array.isArray(parsed)) return parsed.map((o) => String(o).trim()).filter(Boolean);
+    } catch {
+      /* bukan JSON — lanjut split */
+    }
+    return options
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 export const GET = withAuth(async (req: NextRequest) => {
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
@@ -83,7 +102,7 @@ export const POST = withAuth(async (req: NextRequest) => {
               isRequired: f.isRequired,
               urutan: f.urutan,
               grup: f.grup,
-              options: f.options ? JSON.stringify(f.options) : null,
+              options: f.options ? JSON.stringify(normalizeOptions(f.options)) : null,
               config: f.config || {
                 skor: f.skor ?? 0,
                 skorBenar: f.skorBenar ?? f.skor ?? 1,
@@ -115,7 +134,7 @@ export const POST = withAuth(async (req: NextRequest) => {
             isRequired: f.isRequired,
             urutan: f.urutan,
             grup: f.grup,
-            options: f.options ? JSON.stringify(f.options) : null,
+            options: f.options ? JSON.stringify(normalizeOptions(f.options)) : null,
             config: f.config || {
               skor: f.skor ?? 0,
               skorBenar: f.skorBenar ?? f.skor ?? 1,
