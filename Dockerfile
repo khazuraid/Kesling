@@ -49,7 +49,7 @@ COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh && \
     mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache && \
-    PRISMA_PNPM_DIR=$(find /app/node_modules/.pnpm -name "@prisma+client@7.8.0_*" -type d | head -n 1) && \
+    PRISMA_PNPM_DIR=$(find /app/node_modules/.pnpm -name "@prisma+client@*_*" -type d | head -n 1) && \
     ENGINE_SOURCE="${PRISMA_PNPM_DIR}/node_modules/.prisma/client" && \
     cp -r "${ENGINE_SOURCE}"/* /app/apps/web/node_modules/.prisma/client/ && \
     chown -R nextjs:nodejs /app/apps/web/.next /app/apps/web/public /app/apps/web/node_modules/.prisma /app/packages/database/prisma /home/nextjs/.cache
