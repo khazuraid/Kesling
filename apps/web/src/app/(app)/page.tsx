@@ -50,8 +50,13 @@ export default async function DashboardPage() {
     _count: { id: true },
   });
 
-  const countMap = new Map(grouped.map((g) => [g.categoryId, g._count.id]));
-  const counts = categories.map((cat) => ({ ...cat, count: countMap.get(cat.id) || 0 }));
+  const countMap = new Map(
+    (grouped as Array<{ categoryId: number; _count: { id: number } }>).map((g) => [g.categoryId, g._count.id]),
+  );
+  const counts = (categories as Array<{ id: number; nama: string; code: string; icon: string | null }>).map((cat) => ({
+    ...cat,
+    count: countMap.get(cat.id) || 0,
+  }));
 
   const totalData = counts.reduce((acc, c) => acc + c.count, 0);
   const targetPerPkm = categories.length;
@@ -73,9 +78,11 @@ export default async function DashboardPage() {
     where: { bulan, tahun, status: { in: ["SUBMITTED", "APPROVED"] } },
     _count: { id: true },
   });
-  const pkmMap = new Map(pkmGrouped.map((g) => [g.puskesmasId, g._count.id]));
+  const pkmMap = new Map(
+    (pkmGrouped as Array<{ puskesmasId: number; _count: { id: number } }>).map((g) => [g.puskesmasId, g._count.id]),
+  );
 
-  const pkmStats = puskesmasList
+  const pkmStats = (puskesmasList as Array<{ id: number; nama: string }>)
     .map((pkm) => {
       const submitted = pkmMap.get(pkm.id) || 0;
       const percentage = targetPerPkm > 0 ? Math.round((submitted / targetPerPkm) * 100) : 0;
