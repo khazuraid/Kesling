@@ -52,5 +52,52 @@ export async function GET(req: Request) {
     }
   }
 
+  // Also check: rencana bulanan for current month — notify operators who haven't generated
+  const curMonth = now.getMonth() + 1;
+  const curYear = now.getFullYear();
+
+  for (const op of operators) {
+    if (!op.puskesmasId) continue;
+
+    const sasaranCount = await prisma.sasaran.count({ where: { puskesmasId: op.puskesmasId } });
+    if (sasaranCount === 0) continue;
+
+    const rencanaCount = await prisma.rencanaBulanan.count({
+      where: { puskesmasId: op.puskesmasId, bulan: curMonth, tahun: curYear },
+    });
+
+    if (rencanaCount === 0) {
+      await prisma.notification.create({
+        data: {
+          userId: op.id,
+          title: `Rencana Bulanan ${curMonth}/${curYear}`,
+          message: `Rencana pemeriksaan bulan ini belum dibuat. ${sasaranCount} sasaran menunggu penjadwalan.`,
+        },
+      });
+      notified++;
+    } else {
+      // Check for overdue rencana (TERJADWAL but not inspected, past tanggalRencana)
+      const overdue = await prisma.rencanaBulanan.count({
+        where: {
+          puskesmasId: op.puskesmasId,
+          bulan: curMonth,
+          tahun: curYear,
+          status: "TERJADWAL",
+          tanggalRencana: { lt: now },
+        },
+      });
+      if (overdue > 0) {
+        await prisma.notification.create({
+          data: {
+            userId: op.id,
+            title: `Pemeriksaan Terlewat`,
+            message: `${overdue} sasaran terjadwal belum diperiksa di bulan ${curMonth}/${curYear}.`,
+          },
+        });
+        notified++;
+      }
+    }
+  }
+
   return NextResponse.json({ notified, message: `${notified} notifikasi dikirim` });
 }

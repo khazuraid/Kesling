@@ -48,6 +48,7 @@ model Puskesmas {
   inspectionTemplates InspectionTemplate[]
   inspectionResults   InspectionResult[]
   sasarans            Sasaran[]
+  rencanaBulanan      RencanaBulanan[]
 
   @@map("puskesmas")
 }
@@ -634,12 +635,37 @@ model Sasaran {
   dataDinamis Json? // Field dinamis dari Laporan Builder (isBaseline = true)
 
   results InspectionResult[] // History IKL tempat ini
+  rencanaBulanan RencanaBulanan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([subCategoryId, puskesmasId])
   @@index([createdAt])
+}
+
+// -------------------------------------------------------------------------------------------------
+// RENCANA BULANAN & TAHUNAN
+// -------------------------------------------------------------------------------------------------
+model RencanaBulanan {
+  id          Int      @id @default(autoincrement())
+  puskesmasId Int
+  sasaranId   Int
+  bulan       Int // 1-12
+  tahun       Int
+  tanggalRencana DateTime? // Tanggal rencana pemeriksaan (auto dari penjadwalan)
+  status      String   @default("TERJADWAL") // TERJADWAL, SELESAI, DILEWATI
+  prioritas   Int      @default(0) // 0=biasa, 1=prioritas
+  catatan     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  puskesmas Puskesmas @relation(fields: [puskesmasId], references: [id], onDelete: Cascade)
+  sasaran   Sasaran   @relation(fields: [sasaranId], references: [id], onDelete: Cascade)
+
+  @@unique([puskesmasId, sasaranId, bulan, tahun])
+  @@index([puskesmasId, bulan, tahun])
+  @@map("rencana_bulanan")
 }
 
 // Konfigurasi Aplikasi (key-value)

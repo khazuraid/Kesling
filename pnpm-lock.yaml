@@ -66,6 +66,9 @@ importers:
       '@tamagui/lucide-icons-2':
         specifier: ^2.7.4
         version: 2.7.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@tamagui/progress':
+        specifier: ^2.7.4
+        version: 2.7.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tamagui/scroll-view':
         specifier: ^2.7.4
         version: 2.7.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
