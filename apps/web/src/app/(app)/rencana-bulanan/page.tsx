@@ -62,6 +62,7 @@ export default function RencanaBulananPage() {
   const now = new Date();
   const [bulan, setBulan] = useState(Number(sp.get("bulan")) || now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
+  const [kapasitas, setKapasitas] = useState(5);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery<RencanaData>({
@@ -78,7 +79,7 @@ export default function RencanaBulananPage() {
       const res = await fetch("/api/rencana-bulanan/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bulan, tahun }),
+        body: JSON.stringify({ bulan, tahun, kapasitasPerHari: kapasitas }),
       });
       if (!res.ok) throw new Error("Gagal generate");
       return res.json();
@@ -173,7 +174,20 @@ export default function RencanaBulananPage() {
               <span className="text-2xl font-black text-[hsl(var(--accent))]">{data?.totalTerjadwal ?? 0}</span>
             </div>
           </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4 flex items-end justify-end">
+          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4 flex items-end justify-end gap-2">
+            <label className="flex flex-col gap-1">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+                Sasaran/Hari
+              </span>
+              <input
+                type="number"
+                min={1}
+                max={50}
+                value={kapasitas}
+                onChange={(e) => setKapasitas(Math.max(1, Number(e.target.value) || 1))}
+                className="w-20 border border-[hsl(var(--border))] rounded-lg px-2 py-2 text-[13px] font-bold text-center bg-[hsl(var(--background))]"
+              />
+            </label>
             <button
               onClick={() => generateMut.mutate()}
               disabled={generateMut.isPending}
@@ -184,7 +198,7 @@ export default function RencanaBulananPage() {
               ) : (
                 <Play className="w-3.5 h-3.5" />
               )}
-              Jadwalkan Otomatis
+              Jadwalkan
             </button>
           </div>
         </div>
