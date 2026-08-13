@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, CalendarRange, Check, CheckCircle2, Clock, Loader2, Play, RotateCcw, X } from "lucide-react";
+import { Calendar, CalendarRange, Check, CheckCircle2, ClipboardCheck, Clock, Loader2, Play, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -56,11 +56,9 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 export default function RencanaBulananPage() {
-  const router = useRouter();
   const sp = useSearchParams();
-  const { data: session } = useSession();
-  const userRole = (session?.user as any)?.role || "OPERATOR";
-  const isOperator = userRole === "OPERATOR";
+  const router = useRouter();
+  useSession();
   const now = new Date();
   const [bulan, setBulan] = useState(Number(sp.get("bulan")) || now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
@@ -90,7 +88,7 @@ export default function RencanaBulananPage() {
 
   const updateMut = useMutation({
     mutationFn: async ({ rencanaId, status }: { rencanaId: number; status: string }) => {
-      const res = await fetch(`/api/rencana-bulanan/update`, {
+      const res = await fetch("/api/rencana-bulanan/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rencanaId, status }),
@@ -101,21 +99,19 @@ export default function RencanaBulananPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rencana-bulanan"] }),
   });
 
-  const pickMonth = () => {
-    router.push(`/rencana-bulanan?bulan=${(bulan % 12) + 1}&tahun=${bulan === 12 ? tahun + 1 : tahun}`);
-  };
-
   const prevMonth = () => {
     if (bulan === 1) {
       setBulan(12);
       setTahun(tahun - 1);
     } else setBulan(bulan - 1);
+    router.replace(`/rencana-bulanan?bulan=${bulan === 1 ? 12 : bulan - 1}&tahun=${bulan === 1 ? tahun - 1 : tahun}`);
   };
   const nextMonth = () => {
     if (bulan === 12) {
       setBulan(1);
       setTahun(tahun + 1);
     } else setBulan(bulan + 1);
+    router.replace(`/rencana-bulanan?bulan=${bulan === 12 ? 1 : bulan + 1}&tahun=${bulan === 12 ? tahun + 1 : tahun}`);
   };
 
   return (
@@ -144,13 +140,14 @@ export default function RencanaBulananPage() {
       </div>
 
       <div className="p-5 space-y-5">
-        {/* Summary */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4 col-span-1 flex flex-col gap-1">
+          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
               Progress
             </span>
-            <span className="text-2xl font-black">{data?.progress ?? 0}%</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black">{data?.progress ?? 0}%</span>
+            </div>
           </div>
           <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
@@ -192,7 +189,6 @@ export default function RencanaBulananPage() {
           </div>
         </div>
 
-        {/* Per kategori */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20 text-[hsl(var(--muted-foreground))]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Memuat...
@@ -252,41 +248,30 @@ export default function RencanaBulananPage() {
                           <span className={`text-[10px] font-bold px-2 py-1 rounded ${badge.cls}`}>{badge.label}</span>
                           {item.sudahDiperiksa ? (
                             <a
-                              href={`/pemeriksaan`}
-                              className="text-[hsl(var(--accent))] text-[10px] font-bold hover:underline"
+                              href="/pemeriksaan"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--success))] text-white hover:opacity-85"
                             >
-                              Lihat
+                              <CheckCircle2 className="w-3 h-3" /> Detail
                             </a>
                           ) : (
-                            <div className="flex items-center gap-1">
+                            <>
+                              <a
+                                href="/pemeriksaan"
+                                title="Isi pemeriksaan"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--accent))] text-white hover:opacity-85"
+                              >
+                                <ClipboardCheck className="w-3 h-3" /> Periksa
+                              </a>
                               {item.rencanaId && (
-                                <>
-                                  <button
-                                    onClick={() => updateMut.mutate({ rencanaId: item.rencanaId!, status: "SELESAI" })}
-                                    title="Tandai selesai"
-                                    className="p-1 rounded hover:bg-[hsl(var(--success))/0.1] hover:text-[hsl(var(--success))]"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => updateMut.mutate({ rencanaId: item.rencanaId!, status: "DILEWATI" })}
-                                    title="Tandai dilewati"
-                                    className="p-1 rounded hover:bg-[hsl(var(--error))/0.1] hover:text-[hsl(var(--error))]"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
-                              {!item.rencanaId && (
                                 <button
-                                  onClick={() => generateMut.mutate()}
-                                  title="Jadwalkan"
-                                  className="p-1 rounded hover:bg-[hsl(var(--accent))/0.1] hover:text-[hsl(var(--accent))]"
+                                  onClick={() => updateMut.mutate({ rencanaId: item.rencanaId!, status: "DILEWATI" })}
+                                  title="Tandai dilewati"
+                                  className="p-1 rounded hover:bg-[hsl(var(--error))/0.1] hover:text-[hsl(var(--error))]"
                                 >
-                                  <RotateCcw className="w-3.5 h-3.5" />
+                                  <X className="w-3.5 h-3.5" />
                                 </button>
                               )}
-                            </div>
+                            </>
                           )}
                         </div>
                       </div>

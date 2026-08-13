@@ -90,8 +90,11 @@ export async function POST(req: NextRequest) {
   const fotoPaths = await saveMobilePhotos(body.photos);
   const signatureData = body.signature ? { ...(body.signature as object), source: "mobile" } : undefined;
 
-  const result = await prisma.$transaction(async (tx) => {
-    const saved = await tx.inspectionResult.create({
+  const bodySasaranId = body.sasaranId ? Number(body.sasaranId) : null;
+
+  // Auto-mark rencana bulanan as SELESAI (payload create already builds `created`)
+  const saved = await prisma.$transaction(async (tx) => {
+    const created = await tx.inspectionResult.create({
       data: {
         templateId: template.id,
         puskesmasId,
@@ -123,18 +126,43 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         action: "CREATE",
         tableName: "inspection_result",
-        recordId: saved.id,
+        recordId: created.id,
         newData: { source: "mobile_offline_sync", localId, namaSasaran, alamatSasaran, status: "APPROVED" },
       },
     });
-    return saved;
+
+    // Auto-mark rencana bulanan as SELESAI — resolve sasaranId from body or by nama+alamat
+    const sasaranId =
+      bodySasaranId ??
+      (
+        await tx.sasaran.findFirst({
+          where: { puskesmasId, nama: namaSasaran, ...(alamatSasaran ? { alamat: alamatSasaran } : {}) },
+          select: { id: true },
+        })
+      )?.id ??
+      null;
+
+    if (sasaranId) {
+      await tx.rencanaBulanan.updateMany({
+        where: {
+          puskesmasId,
+          sasaranId,
+          bulan: tanggal.getMonth() + 1,
+          tahun: tanggal.getFullYear(),
+          status: { not: "SELESAI" },
+        },
+        data: { status: "SELESAI" },
+      });
+    }
+
+    return created;
   });
 
   try {
-    await aggregateInspectionToLaporan(result.id);
+    await aggregateInspectionToLaporan(saved.id);
   } catch (error) {
     console.error("Mobile offline sync aggregation failed:", error);
   }
 
-  return NextResponse.json({ id: result.id, status: result.status, syncedAt: new Date().toISOString() });
+  return NextResponse.json({ id: saved.id, status: saved.status, syncedAt: new Date().toISOString() });
 }

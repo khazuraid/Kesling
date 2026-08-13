@@ -76,6 +76,17 @@ export const POST = withAuth(async (req: NextRequest) => {
         },
       });
 
+      // Auto-mark rencana bulanan as SELESAI when inspection submitted for that sasaran+periode
+      const sasaranId = body.sasaranId ? Number(body.sasaranId) : null;
+      const b = body.bulan || new Date().getMonth() + 1;
+      const y = body.tahun || new Date().getFullYear();
+      if (sasaranId) {
+        await tx.rencanaBulanan.updateMany({
+          where: { puskesmasId: pkmId, sasaranId, bulan: b, tahun: y, status: { not: "SELESAI" } },
+          data: { status: "SELESAI" },
+        });
+      }
+
       return res;
     });
 
