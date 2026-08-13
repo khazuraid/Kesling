@@ -22,6 +22,11 @@
     "turbo": "2.10.9"
   },
   "packageManager": "pnpm@11.1.0",
+  "pnpm": {
+    "overrides": {
+      "@babel/core": "^7.29.7"
+    }
+  },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
     "metro-runtime": "0.87.0",
