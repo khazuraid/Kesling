@@ -79,15 +79,16 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
     echo "⚠️ No migrations directory found, skipping."
   fi
 
-  # Run seed (idempotent - uses ON CONFLICT / IF NOT EXISTS)
-  SEED_FILE="/app/packages/database/prisma/seed-complete.sql"
-  if [ -f "$SEED_FILE" ]; then
-    echo "🌱 Running seed..."
-    psql "$PSQL_URL" -f "$SEED_FILE" 2>&1 || echo "⚠️ Seed completed with warnings (expected if data exists)."
-    echo "✅ Seed done!"
-  else
-    echo "⚠️ No seed file found at $SEED_FILE, skipping."
-  fi
+  # Run seeds (idempotent - uses ON CONFLICT / IF NOT EXISTS)
+  for SEED_FILE in /app/packages/database/prisma/seed-complete.sql /app/packages/database/prisma/seed-deploy.sql; do
+    if [ -f "$SEED_FILE" ]; then
+      echo "🌱 Running seed: $(basename "$SEED_FILE")..."
+      psql "$PSQL_URL" -f "$SEED_FILE" 2>&1 || echo "⚠️ $(basename "$SEED_FILE") completed with warnings (expected if data exists)."
+      echo "✅ $(basename "$SEED_FILE") done!"
+    else
+      echo "⚠️ No seed file found at $SEED_FILE, skipping."
+    fi
+  done
 else
   echo "⏭️ RUN_MIGRATIONS=${RUN_MIGRATIONS:-0}, skipping DB migrations and seed."
 fi

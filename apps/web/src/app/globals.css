@@ -17,6 +17,12 @@
   --color-warning: hsl(var(--warning));
   --color-info: hsl(var(--info));
   --color-error: hsl(var(--error));
+  --color-accent: hsl(var(--accent));
+  --color-accent-light: hsl(var(--accent-light));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-success-light: hsl(var(--success-light));
+  --color-warning-light: hsl(var(--warning-light));
+  --color-error-light: hsl(var(--error-light));
   --color-ring: hsl(var(--ring));
   --radius: 0.625rem;
 }
@@ -35,11 +41,17 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 230 25% 18%;
+    --accent: 211 100% 50%;
+    --accent-light: 211 100% 97%;
+    --accent-foreground: 0 0% 100%;
     --success: 142 71% 45%;
+    --success-light: 142 71% 96%;
     --warning: 38 92% 50%;
+    --warning-light: 38 92% 96%;
     --info: 199 89% 48%;
     --error: 0 84% 60%;
-    --ring: 249 68% 67%;
+    --error-light: 0 84% 97%;
+    --ring: 211 100% 50%;
     --shadow: 0 2px 12px 0 rgba(76, 78, 100, 0.06);
     --shadow-md: 0 4px 20px 0 rgba(76, 78, 100, 0.1);
     --shadow-lg: 0 8px 30px 0 rgba(76, 78, 100, 0.14);

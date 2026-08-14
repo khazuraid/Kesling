@@ -1,7 +1,18 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, CalendarRange, Check, CheckCircle2, ClipboardCheck, Clock, Loader2, Play, X } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Clock,
+  Loader2,
+  Play,
+  X,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -50,8 +61,8 @@ interface RencanaData {
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   TERJADWAL: { label: "Terjadwal", cls: "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" },
-  SELESAI: { label: "Selesai", cls: "bg-[hsl(var(--success))/0.12] text-[hsl(var(--success))]" },
-  DILEWATI: { label: "Dilewati", cls: "bg-[hsl(var(--error))/0.12] text-[hsl(var(--error))]" },
+  SELESAI: { label: "Selesai", cls: "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]" },
+  DILEWATI: { label: "Dilewati", cls: "bg-[hsl(var(--error-light))] text-[hsl(var(--error))]" },
   BELUM: { label: "Belum", cls: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]" },
 };
 
@@ -101,82 +112,76 @@ export default function RencanaBulananPage() {
   });
 
   const prevMonth = () => {
-    if (bulan === 1) {
-      setBulan(12);
-      setTahun(tahun - 1);
-    } else setBulan(bulan - 1);
-    router.replace(`/rencana-bulanan?bulan=${bulan === 1 ? 12 : bulan - 1}&tahun=${bulan === 1 ? tahun - 1 : tahun}`);
+    const nb = bulan === 1 ? 12 : bulan - 1;
+    const nt = bulan === 1 ? tahun - 1 : tahun;
+    setBulan(nb);
+    setTahun(nt);
+    router.replace(`/rencana-bulanan?bulan=${nb}&tahun=${nt}`);
   };
   const nextMonth = () => {
-    if (bulan === 12) {
-      setBulan(1);
-      setTahun(tahun + 1);
-    } else setBulan(bulan + 1);
-    router.replace(`/rencana-bulanan?bulan=${bulan === 12 ? 1 : bulan + 1}&tahun=${bulan === 12 ? tahun + 1 : tahun}`);
+    const nb = bulan === 12 ? 1 : bulan + 1;
+    const nt = bulan === 12 ? tahun + 1 : tahun;
+    setBulan(nb);
+    setTahun(nt);
+    router.replace(`/rencana-bulanan?bulan=${nb}&tahun=${nt}`);
   };
+
+  const stats = [
+    { label: "Progress", value: `${data?.progress ?? 0}%`, color: "text-[hsl(var(--accent))]" },
+    { label: "Total", value: data?.totalSasaran ?? 0, color: "text-[hsl(var(--foreground))]" },
+    { label: "Selesai", value: data?.totalSelesai ?? 0, color: "text-[hsl(var(--success))]" },
+    { label: "Terjadwal", value: data?.totalTerjadwal ?? 0, color: "text-[hsl(var(--accent))]" },
+  ];
 
   return (
     <div className="w-full min-h-[calc(100dvh-4rem)] bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <div className="h-14 border-b border-[hsl(var(--border))] px-5 flex items-center justify-between bg-[hsl(var(--card))] sticky top-0 z-10">
         <div className="flex items-center gap-3 min-w-0">
-          <Calendar className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+          <div className="w-9 h-9 rounded-xl bg-[hsl(var(--accent-light))] border border-[hsl(var(--accent))/0.15] flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-[hsl(var(--accent))]" />
+          </div>
           <div className="min-w-0">
-            <h1 className="text-[13px] font-black uppercase tracking-widest">Rencana Bulanan</h1>
-            <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
+            <h1 className="text-[14px] font-bold tracking-tight">Rencana Bulanan</h1>
+            <p className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">
               Jadwal pemeriksaan sasaran per bulan
             </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={prevMonth} className="p-2 rounded hover:bg-[hsl(var(--muted))]">
-            <Calendar className="w-4 h-4" />
+          <button
+            onClick={prevMonth}
+            className="w-8 h-8 rounded-lg border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-[13px] font-bold px-2 min-w-[140px] text-center">
+          <span className="text-[14px] font-bold px-3 min-w-[140px] text-center">
             {BULAN_FULL[bulan - 1]} {tahun}
           </span>
-          <button onClick={nextMonth} className="p-2 rounded hover:bg-[hsl(var(--muted))]">
-            <CalendarRange className="w-4 h-4" />
+          <button
+            onClick={nextMonth}
+            className="w-8 h-8 rounded-lg border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Progress
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black">{data?.progress ?? 0}%</span>
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+                {s.label}
+              </span>
+              <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
             </div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Total
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black">{data?.totalSasaran ?? 0}</span>
-            </div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Selesai
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-[hsl(var(--success))]">{data?.totalSelesai ?? 0}</span>
-            </div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Terjadwal
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-[hsl(var(--accent))]">{data?.totalTerjadwal ?? 0}</span>
-            </div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4 flex items-end justify-end gap-2">
+          ))}
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)] flex items-end justify-end gap-2">
             <label className="flex flex-col gap-1">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
                 Sasaran/Hari
               </span>
               <input
@@ -185,13 +190,13 @@ export default function RencanaBulananPage() {
                 max={50}
                 value={kapasitas}
                 onChange={(e) => setKapasitas(Math.max(1, Number(e.target.value) || 1))}
-                className="w-20 border border-[hsl(var(--border))] rounded-lg px-2 py-2 text-[13px] font-bold text-center bg-[hsl(var(--background))]"
+                className="w-20 border border-[hsl(var(--border))] rounded-lg px-2 py-1.5 text-[14px] font-bold text-center bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--accent))]"
               />
             </label>
             <button
               onClick={() => generateMut.mutate()}
               disabled={generateMut.isPending}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[hsl(var(--accent))] text-white text-[12px] font-bold hover:opacity-85 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] text-[12px] font-bold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
             >
               {generateMut.isPending ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -208,19 +213,28 @@ export default function RencanaBulananPage() {
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Memuat...
           </div>
         ) : data?.kategori.length === 0 ? (
-          <div className="text-center py-20 text-[hsl(var(--muted-foreground))]">
-            Belum ada sasaran. Daftarkan lewat Data Dasar.
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-20 flex flex-col items-center justify-center text-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
+              <Calendar className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
+            </div>
+            <div>
+              <p className="text-[14px] font-bold">Belum ada sasaran</p>
+              <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Daftarkan lewat Data Dasar.</p>
+            </div>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-4">
             {data?.kategori.map((kat) => (
               <div
                 key={kat.kategoriNama}
-                className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg overflow-hidden"
+                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-[var(--shadow)]"
               >
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]">
-                  <span className="text-sm font-black">{kat.kategoriNama}</span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{kat.list.length} sasaran</span>
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--accent-light))]/50">
+                  <span className="text-base">{kat.kategoriIcon}</span>
+                  <span className="text-[14px] font-bold">{kat.kategoriNama}</span>
+                  <span className="text-[11px] text-[hsl(var(--muted-foreground))] ml-auto bg-[hsl(var(--card))] px-2 py-0.5 rounded-full">
+                    {kat.list.length} sasaran
+                  </span>
                 </div>
                 <div>
                   {kat.list.map((item) => {
@@ -228,10 +242,10 @@ export default function RencanaBulananPage() {
                     return (
                       <div
                         key={item.sasaranId}
-                        className="flex items-center gap-3 px-4 py-2.5 border-b border-[hsl(var(--border))] last:border-0 hover:bg-[hsl(var(--muted))]"
+                        className="flex items-center gap-3 px-4 py-3 border-b border-[hsl(var(--border))] last:border-0 hover:bg-[hsl(var(--muted))]/40 transition-colors"
                       >
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${item.sudahDiperiksa ? "bg-[hsl(var(--success))] text-white" : item.status === "TERJADWAL" ? "bg-[hsl(var(--accent))] text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.sudahDiperiksa ? "bg-[hsl(var(--success))] text-white" : item.status === "TERJADWAL" ? "bg-[hsl(var(--accent))] text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
                         >
                           {item.sudahDiperiksa ? (
                             <CheckCircle2 className="w-4 h-4" />
@@ -243,14 +257,14 @@ export default function RencanaBulananPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] font-bold truncate">{item.nama}</span>
+                            <span className="text-[14px] font-semibold truncate">{item.nama}</span>
                             {item.prioritas === 1 && (
-                              <span className="text-[9px] font-bold text-[hsl(var(--error))] bg-[hsl(var(--error))/0.1] px-1.5 py-0.5 rounded">
+                              <span className="text-[9px] font-bold text-[hsl(var(--error))] bg-[hsl(var(--error-light))] px-1.5 py-0.5 rounded-md">
                                 PRIORITAS
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
+                          <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">
                             {item.sudahDiperiksa && item.tanggalPeriksa
                               ? `Diperiksa ${new Date(item.tanggalPeriksa).toLocaleDateString("id-ID")}`
                               : item.tanggalRencana
@@ -259,11 +273,13 @@ export default function RencanaBulananPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded ${badge.cls}`}>{badge.label}</span>
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${badge.cls}`}>
+                            {badge.label}
+                          </span>
                           {item.sudahDiperiksa ? (
                             <a
                               href="/pemeriksaan"
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--success))] text-white hover:opacity-85"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[hsl(var(--success))] text-white hover:opacity-90 transition-opacity"
                             >
                               <CheckCircle2 className="w-3 h-3" /> Detail
                             </a>
@@ -272,7 +288,7 @@ export default function RencanaBulananPage() {
                               <a
                                 href="/pemeriksaan"
                                 title="Isi pemeriksaan"
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--accent))] text-white hover:opacity-85"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
                               >
                                 <ClipboardCheck className="w-3 h-3" /> Periksa
                               </a>
@@ -280,7 +296,7 @@ export default function RencanaBulananPage() {
                                 <button
                                   onClick={() => updateMut.mutate({ rencanaId: item.rencanaId!, status: "DILEWATI" })}
                                   title="Tandai dilewati"
-                                  className="p-1 rounded hover:bg-[hsl(var(--error))/0.1] hover:text-[hsl(var(--error))]"
+                                  className="p-1.5 rounded-lg hover:bg-[hsl(var(--error-light))] hover:text-[hsl(var(--error))] transition-colors"
                                 >
                                   <X className="w-3.5 h-3.5" />
                                 </button>

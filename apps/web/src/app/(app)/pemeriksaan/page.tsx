@@ -1,7 +1,17 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, Database, Edit3, FileText, Search, ShieldAlert, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Database,
+  Download,
+  Edit3,
+  FileText,
+  Search,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -169,6 +179,78 @@ export default function PemeriksaanPage() {
     navigator.geolocation.getCurrentPosition((pos) => {
       handleMetaChange(id, `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
     });
+  }
+
+  async function exportResultPdf(res: any) {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+    const doc = new jsPDF();
+    const template = templates.find((t) => t.id === res.templateId);
+    const namaSasaran = res.sasaran ? res.sasaran.nama : res.namaSasaran || "-";
+    const alamatSasaran = res.sasaran ? res.sasaran.alamat : res.alamatSasaran || "-";
+    const tanggal = res.tanggal
+      ? new Date(res.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+      : new Date(res.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+
+    // Header
+    doc.setFontSize(14);
+    doc.setTextColor(0, 122, 255); // accent
+    doc.text("HASIL PEMERIKSAAN KESEHATAN LINGKUNGAN", 14, 15);
+    doc.setTextColor(9, 9, 11);
+    doc.setFontSize(12);
+    doc.text(template?.nama || "Pemeriksaan", 14, 23);
+    doc.setFontSize(9);
+    doc.setTextColor(113, 113, 122);
+    doc.text(`Dicetak: ${new Date().toLocaleString("id-ID")}`, 14, 28);
+
+    // Info sasaran
+    autoTable(doc, {
+      startY: 33,
+      body: [
+        ["Sasaran / Nama", namaSasaran],
+        ["Alamat", alamatSasaran],
+        ["Tanggal Pemeriksaan", tanggal],
+        ["Unit Puskesmas", res.puskesmas?.nama || "-"],
+        ["Status", res.status || "DRAFT"],
+      ],
+      styles: { fontSize: 9, cellPadding: 2, textColor: [9, 9, 11] },
+      columnStyles: { 0: { fontStyle: "bold", fillColor: [244, 244, 245], cellWidth: 45 } },
+      theme: "plain",
+    });
+
+    // Hasil checklist
+    const rows: (string | number)[][] = [];
+    (template?.fields || [])
+      .filter((f: any) => f.grup !== "__META__")
+      .forEach((f: any) => {
+        const v = (res.values || []).find((rv: any) => rv.fieldId === f.id);
+        let answer = "-";
+        if (v) {
+          if (f.tipe === "BOOLEAN") answer = v.valueString === "True" || v.valueString === "true" ? "✔ Ya" : "✘ Tidak";
+          else if (v.valueNumber !== null && v.valueNumber !== undefined) answer = String(v.valueNumber);
+          else if (v.valueString) answer = v.valueString;
+        }
+        rows.push([f.pertanyaan, answer]);
+      });
+
+    const skor = res.skor;
+    if (skor !== undefined && skor !== null) {
+      rows.push(["SKOR AKHIR", String(skor)]);
+    }
+
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 6 : 55,
+      head: [["Variabel / Pertanyaan", "Hasil"]],
+      body: rows,
+      styles: { fontSize: 9, cellPadding: 3, textColor: [9, 9, 11] },
+      headStyles: { fillColor: [0, 122, 255], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [244, 244, 245] },
+      columnStyles: { 1: { cellWidth: 60 } },
+    });
+
+    doc.save(`pemeriksaan-${namaSasaran.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
 
   function handleSubmit() {
@@ -432,66 +514,86 @@ export default function PemeriksaanPage() {
     return (
       <div className="w-full mx-auto pb-4 space-y-4 fade-in">
         <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
+          <div className="w-10 h-10 rounded-2xl bg-[hsl(var(--accent-light))] border border-[hsl(var(--accent))/0.15] flex items-center justify-center">
+            <FileText className="w-4 h-4 text-[hsl(var(--accent))]" />
+          </div>
           <div>
-            <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Pemeriksaan Lapangan</h1>
+            <h1 className="text-[15px] font-bold text-[hsl(var(--foreground))]">Pemeriksaan Lapangan</h1>
             <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Daftar form dan riwayat pemeriksaan</p>
           </div>
         </div>
 
-        <div className="flex items-center border-b border-[hsl(var(--border))]">
+        <div className="flex items-center gap-1 border-b border-[hsl(var(--border))]">
           <button
             onClick={() => setActiveTab("formulir")}
-            className={`px-4 py-2 text-[12px] font-bold border-b-2 transition-colors ${
+            className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition-colors ${
               activeTab === "formulir"
-                ? "border-[hsl(var(--foreground))] text-[hsl(var(--foreground))]"
+                ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
                 : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
             }`}
           >
-            Formulir <span className="bg-[hsl(var(--muted))] px-1.5 py-0.5 text-[10px]">{templates.length}</span>
+            Formulir{" "}
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-md ${activeTab === "formulir" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+            >
+              {templates.length}
+            </span>
           </button>
           <button
             onClick={() => setActiveTab("riwayat")}
-            className={`px-4 py-2 text-[12px] font-bold border-b-2 transition-colors ${
+            className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition-colors ${
               activeTab === "riwayat"
-                ? "border-[hsl(var(--foreground))] text-[hsl(var(--foreground))]"
+                ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
                 : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
             }`}
           >
-            Riwayat <span className="bg-[hsl(var(--muted))] px-1.5 py-0.5 text-[10px]">{results.length}</span>
+            Riwayat{" "}
+            <span
+              className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-md ${activeTab === "riwayat" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+            >
+              {results.length}
+            </span>
           </button>
         </div>
 
         {activeTab === "formulir" && (
-          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-[var(--shadow)]">
             {templates.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-[12px] font-bold">Belum ada template</p>
+              <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
+                  <FileText className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold">Belum ada template</p>
+                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                    Import template lewat Settings → Import.
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="divide-y divide-[hsl(var(--border))]">
                 {templates.map((tpl) => (
                   <div
                     key={tpl.id}
-                    className="flex items-center justify-between p-4 hover:bg-[hsl(var(--muted))]/30 transition-colors"
+                    className="flex items-center justify-between gap-3 p-4 hover:bg-[hsl(var(--accent-light))]/40 transition-colors"
                   >
-                    <div>
-                      <h3 className="text-[13px] font-bold flex items-center gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-[14px] font-bold flex items-center gap-2">
                         {tpl.nama}
                         {tpl.subCategory && (
-                          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase border border-[hsl(var(--border))] px-1.5 py-0.5">
+                          <span className="text-[10px] font-bold text-[hsl(var(--accent))] uppercase bg-[hsl(var(--accent-light))] px-2 py-0.5 rounded-md shrink-0">
                             {tpl.subCategory.nama}
                           </span>
                         )}
                       </h3>
-                      <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                      <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
                         {tpl.deskripsi || "-"} • {tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0}{" "}
                         Variabel
                       </p>
                     </div>
                     <button
                       onClick={() => handleOpenForm(tpl)}
-                      className="px-4 py-1.5 border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[11px] font-bold uppercase hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] transition-colors"
+                      className="px-4 py-2 rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] text-[12px] font-bold hover:opacity-90 transition-opacity shadow-sm shrink-0"
                     >
                       Buka Form
                     </button>
@@ -503,10 +605,18 @@ export default function PemeriksaanPage() {
         )}
 
         {activeTab === "riwayat" && (
-          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-x-auto">
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-x-auto shadow-[var(--shadow)]">
             {results.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-[12px] font-bold">Belum ada riwayat</p>
+              <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--success-light))] flex items-center justify-center">
+                  <ShieldAlert className="w-7 h-7 text-[hsl(var(--success))] opacity-60" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold">Belum ada riwayat</p>
+                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                    Hasil pemeriksaan akan tampil di sini.
+                  </p>
+                </div>
               </div>
             ) : (
               <table className="w-full border-collapse text-left">
@@ -534,6 +644,13 @@ export default function PemeriksaanPage() {
                       <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">{res.puskesmas?.nama}</td>
                       <td className="px-4 py-2.5 text-right">
                         <div className="flex items-center justify-end gap-3">
+                          <button
+                            onClick={() => exportResultPdf(res)}
+                            title="Export PDF"
+                            className="text-[hsl(var(--accent))] hover:opacity-75"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             onClick={() => handleEditResult(res)}
                             className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
