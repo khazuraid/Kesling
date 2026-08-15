@@ -42,6 +42,28 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- InspectionResult: add bulan/tahun if missing (migration 20260628 used IF NOT EXISTS, skipped if table pre-existed)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'bulan') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "bulan" INTEGER NOT NULL DEFAULT 0;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'tahun') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "tahun" INTEGER NOT NULL DEFAULT 0;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'tanggal') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "tanggal" TIMESTAMP(3);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'signatureData') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "signatureData" JSONB;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'fotoPaths') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "fotoPaths" JSONB DEFAULT '[]';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResult' AND column_name = 'sasaranId') THEN
+    ALTER TABLE "InspectionResult" ADD COLUMN "sasaranId" INTEGER;
+  END IF;
+END $$;
+
 -- ============================================================
 -- 1. APP SETTING DEFAULTS (empty values, just keys)
 -- ============================================================
