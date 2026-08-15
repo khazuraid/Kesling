@@ -1,21 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Calendar,
-  Check,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  Clock,
-  Loader2,
-  Play,
-  X,
-} from "lucide-react";
+import { Calendar, Check, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Play, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 
 const BULAN_FULL = [
   "Januari",
@@ -31,6 +23,7 @@ const BULAN_FULL = [
   "November",
   "Desember",
 ];
+const HARI = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 interface RencanaItem {
   sasaranId: number;
@@ -65,6 +58,14 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   DILEWATI: { label: "Dilewati", cls: "bg-[hsl(var(--error-light))] text-[hsl(var(--error))]" },
   BELUM: { label: "Belum", cls: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]" },
 };
+
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+function getFirstDayOfWeek(year: number, month: number) {
+  const d = new Date(year, month - 1, 1).getDay();
+  return d === 0 ? 6 : d - 1;
+}
 
 export default function RencanaBulananPage() {
   const sp = useSearchParams();
@@ -126,112 +127,169 @@ export default function RencanaBulananPage() {
     router.replace(`/rencana-bulanan?bulan=${nb}&tahun=${nt}`);
   };
 
+  // Calendar grid
+  const daysInMonth = getDaysInMonth(tahun, bulan);
+  const firstDay = getFirstDayOfWeek(tahun, bulan);
+  const allItems = data?.kategori?.flatMap((k) => k.list) ?? [];
+  const itemsByDate: Record<number, RencanaItem[]> = {};
+  for (const item of allItems) {
+    if (item.tanggalRencana) {
+      const d = new Date(item.tanggalRencana).getDate();
+      if (!itemsByDate[d]) itemsByDate[d] = [];
+      itemsByDate[d].push(item);
+    }
+  }
+
+  const selesaiVal = data?.totalSelesai ?? 0;
   const stats = [
     { label: "Progress", value: `${data?.progress ?? 0}%`, color: "text-[hsl(var(--accent))]" },
     { label: "Total", value: data?.totalSasaran ?? 0, color: "text-[hsl(var(--foreground))]" },
-    { label: "Selesai", value: data?.totalSelesai ?? 0, color: "text-[hsl(var(--success))]" },
+    {
+      label: "Selesai",
+      value: selesaiVal,
+      color: selesaiVal > 0 ? "text-[hsl(var(--success))]" : "text-[hsl(var(--muted-foreground))]",
+    },
     { label: "Terjadwal", value: data?.totalTerjadwal ?? 0, color: "text-[hsl(var(--accent))]" },
   ];
 
   return (
-    <div className="w-full min-h-[calc(100dvh-4rem)] bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <div className="h-14 border-b border-[hsl(var(--border))] px-5 flex items-center justify-between bg-[hsl(var(--card))] sticky top-0 z-10">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[hsl(var(--accent-light))] border border-[hsl(var(--accent))/0.15] flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-[hsl(var(--accent))]" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-[14px] font-bold tracking-tight">Rencana Bulanan</h1>
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">
-              Jadwal pemeriksaan sasaran per bulan
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={prevMonth}
-            className="w-8 h-8 rounded-lg border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-[14px] font-bold px-3 min-w-[140px] text-center">
-            {BULAN_FULL[bulan - 1]} {tahun}
-          </span>
-          <button
-            onClick={nextMonth}
-            className="w-8 h-8 rounded-lg border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="p-5 space-y-5">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]"
-            >
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
-                {s.label}
-              </span>
-              <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
-            </div>
-          ))}
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)] flex items-end justify-end gap-2">
-            <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
-                Sasaran/Hari
-              </span>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                value={kapasitas}
-                onChange={(e) => setKapasitas(Math.max(1, Number(e.target.value) || 1))}
-                className="w-20 border border-[hsl(var(--border))] rounded-lg px-2 py-1.5 text-[14px] font-bold text-center bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--accent))]"
-              />
-            </label>
+    <div className="pr-5 py-5 space-y-6 fade-in">
+      <PageHeader
+        title="Rencana Bulanan"
+        description="Jadwal pemeriksaan sasaran per bulan"
+        icon={<Calendar className="w-4 h-4" />}
+        actions={
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => generateMut.mutate()}
-              disabled={generateMut.isPending}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] text-[12px] font-bold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
+              onClick={prevMonth}
+              className="w-9 h-9 rounded-xl border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
             >
-              {generateMut.isPending ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Play className="w-3.5 h-3.5" />
-              )}
-              Jadwalkan
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-[15px] font-bold min-w-[150px] text-center">
+              {BULAN_FULL[bulan - 1]} {tahun}
+            </span>
+            <button
+              onClick={nextMonth}
+              className="w-9 h-9 rounded-xl border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        }
+      />
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <div key={s.label} className="card-shell p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+              {s.label}
+            </p>
+            <p className={`text-[28px] font-bold tabular-nums ${s.color} mt-1`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="card-shell p-4 flex items-center gap-3 flex-wrap">
+        <label className="text-[12px] font-semibold text-[hsl(var(--muted-foreground))]">Kapasitas sasaran/hari:</label>
+        <Input
+          type="number"
+          min={1}
+          max={50}
+          value={kapasitas}
+          onChange={(e) => setKapasitas(Number(e.target.value) || 1)}
+          className="w-20 h-9"
+        />
+        <Button onClick={() => generateMut.mutate()} disabled={generateMut.isPending} size="sm">
+          {generateMut.isPending ? (
+            <>
+              <Clock className="w-3.5 h-3.5 animate-spin" /> Mengenerate...
+            </>
+          ) : (
+            <>
+              <Play className="w-3.5 h-3.5" /> Jadwalkan
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Calendar + List */}
+      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
+        {/* Calendar */}
+        <div className="card-shell p-4">
+          <p className="text-[13px] font-bold mb-3">
+            {BULAN_FULL[bulan - 1]} {tahun}
+          </p>
+          <div className="grid grid-cols-6 gap-1 mb-1">
+            {HARI.map((h) => (
+              <div
+                key={h}
+                className="text-center text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))] py-1"
+              >
+                {h}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-6 gap-1">
+            {Array.from({ length: firstDay }).map((_, i) => (
+              <div key={`empty-${i}`} className="aspect-square" />
+            ))}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const items = itemsByDate[day] || [];
+              const hasSelesai = items.some((it) => it.sudahDiperiksa);
+              const hasTerjadwal = items.some((it) => it.status === "TERJADWAL" && !it.sudahDiperiksa);
+              return (
+                <div
+                  key={day}
+                  className={`aspect-square rounded-lg flex flex-col items-center justify-center text-[11px] font-semibold relative ${
+                    items.length > 0
+                      ? hasSelesai
+                        ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
+                        : hasTerjadwal
+                          ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
+                          : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50"
+                  }`}
+                >
+                  {day}
+                  {items.length > 0 && (
+                    <span className="absolute bottom-0.5 right-0.5 text-[8px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      {items.length}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20 text-[hsl(var(--muted-foreground))]">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Memuat...
-          </div>
-        ) : data?.kategori.length === 0 ? (
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-20 flex flex-col items-center justify-center text-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
-              <Calendar className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
+        {/* List per kategori */}
+        <div className="space-y-4">
+          {isLoading ? (
+            <div className="card-shell p-8 text-center text-[13px] text-[hsl(var(--muted-foreground))] animate-pulse">
+              Memuat jadwal...
             </div>
-            <div>
-              <p className="text-[14px] font-bold">Belum ada sasaran</p>
-              <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Daftarkan lewat Data Dasar.</p>
+          ) : !data || data.kategori.length === 0 ? (
+            <div className="card-shell p-12 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
+                <Calendar className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold">Belum ada jadwal</p>
+                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                  Klik tombol Jadwalkan untuk generate otomatis.
+                </p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {data?.kategori.map((kat) => (
-              <div
-                key={kat.kategoriNama}
-                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-[var(--shadow)]"
-              >
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--accent-light))]/50">
+          ) : (
+            data.kategori.map((kat) => (
+              <div key={kat.kategoriNama} className="card-shell overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
                   <span className="text-base">{kat.kategoriIcon}</span>
-                  <span className="text-[14px] font-bold">{kat.kategoriNama}</span>
+                  <span className="text-[13px] font-bold">{kat.kategoriNama}</span>
                   <span className="text-[11px] text-[hsl(var(--muted-foreground))] ml-auto bg-[hsl(var(--card))] px-2 py-0.5 rounded-full">
                     {kat.list.length} sasaran
                   </span>
@@ -245,7 +303,13 @@ export default function RencanaBulananPage() {
                         className="flex items-center gap-3 px-4 py-3 border-b border-[hsl(var(--border))] last:border-0 hover:bg-[hsl(var(--muted))]/40 transition-colors"
                       >
                         <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.sudahDiperiksa ? "bg-[hsl(var(--success))] text-white" : item.status === "TERJADWAL" ? "bg-[hsl(var(--accent))] text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                            item.sudahDiperiksa
+                              ? "bg-[hsl(var(--success))] text-white"
+                              : item.status === "TERJADWAL"
+                                ? "bg-[hsl(var(--accent))] text-white"
+                                : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                          }`}
                         >
                           {item.sudahDiperiksa ? (
                             <CheckCircle2 className="w-4 h-4" />
@@ -294,7 +358,9 @@ export default function RencanaBulananPage() {
                               </a>
                               {item.rencanaId && (
                                 <button
-                                  onClick={() => updateMut.mutate({ rencanaId: item.rencanaId!, status: "DILEWATI" })}
+                                  onClick={() =>
+                                    updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
+                                  }
                                   title="Tandai dilewati"
                                   className="p-1.5 rounded-lg hover:bg-[hsl(var(--error-light))] hover:text-[hsl(var(--error))] transition-colors"
                                 >
@@ -309,9 +375,9 @@ export default function RencanaBulananPage() {
                   })}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

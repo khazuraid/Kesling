@@ -15,6 +15,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
 import { FormView } from "./FormView";
 /* NOTE: <Fragment key={...}> used wrap map groups instead of useMemo.Component */
 
@@ -512,16 +513,12 @@ export default function PemeriksaanPage() {
   // ================= LIST VIEW =================
   if (!activeForm) {
     return (
-      <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-2xl bg-[hsl(var(--accent-light))] border border-[hsl(var(--accent))/0.15] flex items-center justify-center">
-            <FileText className="w-4 h-4 text-[hsl(var(--accent))]" />
-          </div>
-          <div>
-            <h1 className="text-[15px] font-bold text-[hsl(var(--foreground))]">Pemeriksaan Lapangan</h1>
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Daftar form dan riwayat pemeriksaan</p>
-          </div>
-        </div>
+      <div className="pr-5 py-5 space-y-6 fade-in">
+        <PageHeader
+          title="Pemeriksaan Lapangan"
+          description="Daftar form dan riwayat pemeriksaan"
+          icon={<FileText className="w-4 h-4" />}
+        />
 
         <div className="flex items-center gap-1 border-b border-[hsl(var(--border))]">
           <button
@@ -532,9 +529,9 @@ export default function PemeriksaanPage() {
                 : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
             }`}
           >
-            Formulir{" "}
+            Formulir
             <span
-              className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-md ${activeTab === "formulir" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+              className={`ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full ${activeTab === "formulir" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
             >
               {templates.length}
             </span>
@@ -547,9 +544,9 @@ export default function PemeriksaanPage() {
                 : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
             }`}
           >
-            Riwayat{" "}
+            Riwayat
             <span
-              className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-md ${activeTab === "riwayat" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
+              className={`ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full ${activeTab === "riwayat" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
             >
               {results.length}
             </span>
@@ -557,9 +554,9 @@ export default function PemeriksaanPage() {
         </div>
 
         {activeTab === "formulir" && (
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-[var(--shadow)]">
+          <>
             {templates.length === 0 ? (
-              <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
+              <div className="card-shell py-16 flex flex-col items-center justify-center text-center gap-3">
                 <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
                   <FileText className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
                 </div>
@@ -571,41 +568,45 @@ export default function PemeriksaanPage() {
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-[hsl(var(--border))]">
-                {templates.map((tpl) => (
-                  <div
-                    key={tpl.id}
-                    className="flex items-center justify-between gap-3 p-4 hover:bg-[hsl(var(--accent-light))]/40 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="text-[14px] font-bold flex items-center gap-2">
-                        {tpl.nama}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {templates.map((tpl: any) => {
+                  const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => handleOpenForm(tpl)}
+                      className="card-hover group p-5 text-left flex flex-col gap-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="w-11 h-11 rounded-xl bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0 border border-[hsl(var(--accent))]/10">
+                          <FileText className="w-5 h-5" />
+                        </div>
                         {tpl.subCategory && (
-                          <span className="text-[10px] font-bold text-[hsl(var(--accent))] uppercase bg-[hsl(var(--accent-light))] px-2 py-0.5 rounded-md shrink-0">
+                          <span className="text-[9px] font-bold text-[hsl(var(--accent))] uppercase bg-[hsl(var(--accent-light))] px-2 py-1 rounded-full shrink-0">
                             {tpl.subCategory.nama}
                           </span>
                         )}
-                      </h3>
-                      <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                        {tpl.deskripsi || "-"} • {tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0}{" "}
-                        Variabel
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleOpenForm(tpl)}
-                      className="px-4 py-2 rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] text-[12px] font-bold hover:opacity-90 transition-opacity shadow-sm shrink-0"
-                    >
-                      Buka Form
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-[15px] font-bold leading-tight line-clamp-2">{tpl.nama}</h3>
+                        <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                          {fieldCount} variabel pemeriksaan
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-[12px] font-bold text-[hsl(var(--accent))] uppercase tracking-wide pt-3 border-t border-[hsl(var(--border))]">
+                        Buka Form
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
-          </div>
+          </>
         )}
 
         {activeTab === "riwayat" && (
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-x-auto shadow-[var(--shadow)]">
+          <div className="card-shell overflow-x-auto">
             {results.length === 0 ? (
               <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
                 <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--success-light))] flex items-center justify-center">
@@ -621,49 +622,49 @@ export default function PemeriksaanPage() {
             ) : (
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/50 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                    <th className="px-4 py-2">Tanggal</th>
-                    <th className="px-4 py-2">Sasaran</th>
-                    <th className="px-4 py-2">Template</th>
-                    <th className="px-4 py-2">Unit PKM</th>
-                    <th className="px-4 py-2 text-right w-24">Aksi</th>
+                  <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                    <th className="px-4 py-3">Tanggal</th>
+                    <th className="px-4 py-3">Sasaran</th>
+                    <th className="px-4 py-3">Template</th>
+                    <th className="px-4 py-3">Unit PKM</th>
+                    <th className="px-4 py-3 text-right w-28">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[hsl(var(--border))]/50 text-[12px]">
-                  {results.map((res) => (
+                <tbody className="divide-y divide-[hsl(var(--border))]/50 text-[13px]">
+                  {results.map((res: any) => (
                     <tr key={res.id} className="hover:bg-[hsl(var(--muted))]/30 transition-colors">
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         {new Date(res.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
                         })}
                       </td>
-                      <td className="px-4 py-2.5 font-bold">{res.sasaran ? res.sasaran.nama : res.namaSasaran}</td>
-                      <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">{res.template?.nama}</td>
-                      <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">{res.puskesmas?.nama}</td>
-                      <td className="px-4 py-2.5 text-right">
+                      <td className="px-4 py-3 font-bold">{res.sasaran ? res.sasaran.nama : res.namaSasaran}</td>
+                      <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{res.template?.nama}</td>
+                      <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{res.puskesmas?.nama}</td>
+                      <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => exportResultPdf(res)}
                             title="Export PDF"
                             className="text-[hsl(var(--accent))] hover:opacity-75"
                           >
-                            <Download className="w-3.5 h-3.5" />
+                            <Download className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleEditResult(res)}
                             className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
                           >
-                            <Edit3 className="w-3.5 h-3.5" />
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm(`Hapus?`)) deleteMut.mutate(res.id);
+                              if (confirm("Hapus?")) deleteMut.mutate(res.id);
                             }}
                             className="text-[hsl(var(--muted-foreground))] hover:text-red-500"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
