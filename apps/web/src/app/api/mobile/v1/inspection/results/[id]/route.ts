@@ -33,10 +33,10 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     lat: result.lat,
     lng: result.lng,
     tanggal: result.tanggal || result.createdAt,
-    templateName: result.template.nama,
+    templateName: result.template?.nama ?? "Template Dihapus",
     values: result.values.map((v: any) => ({
-      pertanyaan: v.field.pertanyaan,
-      tipe: v.field.tipe,
+      pertanyaan: v.field?.pertanyaan ?? `Pertanyaan #${v.fieldId ?? v.id}`,
+      tipe: v.field?.tipe ?? "TEXT",
       value: v.valueString ?? v.valueNumber ?? null,
     })),
   });

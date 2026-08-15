@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       alamatSasaran: r.alamatSasaran || "-",
       status: r.status,
       tanggal: r.tanggal || r.createdAt,
-      templateName: r.template.nama,
+      templateName: r.template?.nama ?? "Template Dihapus",
     })),
   });
 }

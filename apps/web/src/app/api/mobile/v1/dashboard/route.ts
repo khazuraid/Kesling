@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
       alamatSasaran: item.alamatSasaran || "-",
       status: item.status,
       tanggal: item.tanggal || item.createdAt,
-      templateName: item.template.nama,
+      templateName: item.template?.nama ?? "Template Dihapus",
     })),
   });
 }
