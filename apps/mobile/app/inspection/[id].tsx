@@ -1,10 +1,12 @@
 import { Check, ChevronLeft, ClipboardCheck, MapPin, Plus } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 import { InspectionField } from "../../src/components/InspectionField";
+import { SuccessCheck } from "../../src/components/motion/SuccessCheck";
 import { CardGroup, ListRow, SectionLabel } from "../../src/components/ui";
 import { AppButton } from "../../src/components/ui/Button";
 import { EmptyState } from "../../src/components/ui/States";
@@ -20,6 +22,12 @@ export default function InspectionScreen() {
   const [nama, setNama] = useState("");
   const [alamat, setAlamat] = useState("");
   const [selectedSasaranId, setSelectedSasaranId] = useState<number | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const progressSv = useSharedValue(0);
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressSv.value}%`,
+  }));
 
   const { data: template, isLoading } = useQuery({
     queryKey: ["template", templateId],
@@ -35,6 +43,13 @@ export default function InspectionScreen() {
   useFocusEffect(() => {
     refetchSasaran();
   });
+
+  const answered = template?.fields.filter((f) => values[String(f.id)]).length ?? 0;
+  const total = template?.fields.length ?? 0;
+  const progress = total ? Math.round((answered / total) * 100) : 0;
+  useEffect(() => {
+    progressSv.value = withSpring(progress, { damping: 18, stiffness: 120 });
+  }, [progress]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -58,14 +73,9 @@ export default function InspectionScreen() {
       }
     },
     onSuccess: (data) => {
-      if ("duplicate" in data) {
-        Alert.alert("Berhasil", data.duplicate ? "Draft sudah pernah disinkronkan." : "Pemeriksaan tersimpan.");
-      } else {
-        Alert.alert("Offline", "Disimpan sebagai draft. Akan disinkronkan saat online.");
-      }
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["inspection-results"] });
-      router.back();
+      setShowSuccess(true);
     },
     onError: (e: any) => {
       Alert.alert("Gagal", e.message || "Sinkronisasi gagal.");
@@ -98,10 +108,6 @@ export default function InspectionScreen() {
       </YStack>
     );
   }
-
-  const answered = template?.fields.filter((f) => values[String(f.id)]).length ?? 0;
-  const total = template?.fields.length ?? 0;
-  const progress = total ? Math.round((answered / total) * 100) : 0;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -147,7 +153,7 @@ export default function InspectionScreen() {
               </Text>
             </XStack>
             <YStack height={6} borderRadius={3} bg="rgba(255,255,255,0.25)" overflow="hidden">
-              <YStack height={6} width={`${progress}%`} bg="white" borderRadius={3} />
+              <Animated.View style={[{ height: 6, backgroundColor: "white", borderRadius: 3 }, progressStyle]} />
             </YStack>
           </YStack>
         </YStack>
@@ -255,6 +261,13 @@ export default function InspectionScreen() {
           <YStack h="$8" />
         </YStack>
       </ScrollView>
+      <SuccessCheck
+        visible={showSuccess}
+        onComplete={() => {
+          setShowSuccess(false);
+          router.back();
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }

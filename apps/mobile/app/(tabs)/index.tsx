@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FadeIn, ScalePress, useCountUp } from "../../src/components/motion/primitives";
 import { ProgressRing } from "../../src/components/motion/Ring";
+import { ProfileSheet } from "../../src/components/ProfileSheet";
 import { api } from "../../src/lib/api";
 import { useAuth } from "../../src/lib/auth";
 
@@ -42,6 +43,7 @@ export default function HariIni() {
   const tahun = now.getFullYear();
   const today = now.toISOString().slice(0, 10);
   const [refreshing, setRefreshing] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const { data: dash, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
   const { data: notifData } = useQuery({ queryKey: ["notifications"], queryFn: () => api.notifications() });
@@ -89,158 +91,161 @@ export default function HariIni() {
     hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 19 ? "Selamat sore" : "Selamat malam";
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00A876" />}
-    >
-      {/* Header: greeting + avatar */}
-      <FadeIn>
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>{greeting},</Text>
-            <Text style={styles.userName}>{user?.name || "Petugas"}</Text>
-            <Text style={styles.dateText}>
-              {DAYS_ID[now.getDay()]}, {now.getDate()} {MONTHS_ID[now.getMonth()]} {now.getFullYear()}
-            </Text>
-          </View>
-          <Pressable onPress={() => router.push("/notifications")} hitSlop={8}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{(user?.name || "P")[0].toUpperCase()}</Text>
+    <>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00A876" />}
+      >
+        {/* Header: greeting + avatar */}
+        <FadeIn>
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.greeting}>{greeting},</Text>
+              <Text style={styles.userName}>{user?.name || "Petugas"}</Text>
+              <Text style={styles.dateText}>
+                {DAYS_ID[now.getDay()]}, {now.getDate()} {MONTHS_ID[now.getMonth()]} {now.getFullYear()}
+              </Text>
             </View>
-          </Pressable>
-        </View>
-      </FadeIn>
-
-      {/* Ring progress */}
-      <FadeIn delay={60}>
-        <View style={[styles.card, { alignItems: "center", paddingVertical: 20 }]}>
-          <ProgressRing
-            size={140}
-            strokeWidth={12}
-            progress={rencana?.progress ?? 0}
-            label="%"
-            sublabel={`${rencana?.totalSelesai ?? 0}/${rencana?.totalSasaran ?? 0} sasaran bulan ini`}
-            color="#00A876"
-          />
-        </View>
-      </FadeIn>
-
-      {/* Agenda hari ini */}
-      <FadeIn delay={120}>
-        <Text style={styles.sectionLabel}>AGENDA HARI INI · {agenda.length}</Text>
-      </FadeIn>
-      {agenda.length === 0 ? (
-        <FadeIn delay={160}>
-          <View style={styles.card}>
-            <Text style={styles.emptyText}>Tidak ada agenda hari ini. 🎉</Text>
-            <Pressable onPress={() => router.push("/(tabs)/jadwal")}>
-              <Text style={styles.linkText}>Buka Jadwal →</Text>
+            <Pressable onPress={() => setProfileOpen(true)} hitSlop={8}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{(user?.name || "P")[0].toUpperCase()}</Text>
+              </View>
             </Pressable>
           </View>
         </FadeIn>
-      ) : (
-        agenda.map((s, i) => (
-          <FadeIn key={s.id} delay={160 + i * 40}>
-            <ScalePress onPress={() => router.push(`/sasaran/${s.id}` as any)}>
-              <View style={styles.agendaCard}>
-                <View
-                  style={[
-                    styles.agendaDot,
-                    { backgroundColor: s.sudahDiperiksa ? "#EAF7EE" : s.prioritas === 1 ? "#FEF4E2" : "#E6F6F0" },
-                  ]}
-                >
-                  {s.sudahDiperiksa ? (
-                    <ClipboardCheck size={16} color="#22C55E" />
-                  ) : (
-                    <Zap size={16} color={s.prioritas === 1 ? "#F59E0B" : "#00A876"} />
-                  )}
+
+        {/* Ring progress */}
+        <FadeIn delay={60}>
+          <View style={[styles.card, { alignItems: "center", paddingVertical: 20 }]}>
+            <ProgressRing
+              size={140}
+              strokeWidth={12}
+              progress={rencana?.progress ?? 0}
+              label="%"
+              sublabel={`${rencana?.totalSelesai ?? 0}/${rencana?.totalSasaran ?? 0} sasaran bulan ini`}
+              color="#00A876"
+            />
+          </View>
+        </FadeIn>
+
+        {/* Agenda hari ini */}
+        <FadeIn delay={120}>
+          <Text style={styles.sectionLabel}>AGENDA HARI INI · {agenda.length}</Text>
+        </FadeIn>
+        {agenda.length === 0 ? (
+          <FadeIn delay={160}>
+            <View style={styles.card}>
+              <Text style={styles.emptyText}>Tidak ada agenda hari ini. 🎉</Text>
+              <Pressable onPress={() => router.push("/(tabs)/jadwal")}>
+                <Text style={styles.linkText}>Buka Jadwal →</Text>
+              </Pressable>
+            </View>
+          </FadeIn>
+        ) : (
+          agenda.map((s, i) => (
+            <FadeIn key={s.id} delay={160 + i * 40}>
+              <ScalePress onPress={() => router.push(`/sasaran/${s.id}` as any)}>
+                <View style={styles.agendaCard}>
+                  <View
+                    style={[
+                      styles.agendaDot,
+                      { backgroundColor: s.sudahDiperiksa ? "#EAF7EE" : s.prioritas === 1 ? "#FEF4E2" : "#E6F6F0" },
+                    ]}
+                  >
+                    {s.sudahDiperiksa ? (
+                      <ClipboardCheck size={16} color="#22C55E" />
+                    ) : (
+                      <Zap size={16} color={s.prioritas === 1 ? "#F59E0B" : "#00A876"} />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.agendaTitle} numberOfLines={1}>
+                      {s.nama}
+                    </Text>
+                    <Text style={styles.agendaSub} numberOfLines={1}>
+                      {s.kategori} · {s.alamat || "Tanpa alamat"}
+                    </Text>
+                  </View>
+                  <ChevronRight size={16} color="#8A8580" />
+                </View>
+              </ScalePress>
+            </FadeIn>
+          ))
+        )}
+
+        {/* Libur mendatang */}
+        {notifData?.liburMendatang?.length ? (
+          <FadeIn delay={200}>
+            <Text style={styles.sectionLabel}>HARI LIBUR</Text>
+            {notifData.liburMendatang.map((l) => (
+              <Pressable
+                key={l.tanggal}
+                onPress={() => router.push("/notifications")}
+                style={({ pressed }) => [
+                  styles.liburCard,
+                  l.sumber === "custom" ? styles.liburCustom : styles.liburNasional,
+                  pressed && { opacity: 0.85 },
+                ]}
+              >
+                <View style={[styles.liburIcon, { backgroundColor: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
+                  <CalendarDays size={18} color="#FFFFFF" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.agendaTitle} numberOfLines={1}>
-                    {s.nama}
+                  <Text style={[styles.liburKet, { color: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
+                    {l.keterangan}
                   </Text>
-                  <Text style={styles.agendaSub} numberOfLines={1}>
-                    {s.kategori} · {s.alamat || "Tanpa alamat"}
+                  <Text style={styles.liburHari}>{l.hari}</Text>
+                </View>
+              </Pressable>
+            ))}
+          </FadeIn>
+        ) : null}
+
+        {/* Stats */}
+        <FadeIn delay={240}>
+          <Text style={styles.sectionLabel}>STATISTIK</Text>
+          <View style={styles.statRow}>
+            <StatCard label="PEMERIKSAAN" value={dash?.userInspectionsCount ?? 0} color="#00A876" />
+            <StatCard label="SASARAN" value={dash?.sasaranCount ?? 0} color="#22C55E" />
+          </View>
+        </FadeIn>
+
+        {/* Recent */}
+        <FadeIn delay={300}>
+          <Text style={styles.sectionLabel}>TERBARU</Text>
+        </FadeIn>
+        {dash?.recentInspections?.length ? (
+          <View style={styles.card}>
+            {dash.recentInspections.map((ins) => (
+              <Pressable
+                key={ins.id}
+                onPress={() => router.push(`/inspection/result/${ins.id}`)}
+                style={({ pressed }) => [styles.listRow, pressed && { opacity: 0.6 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle} numberOfLines={1}>
+                    {ins.namaSasaran}
+                  </Text>
+                  <Text style={styles.rowSub} numberOfLines={1}>
+                    {ins.templateName} ·{" "}
+                    {new Date(ins.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
                   </Text>
                 </View>
                 <ChevronRight size={16} color="#8A8580" />
-              </View>
-            </ScalePress>
-          </FadeIn>
-        ))
-      )}
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.emptyText}>Belum ada pemeriksaan.</Text>
+          </View>
+        )}
 
-      {/* Libur mendatang */}
-      {notifData?.liburMendatang?.length ? (
-        <FadeIn delay={200}>
-          <Text style={styles.sectionLabel}>HARI LIBUR</Text>
-          {notifData.liburMendatang.map((l) => (
-            <Pressable
-              key={l.tanggal}
-              onPress={() => router.push("/notifications")}
-              style={({ pressed }) => [
-                styles.liburCard,
-                l.sumber === "custom" ? styles.liburCustom : styles.liburNasional,
-                pressed && { opacity: 0.85 },
-              ]}
-            >
-              <View style={[styles.liburIcon, { backgroundColor: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
-                <CalendarDays size={18} color="#FFFFFF" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.liburKet, { color: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
-                  {l.keterangan}
-                </Text>
-                <Text style={styles.liburHari}>{l.hari}</Text>
-              </View>
-            </Pressable>
-          ))}
-        </FadeIn>
-      ) : null}
-
-      {/* Stats */}
-      <FadeIn delay={240}>
-        <Text style={styles.sectionLabel}>STATISTIK</Text>
-        <View style={styles.statRow}>
-          <StatCard label="PEMERIKSAAN" value={dash?.userInspectionsCount ?? 0} color="#00A876" />
-          <StatCard label="SASARAN" value={dash?.sasaranCount ?? 0} color="#22C55E" />
-        </View>
-      </FadeIn>
-
-      {/* Recent */}
-      <FadeIn delay={300}>
-        <Text style={styles.sectionLabel}>TERBARU</Text>
-      </FadeIn>
-      {dash?.recentInspections?.length ? (
-        <View style={styles.card}>
-          {dash.recentInspections.map((ins) => (
-            <Pressable
-              key={ins.id}
-              onPress={() => router.push(`/inspection/result/${ins.id}`)}
-              style={({ pressed }) => [styles.listRow, pressed && { opacity: 0.6 }]}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle} numberOfLines={1}>
-                  {ins.namaSasaran}
-                </Text>
-                <Text style={styles.rowSub} numberOfLines={1}>
-                  {ins.templateName} ·{" "}
-                  {new Date(ins.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-                </Text>
-              </View>
-              <ChevronRight size={16} color="#8A8580" />
-            </Pressable>
-          ))}
-        </View>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.emptyText}>Belum ada pemeriksaan.</Text>
-        </View>
-      )}
-
-      <View style={{ height: 120 }} />
-    </ScrollView>
+        <View style={{ height: 120 }} />
+      </ScrollView>
+      <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
+    </>
   );
 }
 
