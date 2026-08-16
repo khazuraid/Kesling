@@ -46,6 +46,25 @@ export async function GET(req: NextRequest) {
       `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "lng" DOUBLE PRECISION`,
       `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "signatureData" JSONB`,
       `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "fotoPaths" JSONB DEFAULT '[]'`,
+      // InspectionResultValue: old schema used "nilai" TEXT; current schema needs valueString/valueNumber/valueJson
+      `CREATE TABLE IF NOT EXISTS "InspectionResultValue" (
+        "id" SERIAL NOT NULL,
+        "resultId" INTEGER NOT NULL,
+        "fieldId" INTEGER NOT NULL,
+        "valueString" TEXT,
+        "valueNumber" DOUBLE PRECISION,
+        "valueJson" JSONB,
+        CONSTRAINT "InspectionResultValue_pkey" PRIMARY KEY ("id")
+      )`,
+      `ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueString" TEXT`,
+      `ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueNumber" DOUBLE PRECISION`,
+      `ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueJson" JSONB`,
+      `DO $$ BEGIN
+         IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResultValue' AND column_name = 'nilai')
+            AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'InspectionResultValue' AND column_name = 'valueString') THEN
+           ALTER TABLE "InspectionResultValue" RENAME COLUMN "nilai" TO "valueString";
+         END IF;
+       END $$`,
     ];
     results.ddlApplied = ddlApplied;
     for (const stmt of ddl) {
