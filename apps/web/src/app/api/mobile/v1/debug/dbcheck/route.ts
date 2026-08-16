@@ -41,6 +41,12 @@ export async function GET(req: NextRequest) {
       `CREATE INDEX IF NOT EXISTS "rencana_bulanan_puskesmasId_bulan_tahun_idx" ON "rencana_bulanan"("puskesmasId", "bulan", "tahun")`,
       `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "bulan" INTEGER NOT NULL DEFAULT 0`,
       `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "tahun" INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "namaSasaran" TEXT`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "alamatSasaran" TEXT`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "lat" DOUBLE PRECISION`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "lng" DOUBLE PRECISION`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "signatureData" JSONB`,
+      `ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "fotoPaths" JSONB DEFAULT '[]'`,
     ];
     results.ddlApplied = ddlApplied;
     for (const stmt of ddl) {
