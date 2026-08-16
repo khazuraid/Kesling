@@ -12,8 +12,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useAuth } from "../src/lib/auth";
+import { type Palette, usePalette } from "../src/lib/theme";
 
 export default function Login() {
+  const pal = usePalette();
+  const styles = mkStyles(pal);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -126,7 +129,7 @@ export default function Login() {
         <View style={styles.brandWrap}>
           <Animated.View style={[styles.pulseRing, ringStyle]} />
           <Animated.View style={[styles.logo, logoStyle]}>
-            <ShieldCheck size={38} color="#FFFFFF" />
+            <ShieldCheck size={38} color="white" />
           </Animated.View>
         </View>
         <Text style={styles.brandTitle}>Kesling</Text>
@@ -140,7 +143,7 @@ export default function Login() {
           <TextInput
             style={styles.input}
             placeholder="nama@email.com"
-            placeholderTextColor="#8A8580"
+            placeholderTextColor={pal.sub}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
@@ -153,13 +156,13 @@ export default function Login() {
             <TextInput
               style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: "transparent" }]}
               placeholder="••••••••"
-              placeholderTextColor="#8A8580"
+              placeholderTextColor={pal.sub}
               secureTextEntry={!show}
               value={password}
               onChangeText={setPassword}
             />
             <Pressable onPress={() => setShow(!show)} hitSlop={8} style={{ padding: 6 }}>
-              {show ? <EyeOff size={20} color="#8A8580" /> : <Eye size={20} color="#8A8580" />}
+              {show ? <EyeOff size={20} color={pal.sub} /> : <Eye size={20} color={pal.sub} />}
             </Pressable>
           </View>
 
@@ -195,97 +198,98 @@ export default function Login() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F7F5F2" },
-  center: { flex: 1, justifyContent: "center", padding: 24, gap: 12 },
-  brandWrap: {
-    width: 110,
-    height: 110,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-    marginBottom: 8,
-  },
-  pulseRing: {
-    position: "absolute",
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "#E6F6F0",
-  },
-  logo: {
-    width: 76,
-    height: 76,
-    borderRadius: 24,
-    backgroundColor: "#00A876",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#00A876",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  brandTitle: { fontSize: 30, fontWeight: "800", color: "#1F1D1B", letterSpacing: -1.2, textAlign: "center" },
-  brandSub: { fontSize: 13, color: "#8A8580", textAlign: "center", marginBottom: 12 },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#ECE7E1",
-    padding: 20,
-    gap: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  cardTitle: { fontSize: 17, fontWeight: "700", color: "#1F1D1B" },
-  label: { fontSize: 10, fontWeight: "800", color: "#8A8580", letterSpacing: 1 },
-  input: {
-    backgroundColor: "#F7F5F2",
-    borderWidth: 1,
-    borderColor: "#ECE7E1",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 46,
-    fontSize: 15,
-    color: "#1F1D1B",
-  },
-  pwWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F7F5F2",
-    borderWidth: 1,
-    borderColor: "#ECE7E1",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-  },
-  errorBox: { backgroundColor: "#FEECEB", borderRadius: 12, padding: 12 },
-  errorText: { color: "#EF4444", fontSize: 13 },
-  submitBtn: {
-    backgroundColor: "#00A876",
-    borderRadius: 14,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#00A876",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  submitText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-  bioBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#E6F6F0",
-    borderRadius: 14,
-    height: 48,
-  },
-  bioText: { color: "#00A876", fontSize: 15, fontWeight: "700" },
-  footer: { fontSize: 11, color: "#8A8580", textAlign: "center", marginTop: 8 },
-});
+const mkStyles = (pal: Palette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: pal.bg },
+    center: { flex: 1, justifyContent: "center", padding: 24, gap: 12 },
+    brandWrap: {
+      width: 110,
+      height: 110,
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "center",
+      marginBottom: 8,
+    },
+    pulseRing: {
+      position: "absolute",
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: pal.accentSoft,
+    },
+    logo: {
+      width: 76,
+      height: 76,
+      borderRadius: 24,
+      backgroundColor: pal.accent,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: pal.accent,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.3,
+      shadowRadius: 16,
+      elevation: 8,
+    },
+    brandTitle: { fontSize: 30, fontWeight: "800", color: pal.text, letterSpacing: -1.2, textAlign: "center" },
+    brandSub: { fontSize: 13, color: pal.sub, textAlign: "center", marginBottom: 12 },
+    card: {
+      backgroundColor: pal.card,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: pal.border,
+      padding: 20,
+      gap: 14,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 16,
+      elevation: 4,
+    },
+    cardTitle: { fontSize: 17, fontWeight: "700", color: pal.text },
+    label: { fontSize: 10, fontWeight: "800", color: pal.sub, letterSpacing: 1 },
+    input: {
+      backgroundColor: pal.bg,
+      borderWidth: 1,
+      borderColor: pal.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      height: 46,
+      fontSize: 15,
+      color: pal.text,
+    },
+    pwWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: pal.bg,
+      borderWidth: 1,
+      borderColor: pal.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+    },
+    errorBox: { backgroundColor: "#FEECEB", borderRadius: 12, padding: 12 },
+    errorText: { color: "#EF4444", fontSize: 13 },
+    submitBtn: {
+      backgroundColor: pal.accent,
+      borderRadius: 14,
+      height: 50,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: pal.accent,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    submitText: { color: pal.card, fontSize: 16, fontWeight: "700" },
+    bioBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: pal.accentSoft,
+      borderRadius: 14,
+      height: 48,
+    },
+    bioText: { color: pal.accent, fontSize: 15, fontWeight: "700" },
+    footer: { fontSize: 11, color: pal.sub, textAlign: "center", marginTop: 8 },
+  });

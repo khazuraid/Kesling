@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getMobileUser } from "@/lib/mobile-auth";
+import { getMobileUser, resolvePuskesmasId } from "@/lib/mobile-auth";
 
 const BULAN_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
   if (!user || !user.puskesmasId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const scopePuskesmasId = resolvePuskesmasId(req, user);
+  if (!scopePuskesmasId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const sp = req.nextUrl.searchParams;
   const tahun = Number(sp.get("tahun")) || new Date().getFullYear();
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
   const allLaporan = await prisma.dynamicLaporan.findMany({
     where: {
       tahun,
-      puskesmasId: user.puskesmasId,
+      puskesmasId: scopePuskesmasId,
       status: { in: ["SUBMITTED", "APPROVED"] },
     },
     include: { values: true },

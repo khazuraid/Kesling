@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getMobileUser } from "@/lib/mobile-auth";
+import { computeResultSkor } from "@/lib/result-skor";
 
 // ponytail: server-side jsPDF reuse; template/branding upgrade later
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,12 +16,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const result = await prisma.inspectionResult.findUnique({
     where: { id: resultId },
     include: {
-      template: { select: { nama: true } },
+      template: { select: { nama: true, config: true } },
       user: { select: { nama: true } },
-      values: { include: { field: { select: { pertanyaan: true } } } },
+      values: { include: { field: { select: { pertanyaan: true, tipe: true } } } },
     },
   });
   if (!result) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const skor = computeResultSkor(
+    result.values.map((v: any) => ({
+      valueString: v.valueString,
+      valueNumber: v.valueNumber,
+      field: v.field ? { tipe: v.field.tipe, grup: null, config: null } : null,
+    })),
+    (result.template as any)?.config,
+  );
 
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
   const doc = new jsPDF({ orientation: "portrait" });
@@ -30,16 +40,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   doc.setFontSize(10);
   doc.text(`No: ${result.id} · ${(result.tanggal ?? result.createdAt).toLocaleDateString("id-ID")}`, 14, 25);
 
+  const body: string[][] = [
+    ["Template", result.template?.nama ?? "-"],
+    ["Sasaran", result.namaSasaran ?? "-"],
+    ["Alamat", result.alamatSasaran ?? "-"],
+    ["Status", result.status],
+    ["Petugas", result.user?.nama ?? "-"],
+  ];
+  if (skor != null)
+    body.push(["Skor", `${skor}${skor <= 100 ? "%" : ""} (${skor >= 80 ? "Baik" : skor >= 60 ? "Cukup" : "Kurang"})`]);
+
   autoTable(doc, {
     startY: 32,
     head: [["Detail", "Nilai"]],
-    body: [
-      ["Template", result.template?.nama ?? "-"],
-      ["Sasaran", result.namaSasaran ?? "-"],
-      ["Alamat", result.alamatSasaran ?? "-"],
-      ["Status", result.status],
-      ["Petugas", result.user?.nama ?? "-"],
-    ],
+    body,
     theme: "grid",
     headStyles: { fillColor: [0, 168, 118] },
   });
@@ -55,6 +69,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       theme: "striped",
       headStyles: { fillColor: [0, 168, 118] },
     });
+  }
+
+  // Foto dokumentasi (path yang bisa diakses publik)
+  const fotos = ((result.fotoPaths as string[] | null) ?? []).filter(Boolean);
+  if (fotos.length) {
+    autoTable(doc, {
+      head: [["Foto Dokumentasi"]],
+      body: fotos.map((p) => [new URL(p, process.env.NEXTAUTH_URL ?? "http://localhost:3000").toString()]),
+      theme: "grid",
+      headStyles: { fillColor: [0, 168, 118] },
+    });
+  }
+
+  const sig = result.signatureData as { petugas?: string } | null;
+  if (sig?.petugas) {
+    doc.setFontSize(9);
+    doc.text(
+      `Ditandatangani digital oleh petugas (${result.user?.nama ?? "-"}).`,
+      14,
+      (doc as any).lastAutoTable.finalY + 8,
+    );
   }
 
   const pdf = Buffer.from(doc.output("arraybuffer"));

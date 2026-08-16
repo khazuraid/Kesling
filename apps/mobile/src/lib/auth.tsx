@@ -71,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMemToken(token);
     await setToken(token);
     setUser(u);
+    // Opt-in biometric utk sesi berikutnya (auto-prompt saat app dibuka)
+    if (await biometricAvailable()) await setBiometricEnabled(true);
   };
 
   /** Biometric path: restore session from stored token (already authenticated). */

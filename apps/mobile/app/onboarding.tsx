@@ -11,6 +11,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { useAuth } from "../src/lib/auth";
+import { type Palette, usePalette } from "../src/lib/theme";
 
 export const ONBOARDING_KEY = "kesling_onboarding_done";
 
@@ -41,6 +42,8 @@ const SLIDES = [
 const WIDTH = 360; // approx slide width; scroll handler uses contentOffset anyway
 
 export default function Onboarding() {
+  const pal = usePalette();
+  const styles = mkStyles(pal);
   const router = useRouter();
   const x = useSharedValue(0);
   const [index, setIndex] = useState(0);
@@ -107,7 +110,53 @@ export default function Onboarding() {
   );
 }
 
+const mkStyles = (pal: Palette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: pal.bg },
+    slide: {
+      flex: 1,
+      width: WIDTH,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 40,
+      gap: 16,
+    },
+    iconWrap: {
+      width: 120,
+      height: 120,
+      borderRadius: 36,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 8,
+    },
+    title: { fontSize: 26, fontWeight: "800", color: pal.text, textAlign: "center" },
+    desc: { fontSize: 15, color: pal.sub, textAlign: "center", lineHeight: 22 },
+    dots: { flexDirection: "row", gap: 6, justifyContent: "center", marginBottom: 24 },
+    dot: { height: 8, borderRadius: 4, backgroundColor: "#C9C2BA", width: 8 },
+    btnRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 24,
+      paddingBottom: 40,
+    },
+    skip: { color: pal.sub, fontSize: 15, fontWeight: "600" },
+    cta: {
+      backgroundColor: pal.accent,
+      borderRadius: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 36,
+      shadowColor: pal.accent,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    ctaText: { color: pal.card, fontSize: 16, fontWeight: "700" },
+  });
+
 function Dot({ active, x, index }: { active: boolean; x: any; index: number }) {
+  const styles = mkStyles(usePalette());
   const style = useAnimatedStyle(() => {
     // width interpolates as slide i becomes active
     const pos = x.value / WIDTH;
@@ -119,47 +168,3 @@ function Dot({ active, x, index }: { active: boolean; x: any; index: number }) {
   });
   return <Animated.View style={[styles.dot, style, active && { backgroundColor: "#00A876" }]} />;
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F7F5F2" },
-  slide: {
-    flex: 1,
-    width: WIDTH,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 40,
-    gap: 16,
-  },
-  iconWrap: {
-    width: 120,
-    height: 120,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  title: { fontSize: 26, fontWeight: "800", color: "#1F1D1B", textAlign: "center" },
-  desc: { fontSize: 15, color: "#8A8580", textAlign: "center", lineHeight: 22 },
-  dots: { flexDirection: "row", gap: 6, justifyContent: "center", marginBottom: 24 },
-  dot: { height: 8, borderRadius: 4, backgroundColor: "#C9C2BA", width: 8 },
-  btnRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  skip: { color: "#8A8580", fontSize: 15, fontWeight: "600" },
-  cta: {
-    backgroundColor: "#00A876",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 36,
-    shadowColor: "#00A876",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  ctaText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-});

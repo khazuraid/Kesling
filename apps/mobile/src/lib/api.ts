@@ -82,7 +82,10 @@ export const api = {
 
   me: () => request<ApiUser>("/me"),
 
-  dashboard: () => request<Dashboard>("/dashboard"),
+  dashboard: (puskesmasId?: number | null) =>
+    request<Dashboard>(`/dashboard${puskesmasId ? `?puskesmasId=${puskesmasId}` : ""}`),
+
+  puskesmasList: () => request<Array<{ id: number; nama: string }>>("/puskesmas"),
 
   sasaran: (subCategoryId?: number) =>
     request<Sasaran[]>(`/sasaran${subCategoryId ? `?subCategoryId=${subCategoryId}` : ""}`),
@@ -171,8 +174,10 @@ export const api = {
     }),
 
   // Rencana Bulanan
-  rencanaBulanan: (bulan: number, tahun: number) =>
-    request<RencanaBulanan>(`/rencana-bulanan?bulan=${bulan}&tahun=${tahun}`),
+  rencanaBulanan: (bulan: number, tahun: number, puskesmasId?: number | null) =>
+    request<RencanaBulanan>(
+      `/rencana-bulanan?bulan=${bulan}&tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`,
+    ),
 
   generateRencana: (bulan: number, tahun: number, kapasitasPerHari?: number) =>
     request<{ success: boolean; count: number; bulan: number; tahun: number }>(`/rencana-bulanan/generate`, {
@@ -184,7 +189,8 @@ export const api = {
   rencanaTahunan: (tahun: number) => request<RencanaTahunan>(`/rencana-tahunan?tahun=${tahun}`),
 
   // Rekap
-  rekap: (tahun: number) => request<Rekap>(`/rekap?tahun=${tahun}`),
+  rekap: (tahun: number, puskesmasId?: number | null) =>
+    request<Rekap>(`/rekap?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`),
 
   // Notifications
   notifications: (unread?: boolean) => request<Notifications>(`/notifications${unread ? "?unread=true" : ""}`),

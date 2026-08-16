@@ -7,6 +7,7 @@ import { GlobalSearch } from "../../src/components/GlobalSearch";
 import { FadeIn, ScalePress, useCountUp } from "../../src/components/motion/primitives";
 import { ProgressRing } from "../../src/components/motion/Ring";
 import { ProfileSheet } from "../../src/components/ProfileSheet";
+import { getScopePuskesmasId, PuskesmasPicker, setScopePuskesmasId } from "../../src/components/PuskesmasPicker";
 import { api } from "../../src/lib/api";
 import { useAuth } from "../../src/lib/auth";
 import { getDrafts } from "../../src/lib/drafts";
@@ -47,17 +48,23 @@ export default function HariIni() {
   const [refreshing, setRefreshing] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [pkmOpen, setPkmOpen] = useState(false);
+  const [scopePkm, setScopePkm] = useState<number | null>(null);
   const [draftCount, setDraftCount] = useState(0);
 
   useFocusEffect(() => {
     getDrafts().then((d) => setDraftCount(d.length));
+    getScopePuskesmasId().then(setScopePkm);
   });
 
-  const { data: dash, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
+  const { data: dash, refetch } = useQuery({
+    queryKey: ["dashboard", scopePkm],
+    queryFn: () => api.dashboard(scopePkm),
+  });
   const { data: notifData } = useQuery({ queryKey: ["notifications"], queryFn: () => api.notifications() });
   const { data: rencana } = useQuery({
-    queryKey: ["rencana-bulanan", bulan, tahun],
-    queryFn: () => api.rencanaBulanan(bulan, tahun),
+    queryKey: ["rencana-bulanan", bulan, tahun, scopePkm],
+    queryFn: () => api.rencanaBulanan(bulan, tahun, scopePkm),
   });
 
   // Agenda hari ini: sasaran dengan tanggalRencana == today
@@ -111,6 +118,13 @@ export default function HariIni() {
             <View style={{ flex: 1 }}>
               <Text style={styles.greeting}>{greeting},</Text>
               <Text style={styles.userName}>{user?.name || "Petugas"}</Text>
+              {(user?.role === "ADMIN" || user?.role === "DINKES") && (
+                <Pressable onPress={() => setPkmOpen(true)} hitSlop={6} style={styles.pkmPill}>
+                  <Text style={styles.pkmText} numberOfLines={1}>
+                    {scopePkm ? `Puskesmas #${scopePkm}` : user?.puskesmasNama || "Semua Puskesmas"} ▾
+                  </Text>
+                </Pressable>
+              )}
               <Text style={styles.dateText}>
                 {DAYS_ID[now.getDay()]}, {now.getDate()} {MONTHS_ID[now.getMonth()]} {now.getFullYear()}
               </Text>
@@ -266,6 +280,16 @@ export default function HariIni() {
       </ScrollView>
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <PuskesmasPicker
+        open={pkmOpen}
+        onClose={() => setPkmOpen(false)}
+        role={user?.role}
+        currentId={scopePkm}
+        onPicked={async (id) => {
+          await setScopePuskesmasId(id);
+          setScopePkm(id);
+        }}
+      />
     </>
   );
 }
@@ -296,6 +320,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  pkmPill: {
+    alignSelf: "flex-start",
+    backgroundColor: "#E6F6F0",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  pkmText: { fontSize: 11, fontWeight: "700", color: "#00A876" },
   offlineBanner: {
     backgroundColor: "#FEF4E2",
     borderWidth: 1,

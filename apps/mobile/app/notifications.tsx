@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, CheckCheck, Clock } from "@tamagui/lucide-icons-2";
+import { Bell, CalendarDays, CheckCheck, Clock, FileWarning } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
@@ -128,6 +128,43 @@ export default function NotificationsPage() {
                       day: "numeric",
                       month: "long",
                     })}
+                  </Text>
+                </YStack>
+              </YStack>
+            ))}
+          </YStack>
+        </>
+      ) : null}
+
+      {/* Deadline laporan bulanan (tgl ≤10) */}
+      {data && (data as any).deadlineLaporan?.length > 0 ? (
+        <>
+          <SectionLabel>Deadline Laporan</SectionLabel>
+          <YStack mx="$4" mb="$3" gap="$2">
+            {(data as any).deadlineLaporan.map((l: any) => (
+              <YStack
+                key={l.categoryId}
+                bg="$dangerSoft"
+                borderRadius={16}
+                borderWidth={1}
+                borderColor="$danger"
+                p="$3.5"
+                flexDirection="row"
+                alignItems="center"
+                gap="$3"
+              >
+                <YStack w={40} h={40} borderRadius={12} bg="$danger" alignItems="center" justifyContent="center">
+                  <FileWarning size={20} color="white" />
+                </YStack>
+                <YStack flex={1} gap={2}>
+                  <Text fontSize="$2" color="$danger" fontWeight="800" letterSpacing={0.5}>
+                    LAPORAN BELUM dibuat
+                  </Text>
+                  <Text fontSize="$3.5" fontWeight="700" color="$fg">
+                    {l.nama}
+                  </Text>
+                  <Text fontSize="$2.5" color="$muted">
+                    Bulan {l.bulan}/{l.tahun} · Deadline tanggal 10
                   </Text>
                 </YStack>
               </YStack>

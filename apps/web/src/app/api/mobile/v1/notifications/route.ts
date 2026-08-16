@@ -77,7 +77,24 @@ export async function GET(req: NextRequest) {
     }));
   }
 
-  return NextResponse.json({ notifications, unreadCount, liburMendatang, deadlineRencana });
+  // Deadline laporan bulanan: tanggal ≤ 10 bulan ini & laporan bulan lalu belum FINAL (APPROVED)
+  let deadlineLaporan: { categoryId: number; nama: string; bulan: number; tahun: number }[] = [];
+  if (user.puskesmasId && now.getDate() <= 10) {
+    const bulanLalu = now.getMonth() === 0 ? 12 : now.getMonth(); // bulan sebelumnya (1-12)
+    const tahunLalu = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+    const cats = await prisma.dynamicCategory.findMany({ select: { id: true, nama: true }, take: 20 });
+    const sudah = await prisma.dynamicLaporan.findMany({
+      where: { puskesmasId: user.puskesmasId, bulan: bulanLalu, tahun: tahunLalu, status: "APPROVED" },
+      select: { categoryId: true },
+    });
+    const okIds = new Set(sudah.map((l) => l.categoryId));
+    deadlineLaporan = cats
+      .filter((c) => !okIds.has(c.id))
+      .slice(0, 5)
+      .map((c) => ({ categoryId: c.id, nama: c.nama, bulan: bulanLalu, tahun: tahunLalu }));
+  }
+
+  return NextResponse.json({ notifications, unreadCount, liburMendatang, deadlineRencana, deadlineLaporan });
 }
 
 // PUT mark as read (single or all)

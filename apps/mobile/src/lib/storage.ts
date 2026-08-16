@@ -30,3 +30,7 @@ export async function getOnboardingDone(): Promise<boolean> {
   const AsyncStorage = require("@react-native-async-storage/async-storage").default;
   return (await AsyncStorage.getItem(ONBOARDING_KEY)) === "1";
 }
+export async function resetOnboarding(): Promise<void> {
+  const AsyncStorage = require("@react-native-async-storage/async-storage").default;
+  await AsyncStorage.removeItem(ONBOARDING_KEY);
+}

@@ -1,7 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getMobileUser } from "@/lib/mobile-auth";
+import { getMobileUser, resolvePuskesmasId } from "@/lib/mobile-auth";
 
 const BULAN_NAMES = [
   "Januari",
@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
   if (!user || !user.puskesmasId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const scopePuskesmasId = resolvePuskesmasId(req, user) ?? user.puskesmasId;
 
   const sp = req.nextUrl.searchParams;
   const bulan = Number(sp.get("bulan")) || new Date().getMonth() + 1;
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
   try {
     // Get all sasaran for this puskesmas, grouped by subCategory (kategori)
     const sasarans = await prisma.sasaran.findMany({
-      where: { puskesmasId: user.puskesmasId },
+      where: { puskesmasId: scopePuskesmasId },
       include: {
         subCategory: { select: { id: true, nama: true, category: { select: { id: true, nama: true, icon: true } } } },
         rencanaBulanan: {

@@ -1,8 +1,10 @@
 import { Calendar, CalendarPlus, CheckCircle, ChevronRight, Clock, MapPin, Zap } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FadeIn } from "../../src/components/motion/primitives";
+import { getScopePuskesmasId } from "../../src/components/PuskesmasPicker";
 import { api } from "../../src/lib/api";
 
 const BULAN_NAMES = [
@@ -28,10 +30,17 @@ export default function Jadwal() {
   const [tahun] = useState(now.getFullYear());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [scopePkm, setScopePkm] = useState<number | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      getScopePuskesmasId().then(setScopePkm);
+    }, []),
+  );
 
   const { data, refetch } = useQuery({
-    queryKey: ["rencana-bulanan", bulan, tahun],
-    queryFn: () => api.rencanaBulanan(bulan, tahun),
+    queryKey: ["rencana-bulanan", bulan, tahun, scopePkm],
+    queryFn: () => api.rencanaBulanan(bulan, tahun, scopePkm),
   });
 
   const generateMutation = useMutation({

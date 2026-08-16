@@ -88,3 +88,18 @@ export function sanitizeMobileUser(user: {
     puskesmasNama: user.puskesmas?.nama ?? null,
   };
 }
+
+/**
+ * Puskesmas scope utk query mobile: ADMIN/DINKES boleh override via ?puskesmasId=,
+ * OPERATOR selalu pakai puskesmas miliknya (enforce server-side).
+ */
+export function resolvePuskesmasId(
+  req: NextRequest,
+  user: { role: string; puskesmasId: number | null },
+): number | null {
+  if (user.role === "ADMIN" || user.role === "DINKES") {
+    const q = Number(req.nextUrl.searchParams.get("puskesmasId"));
+    return Number.isFinite(q) && q > 0 ? q : user.puskesmasId;
+  }
+  return user.puskesmasId;
+}

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FadeIn } from "../../src/components/motion/primitives";
 import { api } from "../../src/lib/api";
-import { cacheGet, cacheSet } from "../../src/lib/cache";
+import { cacheGet, cacheSet, cacheTimestamp } from "../../src/lib/cache";
 import type { Sasaran } from "../../src/types";
 
 export default function SasaranList() {
@@ -14,6 +14,7 @@ export default function SasaranList() {
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [kategori, setKategori] = useState<string>("Semua");
+  const [status, setStatus] = useState<string>("Semua");
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["sasaran"],
     queryFn: async () => {
@@ -28,10 +29,12 @@ export default function SasaranList() {
   });
 
   // hydrate from cache once (offline-first)
+  const [cacheAt, setCacheAt] = useState<number | null>(null);
   useEffect(() => {
     cacheGet<Sasaran[]>("sasaran").then((cached) => {
       if (cached && cached.length) qc.setQueryData(["sasaran"], cached);
     });
+    cacheTimestamp("sasaran").then(setCacheAt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -47,10 +50,18 @@ export default function SasaranList() {
       kategori === "Semua"
         ? list
         : list.filter((s: any) => (s.kategoriNama || s.kategori?.nama || "Lainnya") === kategori);
-    if (!q) return byKat;
+    const byStatus =
+      status === "Semua"
+        ? byKat
+        : status === "Belum"
+          ? byKat.filter((s: any) => !s.lastInspection)
+          : status === "Terjadwal"
+            ? byKat.filter((s: any) => s.lastInspection?.status === "TERJADWAL")
+            : byKat.filter((s: any) => s.lastInspection?.status === "SELESAI");
+    if (!q) return byStatus;
     const ql = q.toLowerCase();
-    return byKat.filter((s: any) => s.nama?.toLowerCase().includes(ql) || s.alamat?.toLowerCase().includes(ql));
-  }, [data, q, kategori]);
+    return byStatus.filter((s: any) => s.nama?.toLowerCase().includes(ql) || s.alamat?.toLowerCase().includes(ql));
+  }, [data, q, kategori, status]);
 
   return (
     <View style={styles.root}>
@@ -77,6 +88,22 @@ export default function SasaranList() {
         />
       </View>
 
+      {/* Filter chips status */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 4, gap: 8 }}
+      >
+        {["Semua", "Selesai", "Terjadwal", "Belum"].map((st) => {
+          const active = st === status;
+          return (
+            <Pressable key={st} onPress={() => setStatus(st)} style={[styles.chip, active && styles.chipActive]}>
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>{st}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       {/* Filter chips kategori */}
       <ScrollView
         horizontal
@@ -92,6 +119,20 @@ export default function SasaranList() {
           );
         })}
       </ScrollView>
+
+      {/* Offline cache timestamp */}
+      {cacheAt ? (
+        <Text style={{ fontSize: 11, color: "#8A8580", paddingHorizontal: 16, paddingBottom: 4 }}>
+          Data per{" "}
+          {new Date(cacheAt).toLocaleString("id-ID", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+          {isLoading ? " · menyegarkan..." : ""}
+        </Text>
+      ) : null}
 
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 8 }}

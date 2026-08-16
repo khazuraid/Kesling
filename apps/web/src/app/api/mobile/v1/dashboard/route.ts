@@ -1,14 +1,14 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getMobileUser } from "@/lib/mobile-auth";
+import { getMobileUser, resolvePuskesmasId } from "@/lib/mobile-auth";
 
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req);
   if (!user) return NextResponse.json({ error: "Sesi mobile tidak valid atau telah berakhir." }, { status: 401 });
 
   try {
-    const puskesmasId = user.puskesmasId;
+    const puskesmasId = resolvePuskesmasId(req, user);
     const userId = user.id;
 
     const now = new Date();

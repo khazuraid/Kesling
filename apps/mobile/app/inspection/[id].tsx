@@ -13,7 +13,9 @@ import { CardGroup, ListRow, SectionLabel } from "../../src/components/ui";
 import { AppButton } from "../../src/components/ui/Button";
 import { EmptyState } from "../../src/components/ui/States";
 import { api } from "../../src/lib/api";
+import { cacheGet, cacheSet } from "../../src/lib/cache";
 import { saveDraft } from "../../src/lib/drafts";
+import type { TemplateDetail } from "../../src/types";
 
 export default function InspectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,9 +37,23 @@ export default function InspectionScreen() {
 
   const { data: template, isLoading } = useQuery({
     queryKey: ["template", templateId],
-    queryFn: () => api.templateDetail(templateId),
+    queryFn: async () => {
+      const fresh = await api.templateDetail(templateId);
+      cacheSet(`template_${templateId}`, fresh);
+      return fresh;
+    },
     enabled: !!templateId,
+    retryOnMount: false,
   });
+
+  // hydrate from cache once (offline-first)
+  useEffect(() => {
+    if (!templateId) return;
+    cacheGet<TemplateDetail>(`template_${templateId}`).then((cached) => {
+      if (cached) qc.setQueryData(["template", templateId], cached);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId]);
 
   const { data: sasarans, refetch: refetchSasaran } = useQuery({
     queryKey: ["sasaran"],

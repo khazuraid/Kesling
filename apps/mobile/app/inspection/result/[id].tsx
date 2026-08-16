@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
+import { GaugeChart } from "../../../src/components/motion/GaugeChart";
 import { CardGroup, ListRow, PageHeader, SectionLabel } from "../../../src/components/ui";
 import { StatusBadge } from "../../../src/components/ui/Badge";
 import { Screen } from "../../../src/components/ui/Screen";
@@ -99,6 +100,22 @@ export default function InspectionResultDetailScreen() {
           </Text>
         </XStack>
       </XStack>
+
+      {data.skor != null ? (
+        <XStack
+          mx="$4"
+          mb="$3"
+          bg="$card"
+          borderWidth={1}
+          borderColor="$border"
+          borderRadius={14}
+          alignItems="center"
+          justifyContent="center"
+          paddingVertical="$2"
+        >
+          <GaugeChart value={data.skor} size={170} strokeWidth={14} />
+        </XStack>
+      ) : null}
 
       <SectionLabel>Sasaran</SectionLabel>
       <CardGroup>

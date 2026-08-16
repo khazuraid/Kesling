@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { GaugeChart } from "../../src/components/motion/GaugeChart";
 import { FadeIn, useCountUp } from "../../src/components/motion/primitives";
+import { getScopePuskesmasId } from "../../src/components/PuskesmasPicker";
 import { api } from "../../src/lib/api";
 
 const COLOR_BY_PCT = (pct: number) => (pct >= 80 ? "#22C55E" : pct >= 60 ? "#F59E0B" : "#EF4444");
@@ -16,10 +18,17 @@ export default function Rekap() {
   const now = new Date();
   const [tahun] = useState(now.getFullYear());
   const [refreshing, setRefreshing] = useState(false);
+  const [scopePkm, setScopePkm] = useState<number | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      getScopePuskesmasId().then(setScopePkm);
+    }, []),
+  );
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["rekap", tahun],
-    queryFn: () => api.rekap(tahun),
+    queryKey: ["rekap", tahun, scopePkm],
+    queryFn: () => api.rekap(tahun, scopePkm ?? undefined),
   });
 
   const onRefresh = useCallback(async () => {

@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getMobileUser } from "@/lib/mobile-auth";
+import { computeResultSkor } from "@/lib/result-skor";
 
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -17,12 +18,22 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
       ...(user.role === "OPERATOR" ? { userId: user.id } : user.puskesmasId ? { puskesmasId: user.puskesmasId } : {}),
     },
     include: {
-      template: { select: { nama: true } },
+      template: { select: { nama: true, config: true } },
       values: { include: { field: { select: { pertanyaan: true, tipe: true } } } },
     },
   });
 
   if (!result) return NextResponse.json({ error: "Pemeriksaan tidak ditemukan." }, { status: 404 });
+
+  // Skor pakai rumus resmi (sama dengan agregasi laporan)
+  const skor = computeResultSkor(
+    result.values.map((v: any) => ({
+      valueString: v.valueString,
+      valueNumber: v.valueNumber,
+      field: v.field ? { tipe: v.field.tipe, grup: null, config: null } : null,
+    })),
+    (result.template as any)?.config,
+  );
 
   return NextResponse.json({
     id: result.id,
@@ -34,6 +45,9 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     lng: result.lng,
     tanggal: result.tanggal || result.createdAt,
     templateName: result.template?.nama ?? "Template Dihapus",
+    skor,
+    fotoPaths: (result.fotoPaths as string[] | null) ?? [],
+    signatureData: result.signatureData ?? null,
     values: result.values.map((v: any) => ({
       pertanyaan: v.field?.pertanyaan ?? `Pertanyaan #${v.fieldId ?? v.id}`,
       tipe: v.field?.tipe ?? "TEXT",
