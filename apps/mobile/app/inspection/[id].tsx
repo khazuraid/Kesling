@@ -7,6 +7,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-na
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 import { InspectionField } from "../../src/components/InspectionField";
 import { SuccessCheck } from "../../src/components/motion/SuccessCheck";
+import { PhotoCapture, type PhotoItem } from "../../src/components/PhotoCapture";
+import { SignaturePad } from "../../src/components/SignaturePad";
 import { CardGroup, ListRow, SectionLabel } from "../../src/components/ui";
 import { AppButton } from "../../src/components/ui/Button";
 import { EmptyState } from "../../src/components/ui/States";
@@ -23,6 +25,8 @@ export default function InspectionScreen() {
   const [alamat, setAlamat] = useState("");
   const [selectedSasaranId, setSelectedSasaranId] = useState<number | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [signature, setSignature] = useState<{ base64Data: string } | undefined>();
 
   const progressSv = useSharedValue(0);
   const progressStyle = useAnimatedStyle(() => ({
@@ -59,6 +63,9 @@ export default function InspectionScreen() {
           localId: `${Date.now()}`,
           values: { nama: nama || "Tanpa Nama", alamat: alamat || "-" },
           fieldValues: values,
+          photos,
+          signature,
+          sasaranId: selectedSasaranId,
         });
       } catch (e: any) {
         await saveDraft({
@@ -251,6 +258,16 @@ export default function InspectionScreen() {
                 </Text>
               </YStack>
             ) : null}
+          </YStack>
+
+          <SectionLabel>4 · FOTO BUKTI</SectionLabel>
+          <YStack bg="$card" borderRadius={16} borderWidth={1} borderColor="$border" p="$4" mb="$4">
+            <PhotoCapture photos={photos} onChange={setPhotos} max={6} />
+          </YStack>
+
+          <SectionLabel>5 · TANDA TANGAN PEMILIK</SectionLabel>
+          <YStack bg="$card" borderRadius={16} borderWidth={1} borderColor="$border" p="$4" mb="$4">
+            <SignaturePad onChange={setSignature} />
           </YStack>
 
           <AppButton
