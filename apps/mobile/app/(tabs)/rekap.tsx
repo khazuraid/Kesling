@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { GaugeChart } from "../../src/components/motion/GaugeChart";
 import { FadeIn, useCountUp } from "../../src/components/motion/primitives";
-import { ProgressRing } from "../../src/components/motion/Ring";
 import { api } from "../../src/lib/api";
 
 const COLOR_BY_PCT = (pct: number) => (pct >= 80 ? "#22C55E" : pct >= 60 ? "#F59E0B" : "#EF4444");
@@ -49,14 +49,7 @@ export default function Rekap() {
         <View>
           <FadeIn delay={60}>
             <View style={[styles.card, styles.centerCard]}>
-              <ProgressRing
-                size={160}
-                strokeWidth={14}
-                progress={data.overallPct}
-                label="%"
-                color={COLOR_BY_PCT(data.overallPct)}
-              />
-              <Text style={styles.overallLabel}>{data.overallLabel}</Text>
+              <GaugeChart value={data.overallPct} size={200} strokeWidth={16} label={data.overallLabel} />
             </View>
           </FadeIn>
 

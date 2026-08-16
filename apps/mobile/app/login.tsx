@@ -1,4 +1,4 @@
-import { Eye, EyeOff, ShieldCheck } from "@tamagui/lucide-icons-2";
+import { Eye, EyeOff, Fingerprint, ShieldCheck } from "@tamagui/lucide-icons-2";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, {
@@ -19,7 +19,20 @@ export default function Login() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [bioAvail, setBioAvail] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
+  const { signIn, signInWithToken } = useAuth();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const LocalAuth = require("expo-local-authentication").default as typeof import("expo-local-authentication");
+        const has = await LocalAuth.hasHardwareAsync();
+        const enrolled = await LocalAuth.isEnrolledAsync();
+        setBioAvail(has && enrolled);
+      } catch {}
+    })();
+  }, []);
 
   const logoScale = useSharedValue(1);
   const logoPulse = useSharedValue(0);
@@ -85,6 +98,27 @@ export default function Login() {
     }
   };
 
+  const bioLogin = async () => {
+    setBioBusy(true);
+    setError("");
+    try {
+      const LocalAuth = require("expo-local-authentication").default as typeof import("expo-local-authentication");
+      const res = await LocalAuth.authenticateAsync({
+        promptMessage: "Masuk ke Kesling",
+        fallbackLabel: "Gunakan sandi",
+      });
+      if (!res.success) {
+        setError("Biometric gagal. Masuk dengan email dan sandi.");
+        return;
+      }
+      await signInWithToken();
+    } catch (e: any) {
+      setError(e?.message || "Biometric tidak tersedia.");
+    } finally {
+      setBioBusy(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.center}>
@@ -142,6 +176,17 @@ export default function Login() {
           >
             <Text style={styles.submitText}>{loading ? "Memproses..." : "Masuk"}</Text>
           </Pressable>
+
+          {bioAvail ? (
+            <Pressable
+              onPress={bioLogin}
+              disabled={bioBusy}
+              style={({ pressed }) => [styles.bioBtn, pressed && { transform: [{ scale: 0.97 }], opacity: 0.8 }]}
+            >
+              <Fingerprint size={22} color="#00A876" />
+              <Text style={styles.bioText}>{bioBusy ? "Memverifikasi..." : "Masuk dengan Biometrik"}</Text>
+            </Pressable>
+          ) : null}
         </Animated.View>
 
         <Text style={styles.footer}>Dinkes Kota Cirebon • Kesehatan Lingkungan</Text>
@@ -232,5 +277,15 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   submitText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  bioBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#E6F6F0",
+    borderRadius: 14,
+    height: 48,
+  },
+  bioText: { color: "#00A876", fontSize: 15, fontWeight: "700" },
   footer: { fontSize: 11, color: "#8A8580", textAlign: "center", marginTop: 8 },
 });

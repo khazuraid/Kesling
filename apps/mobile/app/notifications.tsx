@@ -123,7 +123,7 @@ export default function NotificationsPage() {
                     {r.sasaranNama}
                   </Text>
                   <Text fontSize="$2.5" color="$muted">
-                    {new Date(r.tanggal + "T00:00:00").toLocaleDateString("id-ID", {
+                    {new Date(`${r.tanggal}T00:00:00`).toLocaleDateString("id-ID", {
                       weekday: "long",
                       day: "numeric",
                       month: "long",

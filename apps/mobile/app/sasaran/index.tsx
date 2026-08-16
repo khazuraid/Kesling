@@ -1,20 +1,39 @@
 import { Plus, Search } from "@tamagui/lucide-icons-2";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FadeIn } from "../../src/components/motion/primitives";
 import { api } from "../../src/lib/api";
+import { cacheGet, cacheSet } from "../../src/lib/cache";
+import type { Sasaran } from "../../src/types";
 
 export default function SasaranList() {
   const router = useRouter();
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [kategori, setKategori] = useState<string>("Semua");
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["sasaran"],
-    queryFn: api.sasaran,
+    queryFn: async () => {
+      const fresh = await api.sasaran();
+      cacheSet("sasaran", fresh);
+      return fresh;
+    },
+    initialData: undefined as never,
+    initialDataUpdatedAt: 0,
+    // stale-while-revalidate: show cache instantly when offline
+    retryOnMount: false,
   });
+
+  // hydrate from cache once (offline-first)
+  useEffect(() => {
+    cacheGet<Sasaran[]>("sasaran").then((cached) => {
+      if (cached && cached.length) qc.setQueryData(["sasaran"], cached);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const kategoriList = useMemo(() => {
     const set = new Set<string>();

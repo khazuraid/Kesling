@@ -1,15 +1,21 @@
-import { Bell, ClipboardList, Database, FileText, LogOut } from "@tamagui/lucide-icons-2";
+import { Bell, ClipboardList, Database, FileText, LogOut, Moon, Sun } from "@tamagui/lucide-icons-2";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useAuth } from "../../src/lib/auth";
+import { getTheme, setThemePref, type ThemeName } from "../../src/lib/theme";
 
 export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const [dark, setDark] = useState(false);
   const translateY = useSharedValue(500);
   const backdropOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    getTheme().then((t: ThemeName) => setDark(t === "dark"));
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -75,6 +81,25 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
             <Text style={styles.itemLabel}>{item.label}</Text>
           </Pressable>
         ))}
+
+        {/* Dark mode toggle */}
+        <View style={[styles.item, { justifyContent: "space-between" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
+            <View style={styles.itemIcon}>
+              {dark ? <Moon size={18} color="#00A876" /> : <Sun size={18} color="#00A876" />}
+            </View>
+            <Text style={styles.itemLabel}>Mode Gelap</Text>
+          </View>
+          <Switch
+            value={dark}
+            onValueChange={(v) => {
+              setDark(v);
+              setThemePref(v ? "dark" : "light");
+            }}
+            trackColor={{ true: "#00A876", false: "#ECE7E1" }}
+            thumbColor="#FFFFFF"
+          />
+        </View>
 
         <Pressable
           style={({ pressed }) => [styles.item, pressed && { backgroundColor: "#FEECEB" }]}

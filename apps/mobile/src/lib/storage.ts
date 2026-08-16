@@ -24,3 +24,9 @@ export async function deleteToken(): Promise<void> {
   }
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
+
+const ONBOARDING_KEY = "kesling_onboarding_done";
+export async function getOnboardingDone(): Promise<boolean> {
+  const AsyncStorage = require("@react-native-async-storage/async-storage").default;
+  return (await AsyncStorage.getItem(ONBOARDING_KEY)) === "1";
+}

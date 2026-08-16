@@ -1,19 +1,22 @@
-import { Trash2 } from "@tamagui/lucide-icons-2";
+import { Share2, Trash2 } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { Alert } from "react-native";
 import { ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 import { CardGroup, ListRow, PageHeader, SectionLabel } from "../../../src/components/ui";
 import { StatusBadge } from "../../../src/components/ui/Badge";
 import { Screen } from "../../../src/components/ui/Screen";
 import { ErrorState } from "../../../src/components/ui/States";
-import { api } from "../../../src/lib/api";
+import { api, getActiveToken } from "../../../src/lib/api";
+import { shareInspectionPdf } from "../../../src/lib/exportPdf";
 
 export default function InspectionResultDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const resultId = Number(id);
   const router = useRouter();
   const qc = useQueryClient();
+  const [sharing, setSharing] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["inspection-detail", resultId],
@@ -49,6 +52,19 @@ export default function InspectionResultDetailScreen() {
     );
   }
 
+  const onShare = async () => {
+    setSharing(true);
+    try {
+      const token = await getActiveToken();
+      if (!token) throw new Error("Sesi berakhir. Login ulang.");
+      await shareInspectionPdf(resultId, token);
+    } catch (e: any) {
+      Alert.alert("Gagal", e?.message || "Tidak dapat mengekspor PDF.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <Screen>
       <PageHeader
@@ -61,6 +77,28 @@ export default function InspectionResultDetailScreen() {
         back
         right={<StatusBadge status={data.status} />}
       />
+
+      <XStack mx="$4" mb="$3" gap="$2">
+        <XStack
+          flex={1}
+          bg="$card"
+          borderWidth={1}
+          borderColor="$border"
+          borderRadius={14}
+          paddingVertical="$3"
+          alignItems="center"
+          justifyContent="center"
+          gap="$2"
+          onPress={onShare}
+          pressStyle={{ opacity: 0.7 }}
+          opacity={sharing ? 0.6 : 1}
+        >
+          <Share2 size={16} color="$accent" />
+          <Text fontSize="$3.5" fontWeight="600" color="$fg">
+            {sharing ? "Menyiapkan..." : "Ekspor PDF"}
+          </Text>
+        </XStack>
+      </XStack>
 
       <SectionLabel>Sasaran</SectionLabel>
       <CardGroup>

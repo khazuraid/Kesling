@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { useTheme } from "tamagui";
 import { useAuth } from "../src/lib/auth";
+import { getOnboardingDone } from "../src/lib/storage";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -48,8 +49,12 @@ function RootLayoutNav() {
   useEffect(() => {
     if (loading) return;
     const inAuthGroup = segments[0] === "login";
-    if (!user && !inAuthGroup) {
-      router.replace("/login");
+    const inOnboarding = segments[0] === "onboarding";
+    if (!user && !inAuthGroup && !inOnboarding) {
+      // first launch → onboarding once, then login
+      getOnboardingDone().then((done) => {
+        router.replace(done ? "/login" : "/onboarding");
+      });
     } else if (user && inAuthGroup) {
       router.replace("/(tabs)");
     }
@@ -89,6 +94,7 @@ function RootLayoutNav() {
         <Stack.Screen name="drafts" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="sasaran" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="notifications" options={{ headerShown: false, animation: "slide_from_right" }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
       </Stack>
     </>
   );

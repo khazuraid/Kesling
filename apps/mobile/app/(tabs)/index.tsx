@@ -1,8 +1,9 @@
-import { CalendarDays, ChevronRight, ClipboardCheck, Zap } from "@tamagui/lucide-icons-2";
+import { CalendarDays, ChevronRight, ClipboardCheck, Search, Zap } from "@tamagui/lucide-icons-2";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { GlobalSearch } from "../../src/components/GlobalSearch";
 import { FadeIn, ScalePress, useCountUp } from "../../src/components/motion/primitives";
 import { ProgressRing } from "../../src/components/motion/Ring";
 import { ProfileSheet } from "../../src/components/ProfileSheet";
@@ -45,6 +46,7 @@ export default function HariIni() {
   const today = now.toISOString().slice(0, 10);
   const [refreshing, setRefreshing] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [draftCount, setDraftCount] = useState(0);
 
   useFocusEffect(() => {
@@ -113,6 +115,11 @@ export default function HariIni() {
                 {DAYS_ID[now.getDay()]}, {now.getDate()} {MONTHS_ID[now.getMonth()]} {now.getFullYear()}
               </Text>
             </View>
+            <Pressable onPress={() => setSearchOpen(true)} hitSlop={8} style={{ marginRight: 10 }}>
+              <View style={styles.searchBtn}>
+                <Search size={18} color="#1F1D1B" />
+              </View>
+            </Pressable>
             <Pressable onPress={() => setProfileOpen(true)} hitSlop={8}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{(user?.name || "P")[0].toUpperCase()}</Text>
@@ -258,6 +265,7 @@ export default function HariIni() {
         <View style={{ height: 120 }} />
       </ScrollView>
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
@@ -278,6 +286,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
+  searchBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#ECE7E1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   offlineBanner: {
     backgroundColor: "#FEF4E2",
     borderWidth: 1,
