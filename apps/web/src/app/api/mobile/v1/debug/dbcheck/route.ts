@@ -10,7 +10,6 @@ export async function GET(req: NextRequest) {
 
   const results: Record<string, unknown> = {};
   const ddlApplied: string[] = [];
-  const ddlError: string[] = [];
   try {
     results.tablesBefore = await prisma.$queryRaw`
       SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('rencana_bulanan', 'InspectionResult') ORDER BY tablename`;
@@ -51,7 +50,7 @@ export async function GET(req: NextRequest) {
     results.ddlApplied = ddlApplied;
     for (const stmt of ddl) {
       await prisma.$executeRawUnsafe(stmt);
-      ddlApplied.push(stmt.slice(0, 50) + "...");
+      ddlApplied.push(`${stmt.slice(0, 50)}...`);
     }
     // FKs (best-effort, ignore if constraint exists)
     try {
