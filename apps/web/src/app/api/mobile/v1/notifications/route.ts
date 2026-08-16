@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getLibur } from "@/lib/libur";
 import { getMobileUser } from "@/lib/mobile-auth";
 
 // GET notifications for current user
@@ -26,7 +27,28 @@ export async function GET(req: NextRequest) {
     where: { userId: user.id, isRead: false },
   });
 
-  return NextResponse.json({ notifications, unreadCount });
+  // Hari libur mendatang (7 hari ke depan) untuk peringatan
+  const now = new Date();
+  const year = now.getFullYear();
+  const allLibur = await getLibur(year);
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const liburMendatang = allLibur
+    .filter((l) => {
+      const d = new Date(l.tanggal + "T00:00:00");
+      return d >= now && d <= in7Days;
+    })
+    .map((l) => ({
+      tanggal: l.tanggal,
+      keterangan: l.keterangan,
+      sumber: l.sumber,
+      hari: new Date(l.tanggal + "T00:00:00").toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
+    }));
+
+  return NextResponse.json({ notifications, unreadCount, liburMendatang });
 }
 
 // PUT mark as read (single or all)
