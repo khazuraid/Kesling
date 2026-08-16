@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_generation_md",
+      "label": "GENERATION.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/GENERATION.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_generation_generation_info",
+      "label": "Generation Info",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/GENERATION.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_generation_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_generation_generation_info",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/GENERATION.md",
+      "source_location": "L1",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

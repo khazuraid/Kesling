@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_generate_laporan_builder_py",
+      "label": "generate_laporan_builder.py",
+      "file_type": "code",
+      "source_file": "generate_laporan_builder.py",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_generate_laporan_builder_py",
+      "target": "re",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_laporan_builder.py",
+      "source_location": "L1",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": []
+}

@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_md",
+      "label": "db-push.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "label": "prisma db push",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_command",
+      "label": "Command",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_what_it_does",
+      "label": "What It Does",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_options",
+      "label": "Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_follow_up_command",
+      "label": "Follow-up Command",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "label": "Examples",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_basic_push",
+      "label": "Basic push",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L34"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_accept_data_loss",
+      "label": "Accept data loss",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_force_reset",
+      "label": "Force reset",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_full_workflow",
+      "label": "Full workflow",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_when_to_use",
+      "label": "When to Use",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L63"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_when_not_to_use",
+      "label": "When NOT to Use",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_comparison_with_migrate_dev",
+      "label": "Comparison with migrate dev",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_mongodb_workflow",
+      "label": "MongoDB Workflow",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_common_patterns",
+      "label": "Common Patterns",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prototyping_workflow",
+      "label": "Prototyping workflow",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_reset_and_start_fresh",
+      "label": "Reset and start fresh",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L115"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_handling_conflicts",
+      "label": "Handling conflicts",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_transition_to_migrations",
+      "label": "Transition to Migrations",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L139"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_md",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_command",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_what_it_does",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_options",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_follow_up_command",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_basic_push",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_accept_data_loss",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_force_reset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_examples",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_full_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_when_to_use",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_when_not_to_use",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_comparison_with_migrate_dev",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_mongodb_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_common_patterns",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_common_patterns",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prototyping_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_common_patterns",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_reset_and_start_fresh",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_common_patterns",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_handling_conflicts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_prisma_db_push",
+      "target": "$graphify-root$_gemini_skills_i_prisma_cli_references_db_push_transition_to_migrations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-prisma-cli/references/db-push.md",
+      "source_location": "L139",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,95 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_coolify_md",
+      "label": "COOLIFY.md",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "label": "Panduan Konfigurasi & Deploy ke Coolify VPS",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_coolify_1_file_konfigurasi_docker_compose",
+      "label": "1. File Konfigurasi Docker Compose",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_coolify_2_langkah_langkah_deploy_di_dashboard_coolify",
+      "label": "2. Langkah-Langkah Deploy di Dashboard Coolify",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_coolify_3_konfigurasi_environment_variables",
+      "label": "3. Konfigurasi Environment Variables",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L35"
+    },
+    {
+      "id": "$graphify-root$_coolify_4_keamanan_persistence_data",
+      "label": "4. Keamanan & Persistence Data",
+      "file_type": "document",
+      "source_file": "COOLIFY.md",
+      "source_location": "L48"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_coolify_md",
+      "target": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "COOLIFY.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "target": "$graphify-root$_coolify_1_file_konfigurasi_docker_compose",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "COOLIFY.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "target": "$graphify-root$_coolify_2_langkah_langkah_deploy_di_dashboard_coolify",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "COOLIFY.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "target": "$graphify-root$_coolify_3_konfigurasi_environment_variables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "COOLIFY.md",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_coolify_panduan_konfigurasi_deploy_ke_coolify_vps",
+      "target": "$graphify-root$_coolify_4_keamanan_persistence_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "COOLIFY.md",
+      "source_location": "L48",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

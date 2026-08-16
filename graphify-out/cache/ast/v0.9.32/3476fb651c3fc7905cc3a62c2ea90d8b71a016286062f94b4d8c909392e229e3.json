@@ -1,0 +1,345 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_md",
+      "label": "claude-api.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "label": "Claude API \u2014 C#",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_installation",
+      "label": "Installation",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_client_initialization",
+      "label": "Client Initialization",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_basic_message_request",
+      "label": "Basic Message Request",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_streaming",
+      "label": "Streaming",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_thinking",
+      "label": "Thinking",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L77"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_use",
+      "label": "Tool Use",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_defining_a_tool",
+      "label": "Defining a tool",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_converting_response_content_to_the_follow_up_assistant_message",
+      "label": "Converting response content to the follow-up assistant message",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L151"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_context_editing_compaction_beta",
+      "label": "Context Editing / Compaction (Beta)",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_effort_parameter",
+      "label": "Effort Parameter",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L288"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_prompt_caching",
+      "label": "Prompt Caching",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L300"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_token_counting",
+      "label": "Token Counting",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L319"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_structured_output",
+      "label": "Structured Output",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L333"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_pdf_document_input",
+      "label": "PDF / Document Input",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L352"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_server_side_tools",
+      "label": "Server-Side Tools",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L368"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_files_api_beta",
+      "label": "Files API (Beta)",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L385"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_runner_beta",
+      "label": "Tool Runner (Beta)",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L406"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_stop_details",
+      "label": "Stop Details",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L431"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_managed_agents_beta",
+      "label": "Managed Agents (Beta)",
+      "file_type": "document",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L445"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_md",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_installation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_client_initialization",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_basic_message_request",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_streaming",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_thinking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_use",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_use",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_defining_a_tool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_md",
+      "target": "$graphify-root$_agents_skills_claude_api_shared_tool_use_concepts_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L150",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.agents/skills/claude-api/shared/tool-use-concepts.md"
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_use",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_converting_response_content_to_the_follow_up_assistant_message",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_context_editing_compaction_beta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_effort_parameter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L288",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_prompt_caching",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L300",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_token_counting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L319",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_structured_output",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L333",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_pdf_document_input",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L352",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_server_side_tools",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L368",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_files_api_beta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L385",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_tool_runner_beta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L406",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_stop_details",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L431",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_claude_api_c",
+      "target": "$graphify-root$_agents_skills_claude_api_csharp_claude_api_managed_agents_beta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/claude-api/csharp/claude-api.md",
+      "source_location": "L445",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

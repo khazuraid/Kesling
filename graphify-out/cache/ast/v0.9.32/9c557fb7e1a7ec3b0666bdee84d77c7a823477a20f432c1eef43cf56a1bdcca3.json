@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_perf_cache_schemas_md",
+      "label": "perf-cache-schemas.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/perf-cache-schemas.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_perf_cache_schemas_cache_schema_instances",
+      "label": "Cache Schema Instances",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/perf-cache-schemas.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_perf_cache_schemas_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_perf_cache_schemas_cache_schema_instances",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/perf-cache-schemas.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

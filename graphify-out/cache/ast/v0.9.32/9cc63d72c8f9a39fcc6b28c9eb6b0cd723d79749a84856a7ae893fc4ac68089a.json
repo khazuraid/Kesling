@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_valid_resolver_caching_md",
+      "label": "valid-resolver-caching.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/valid-resolver-caching.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_valid_resolver_caching_define_schema_outside_component_for_resolver_caching",
+      "label": "Define Schema Outside Component for Resolver Caching",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/valid-resolver-caching.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_valid_resolver_caching_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_valid_resolver_caching_define_schema_outside_component_for_resolver_caching",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/valid-resolver-caching.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,175 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_md",
+      "label": "vercel.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "label": "Vercel Deployment",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_remote_cache",
+      "label": "Remote Cache",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "label": "turbo-ignore",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_installation",
+      "label": "Installation",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_setup_in_vercel",
+      "label": "Setup in Vercel",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_how_it_works",
+      "label": "How It Works",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_options",
+      "label": "Options",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_environment_variables",
+      "label": "Environment Variables",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L63"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_monorepo_root_directory",
+      "label": "Monorepo Root Directory",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_build_command",
+      "label": "Build Command",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L89"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_md",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_remote_cache",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_installation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_setup_in_vercel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_how_it_works",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_turbo_ignore",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_environment_variables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_monorepo_root_directory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_vercel_deployment",
+      "target": "$graphify-root$_agents_skills_i_turborepo_references_ci_vercel_build_command",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-turborepo/references/ci/vercel.md",
+      "source_location": "L89",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

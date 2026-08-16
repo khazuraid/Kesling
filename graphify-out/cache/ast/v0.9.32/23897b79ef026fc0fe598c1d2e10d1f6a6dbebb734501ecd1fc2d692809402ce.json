@@ -1,0 +1,783 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_md",
+      "label": "AUDIT-MONOREPO-2026-07-17.md",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "label": "Audit Menyeluruh Monorepo apps-kes",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_status_remediasi",
+      "label": "Status Remediasi",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_ringkasan",
+      "label": "Ringkasan",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "label": "CRITICAL",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_01_laporan_mobile_tidak_disimpan",
+      "label": "C-01 \u2014 Laporan mobile tidak disimpan",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_02_qr_login_mempercayai_bearer_token_dari_qr_tanpa_verifikasi_server",
+      "label": "C-02 \u2014 QR login mempercayai bearer token dari QR tanpa verifikasi server",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_03_draft_offline_pemeriksaan_tidak_memiliki_isolasi_akun_yang_terbukti",
+      "label": "C-03 \u2014 Draft offline pemeriksaan tidak memiliki isolasi akun yang terbukti",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_04_telegram_auth_helper_fail_open_saat_secret_kosong",
+      "label": "C-04 \u2014 Telegram auth-helper fail-open saat secret kosong",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "label": "HIGH",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L66"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_01_validasi_laporan_mobile_tidak_mengikuti_kontrak_builder",
+      "label": "H-01 \u2014 Validasi laporan mobile tidak mengikuti kontrak builder",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_02_workflow_laporan_web_mobile_tidak_setara",
+      "label": "H-02 \u2014 Workflow laporan web-mobile tidak setara",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L77"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_03_base64_foto_signature_berisiko_membengkakkan_asyncstorage",
+      "label": "H-03 \u2014 Base64 foto/signature berisiko membengkakkan AsyncStorage",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_04_token_warna_accent_web_tidak_didefinisikan",
+      "label": "H-04 \u2014 Token warna accent web tidak didefinisikan",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_05_dark_mode_tidak_memiliki_palette_semantic_lengkap",
+      "label": "H-05 \u2014 Dark mode tidak memiliki palette semantic lengkap",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L104"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_06_dialog_custom_web_tidak_memenuhi_modal_semantics",
+      "label": "H-06 \u2014 Dialog custom web tidak memenuhi modal semantics",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L113"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_07_mobile_navigation_drawer_web_tidak_memiliki_modal_semantics",
+      "label": "H-07 \u2014 Mobile navigation drawer web tidak memiliki modal semantics",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_08_error_fetch_sering_disamarkan_sebagai_empty_state",
+      "label": "H-08 \u2014 Error fetch sering disamarkan sebagai empty state",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L131"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_09_logout_hanya_terlihat_saat_hover",
+      "label": "H-09 \u2014 Logout hanya terlihat saat hover",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L140"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_10_password_visibility_dikeluarkan_dari_tab_order",
+      "label": "H-10 \u2014 Password visibility dikeluarkan dari tab order",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L149"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_11_design_system_mobile_belum_semantic",
+      "label": "H-11 \u2014 Design system mobile belum semantic",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L158"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_12_feature_registry_dan_navigasi_mobile_memberi_false_affordance",
+      "label": "H-12 \u2014 Feature registry dan navigasi mobile memberi false affordance",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_13_file_import_membuat_koneksi_redis_terpisah",
+      "label": "H-13 \u2014 File import membuat koneksi Redis terpisah",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L176"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_14_package_boundary_mobile_belum_stabil",
+      "label": "H-14 \u2014 Package boundary mobile belum stabil",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L185"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_15_import_template_menyimpan_file_besar_sebagai_base64_di_redis",
+      "label": "H-15 \u2014 Import template menyimpan file besar sebagai base64 di Redis",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L194"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_16_telegram_pairing_tidak_memiliki_rate_limit",
+      "label": "H-16 \u2014 Telegram pairing tidak memiliki rate limit",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L203"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "label": "MEDIUM",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L212"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_01_required_validation_laporan_web_belum_lengkap",
+      "label": "M-01 \u2014 Required validation laporan web belum lengkap",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L214"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_02_form_web_label_error_tidak_terhubung_secara_aksesibel",
+      "label": "M-02 \u2014 Form web label/error tidak terhubung secara aksesibel",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L223"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_03_login_error_loading_tidak_diumumkan",
+      "label": "M-03 \u2014 Login error/loading tidak diumumkan",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L232"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_04_touch_targets_web_terlalu_kecil",
+      "label": "M-04 \u2014 Touch targets web terlalu kecil",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L241"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_05_typography_dan_contrast_terlalu_lemah",
+      "label": "M-05 \u2014 Typography dan contrast terlalu lemah",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L250"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_06_focus_indicator_lemah",
+      "label": "M-06 \u2014 Focus indicator lemah",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L259"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_07_tabel_web_kurang_responsif",
+      "label": "M-07 \u2014 Tabel web kurang responsif",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L268"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_08_input_tahun_custom_mobile_gagal_diam_diam",
+      "label": "M-08 \u2014 Input tahun custom mobile gagal diam-diam",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L277"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_09_koordinat_mobile_perlu_range_validation",
+      "label": "M-09 \u2014 Koordinat mobile perlu range validation",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L286"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_10_login_mobile_hanya_memeriksa_input_kosong",
+      "label": "M-10 \u2014 Login mobile hanya memeriksa input kosong",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L295"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_11_accessibility_state_mobile_minim",
+      "label": "M-11 \u2014 Accessibility state mobile minim",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L304"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_12_pwa_dinonaktifkan_tetapi_metadata_artefaknya_masih_tersedia",
+      "label": "M-12 \u2014 PWA dinonaktifkan tetapi metadata/artefaknya masih tersedia",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L313"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_13_testing_belum_mencakup_matriks_lintas_boundary",
+      "label": "M-13 \u2014 Testing belum mencakup matriks lintas boundary",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L322"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_14_root_berisi_banyak_skrip_patch_debug_ad_hoc",
+      "label": "M-14 \u2014 Root berisi banyak skrip patch/debug ad-hoc",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L331"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_15_health_endpoint_mengungkap_detail_dependency",
+      "label": "M-15 \u2014 Health endpoint mengungkap detail dependency",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L340"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_low",
+      "label": "LOW",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L349"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_01_branding_dan_bahasa_ui_tidak_konsisten",
+      "label": "L-01 \u2014 Branding dan bahasa UI tidak konsisten",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L351"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_02_reduced_motion_belum_ditangani",
+      "label": "L-02 \u2014 Reduced motion belum ditangani",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L360"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_03_warna_chart_hardcoded",
+      "label": "L-03 \u2014 Warna chart hardcoded",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L369"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_temuan_positif",
+      "label": "Temuan positif",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L378"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_prioritas_remediasi",
+      "label": "Prioritas remediasi",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L386"
+    },
+    {
+      "id": "$graphify-root$_docs_audit_monorepo_2026_07_17_batas_audit",
+      "label": "Batas audit",
+      "file_type": "document",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L397"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_md",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_status_remediasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_ringkasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_01_laporan_mobile_tidak_disimpan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_02_qr_login_mempercayai_bearer_token_dari_qr_tanpa_verifikasi_server",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_03_draft_offline_pemeriksaan_tidak_memiliki_isolasi_akun_yang_terbukti",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_critical",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_c_04_telegram_auth_helper_fail_open_saat_secret_kosong",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_01_validasi_laporan_mobile_tidak_mengikuti_kontrak_builder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_02_workflow_laporan_web_mobile_tidak_setara",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_03_base64_foto_signature_berisiko_membengkakkan_asyncstorage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_04_token_warna_accent_web_tidak_didefinisikan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_05_dark_mode_tidak_memiliki_palette_semantic_lengkap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_06_dialog_custom_web_tidak_memenuhi_modal_semantics",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_07_mobile_navigation_drawer_web_tidak_memiliki_modal_semantics",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_08_error_fetch_sering_disamarkan_sebagai_empty_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L131",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_09_logout_hanya_terlihat_saat_hover",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_10_password_visibility_dikeluarkan_dari_tab_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_11_design_system_mobile_belum_semantic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_12_feature_registry_dan_navigasi_mobile_memberi_false_affordance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_13_file_import_membuat_koneksi_redis_terpisah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L176",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_14_package_boundary_mobile_belum_stabil",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L185",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_15_import_template_menyimpan_file_besar_sebagai_base64_di_redis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L194",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_high",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_h_16_telegram_pairing_tidak_memiliki_rate_limit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_01_required_validation_laporan_web_belum_lengkap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_02_form_web_label_error_tidak_terhubung_secara_aksesibel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L223",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_03_login_error_loading_tidak_diumumkan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_04_touch_targets_web_terlalu_kecil",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L241",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_05_typography_dan_contrast_terlalu_lemah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_06_focus_indicator_lemah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_07_tabel_web_kurang_responsif",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_08_input_tahun_custom_mobile_gagal_diam_diam",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L277",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_09_koordinat_mobile_perlu_range_validation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_10_login_mobile_hanya_memeriksa_input_kosong",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L295",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_11_accessibility_state_mobile_minim",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L304",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_12_pwa_dinonaktifkan_tetapi_metadata_artefaknya_masih_tersedia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L313",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_13_testing_belum_mencakup_matriks_lintas_boundary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L322",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_14_root_berisi_banyak_skrip_patch_debug_ad_hoc",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L331",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_medium",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_m_15_health_endpoint_mengungkap_detail_dependency",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L340",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_low",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L349",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_low",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_01_branding_dan_bahasa_ui_tidak_konsisten",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L351",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_low",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_02_reduced_motion_belum_ditangani",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L360",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_low",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_l_03_warna_chart_hardcoded",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L369",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_temuan_positif",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L378",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_prioritas_remediasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L386",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_audit_monorepo_2026_07_17_audit_menyeluruh_monorepo_apps_kes",
+      "target": "$graphify-root$_docs_audit_monorepo_2026_07_17_batas_audit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/AUDIT-MONOREPO-2026-07-17.md",
+      "source_location": "L397",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,599 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_biome_json",
+      "label": "biome.json",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_biome_schema",
+      "label": "$schema",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "$graphify-root$_biome_linter",
+      "label": "linter",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_biome_linter_enabled",
+      "label": "enabled",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "$graphify-root$_biome_linter_rules",
+      "label": "rules",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_biome_rules_recommended",
+      "label": "recommended",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_biome_rules_suspicious",
+      "label": "suspicious",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_biome_suspicious_noexplicitany",
+      "label": "noExplicitAny",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_biome_suspicious_noarrayindexkey",
+      "label": "noArrayIndexKey",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_biome_rules_correctness",
+      "label": "correctness",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "$graphify-root$_biome_correctness_useexhaustivedependencies",
+      "label": "useExhaustiveDependencies",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "$graphify-root$_biome_rules_a11y",
+      "label": "a11y",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "$graphify-root$_biome_a11y_nolabelwithoutcontrol",
+      "label": "noLabelWithoutControl",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_biome_a11y_usebuttontype",
+      "label": "useButtonType",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "$graphify-root$_biome_a11y_nostaticelementinteractions",
+      "label": "noStaticElementInteractions",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_biome_a11y_usekeywithclickevents",
+      "label": "useKeyWithClickEvents",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter",
+      "label": "formatter",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_enabled",
+      "label": "enabled",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_indentstyle",
+      "label": "indentStyle",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_indentwidth",
+      "label": "indentWidth",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_linewidth",
+      "label": "lineWidth",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "$graphify-root$_biome_javascript",
+      "label": "javascript",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_biome_javascript_formatter",
+      "label": "formatter",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L29"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_quotestyle",
+      "label": "quoteStyle",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_biome_formatter_semicolons",
+      "label": "semicolons",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_biome_files",
+      "label": "files",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L34"
+    },
+    {
+      "id": "$graphify-root$_biome_files_includes",
+      "label": "includes",
+      "file_type": "code",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_ts",
+      "label": "**/*.ts",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_tsx",
+      "label": "**/*.tsx",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_json",
+      "label": "**/*.json",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_node_modules",
+      "label": "!**/node_modules",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_next",
+      "label": "!**/.next",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_dist",
+      "label": "!**/dist",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_turbo",
+      "label": "!**/.turbo",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_prisma_migrations",
+      "label": "!**/prisma/migrations",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_expo",
+      "label": "!**/.expo",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "ref_expo_env_d_ts",
+      "label": "!**/expo-env.d.ts",
+      "file_type": "concept",
+      "source_file": "biome.json",
+      "source_location": "L35"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_biome_json",
+      "target": "$graphify-root$_biome_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_json",
+      "target": "$graphify-root$_biome_linter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter",
+      "target": "$graphify-root$_biome_linter_enabled",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter",
+      "target": "$graphify-root$_biome_linter_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter_rules",
+      "target": "$graphify-root$_biome_rules_recommended",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter_rules",
+      "target": "$graphify-root$_biome_rules_suspicious",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_suspicious",
+      "target": "$graphify-root$_biome_suspicious_noexplicitany",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_suspicious",
+      "target": "$graphify-root$_biome_suspicious_noarrayindexkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter_rules",
+      "target": "$graphify-root$_biome_rules_correctness",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_correctness",
+      "target": "$graphify-root$_biome_correctness_useexhaustivedependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_linter_rules",
+      "target": "$graphify-root$_biome_rules_a11y",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_a11y",
+      "target": "$graphify-root$_biome_a11y_nolabelwithoutcontrol",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_a11y",
+      "target": "$graphify-root$_biome_a11y_usebuttontype",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_a11y",
+      "target": "$graphify-root$_biome_a11y_nostaticelementinteractions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_rules_a11y",
+      "target": "$graphify-root$_biome_a11y_usekeywithclickevents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_json",
+      "target": "$graphify-root$_biome_formatter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_formatter",
+      "target": "$graphify-root$_biome_formatter_enabled",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_formatter",
+      "target": "$graphify-root$_biome_formatter_indentstyle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_formatter",
+      "target": "$graphify-root$_biome_formatter_indentwidth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_formatter",
+      "target": "$graphify-root$_biome_formatter_linewidth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_json",
+      "target": "$graphify-root$_biome_javascript",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_javascript",
+      "target": "$graphify-root$_biome_javascript_formatter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_javascript_formatter",
+      "target": "$graphify-root$_biome_formatter_quotestyle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_javascript_formatter",
+      "target": "$graphify-root$_biome_formatter_semicolons",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_json",
+      "target": "$graphify-root$_biome_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_files",
+      "target": "$graphify-root$_biome_files_includes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_tsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_json",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_node_modules",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_next",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_dist",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_turbo",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_prisma_migrations",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_expo",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "$graphify-root$_biome_files_includes",
+      "target": "ref_expo_env_d_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "biome.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}

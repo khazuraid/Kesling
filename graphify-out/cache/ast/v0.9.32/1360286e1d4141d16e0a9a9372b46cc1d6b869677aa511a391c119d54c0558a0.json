@@ -1,0 +1,239 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_md",
+      "label": "features-context.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "label": "Test Context & Fixtures",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_built_in_context",
+      "label": "Built-in Context",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_context_properties",
+      "label": "Context Properties",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_custom_fixtures_with_test_extend",
+      "label": "Custom Fixtures with test.extend",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_fixture_initialization",
+      "label": "Fixture Initialization",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_auto_fixtures",
+      "label": "Auto Fixtures",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L84"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_fixtures",
+      "label": "Scoped Fixtures",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_file_scope",
+      "label": "File Scope",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_worker_scope",
+      "label": "Worker Scope",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L120"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_injected_fixtures_from_config",
+      "label": "Injected Fixtures (from Config)",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L135"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_values_per_suite",
+      "label": "Scoped Values per Suite",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L160"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_extended_test_hooks",
+      "label": "Extended Test Hooks",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L182"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_composing_fixtures",
+      "label": "Composing Fixtures",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L205"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_context_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L226"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_built_in_context",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_built_in_context",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_context_properties",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_custom_fixtures_with_test_extend",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_fixture_initialization",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_auto_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_file_scope",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_worker_scope",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_injected_fixtures_from_config",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_scoped_values_per_suite",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_extended_test_hooks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_composing_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_context_test_context_fixtures",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_context_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-context.md",
+      "source_location": "L226",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

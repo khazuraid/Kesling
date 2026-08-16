@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_formprovider_memo_md",
+      "label": "adv-formprovider-memo.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/adv-formprovider-memo.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_formprovider_memo_wrap_formprovider_children_with_react_memo",
+      "label": "Wrap FormProvider Children with React.memo",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/adv-formprovider-memo.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_formprovider_memo_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_formprovider_memo_wrap_formprovider_children_with_react_memo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/references/adv-formprovider-memo.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

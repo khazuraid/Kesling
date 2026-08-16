@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_error_avoid_throwing_in_refine_md",
+      "label": "error-avoid-throwing-in-refine.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/error-avoid-throwing-in-refine.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_error_avoid_throwing_in_refine_return_false_instead_of_throwing_in_refine",
+      "label": "Return False Instead of Throwing in Refine",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/error-avoid-throwing-in-refine.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_error_avoid_throwing_in_refine_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_error_avoid_throwing_in_refine_return_false_instead_of_throwing_in_refine",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/error-avoid-throwing-in-refine.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

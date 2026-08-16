@@ -1,0 +1,223 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_md",
+      "label": "core-expect.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "label": "Expect API",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_basic_assertions",
+      "label": "Basic Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_negation",
+      "label": "Negation",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_error_assertions",
+      "label": "Error Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L61"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_promise_assertions",
+      "label": "Promise Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_spy_mock_assertions",
+      "label": "Spy/Mock Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_asymmetric_matchers",
+      "label": "Asymmetric Matchers",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_soft_assertions",
+      "label": "Soft Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_poll_assertions",
+      "label": "Poll Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L149"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_assertion_count",
+      "label": "Assertion Count",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L162"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_extending_matchers",
+      "label": "Extending Matchers",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L179"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_snapshot_assertions",
+      "label": "Snapshot Assertions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_core_expect_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L208"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_basic_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_negation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_error_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_promise_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_spy_mock_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_asymmetric_matchers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_soft_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_poll_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_assertion_count",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_extending_matchers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_snapshot_assertions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_core_expect_expect_api",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_core_expect_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/core-expect.md",
+      "source_location": "L208",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

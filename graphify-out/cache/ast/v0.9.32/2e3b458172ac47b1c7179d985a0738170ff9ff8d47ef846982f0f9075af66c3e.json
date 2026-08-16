@@ -1,0 +1,535 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "label": "React Hook Form",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_abstract",
+      "label": "Abstract",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_table_of_contents",
+      "label": "Table of Contents",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_references",
+      "label": "References",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_agents_source_files",
+      "label": "Source Files",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L88"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_agents_abstract",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_agents_table_of_contents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sections_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/_sections.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_default_values_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-default-values.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_useeffect_dependency_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-useeffect-dependency.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_should_unregister_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-should-unregister.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_revalidate_mode_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-revalidate-mode.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_async_default_values_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-async-default-values.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formcfg_validation_mode_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formcfg-validation-mode.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_avoid_watch_in_render_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L30",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-avoid-watch-in-render.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_usewatch_with_getvalues_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-usewatch-with-getvalues.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_usewatch_default_value_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-usewatch-default-value.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_deep_subscription_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-deep-subscription.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_useformcontext_sparingly_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-useformcontext-sparingly.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_usewatch_over_watch_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-usewatch-over-watch.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_watch_specific_fields_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/sub-watch-specific-fields.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_ctrl_avoid_double_registration_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/ctrl-avoid-double-registration.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_ctrl_local_state_combination_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/ctrl-local-state-combination.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_ctrl_single_usecontroller_per_component_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/ctrl-single-usecontroller-per-component.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_ctrl_usecontroller_isolation_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/ctrl-usecontroller-isolation.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_ctrl_controller_field_props_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/ctrl-controller-field-props.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_error_message_strategy_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L44",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-error-message-strategy.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_native_validation_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-native-validation.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_resolver_caching_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-resolver-caching.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_inline_vs_resolver_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-inline-vs-resolver.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_delay_error_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-delay-error.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_dynamic_schema_factory_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/valid-dynamic-schema-factory.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_array_complete_default_objects_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/array-complete-default-objects.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_array_separate_crud_operations_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/array-separate-crud-operations.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_array_use_field_id_as_key_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/array-use-field-id-as-key.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_array_virtualization_formprovider_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/array-virtualization-formprovider.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_array_unique_fieldarray_per_name_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/array-unique-fieldarray-per-name.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_avoid_isvalid_with_onsubmit_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formstate-avoid-isvalid-with-onsubmit.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_destructure_formstate_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L58",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formstate-destructure-formstate.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_subscribe_to_specific_fields_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formstate-subscribe-to-specific-fields.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_getfieldstate_for_single_field_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L60",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formstate-getfieldstate-for-single-field.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_useformstate_isolation_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/formstate-useformstate-isolation.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_integ_value_transform_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L63",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/integ-value-transform.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_integ_mui_controller_pattern_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L64",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/integ-mui-controller-pattern.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_integ_shadcn_form_import_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L65",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/integ-shadcn-form-import.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_integ_shadcn_select_wiring_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L66",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/integ-shadcn-select-wiring.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_testing_wrapper_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/adv-testing-wrapper.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_devtools_performance_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L69",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/adv-devtools-performance.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_adv_formprovider_memo_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L70",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/adv-formprovider-memo.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_agents_references",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_react_hook_form",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_agents_source_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_assets_templates_template_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L95",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/assets/templates/_template.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_agents_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/AGENTS.md",
+      "source_location": "L96",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/SKILL.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

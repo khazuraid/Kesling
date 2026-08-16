@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_md",
+      "label": "core-config.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_basic_setup",
+      "label": "Basic Setup",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_using_with_existing_vite_config",
+      "label": "Using with Existing Vite Config",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_merging_configs",
+      "label": "Merging Configs",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_common_options",
+      "label": "Common Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_conditional_configuration",
+      "label": "Conditional Configuration",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L121"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_projects_monorepos",
+      "label": "Projects (Monorepos)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L134"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_config_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L162"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_basic_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_using_with_existing_vite_config",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_merging_configs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_common_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_conditional_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_projects_monorepos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_config_configuration",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_config_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-config.md",
+      "source_location": "L162",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

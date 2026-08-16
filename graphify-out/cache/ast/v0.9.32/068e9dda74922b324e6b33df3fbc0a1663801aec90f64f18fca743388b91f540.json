@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_schema_string_validations_md",
+      "label": "schema-string-validations.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/schema-string-validations.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_schema_string_validations_apply_string_validations_at_schema_definition",
+      "label": "Apply String Validations at Schema Definition",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/schema-string-validations.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_schema_string_validations_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_schema_string_validations_apply_string_validations_at_schema_definition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/schema-string-validations.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

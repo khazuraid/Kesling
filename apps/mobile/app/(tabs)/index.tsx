@@ -1,192 +1,323 @@
-import { CalendarDays, ClipboardCheck, Database, FileText, Plus } from "@tamagui/lucide-icons-2";
+import { CalendarDays, ChevronRight, ClipboardCheck, Zap } from "@tamagui/lucide-icons-2";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Text, XStack, YStack } from "tamagui";
-import { CardGroup, ListRow, PageHeader, SectionLabel } from "../../src/components/ui";
-import { StatusBadge } from "../../src/components/ui/Badge";
-import { Screen } from "../../src/components/ui/Screen";
-import { ListSkeleton, StatSkeleton } from "../../src/components/ui/Skeleton";
-import { EmptyState, ErrorState } from "../../src/components/ui/States";
+import { useMemo, useState } from "react";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FadeIn, ScalePress, useCountUp } from "../../src/components/motion/primitives";
+import { ProgressRing } from "../../src/components/motion/Ring";
 import { api } from "../../src/lib/api";
+import { useAuth } from "../../src/lib/auth";
 
-export default function Beranda() {
+const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const MONTHS_ID = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  const v = useCountUp(value);
+  return (
+    <View style={styles.statCard}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statValue, { color }]}>{v}</Text>
+    </View>
+  );
+}
+
+export default function HariIni() {
   const router = useRouter();
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: api.dashboard,
+  const { user } = useAuth();
+  const now = new Date();
+  const bulan = now.getMonth() + 1;
+  const tahun = now.getFullYear();
+  const today = now.toISOString().slice(0, 10);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: dash, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
+  const { data: notifData } = useQuery({ queryKey: ["notifications"], queryFn: () => api.notifications() });
+  const { data: rencana } = useQuery({
+    queryKey: ["rencana-bulanan", bulan, tahun],
+    queryFn: () => api.rencanaBulanan(bulan, tahun),
   });
-  const { data: notifData } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => api.notifications(),
-  });
+
+  // Agenda hari ini: sasaran dengan tanggalRencana == today
+  const agenda = useMemo(() => {
+    if (!rencana) return [];
+    const list: Array<{
+      id: number;
+      nama: string;
+      kategori: string;
+      alamat: string | null;
+      sudahDiperiksa: boolean;
+      prioritas: number;
+    }> = [];
+    rencana.kategori?.forEach((kat) => {
+      kat.subKategori?.sasaran?.forEach((s) => {
+        if (s.tanggalRencana && new Date(s.tanggalRencana).toISOString().slice(0, 10) === today) {
+          list.push({
+            id: s.id,
+            nama: s.nama,
+            kategori: kat.kategoriNama,
+            alamat: s.alamat,
+            sudahDiperiksa: s.sudahDiperiksa,
+            prioritas: s.prioritas,
+          });
+        }
+      });
+    });
+    return list;
+  }, [rencana]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const hour = now.getHours();
+  const greeting =
+    hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 19 ? "Selamat sore" : "Selamat malam";
 
   return (
-    <Screen onRefresh={refetch}>
-      <PageHeader title="Beranda" subtitle="Ringkasan aktivitas pemeriksaan" />
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00A876" />}
+    >
+      {/* Header: greeting + avatar */}
+      <FadeIn>
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greeting}>{greeting},</Text>
+            <Text style={styles.userName}>{user?.name || "Petugas"}</Text>
+            <Text style={styles.dateText}>
+              {DAYS_ID[now.getDay()]}, {now.getDate()} {MONTHS_ID[now.getMonth()]} {now.getFullYear()}
+            </Text>
+          </View>
+          <Pressable onPress={() => router.push("/notifications")} hitSlop={8}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{(user?.name || "P")[0].toUpperCase()}</Text>
+            </View>
+          </Pressable>
+        </View>
+      </FadeIn>
 
-      {/* Hari libur mendatang */}
-      {notifData?.liburMendatang?.length ? (
-        <YStack mx="$4" mb="$4" gap="$2">
-          {notifData.liburMendatang.map((l) => (
-            <YStack
-              key={l.tanggal}
-              bg={l.sumber === "custom" ? "$accentSoft" : "$dangerSoft"}
-              borderRadius={16}
-              borderWidth={1}
-              borderColor={l.sumber === "custom" ? "$accent" : "$danger"}
-              p="$3.5"
-              flexDirection="row"
-              alignItems="center"
-              gap="$3"
-              onPress={() => router.push("/notifications")}
-              pressStyle={{ opacity: 0.85 }}
-            >
-              <YStack
-                w={40}
-                h={40}
-                borderRadius={12}
-                bg={l.sumber === "custom" ? "$accent" : "$danger"}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <CalendarDays size={20} color="white" />
-              </YStack>
-              <YStack flex={1} gap={2}>
-                <Text
-                  fontSize="$2"
-                  color={l.sumber === "custom" ? "$accent" : "$danger"}
-                  fontWeight="800"
-                  letterSpacing={0.5}
+      {/* Ring progress */}
+      <FadeIn delay={60}>
+        <View style={[styles.card, { alignItems: "center", paddingVertical: 20 }]}>
+          <ProgressRing
+            size={140}
+            strokeWidth={12}
+            progress={rencana?.progress ?? 0}
+            label="%"
+            sublabel={`${rencana?.totalSelesai ?? 0}/${rencana?.totalSasaran ?? 0} sasaran bulan ini`}
+            color="#00A876"
+          />
+        </View>
+      </FadeIn>
+
+      {/* Agenda hari ini */}
+      <FadeIn delay={120}>
+        <Text style={styles.sectionLabel}>AGENDA HARI INI · {agenda.length}</Text>
+      </FadeIn>
+      {agenda.length === 0 ? (
+        <FadeIn delay={160}>
+          <View style={styles.card}>
+            <Text style={styles.emptyText}>Tidak ada agenda hari ini. 🎉</Text>
+            <Pressable onPress={() => router.push("/(tabs)/jadwal")}>
+              <Text style={styles.linkText}>Buka Jadwal →</Text>
+            </Pressable>
+          </View>
+        </FadeIn>
+      ) : (
+        agenda.map((s, i) => (
+          <FadeIn key={s.id} delay={160 + i * 40}>
+            <ScalePress onPress={() => router.push(`/sasaran/${s.id}` as any)}>
+              <View style={styles.agendaCard}>
+                <View
+                  style={[
+                    styles.agendaDot,
+                    { backgroundColor: s.sudahDiperiksa ? "#EAF7EE" : s.prioritas === 1 ? "#FEF4E2" : "#E6F6F0" },
+                  ]}
                 >
-                  HARI LIBUR
-                </Text>
-                <Text fontSize="$3.5" fontWeight="700" color="$fg">
+                  {s.sudahDiperiksa ? (
+                    <ClipboardCheck size={16} color="#22C55E" />
+                  ) : (
+                    <Zap size={16} color={s.prioritas === 1 ? "#F59E0B" : "#00A876"} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.agendaTitle} numberOfLines={1}>
+                    {s.nama}
+                  </Text>
+                  <Text style={styles.agendaSub} numberOfLines={1}>
+                    {s.kategori} · {s.alamat || "Tanpa alamat"}
+                  </Text>
+                </View>
+                <ChevronRight size={16} color="#8A8580" />
+              </View>
+            </ScalePress>
+          </FadeIn>
+        ))
+      )}
+
+      {/* Libur mendatang */}
+      {notifData?.liburMendatang?.length ? (
+        <FadeIn delay={200}>
+          <Text style={styles.sectionLabel}>HARI LIBUR</Text>
+          {notifData.liburMendatang.map((l) => (
+            <Pressable
+              key={l.tanggal}
+              onPress={() => router.push("/notifications")}
+              style={({ pressed }) => [
+                styles.liburCard,
+                l.sumber === "custom" ? styles.liburCustom : styles.liburNasional,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <View style={[styles.liburIcon, { backgroundColor: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
+                <CalendarDays size={18} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.liburKet, { color: l.sumber === "custom" ? "#00A876" : "#EF4444" }]}>
                   {l.keterangan}
                 </Text>
-                <Text fontSize="$2.5" color="$muted">
-                  {l.hari}
-                </Text>
-              </YStack>
-            </YStack>
+                <Text style={styles.liburHari}>{l.hari}</Text>
+              </View>
+            </Pressable>
           ))}
-        </YStack>
+        </FadeIn>
       ) : null}
 
       {/* Stats */}
-      {isLoading ? (
-        <StatSkeleton count={2} />
-      ) : error ? (
-        <ErrorState message="Gagal memuat data dashboard." onRetry={refetch} />
-      ) : (
-        <XStack gap="$3" mx="$4" mb="$4">
-          <YStack flex={1} p="$4" bg="$card" borderRadius={16} borderWidth={1} borderColor="$border">
-            <Text fontSize="$2.5" color="$muted" fontWeight="700" letterSpacing={0.5}>
-              PEMERIKSAAN
-            </Text>
-            <Text fontSize={32} fontWeight="800" color="$accent" mt="$1">
-              {data?.userInspectionsCount ?? 0}
-            </Text>
-          </YStack>
-          <YStack flex={1} p="$4" bg="$card" borderRadius={16} borderWidth={1} borderColor="$border">
-            <Text fontSize="$2.5" color="$muted" fontWeight="700" letterSpacing={0.5}>
-              SASARAN
-            </Text>
-            <Text fontSize={32} fontWeight="800" color="$success" mt="$1">
-              {data?.sasaranCount ?? 0}
-            </Text>
-          </YStack>
-        </XStack>
-      )}
+      <FadeIn delay={240}>
+        <Text style={styles.sectionLabel}>STATISTIK</Text>
+        <View style={styles.statRow}>
+          <StatCard label="PEMERIKSAAN" value={dash?.userInspectionsCount ?? 0} color="#00A876" />
+          <StatCard label="SASARAN" value={dash?.sasaranCount ?? 0} color="#22C55E" />
+        </View>
+      </FadeIn>
 
-      {/* Quick actions */}
-      <SectionLabel>Aksi Cepat</SectionLabel>
-      <XStack gap="$3" mx="$4" mb="$4">
-        <YStack
-          flex={1}
-          bg="$accent"
-          borderRadius={16}
-          p="$4"
-          gap="$2"
-          onPress={() => router.push("/(tabs)/periksa")}
-          pressStyle={{ opacity: 0.85, scale: 0.98 }}
-        >
-          <YStack
-            w={36}
-            h={36}
-            borderRadius={10}
-            bg="rgba(255,255,255,0.2)"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Plus size={20} color="white" />
-          </YStack>
-          <Text fontSize="$4" fontWeight="700" color="white">
-            Pemeriksaan
-          </Text>
-          <Text fontSize="$2.5" color="rgba(255,255,255,0.8)">
-            Mulai inspeksi
-          </Text>
-        </YStack>
-        <YStack
-          flex={1}
-          bg="$success"
-          borderRadius={16}
-          p="$4"
-          gap="$2"
-          onPress={() => router.push("/(tabs)/data")}
-          pressStyle={{ opacity: 0.85, scale: 0.98 }}
-        >
-          <YStack
-            w={36}
-            h={36}
-            borderRadius={10}
-            bg="rgba(255,255,255,0.2)"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Database size={20} color="white" />
-          </YStack>
-          <Text fontSize="$4" fontWeight="700" color="white">
-            Data
-          </Text>
-          <Text fontSize="$2.5" color="rgba(255,255,255,0.8)">
-            Kelola sasaran
-          </Text>
-        </YStack>
-      </XStack>
-
-      {/* Recent inspections */}
-      <SectionLabel>Terbaru</SectionLabel>
-      {isLoading ? (
-        <ListSkeleton rows={4} />
-      ) : !data?.recentInspections?.length ? (
-        <EmptyState
-          icon={<ClipboardCheck size={32} color="$muted" />}
-          title="Belum ada pemeriksaan"
-          description="Mulai inspeksi pertama Anda dari menu Pemeriksaan."
-          actionLabel="Mulai Periksa"
-          onAction={() => router.push("/(tabs)/periksa")}
-        />
-      ) : (
-        <CardGroup>
-          {data.recentInspections.map((ins, i) => (
-            <ListRow
+      {/* Recent */}
+      <FadeIn delay={300}>
+        <Text style={styles.sectionLabel}>TERBARU</Text>
+      </FadeIn>
+      {dash?.recentInspections?.length ? (
+        <View style={styles.card}>
+          {dash.recentInspections.map((ins) => (
+            <Pressable
               key={ins.id}
-              title={ins.namaSasaran}
-              subtitle={ins.templateName}
-              value={new Date(ins.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-              icon={
-                <YStack w={36} h={36} borderRadius={10} bg="$accentSoft" alignItems="center" justifyContent="center">
-                  <FileText size={18} color="$accent" />
-                </YStack>
-              }
               onPress={() => router.push(`/inspection/result/${ins.id}`)}
-              last={i === data.recentInspections.length - 1}
-            />
+              style={({ pressed }) => [styles.listRow, pressed && { opacity: 0.6 }]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle} numberOfLines={1}>
+                  {ins.namaSasaran}
+                </Text>
+                <Text style={styles.rowSub} numberOfLines={1}>
+                  {ins.templateName} ·{" "}
+                  {new Date(ins.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                </Text>
+              </View>
+              <ChevronRight size={16} color="#8A8580" />
+            </Pressable>
           ))}
-        </CardGroup>
+        </View>
+      ) : (
+        <View style={styles.card}>
+          <Text style={styles.emptyText}>Belum ada pemeriksaan.</Text>
+        </View>
       )}
-      <YStack h="$8" />
-    </Screen>
+
+      <View style={{ height: 120 }} />
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: "#F7F5F2" },
+  content: { paddingTop: 64, paddingHorizontal: 16 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  greeting: { fontSize: 14, color: "#8A8580" },
+  userName: { fontSize: 24, fontWeight: "800", color: "#1F1D1B" },
+  dateText: { fontSize: 13, color: "#8A8580", marginTop: 2 },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#00A876",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ECE7E1",
+    padding: 16,
+    marginBottom: 12,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#8A8580",
+    letterSpacing: 1,
+    marginVertical: 8,
+    marginLeft: 4,
+  },
+  agendaCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#ECE7E1",
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 8,
+  },
+  agendaDot: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  agendaTitle: { fontSize: 15, fontWeight: "600", color: "#1F1D1B" },
+  agendaSub: { fontSize: 12, color: "#8A8580", marginTop: 1 },
+  emptyText: { fontSize: 14, color: "#8A8580", textAlign: "center", paddingVertical: 12 },
+  linkText: { fontSize: 14, color: "#00A876", fontWeight: "700", textAlign: "center", paddingBottom: 8 },
+  liburCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 8,
+  },
+  liburCustom: { backgroundColor: "#E6F6F0", borderColor: "#00A876" },
+  liburNasional: { backgroundColor: "#FEECEB", borderColor: "#EF4444" },
+  liburIcon: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  liburKet: { fontSize: 14, fontWeight: "700" },
+  liburHari: { fontSize: 12, color: "#8A8580", marginTop: 1 },
+  statRow: { flexDirection: "row", gap: 12 },
+  statCard: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#ECE7E1",
+    borderRadius: 18,
+    padding: 16,
+  },
+  statLabel: { fontSize: 10, fontWeight: "800", color: "#8A8580", letterSpacing: 0.5 },
+  statValue: { fontSize: 32, fontWeight: "800", marginTop: 4 },
+  listRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 8 },
+  rowTitle: { fontSize: 15, fontWeight: "500", color: "#1F1D1B" },
+  rowSub: { fontSize: 12, color: "#8A8580", marginTop: 1 },
+});

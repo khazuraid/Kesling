@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_parse_async_for_async_refinements_md",
+      "label": "parse-async-for-async-refinements.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/parse-async-for-async-refinements.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_parse_async_for_async_refinements_use_parseasync_for_async_refinements",
+      "label": "Use parseAsync for Async Refinements",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/parse-async-for-async-refinements.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_parse_async_for_async_refinements_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_parse_async_for_async_refinements_use_parseasync_for_async_refinements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/parse-async-for-async-refinements.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

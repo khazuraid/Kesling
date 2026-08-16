@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_type_input_vs_output_md",
+      "label": "type-input-vs-output.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/type-input-vs-output.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_type_input_vs_output_distinguish_z_input_from_z_infer_for_transforms",
+      "label": "Distinguish z.input from z.infer for Transforms",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/type-input-vs-output.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_type_input_vs_output_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_type_input_vs_output_distinguish_z_input_from_z_infer_for_transforms",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/type-input-vs-output.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

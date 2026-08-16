@@ -1,0 +1,975 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_rancangan_md",
+      "label": "RANCANGAN.md",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "label": "Rancangan Aplikasi Laporan Kesehatan Lingkungan Kota Cirebon",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_rancangan_1_ringkasan",
+      "label": "1. Ringkasan",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_rancangan_2_sumber_data_6_file_excel_6_halaman",
+      "label": "2. Sumber Data (6 File Excel \u2192 6 Halaman)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_rancangan_3_tech_stack",
+      "label": "3. Tech Stack",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_rancangan_4_data_puskesmas_21_unit",
+      "label": "4. Data Puskesmas (21 Unit)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "$graphify-root$_rancangan_5_fitur_lengkap_22_fitur",
+      "label": "5. Fitur Lengkap (22 Fitur)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "label": "6. Struktur Data Per Halaman",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_1_tpp_tempat_pengelolaan_pangan",
+      "label": "6.1 TPP (Tempat Pengelolaan Pangan)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_2_spal_saluran_pembuangan_air_limbah",
+      "label": "6.2 SPAL (Saluran Pembuangan Air Limbah)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_3_sab_sarana_air_bersih_minum",
+      "label": "6.3 SAB (Sarana Air Bersih/Minum)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_4_rumah_pemeriksaan_rumah",
+      "label": "6.4 Rumah (Pemeriksaan Rumah)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L107"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_5_jamban",
+      "label": "6.5 Jamban",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L113"
+    },
+    {
+      "id": "$graphify-root$_rancangan_6_6_ttu_tempat_tempat_umum",
+      "label": "6.6 TTU (Tempat-Tempat Umum)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "$graphify-root$_rancangan_7_halaman_route",
+      "label": "7. Halaman & Route",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "$graphify-root$_rancangan_8_database_schema",
+      "label": "8. Database Schema",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L151"
+    },
+    {
+      "id": "$graphify-root$_rancangan_master_tables",
+      "label": "Master Tables",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L153"
+    },
+    {
+      "id": "$graphify-root$_rancangan_laporan_tables",
+      "label": "Laporan Tables",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L160"
+    },
+    {
+      "id": "$graphify-root$_rancangan_system_tables",
+      "label": "System Tables",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L168"
+    },
+    {
+      "id": "$graphify-root$_rancangan_9_struktur_folder_monorepo_turborepo",
+      "label": "9. Struktur Folder (Monorepo Turborepo)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L174"
+    },
+    {
+      "id": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "label": "10. Alur Pengerjaan (Step-by-Step untuk AI)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L245"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "label": "PHASE 1: Foundation (Step 1-4)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L249"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_1_init_monorepo",
+      "label": "Step 1: Init Monorepo",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L251"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_2_setup_database_prisma_mysql",
+      "label": "Step 2: Setup Database (Prisma + MySQL)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L269"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_3_seed_data_master",
+      "label": "Step 3: Seed Data Master",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L284"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_4_setup_shadcn_ui_base_components",
+      "label": "Step 4: Setup Shadcn/UI + Base Components",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L303"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_2_layout_auth_step_5_6",
+      "label": "PHASE 2: Layout & Auth (Step 5-6)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L319"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_5_auth_nextauth",
+      "label": "Step 5: Auth (NextAuth)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L321"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_6_layout_navigasi",
+      "label": "Step 6: Layout + Navigasi",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L337"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_3_master_data_crud_step_7",
+      "label": "PHASE 3: Master Data CRUD (Step 7)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L356"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_7_crud_master_data_semua_4_master",
+      "label": "Step 7: CRUD Master Data (Semua 4 Master)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L358"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "label": "PHASE 4: Halaman Laporan (Step 8-13)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L381"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_8_laporan_tpp",
+      "label": "Step 8: Laporan TPP",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L383"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_9_laporan_spal",
+      "label": "Step 9: Laporan SPAL",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L402"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_10_laporan_sab",
+      "label": "Step 10: Laporan SAB",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L414"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_11_laporan_rumah",
+      "label": "Step 11: Laporan Rumah",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L426"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_12_laporan_jamban",
+      "label": "Step 12: Laporan Jamban",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L438"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_13_laporan_ttu",
+      "label": "Step 13: Laporan TTU",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L449"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "label": "PHASE 5: Fitur Tambahan (Step 14-19)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L462"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_14_export_excel",
+      "label": "Step 14: Export Excel",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L464"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_15_import_excel",
+      "label": "Step 15: Import Excel",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L478"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_16_export_pdf_print",
+      "label": "Step 16: Export PDF + Print",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L494"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_17_dashboard_grafik",
+      "label": "Step 17: Dashboard + Grafik",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L508"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_18_rekap_tahunan",
+      "label": "Step 18: Rekap Tahunan",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L523"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_19_notifikasi_scheduler",
+      "label": "Step 19: Notifikasi + Scheduler",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L537"
+    },
+    {
+      "id": "$graphify-root$_rancangan_phase_6_polish_deploy_step_20_22",
+      "label": "PHASE 6: Polish & Deploy (Step 20-22)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L553"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_20_audit_log_backup_restore",
+      "label": "Step 20: Audit Log + Backup/Restore",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L555"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_21_docker_coolify_setup",
+      "label": "Step 21: Docker + Coolify Setup",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L569"
+    },
+    {
+      "id": "$graphify-root$_rancangan_step_22_final_polish",
+      "label": "Step 22: Final Polish",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L585"
+    },
+    {
+      "id": "$graphify-root$_rancangan_11_catatan_penting_untuk_ai",
+      "label": "11. Catatan Penting untuk AI",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L603"
+    },
+    {
+      "id": "$graphify-root$_rancangan_12_design_guidelines",
+      "label": "12. Design Guidelines",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L616"
+    },
+    {
+      "id": "$graphify-root$_rancangan_warna",
+      "label": "Warna",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L618"
+    },
+    {
+      "id": "$graphify-root$_rancangan_typography",
+      "label": "Typography",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L631"
+    },
+    {
+      "id": "$graphify-root$_rancangan_layout",
+      "label": "Layout",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L642"
+    },
+    {
+      "id": "$graphify-root$_rancangan_komponen_utama",
+      "label": "Komponen Utama",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L654"
+    },
+    {
+      "id": "$graphify-root$_rancangan_dashboard",
+      "label": "Dashboard",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L656"
+    },
+    {
+      "id": "$graphify-root$_rancangan_tabel_laporan_sticky_column_horizontal_scroll",
+      "label": "Tabel Laporan (Sticky Column + Horizontal Scroll)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L679"
+    },
+    {
+      "id": "$graphify-root$_rancangan_form_input_modal",
+      "label": "Form Input (Modal)",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L692"
+    },
+    {
+      "id": "$graphify-root$_rancangan_sidebar",
+      "label": "Sidebar",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L713"
+    },
+    {
+      "id": "$graphify-root$_rancangan_referensi_design",
+      "label": "Referensi Design",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L743"
+    },
+    {
+      "id": "$graphify-root$_rancangan_responsive_breakpoints",
+      "label": "Responsive Breakpoints",
+      "file_type": "document",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L752"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_rancangan_md",
+      "target": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_1_ringkasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_2_sumber_data_6_file_excel_6_halaman",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_3_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_4_data_puskesmas_21_unit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_5_fitur_lengkap_22_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_1_tpp_tempat_pengelolaan_pangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_2_spal_saluran_pembuangan_air_limbah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_3_sab_sarana_air_bersih_minum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_4_rumah_pemeriksaan_rumah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_5_jamban",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_6_struktur_data_per_halaman",
+      "target": "$graphify-root$_rancangan_6_6_ttu_tempat_tempat_umum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_7_halaman_route",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_8_database_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_8_database_schema",
+      "target": "$graphify-root$_rancangan_master_tables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_8_database_schema",
+      "target": "$graphify-root$_rancangan_laporan_tables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_8_database_schema",
+      "target": "$graphify-root$_rancangan_system_tables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_9_struktur_folder_monorepo_turborepo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L174",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L245",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "target": "$graphify-root$_rancangan_step_1_init_monorepo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "target": "$graphify-root$_rancangan_step_2_setup_database_prisma_mysql",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "target": "$graphify-root$_rancangan_step_3_seed_data_master",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L284",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_1_foundation_step_1_4",
+      "target": "$graphify-root$_rancangan_step_4_setup_shadcn_ui_base_components",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L303",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_2_layout_auth_step_5_6",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L319",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_2_layout_auth_step_5_6",
+      "target": "$graphify-root$_rancangan_step_5_auth_nextauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_2_layout_auth_step_5_6",
+      "target": "$graphify-root$_rancangan_step_6_layout_navigasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L337",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_3_master_data_crud_step_7",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L356",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_3_master_data_crud_step_7",
+      "target": "$graphify-root$_rancangan_step_7_crud_master_data_semua_4_master",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L358",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L381",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_8_laporan_tpp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L383",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_9_laporan_spal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L402",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_10_laporan_sab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L414",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_11_laporan_rumah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L426",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_12_laporan_jamban",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L438",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_4_halaman_laporan_step_8_13",
+      "target": "$graphify-root$_rancangan_step_13_laporan_ttu",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L449",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L462",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_14_export_excel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L464",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_15_import_excel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L478",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_16_export_pdf_print",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L494",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_17_dashboard_grafik",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L508",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_18_rekap_tahunan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L523",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_5_fitur_tambahan_step_14_19",
+      "target": "$graphify-root$_rancangan_step_19_notifikasi_scheduler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L537",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_10_alur_pengerjaan_step_by_step_untuk_ai",
+      "target": "$graphify-root$_rancangan_phase_6_polish_deploy_step_20_22",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L553",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_6_polish_deploy_step_20_22",
+      "target": "$graphify-root$_rancangan_step_20_audit_log_backup_restore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L555",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_6_polish_deploy_step_20_22",
+      "target": "$graphify-root$_rancangan_step_21_docker_coolify_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L569",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_phase_6_polish_deploy_step_20_22",
+      "target": "$graphify-root$_rancangan_step_22_final_polish",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L585",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_11_catatan_penting_untuk_ai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L603",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_rancangan_aplikasi_laporan_kesehatan_lingkungan_kota_cirebon",
+      "target": "$graphify-root$_rancangan_12_design_guidelines",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L616",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_warna",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L618",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_typography",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L631",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_layout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L642",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_komponen_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L654",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_komponen_utama",
+      "target": "$graphify-root$_rancangan_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L656",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_komponen_utama",
+      "target": "$graphify-root$_rancangan_tabel_laporan_sticky_column_horizontal_scroll",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L679",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_komponen_utama",
+      "target": "$graphify-root$_rancangan_form_input_modal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L692",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_komponen_utama",
+      "target": "$graphify-root$_rancangan_sidebar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L713",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_referensi_design",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L743",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rancangan_12_design_guidelines",
+      "target": "$graphify-root$_rancangan_responsive_breakpoints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "RANCANGAN.md",
+      "source_location": "L752",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

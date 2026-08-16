@@ -1,0 +1,287 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_md",
+      "label": "core-describe.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "label": "Describe API",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_basic_usage",
+      "label": "Basic Usage",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_nested_suites",
+      "label": "Nested Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_options",
+      "label": "Suite Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "label": "Suite Modifiers",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_skip_suites",
+      "label": "Skip Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_focus_suites",
+      "label": "Focus Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_todo_suites",
+      "label": "Todo Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L77"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_concurrent_suites",
+      "label": "Concurrent Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_sequential_in_concurrent",
+      "label": "Sequential in Concurrent",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_shuffle_tests",
+      "label": "Shuffle Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_parameterized_suites",
+      "label": "Parameterized Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_each",
+      "label": "describe.each",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L121"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_for",
+      "label": "describe.for",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L134"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_hooks_in_suites",
+      "label": "Hooks in Suites",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L147"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_modifier_combinations",
+      "label": "Modifier Combinations",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L172"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L182"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_basic_usage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_nested_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_skip_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_focus_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_todo_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_concurrent_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_sequential_in_concurrent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_suite_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_shuffle_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_parameterized_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_parameterized_suites",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_each",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_parameterized_suites",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_for",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_hooks_in_suites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_modifier_combinations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_describe_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_describe_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-describe.md",
+      "source_location": "L182",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

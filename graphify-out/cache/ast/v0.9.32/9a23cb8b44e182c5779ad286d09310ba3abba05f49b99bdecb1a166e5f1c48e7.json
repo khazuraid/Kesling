@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_perf_lazy_loading_md",
+      "label": "perf-lazy-loading.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/perf-lazy-loading.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_perf_lazy_loading_lazy_load_large_schemas",
+      "label": "Lazy Load Large Schemas",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/perf-lazy-loading.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_perf_lazy_loading_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_perf_lazy_loading_lazy_load_large_schemas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/perf-lazy-loading.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

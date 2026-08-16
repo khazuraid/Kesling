@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "label": "2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_design_health_score",
+      "label": "Design Health Score",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_anti_patterns_verdict",
+      "label": "Anti-Patterns Verdict",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_overall_impression",
+      "label": "Overall Impression",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_what_s_working",
+      "label": "What's Working",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_priority_issues",
+      "label": "Priority Issues",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_persona_red_flags",
+      "label": "Persona Red Flags",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_minor_observations",
+      "label": "Minor Observations",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_questions_to_consider",
+      "label": "Questions to Consider",
+      "file_type": "document",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L62"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_design_health_score",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_anti_patterns_verdict",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_overall_impression",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_what_s_working",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_priority_issues",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_persona_red_flags",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_minor_observations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_md",
+      "target": "$graphify-root$_impeccable_critique_2026_06_03t02_39_15z_apps_web_src_app_app_page_tsx_questions_to_consider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".impeccable/critique/2026-06-03T02-39-15Z__apps-web-src-app-app-page-tsx.md",
+      "source_location": "L62",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

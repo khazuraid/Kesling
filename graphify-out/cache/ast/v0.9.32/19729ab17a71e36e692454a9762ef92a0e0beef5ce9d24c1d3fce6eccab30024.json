@@ -1,0 +1,255 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_md",
+      "label": "advanced-environments.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "label": "Test Environments",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_available_environments",
+      "label": "Available Environments",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_configuration",
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_installing_environment_packages",
+      "label": "Installing Environment Packages",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_per_file_environment",
+      "label": "Per-File Environment",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L43"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_jsdom_environment",
+      "label": "jsdom Environment",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_jsdom_options",
+      "label": "jsdom Options",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L80"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_happy_dom_environment",
+      "label": "happy-dom Environment",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_multiple_environments_per_project",
+      "label": "Multiple Environments per Project",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_custom_environment",
+      "label": "Custom Environment",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L138"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_environment_with_vm",
+      "label": "Environment with VM",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L173"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_browser_mode_separate_from_environments",
+      "label": "Browser Mode (Separate from Environments)",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L200"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_css_and_assets",
+      "label": "CSS and Assets",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_fixing_external_dependencies",
+      "label": "Fixing External Dependencies",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L236"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L252"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_available_environments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_installing_environment_packages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_per_file_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_jsdom_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_jsdom_environment",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_jsdom_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_happy_dom_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_multiple_environments_per_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_custom_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_environment_with_vm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L173",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_browser_mode_separate_from_environments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_css_and_assets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_fixing_external_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L236",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_test_environments",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_environments_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-environments.md",
+      "source_location": "L252",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

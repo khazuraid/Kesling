@@ -1,0 +1,175 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_rekap_aplikasi_md",
+      "label": "REKAP_APLIKASI.md",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "label": "Rekapitulasi Aplikasi Kesling Dashboard",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_1_arsitektur_teknologi_tech_stack",
+      "label": "1. Arsitektur & Teknologi (Tech Stack)",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_2_struktur_monorepo",
+      "label": "2. Struktur Monorepo",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "label": "3. Penjelasan Rinci Fitur & Routing Aplikasi",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_a_dashboard_analitik",
+      "label": "A. Dashboard & Analitik",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_b_dynamic_report_builder_form_input",
+      "label": "B. Dynamic Report Builder & Form Input",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_c_pengaturan_manajemen_settings",
+      "label": "C. Pengaturan & Manajemen (Settings)",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_d_keamanan_sistem_log_autentikasi",
+      "label": "D. Keamanan, Sistem Log & Autentikasi",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_4_ui_ux_design_system",
+      "label": "4. UI/UX & Design System",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "$graphify-root$_rekap_aplikasi_5_deployment_flow",
+      "label": "5. Deployment Flow",
+      "file_type": "document",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L91"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_rekap_aplikasi_md",
+      "target": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "target": "$graphify-root$_rekap_aplikasi_1_arsitektur_teknologi_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "target": "$graphify-root$_rekap_aplikasi_2_struktur_monorepo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "target": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "target": "$graphify-root$_rekap_aplikasi_a_dashboard_analitik",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "target": "$graphify-root$_rekap_aplikasi_b_dynamic_report_builder_form_input",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "target": "$graphify-root$_rekap_aplikasi_c_pengaturan_manajemen_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_3_penjelasan_rinci_fitur_routing_aplikasi",
+      "target": "$graphify-root$_rekap_aplikasi_d_keamanan_sistem_log_autentikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "target": "$graphify-root$_rekap_aplikasi_4_ui_ux_design_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_rekap_aplikasi_rekapitulasi_aplikasi_kesling_dashboard",
+      "target": "$graphify-root$_rekap_aplikasi_5_deployment_flow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "REKAP_APLIKASI.md",
+      "source_location": "L91",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

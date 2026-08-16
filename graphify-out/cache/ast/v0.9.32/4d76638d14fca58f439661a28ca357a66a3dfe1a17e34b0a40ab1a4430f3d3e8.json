@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_array_separate_crud_operations_md",
+      "label": "array-separate-crud-operations.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-separate-crud-operations.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_array_separate_crud_operations_separate_sequential_field_array_operations",
+      "label": "Separate Sequential Field Array Operations",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-separate-crud-operations.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_array_separate_crud_operations_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_array_separate_crud_operations_separate_sequential_field_array_operations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-separate-crud-operations.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

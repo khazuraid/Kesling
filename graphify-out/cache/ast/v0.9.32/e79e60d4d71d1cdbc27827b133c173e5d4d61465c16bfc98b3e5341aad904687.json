@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_object_pick_omit_md",
+      "label": "object-pick-omit.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/object-pick-omit.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_object_pick_omit_use_pick_and_omit_for_schema_variants",
+      "label": "Use pick() and omit() for Schema Variants",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/object-pick-omit.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_object_pick_omit_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_object_pick_omit_use_pick_and_omit_for_schema_variants",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/object-pick-omit.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

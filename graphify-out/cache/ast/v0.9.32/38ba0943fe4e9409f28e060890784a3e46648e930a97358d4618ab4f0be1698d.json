@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_best_practices_rules_rendering_activity_md",
+      "label": "rendering-activity.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-best-practices/rules/rendering-activity.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_best_practices_rules_rendering_activity_use_activity_component_for_show_hide",
+      "label": "Use Activity Component for Show/Hide",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-best-practices/rules/rendering-activity.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_best_practices_rules_rendering_activity_md",
+      "target": "$graphify-root$_gemini_skills_i_react_best_practices_rules_rendering_activity_use_activity_component_for_show_hide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-best-practices/rules/rendering-activity.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

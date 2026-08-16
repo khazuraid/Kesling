@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_formstate_useformstate_isolation_md",
+      "label": "formstate-useformstate-isolation.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/formstate-useformstate-isolation.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_formstate_useformstate_isolation_use_useformstate_for_isolated_state_subscriptions",
+      "label": "Use useFormState for Isolated State Subscriptions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/formstate-useformstate-isolation.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_formstate_useformstate_isolation_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_formstate_useformstate_isolation_use_useformstate_for_isolated_state_subscriptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/formstate-useformstate-isolation.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

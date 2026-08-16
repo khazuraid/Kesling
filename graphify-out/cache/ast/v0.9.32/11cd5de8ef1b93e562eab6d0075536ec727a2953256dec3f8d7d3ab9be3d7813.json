@@ -1,0 +1,223 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_md",
+      "label": "features-snapshots.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "label": "Snapshot Testing",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_basic_snapshot",
+      "label": "Basic Snapshot",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_inline_snapshots",
+      "label": "Inline Snapshots",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_file_snapshots",
+      "label": "File Snapshots",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_hints",
+      "label": "Snapshot Hints",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_object_shape_matching",
+      "label": "Object Shape Matching",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L80"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_error_snapshots",
+      "label": "Error Snapshots",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_updating_snapshots",
+      "label": "Updating Snapshots",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L115"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_custom_serializers",
+      "label": "Custom Serializers",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_format_options",
+      "label": "Snapshot Format Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L151"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_concurrent_test_snapshots",
+      "label": "Concurrent Test Snapshots",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L164"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_file_location",
+      "label": "Snapshot File Location",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L178"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L194"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_basic_snapshot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_inline_snapshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_file_snapshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_hints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_object_shape_matching",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_error_snapshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_updating_snapshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_custom_serializers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_format_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_concurrent_test_snapshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_file_location",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_snapshot_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_snapshots_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-snapshots.md",
+      "source_location": "L194",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

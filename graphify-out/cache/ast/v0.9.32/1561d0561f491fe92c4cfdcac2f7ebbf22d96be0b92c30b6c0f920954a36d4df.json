@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_formcfg_revalidate_mode_md",
+      "label": "formcfg-revalidate-mode.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/formcfg-revalidate-mode.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_formcfg_revalidate_mode_set_revalidatemode_to_onblur_for_post_submit_performance",
+      "label": "Set reValidateMode to onBlur for Post-Submit Performance",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/formcfg-revalidate-mode.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_formcfg_revalidate_mode_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_formcfg_revalidate_mode_set_revalidatemode_to_onblur_for_post_submit_performance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/formcfg-revalidate-mode.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

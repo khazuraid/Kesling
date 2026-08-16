@@ -1,0 +1,287 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_md",
+      "label": "features-concurrency.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "label": "Concurrency & Parallelism",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_file_parallelism",
+      "label": "File Parallelism",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrent_tests",
+      "label": "Concurrent Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sequential_in_concurrent_context",
+      "label": "Sequential in Concurrent Context",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_max_concurrency",
+      "label": "Max Concurrency",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_isolation",
+      "label": "Isolation",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sharding",
+      "label": "Sharding",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L96"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_ci_example_github_actions",
+      "label": "CI Example (GitHub Actions)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_merge_reports",
+      "label": "Merge Reports",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L128"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_test_sequence",
+      "label": "Test Sequence",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_shuffle_tests",
+      "label": "Shuffle Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_pool_options",
+      "label": "Pool Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L179"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_threads_default",
+      "label": "Threads (Default)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L181"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_forks",
+      "label": "Forks",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_vm_threads",
+      "label": "VM Threads",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_bail_on_failure",
+      "label": "Bail on Failure",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L228"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L237"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_file_parallelism",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrent_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sequential_in_concurrent_context",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_max_concurrency",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_isolation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sharding",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sharding",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_ci_example_github_actions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_sharding",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_merge_reports",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_test_sequence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_shuffle_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_pool_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_pool_options",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_threads_default",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_pool_options",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_forks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_pool_options",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_vm_threads",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_bail_on_failure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L228",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_concurrency_parallelism",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_features_concurrency_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/features-concurrency.md",
+      "source_location": "L237",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

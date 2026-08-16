@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_object_extend_for_composition_md",
+      "label": "object-extend-for-composition.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/object-extend-for-composition.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_object_extend_for_composition_use_extend_for_adding_fields",
+      "label": "Use extend() for Adding Fields",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/object-extend-for-composition.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_object_extend_for_composition_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_object_extend_for_composition_use_extend_for_adding_fields",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/object-extend-for-composition.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

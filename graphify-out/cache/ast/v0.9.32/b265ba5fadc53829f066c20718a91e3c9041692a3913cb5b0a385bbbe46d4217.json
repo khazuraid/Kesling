@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_error_custom_messages_md",
+      "label": "error-custom-messages.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/error-custom-messages.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_error_custom_messages_provide_custom_error_messages",
+      "label": "Provide Custom Error Messages",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/error-custom-messages.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_error_custom_messages_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_error_custom_messages_provide_custom_error_messages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/error-custom-messages.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

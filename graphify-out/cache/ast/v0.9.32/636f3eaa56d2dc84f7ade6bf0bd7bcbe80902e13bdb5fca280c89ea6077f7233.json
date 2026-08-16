@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_schema_use_primitives_correctly_md",
+      "label": "schema-use-primitives-correctly.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/schema-use-primitives-correctly.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_schema_use_primitives_correctly_use_primitive_schemas_correctly",
+      "label": "Use Primitive Schemas Correctly",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/schema-use-primitives-correctly.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_schema_use_primitives_correctly_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_schema_use_primitives_correctly_use_primitive_schemas_correctly",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/schema-use-primitives-correctly.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

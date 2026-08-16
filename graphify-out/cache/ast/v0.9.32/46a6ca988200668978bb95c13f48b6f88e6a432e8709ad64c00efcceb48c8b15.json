@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_md",
+      "label": "features-coverage.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "label": "Code Coverage",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_setup",
+      "label": "Setup",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_configuration",
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_providers",
+      "label": "Providers",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_v8_default",
+      "label": "V8 (Default)",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_istanbul",
+      "label": "Istanbul",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_reporters",
+      "label": "Reporters",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_thresholds",
+      "label": "Thresholds",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ignoring_code",
+      "label": "Ignoring Code",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_v8",
+      "label": "V8",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_istanbul_132",
+      "label": "Istanbul",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L132"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_package_json_scripts",
+      "label": "Package.json Scripts",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_vitest_ui_coverage",
+      "label": "Vitest UI Coverage",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L158"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ci_integration",
+      "label": "CI Integration",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L171"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_coverage_with_sharding",
+      "label": "Coverage with Sharding",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L184"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L196"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_providers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_providers",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_v8_default",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_providers",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_istanbul",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_reporters",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_thresholds",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ignoring_code",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ignoring_code",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_v8",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ignoring_code",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_istanbul_132",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_package_json_scripts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_vitest_ui_coverage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_ci_integration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L171",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_coverage_with_sharding",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L184",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_code_coverage",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_features_coverage_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/features-coverage.md",
+      "source_location": "L196",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

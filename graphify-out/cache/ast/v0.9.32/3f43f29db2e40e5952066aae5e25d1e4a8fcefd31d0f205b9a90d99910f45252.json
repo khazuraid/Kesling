@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_type_branded_types_md",
+      "label": "type-branded-types.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/type-branded-types.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_type_branded_types_use_branded_types_for_domain_safety",
+      "label": "Use Branded Types for Domain Safety",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/type-branded-types.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_type_branded_types_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_type_branded_types_use_branded_types_for_domain_safety",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/type-branded-types.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_add_path_md",
+      "label": "refine-add-path.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-add-path.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_add_path_add_path_to_refinement_errors",
+      "label": "Add Path to Refinement Errors",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-add-path.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_refine_add_path_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_refine_add_path_add_path_to_refinement_errors",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/refine-add-path.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

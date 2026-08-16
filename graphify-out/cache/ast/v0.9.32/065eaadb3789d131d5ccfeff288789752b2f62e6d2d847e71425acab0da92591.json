@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_compose_shared_schemas_md",
+      "label": "compose-shared-schemas.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/compose-shared-schemas.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_compose_shared_schemas_extract_shared_schemas_into_reusable_modules",
+      "label": "Extract Shared Schemas into Reusable Modules",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/compose-shared-schemas.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_compose_shared_schemas_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_compose_shared_schemas_extract_shared_schemas_into_reusable_modules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/compose-shared-schemas.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

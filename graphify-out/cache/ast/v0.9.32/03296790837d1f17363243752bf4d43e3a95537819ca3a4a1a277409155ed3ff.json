@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_avoid_watch_in_render_md",
+      "label": "sub-avoid-watch-in-render.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/sub-avoid-watch-in-render.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_avoid_watch_in_render_avoid_calling_watch_in_render_for_one_time_reads",
+      "label": "Avoid Calling watch() in Render for One-Time Reads",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/sub-avoid-watch-in-render.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_avoid_watch_in_render_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sub_avoid_watch_in_render_avoid_calling_watch_in_render_for_one_time_reads",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/references/sub-avoid-watch-in-render.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

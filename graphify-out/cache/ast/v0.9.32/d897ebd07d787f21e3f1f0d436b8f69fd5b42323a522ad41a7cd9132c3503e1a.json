@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_md",
+      "label": "advanced-type-testing.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "label": "Type Testing",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_setup",
+      "label": "Setup",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_configuration",
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_expecttypeof_api",
+      "label": "expectTypeOf API",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_value_type_checking",
+      "label": "Value Type Checking",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_function_types",
+      "label": "Function Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L80"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_object_types",
+      "label": "Object Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_equality_vs_matching",
+      "label": "Equality vs Matching",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_branded_types",
+      "label": "Branded Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_generic_types",
+      "label": "Generic Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L135"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_nullable_types",
+      "label": "Nullable Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_asserttype",
+      "label": "assertType",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L155"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_using_ts_expect_error",
+      "label": "Using @ts-expect-error",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_running_type_tests",
+      "label": "Running Type Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L190"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_mixed_test_files",
+      "label": "Mixed Test Files",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L203"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L224"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_expecttypeof_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_value_type_checking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_function_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_object_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_equality_vs_matching",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_branded_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_generic_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_nullable_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_asserttype",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_using_ts_expect_error",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_running_type_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_mixed_test_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_type_testing",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_advanced_type_testing_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/advanced-type-testing.md",
+      "source_location": "L224",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

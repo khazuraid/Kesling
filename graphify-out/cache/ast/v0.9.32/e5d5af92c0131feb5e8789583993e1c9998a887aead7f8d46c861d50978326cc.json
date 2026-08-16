@@ -1,0 +1,495 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_md",
+      "label": "tutorial-n8n-telegram-bot-kesling.md",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "label": "Tutorial Lengkap Membuat Telegram Bot Kesling di n8n",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_1_konsep_arsitektur",
+      "label": "1. Konsep Arsitektur",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_2_referensi_template_n8n_yang_dipakai",
+      "label": "2. Referensi Template n8n yang Dipakai",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L42"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_prasyarat",
+      "label": "3. Prasyarat",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_1_bot_telegram",
+      "label": "3.1 Bot Telegram",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_2_aplikasi_kesling",
+      "label": "3.2 Aplikasi Kesling",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L90"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_3_url_web_mini_app_kesling",
+      "label": "3.3 URL Web/Mini App Kesling",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L116"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_4_buat_workflow_baru_di_n8n",
+      "label": "4. Buat Workflow Baru di n8n",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_5_node_1_telegram_webhook",
+      "label": "5. Node 1 \u2014 Telegram Webhook",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L164"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_opsi_a_telegram_trigger",
+      "label": "Opsi A: Telegram Trigger",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L168"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_opsi_b_webhook_node",
+      "label": "Opsi B: Webhook Node",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L180"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_6_node_2_normalize_input",
+      "label": "6. Node 2 \u2014 Normalize Input",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L220"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_7_node_3_check_auth_status",
+      "label": "7. Node 3 \u2014 Check Auth Status",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L297"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_8_node_4_build_full_menu_kesling",
+      "label": "8. Node 4 \u2014 Build Full Menu Kesling",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L359"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_9_node_5_send_telegram_message",
+      "label": "9. Node 5 \u2014 Send Telegram Message",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L640"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_10_node_6_respond_to_telegram",
+      "label": "10. Node 6 \u2014 Respond to Telegram",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L696"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_11_hubungkan_semua_node",
+      "label": "11. Hubungkan Semua Node",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L718"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_12_publish_workflow",
+      "label": "12. Publish Workflow",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L733"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_13_set_webhook_telegram_ke_n8n",
+      "label": "13. Set Webhook Telegram ke n8n",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L750"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_14_test_bot",
+      "label": "14. Test Bot",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L784"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_15_cara_kerja_tombol_inspeksi",
+      "label": "15. Cara Kerja Tombol Inspeksi",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L831"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_16_kenapa_inspeksi_tidak_dibuat_full_di_chat_telegram",
+      "label": "16. Kenapa Inspeksi Tidak Dibuat Full di Chat Telegram?",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L874"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "label": "17. Troubleshooting",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L899"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_1_error_unauthorized_dari_kesling_auth_helper",
+      "label": "17.1 Error Unauthorized dari Kesling Auth Helper",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L901"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_2_error_unauthorized_dari_telegram_api",
+      "label": "17.2 Error Unauthorized dari Telegram API",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L919"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_3_tombol_mini_app_tidak_bisa_dibuka",
+      "label": "17.3 Tombol Mini App Tidak Bisa Dibuka",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L947"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_4_bot_tidak_merespons",
+      "label": "17.4 Bot Tidak Merespons",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L973"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_5_user_sudah_login_di_web_tapi_bot_bilang_belum_terhubung",
+      "label": "17.5 User Sudah Login di Web tapi Bot Bilang Belum Terhubung",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L991"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_18_pengembangan_berikutnya",
+      "label": "18. Pengembangan Berikutnya",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1011"
+    },
+    {
+      "id": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_19_ringkasan_final",
+      "label": "19. Ringkasan Final",
+      "file_type": "document",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1046"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_md",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_1_konsep_arsitektur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_2_referensi_template_n8n_yang_dipakai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_prasyarat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_prasyarat",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_1_bot_telegram",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_prasyarat",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_2_aplikasi_kesling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_prasyarat",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_3_3_url_web_mini_app_kesling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_4_buat_workflow_baru_di_n8n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_5_node_1_telegram_webhook",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_5_node_1_telegram_webhook",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_opsi_a_telegram_trigger",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_5_node_1_telegram_webhook",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_opsi_b_webhook_node",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L180",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_6_node_2_normalize_input",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_7_node_3_check_auth_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L297",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_8_node_4_build_full_menu_kesling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L359",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_9_node_5_send_telegram_message",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L640",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_10_node_6_respond_to_telegram",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L696",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_11_hubungkan_semua_node",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L718",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_12_publish_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L733",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_13_set_webhook_telegram_ke_n8n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L750",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_14_test_bot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L784",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_15_cara_kerja_tombol_inspeksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L831",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_16_kenapa_inspeksi_tidak_dibuat_full_di_chat_telegram",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L874",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L899",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_1_error_unauthorized_dari_kesling_auth_helper",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L901",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_2_error_unauthorized_dari_telegram_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L919",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_3_tombol_mini_app_tidak_bisa_dibuka",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L947",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_4_bot_tidak_merespons",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L973",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_troubleshooting",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_17_5_user_sudah_login_di_web_tapi_bot_bilang_belum_terhubung",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L991",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_18_pengembangan_berikutnya",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1011",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_tutorial_lengkap_membuat_telegram_bot_kesling_di_n8n",
+      "target": "$graphify-root$_docs_tutorial_n8n_telegram_bot_kesling_19_ringkasan_final",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/tutorial-n8n-telegram-bot-kesling.md",
+      "source_location": "L1046",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

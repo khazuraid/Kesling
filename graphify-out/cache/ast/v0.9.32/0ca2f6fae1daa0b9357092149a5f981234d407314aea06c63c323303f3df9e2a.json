@@ -1,0 +1,623 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_md",
+      "label": "DESIGN_WEB_TO_MOBILE.md",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "label": "Kesling Web \u2192 Mobile UI/UX Mapping",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_prinsip_utama",
+      "label": "Prinsip Utama",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_stack_ui_mobile",
+      "label": "Stack UI Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_mapping_menu_website_ke_mobile",
+      "label": "Mapping Menu Website ke Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_tab_bawah_utama",
+      "label": "Tab bawah utama",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "label": "Menu internal mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_dashboard",
+      "label": "Dashboard",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_operasional",
+      "label": "Operasional",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_analitik",
+      "label": "Analitik",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L90"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_verifikasi",
+      "label": "Verifikasi",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_sistem",
+      "label": "Sistem",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_beranda_command_center",
+      "label": "Halaman Beranda / Command Center",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L116"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website",
+      "label": "Di Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L118"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile",
+      "label": "Di Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L129"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan_ux",
+      "label": "Catatan UX",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L147"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "label": "Halaman Pemeriksaan Website \u2192 Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L155"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_157",
+      "label": "Di Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_175",
+      "label": "Di Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L175"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_struktur_form_mobile_yang_harus_sesuai_website",
+      "label": "Struktur Form Mobile yang Harus Sesuai Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L200"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_informasi_sasaran",
+      "label": "Informasi Sasaran",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L214"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_checklist",
+      "label": "Checklist",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L231"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_form_pemeriksaan_lapangan_builder",
+      "label": "Halaman Form Pemeriksaan Lapangan / Builder",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L252"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_254",
+      "label": "Di Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L254"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_266",
+      "label": "Di Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L266"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan",
+      "label": "Catatan",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L290"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_laporan_website_mobile",
+      "label": "Halaman Laporan Website \u2192 Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L296"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_298",
+      "label": "Di Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L298"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_313",
+      "label": "Di Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L313"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan_ux_332",
+      "label": "Catatan UX",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L332"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_data_dasar",
+      "label": "Halaman Data Dasar",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L340"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_342",
+      "label": "Di Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L342"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_346",
+      "label": "Di Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L346"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_aturan_desain_form_mobile",
+      "label": "Aturan Desain Form Mobile",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L366"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_aturan_implementasi_ui",
+      "label": "Aturan Implementasi UI",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L388"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_prioritas_pengerjaan_berikutnya",
+      "label": "Prioritas Pengerjaan Berikutnya",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L417"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_file_referensi_website",
+      "label": "File Referensi Website",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L432"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_file_mobile_terkait",
+      "label": "File Mobile Terkait",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L439"
+    },
+    {
+      "id": "$graphify-root$_apps_mobile_design_web_to_mobile_kesimpulan",
+      "label": "Kesimpulan",
+      "file_type": "document",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L450"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_md",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_prinsip_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_stack_ui_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_mapping_menu_website_ke_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_mapping_menu_website_ke_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_tab_bawah_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_mapping_menu_website_ke_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_operasional",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_analitik",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_verifikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_menu_internal_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_sistem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_beranda_command_center",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_beranda_command_center",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_beranda_command_center",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_beranda_command_center",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan_ux",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_157",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_175",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_struktur_form_mobile_yang_harus_sesuai_website",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_informasi_sasaran",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_pemeriksaan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_form_pemeriksaan_lapangan_builder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L252",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_form_pemeriksaan_lapangan_builder",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_254",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L254",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_form_pemeriksaan_lapangan_builder",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_266",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_form_pemeriksaan_lapangan_builder",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L290",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_laporan_website_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L296",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_laporan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_298",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L298",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_laporan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_313",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L313",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_laporan_website_mobile",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_catatan_ux_332",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L332",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_data_dasar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L340",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_data_dasar",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_website_342",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L342",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_halaman_data_dasar",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_di_mobile_346",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L346",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_aturan_desain_form_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L366",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_aturan_implementasi_ui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L388",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_prioritas_pengerjaan_berikutnya",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L417",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_file_referensi_website",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L432",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_file_mobile_terkait",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L439",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_apps_mobile_design_web_to_mobile_kesling_web_mobile_ui_ux_mapping",
+      "target": "$graphify-root$_apps_mobile_design_web_to_mobile_kesimpulan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/mobile/DESIGN_WEB_TO_MOBILE.md",
+      "source_location": "L450",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

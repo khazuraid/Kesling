@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_error_message_strategy_md",
+      "label": "valid-error-message-strategy.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/valid-error-message-strategy.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_error_message_strategy_access_errors_via_optional_chaining_or_lodash_get",
+      "label": "Access Errors via Optional Chaining or Lodash Get",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/valid-error-message-strategy.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_error_message_strategy_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_valid_error_message_strategy_access_errors_via_optional_chaining_or_lodash_get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/references/valid-error-message-strategy.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

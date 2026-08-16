@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_design_md",
+      "label": "DESIGN.md",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "label": "apps-kes Design System \u2014 Flat Modern v2",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_design_prinsip",
+      "label": "Prinsip",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_design_tokens_hsl_css_vars_di_globals_css",
+      "label": "Tokens (HSL CSS vars di globals.css)",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "$graphify-root$_design_tipografi",
+      "label": "Tipografi",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_design_layout",
+      "label": "Layout",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_design_komponen",
+      "label": "Komponen",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "$graphify-root$_design_halaman_analitik_approval_rekap_perbandingan_audit_log_settings_geist_linear_style",
+      "label": "Halaman Analitik (approval, rekap, perbandingan, audit-log, settings) \u2014 Geist/Linear style",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "$graphify-root$_design_larangan",
+      "label": "Larangan",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L47"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_design_md",
+      "target": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_prinsip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_tokens_hsl_css_vars_di_globals_css",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_tipografi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_layout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_komponen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_halaman_analitik_approval_rekap_perbandingan_audit_log_settings_geist_linear_style",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_design_apps_kes_design_system_flat_modern_v2",
+      "target": "$graphify-root$_design_larangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L47",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_schema_coercion_for_form_data_md",
+      "label": "schema-coercion-for-form-data.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/schema-coercion-for-form-data.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_schema_coercion_for_form_data_use_coercion_for_form_and_query_data",
+      "label": "Use Coercion for Form and Query Data",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/schema-coercion-for-form-data.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_schema_coercion_for_form_data_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_schema_coercion_for_form_data_use_coercion_for_form_and_query_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/schema-coercion-for-form-data.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

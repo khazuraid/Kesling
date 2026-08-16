@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_ctrl_local_state_combination_md",
+      "label": "ctrl-local-state-combination.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/ctrl-local-state-combination.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_ctrl_local_state_combination_combine_local_state_with_usecontroller_for_ui_only_state",
+      "label": "Combine Local State with useController for UI-Only State",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/ctrl-local-state-combination.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_ctrl_local_state_combination_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_ctrl_local_state_combination_combine_local_state_with_usecontroller_for_ui_only_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/ctrl-local-state-combination.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

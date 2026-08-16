@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_object_optional_vs_nullable_md",
+      "label": "object-optional-vs-nullable.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/object-optional-vs-nullable.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_object_optional_vs_nullable_distinguish_optional_from_nullable",
+      "label": "Distinguish optional() from nullable()",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/object-optional-vs-nullable.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_object_optional_vs_nullable_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_object_optional_vs_nullable_distinguish_optional_from_nullable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/object-optional-vs-nullable.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

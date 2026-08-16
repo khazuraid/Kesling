@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_parse_avoid_double_validation_md",
+      "label": "parse-avoid-double-validation.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/parse-avoid-double-validation.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_parse_avoid_double_validation_avoid_double_validation",
+      "label": "Avoid Double Validation",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/parse-avoid-double-validation.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_parse_avoid_double_validation_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_parse_avoid_double_validation_avoid_double_validation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/parse-avoid-double-validation.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

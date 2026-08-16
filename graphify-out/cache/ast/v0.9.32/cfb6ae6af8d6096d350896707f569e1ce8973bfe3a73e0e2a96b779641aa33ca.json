@@ -1,0 +1,275 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "label": "React Hook Form Best Practices",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_when_to_apply",
+      "label": "When to Apply",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_rule_categories_by_priority",
+      "label": "Rule Categories by Priority",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "label": "Quick Reference",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_1_form_configuration_critical",
+      "label": "1. Form Configuration (CRITICAL)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L35"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_2_field_subscription_critical",
+      "label": "2. Field Subscription (CRITICAL)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_3_controlled_components_high",
+      "label": "3. Controlled Components (HIGH)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_4_validation_patterns_high",
+      "label": "4. Validation Patterns (HIGH)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_5_field_arrays_medium_high",
+      "label": "5. Field Arrays (MEDIUM-HIGH)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_6_state_management_medium",
+      "label": "6. State Management (MEDIUM)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_7_integration_patterns_medium",
+      "label": "7. Integration Patterns (MEDIUM)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_8_advanced_patterns_low",
+      "label": "8. Advanced Patterns (LOW)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_how_to_use",
+      "label": "How to Use",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L100"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_related_skills",
+      "label": "Related Skills",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L108"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_skill_full_compiled_document",
+      "label": "Full Compiled Document",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L114"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_when_to_apply",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_rule_categories_by_priority",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_1_form_configuration_critical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_2_field_subscription_critical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_3_controlled_components_high",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_4_validation_patterns_high",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_5_field_arrays_medium_high",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_6_state_management_medium",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_7_integration_patterns_medium",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_quick_reference",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_8_advanced_patterns_low",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_how_to_use",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_sections_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L104",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/references/_sections.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_assets_templates_template_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L105",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/.gemini/skills/i-react-hook-form/assets/templates/_template.md"
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_related_skills",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_skill_react_hook_form_best_practices",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_skill_full_compiled_document",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/SKILL.md",
+      "source_location": "L114",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

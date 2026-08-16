@@ -1,0 +1,447 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_md",
+      "label": "mobile-web-to-iphone-flow.md",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "label": "Blueprint Alur Web \u2192 Mobile iPhone apps-kes",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_prinsip_desain",
+      "label": "Prinsip Desain",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_pembagian_peran_web_vs_mobile",
+      "label": "Pembagian Peran Web vs Mobile",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_web_apps_kes",
+      "label": "Web apps-kes",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_mobile_iphone",
+      "label": "Mobile iPhone",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "label": "Alur Utama Web \u2192 iPhone",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_1_setup_akun_operator_di_web",
+      "label": "Flow 1 \u2014 Setup Akun Operator di Web",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_2_login_iphone_dari_qr_web",
+      "label": "Flow 2 \u2014 Login iPhone dari QR Web",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L67"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_3_tugas_dari_web_muncul_di_mobile",
+      "label": "Flow 3 \u2014 Tugas dari Web Muncul di Mobile",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L98"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_4_pemeriksaan_mobile_web",
+      "label": "Flow 4 \u2014 Pemeriksaan Mobile \u2192 Web",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L114"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_5_laporan_bulanan_mobile",
+      "label": "Flow 5 \u2014 Laporan Bulanan Mobile",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_struktur_navigasi_iphone",
+      "label": "Struktur Navigasi iPhone",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L154"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_pre_auth",
+      "label": "Pre-auth",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L156"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_setelah_login",
+      "label": "Setelah Login",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L162"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "label": "Desain Screen iPhone",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L189"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_login",
+      "label": "Login",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L191"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_beranda",
+      "label": "Beranda",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L205"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_periksa",
+      "label": "Periksa",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L218"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_laporan",
+      "label": "Laporan",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L230"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_menu",
+      "label": "Menu",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L242"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "label": "Rekomendasi Implementasi Bertahap",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L253"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_1_ui_ux_routing",
+      "label": "Tahap 1 \u2014 UI/UX & routing",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L255"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_2_api_mobile_minimum",
+      "label": "Tahap 2 \u2014 API mobile minimum",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L260"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_3_qr_login_dari_web",
+      "label": "Tahap 3 \u2014 QR login dari web",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L266"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_4_offline_first",
+      "label": "Tahap 4 \u2014 Offline-first",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L271"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_5_ios_production",
+      "label": "Tahap 5 \u2014 iOS production",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L276"
+    },
+    {
+      "id": "$graphify-root$_docs_mobile_web_to_iphone_flow_keputusan_desain_untuk_apps_kes",
+      "label": "Keputusan Desain untuk apps-kes",
+      "file_type": "document",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L282"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_md",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_prinsip_desain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_pembagian_peran_web_vs_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_pembagian_peran_web_vs_mobile",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_web_apps_kes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_pembagian_peran_web_vs_mobile",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_mobile_iphone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_1_setup_akun_operator_di_web",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_2_login_iphone_dari_qr_web",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_3_tugas_dari_web_muncul_di_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L98",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_4_pemeriksaan_mobile_web",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_alur_utama_web_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_flow_5_laporan_bulanan_mobile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_struktur_navigasi_iphone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_struktur_navigasi_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_pre_auth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_struktur_navigasi_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_setelah_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L189",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_beranda",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_periksa",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_laporan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L230",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_desain_screen_iphone",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_menu",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L242",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_1_ui_ux_routing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_2_api_mobile_minimum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L260",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_3_qr_login_dari_web",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_4_offline_first",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_rekomendasi_implementasi_bertahap",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_tahap_5_ios_production",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L276",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_docs_mobile_web_to_iphone_flow_blueprint_alur_web_mobile_iphone_apps_kes",
+      "target": "$graphify-root$_docs_mobile_web_to_iphone_flow_keputusan_desain_untuk_apps_kes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/mobile-web-to-iphone-flow.md",
+      "source_location": "L282",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

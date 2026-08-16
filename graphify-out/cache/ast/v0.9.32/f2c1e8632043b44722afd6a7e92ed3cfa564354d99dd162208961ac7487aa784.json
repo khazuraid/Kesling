@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_type_use_z_infer_md",
+      "label": "type-use-z-infer.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/type-use-z-infer.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_type_use_z_infer_use_z_infer_instead_of_manual_types",
+      "label": "Use z.infer Instead of Manual Types",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/type-use-z-infer.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_type_use_z_infer_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_type_use_z_infer_use_z_infer_instead_of_manual_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/type-use-z-infer.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

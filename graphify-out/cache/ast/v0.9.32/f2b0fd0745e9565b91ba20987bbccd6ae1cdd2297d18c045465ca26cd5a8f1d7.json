@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_md",
+      "label": "modes.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "label": "Environment Modes",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_strict_mode_default",
+      "label": "Strict Mode (Default)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_loose_mode",
+      "label": "Loose Mode",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_framework_inference_automatic",
+      "label": "Framework Inference (Automatic)",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_inferred_variables_by_framework",
+      "label": "Inferred Variables by Framework",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L52"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_disabling_framework_inference",
+      "label": "Disabling Framework Inference",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_why_disable",
+      "label": "Why Disable?",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_checking_environment_mode",
+      "label": "Checking Environment Mode",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L95"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_md",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_strict_mode_default",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_loose_mode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_framework_inference_automatic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_framework_inference_automatic",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_inferred_variables_by_framework",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_framework_inference_automatic",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_disabling_framework_inference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_framework_inference_automatic",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_why_disable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_environment_modes",
+      "target": "$graphify-root$_gemini_skills_i_turborepo_references_environment_modes_checking_environment_mode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-turborepo/references/environment/modes.md",
+      "source_location": "L95",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

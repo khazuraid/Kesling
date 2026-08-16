@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_sebelumnya_md",
+      "label": "sebelumnya.md",
+      "file_type": "document",
+      "source_file": "sebelumnya.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

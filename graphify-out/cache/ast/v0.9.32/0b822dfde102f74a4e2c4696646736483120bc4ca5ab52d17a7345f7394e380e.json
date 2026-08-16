@@ -1,0 +1,255 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_implementation_plan_md",
+      "label": "implementation_plan.md",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "label": "Rencana Implementasi: Platform Kesehatan Lingkungan Dinamis (Dynamic Master Data & Forms)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_gambaran_arsitektur_baru_dinamis_vs_statis",
+      "label": "\ud83d\udca1 Gambaran Arsitektur Baru: Dinamis vs Statis",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_usulan_perubahan_database_prisma_schema",
+      "label": "\ud83d\udee0\ufe0f Usulan Perubahan Database (Prisma Schema)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_1_model_metadata_kategori_parameter",
+      "label": "1. Model Metadata Kategori & Parameter",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_2_model_data_laporan_nilai_dinamis",
+      "label": "2. Model Data Laporan & Nilai Dinamis",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_desain_pembaruan_antarmuka_ui_ux",
+      "label": "\ud83c\udfa8 Desain Pembaruan Antarmuka (UI/UX)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L166"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_1_panel_administrasi_baru_master_builder_kategori_parameter",
+      "label": "1. Panel Administrasi Baru: Master Builder Kategori & Parameter",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L168"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_2_dynamic_form_renderer_laporan_categorycode",
+      "label": "2. Dynamic Form Renderer (`/laporan/[categoryCode]`)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_3_dynamic_reports_executive_export",
+      "label": "3. Dynamic Reports & Executive Export",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L186"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "label": "\ud83d\udccb Rencana Tahapan Eksekusi",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L194"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_tahap_1_migrasi_database_seeding_data_awal_seamless_transition",
+      "label": "Tahap 1: Migrasi Database & Seeding Data Awal (Seamless Transition)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L196"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_tahap_2_api_gateway_metadata_handler",
+      "label": "Tahap 2: API Gateway & Metadata Handler",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L201"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_tahap_3_pembuatan_ui_master_builder_renderer_dinamis",
+      "label": "Tahap 3: Pembuatan UI Master Builder & Renderer Dinamis",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L205"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_tahap_4_mengalihkan_dashboard_laporan_ke_mesin_dinamis",
+      "label": "Tahap 4: Mengalihkan Dashboard & Laporan ke Mesin Dinamis",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L209"
+    },
+    {
+      "id": "$graphify-root$_implementation_plan_open_questions_mohon_umpan_balik",
+      "label": "\u2753 Open Questions (Mohon Umpan Balik)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L215"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_implementation_plan_md",
+      "target": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "target": "$graphify-root$_implementation_plan_gambaran_arsitektur_baru_dinamis_vs_statis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "target": "$graphify-root$_implementation_plan_usulan_perubahan_database_prisma_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_usulan_perubahan_database_prisma_schema",
+      "target": "$graphify-root$_implementation_plan_1_model_metadata_kategori_parameter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_usulan_perubahan_database_prisma_schema",
+      "target": "$graphify-root$_implementation_plan_2_model_data_laporan_nilai_dinamis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "target": "$graphify-root$_implementation_plan_desain_pembaruan_antarmuka_ui_ux",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_desain_pembaruan_antarmuka_ui_ux",
+      "target": "$graphify-root$_implementation_plan_1_panel_administrasi_baru_master_builder_kategori_parameter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_desain_pembaruan_antarmuka_ui_ux",
+      "target": "$graphify-root$_implementation_plan_2_dynamic_form_renderer_laporan_categorycode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_desain_pembaruan_antarmuka_ui_ux",
+      "target": "$graphify-root$_implementation_plan_3_dynamic_reports_executive_export",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L186",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "target": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L194",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "target": "$graphify-root$_implementation_plan_tahap_1_migrasi_database_seeding_data_awal_seamless_transition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L196",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "target": "$graphify-root$_implementation_plan_tahap_2_api_gateway_metadata_handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "target": "$graphify-root$_implementation_plan_tahap_3_pembuatan_ui_master_builder_renderer_dinamis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_tahapan_eksekusi",
+      "target": "$graphify-root$_implementation_plan_tahap_4_mengalihkan_dashboard_laporan_ke_mesin_dinamis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_implementation_plan_rencana_implementasi_platform_kesehatan_lingkungan_dinamis_dynamic_master_data_forms",
+      "target": "$graphify-root$_implementation_plan_open_questions_mohon_umpan_balik",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L215",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

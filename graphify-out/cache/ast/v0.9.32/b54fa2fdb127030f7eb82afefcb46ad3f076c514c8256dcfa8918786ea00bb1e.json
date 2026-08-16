@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_array_virtualization_formprovider_md",
+      "label": "array-virtualization-formprovider.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-virtualization-formprovider.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_react_hook_form_references_array_virtualization_formprovider_use_formprovider_for_virtualized_field_arrays",
+      "label": "Use FormProvider for Virtualized Field Arrays",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-virtualization-formprovider.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_react_hook_form_references_array_virtualization_formprovider_md",
+      "target": "$graphify-root$_agents_skills_i_react_hook_form_references_array_virtualization_formprovider_use_formprovider_for_virtualized_field_arrays",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-react-hook-form/references/array-virtualization-formprovider.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

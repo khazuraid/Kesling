@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_compose_intersection_md",
+      "label": "compose-intersection.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/compose-intersection.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_zod_references_compose_intersection_use_intersection_for_type_combinations",
+      "label": "Use intersection() for Type Combinations",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-zod/references/compose-intersection.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_zod_references_compose_intersection_md",
+      "target": "$graphify-root$_agents_skills_i_zod_references_compose_intersection_use_intersection_for_type_combinations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-zod/references/compose-intersection.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

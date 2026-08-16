@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_vs_superrefine_md",
+      "label": "refine-vs-superrefine.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-vs-superrefine.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_vs_superrefine_choose_refine_vs_superrefine_correctly",
+      "label": "Choose refine() vs superRefine() Correctly",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-vs-superrefine.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_refine_vs_superrefine_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_refine_vs_superrefine_choose_refine_vs_superrefine_correctly",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/refine-vs-superrefine.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

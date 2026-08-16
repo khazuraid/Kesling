@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_defaults_md",
+      "label": "refine-defaults.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-defaults.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_zod_references_refine_defaults_use_default_for_optional_fields_with_defaults",
+      "label": "Use default() for Optional Fields with Defaults",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-zod/references/refine-defaults.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_zod_references_refine_defaults_md",
+      "target": "$graphify-root$_gemini_skills_i_zod_references_refine_defaults_use_default_for_optional_fields_with_defaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-zod/references/refine-defaults.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

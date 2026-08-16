@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_md",
+      "label": "core-test-api.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "label": "Test API",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_basic_test",
+      "label": "Basic Test",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_async_tests",
+      "label": "Async Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_options",
+      "label": "Test Options",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "label": "Test Modifiers",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_skip_tests",
+      "label": "Skip Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_focus_tests",
+      "label": "Focus Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L75"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_todo_tests",
+      "label": "Todo Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_failing_tests",
+      "label": "Failing Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_concurrent_tests",
+      "label": "Concurrent Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_sequential_tests",
+      "label": "Sequential Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L115"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_parameterized_tests",
+      "label": "Parameterized Tests",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_each",
+      "label": "test.each",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_for",
+      "label": "test.for",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L153"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_context",
+      "label": "Test Context",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_custom_test_with_fixtures",
+      "label": "Custom Test with Fixtures",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L179"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_retry_configuration",
+      "label": "Retry Configuration",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_tags",
+      "label": "Tags",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L215"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L223"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_md",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_basic_test",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_async_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_skip_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_focus_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_todo_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_failing_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_concurrent_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_modifiers",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_sequential_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_parameterized_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_parameterized_tests",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_each",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_parameterized_tests",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_for",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_context",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_custom_test_with_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_retry_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_tags",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L215",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_test_api",
+      "target": "$graphify-root$_gemini_skills_i_vitest_references_core_test_api_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-vitest/references/core-test-api.md",
+      "source_location": "L223",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

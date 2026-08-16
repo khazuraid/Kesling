@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_md",
+      "label": "advanced-vi.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "label": "Vi Utilities",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_functions",
+      "label": "Mock Functions",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_spying",
+      "label": "Spying",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_module_mocking",
+      "label": "Module Mocking",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_dynamic_mocking",
+      "label": "Dynamic Mocking",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_reset_modules",
+      "label": "Reset Modules",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L91"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_fake_timers",
+      "label": "Fake Timers",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_date_time",
+      "label": "Mock Date/Time",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L130"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_global_env_mocking",
+      "label": "Global/Env Mocking",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L140"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_hoisted_code",
+      "label": "Hoisted Code",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L153"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_waiting_utilities",
+      "label": "Waiting Utilities",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_object",
+      "label": "Mock Object",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L181"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_test_configuration",
+      "label": "Test Configuration",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L201"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_global_mock_management",
+      "label": "Global Mock Management",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L212"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_mocked_type_helper",
+      "label": "vi.mocked Type Helper",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L220"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L238"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_functions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_spying",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_module_mocking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_dynamic_mocking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_reset_modules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_fake_timers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_date_time",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_global_env_mocking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_hoisted_code",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_waiting_utilities",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_mock_object",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_test_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_global_mock_management",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_mocked_type_helper",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_vi_utilities",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_vi_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-vi.md",
+      "source_location": "L238",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,223 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_md",
+      "label": "advanced-projects.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "label": "Projects",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_basic_projects_setup",
+      "label": "Basic Projects Setup",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_monorepo_pattern",
+      "label": "Monorepo Pattern",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_different_environments",
+      "label": "Different Environments",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_browser_node_projects",
+      "label": "Browser + Node Projects",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_shared_configuration",
+      "label": "Shared Configuration",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L128"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_project_specific_dependencies",
+      "label": "Project-Specific Dependencies",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L162"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_running_specific_projects",
+      "label": "Running Specific Projects",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L185"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_providing_values_to_projects",
+      "label": "Providing Values to Projects",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L199"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_with_fixtures",
+      "label": "With Fixtures",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L239"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_project_isolation",
+      "label": "Project Isolation",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L251"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_global_setup_per_project",
+      "label": "Global Setup per Project",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L271"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_key_points",
+      "label": "Key Points",
+      "file_type": "document",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L288"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_md",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_basic_projects_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_monorepo_pattern",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_different_environments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_browser_node_projects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_shared_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_project_specific_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_running_specific_projects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L185",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_providing_values_to_projects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L199",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_with_fixtures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L239",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_project_isolation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_global_setup_per_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_projects",
+      "target": "$graphify-root$_agents_skills_i_vitest_references_advanced_projects_key_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/i-vitest/references/advanced-projects.md",
+      "source_location": "L288",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

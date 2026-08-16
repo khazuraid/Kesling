@@ -1,0 +1,4323 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_install_sh",
+      "label": "install.sh",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "file" }
+    },
+    {
+      "id": "$graphify-root$_install_sh__entry",
+      "label": "install.sh script",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "bash_entrypoint" }
+    },
+    {
+      "id": "$graphify-root$_install_uv_no_config",
+      "label": "UV_NO_CONFIG",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L33",
+      "metadata": { "language": "bash", "kind": "code" }
+    },
+    {
+      "id": "$graphify-root$_install_print_banner",
+      "label": "print_banner()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L211",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_log_info",
+      "label": "log_info()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L222",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_log_success",
+      "label": "log_success()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L226",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_log_warn",
+      "label": "log_warn()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L230",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_log_error",
+      "label": "log_error()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L234",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_json_escape",
+      "label": "json_escape()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L238",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_restore_dirty_lockfiles",
+      "label": "restore_dirty_lockfiles()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L251",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_discard_update_lockfile_churn",
+      "label": "discard_update_lockfile_churn()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L267",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_emit_manifest",
+      "label": "emit_manifest()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L315",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_stage_needs_user_input",
+      "label": "stage_needs_user_input()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L329",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_emit_stage_json",
+      "label": "emit_stage_json()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L336",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_prompt_yes_no",
+      "label": "prompt_yes_no()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L350",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_is_termux",
+      "label": "is_termux()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L389",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_resolve_install_layout",
+      "label": "resolve_install_layout()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L407",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_get_command_link_dir",
+      "label": "get_command_link_dir()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L450",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_get_command_link_display_dir",
+      "label": "get_command_link_display_dir()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L460",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "label": "configure_managed_node_npm_prefix()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L481",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_get_hermes_command_path",
+      "label": "get_hermes_command_path()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L489",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_detect_os",
+      "label": "detect_os()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L503",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_uv",
+      "label": "install_uv()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L549",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_check_python",
+      "label": "check_python()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L612",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_attempt_install_git",
+      "label": "attempt_install_git()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L660",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_check_git",
+      "label": "check_git()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L722",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_node_satisfies_build",
+      "label": "node_satisfies_build()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L789",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_check_node",
+      "label": "check_node()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L800",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_node",
+      "label": "install_node()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L832",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_check_network_prerequisites",
+      "label": "check_network_prerequisites()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L947",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_system_packages",
+      "label": "install_system_packages()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1003",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_show_manual_install_hint",
+      "label": "show_manual_install_hint()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1175",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_clone_repo",
+      "label": "clone_repo()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1198",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_setup_venv",
+      "label": "setup_venv()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1370",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_deps",
+      "label": "install_deps()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1413",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_tier",
+      "label": "install_tier()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1629",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_setup_path",
+      "label": "setup_path()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1667",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_copy_config_templates",
+      "label": "copy_config_templates()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1867",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_find_system_browser",
+      "label": "find_system_browser()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1940",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_strip_snap_browser_override",
+      "label": "strip_snap_browser_override()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1974",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_browser_install_with_timeout",
+      "label": "run_browser_install_with_timeout()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2001",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_with_timeout",
+      "label": "run_with_timeout()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2019",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_playwright_host_unrecognized",
+      "label": "playwright_host_unrecognized()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2104",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_ver_gt",
+      "label": "_ver_gt()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2106",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_playwright_fallback_platform",
+      "label": "playwright_fallback_platform()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2124",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_playwright_install",
+      "label": "run_playwright_install()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2156",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "label": "configure_browser_env_from_system_browser()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2190",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_node_deps",
+      "label": "install_node_deps()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2220",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_setup_wizard",
+      "label": "run_setup_wizard()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2350",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_maybe_start_gateway",
+      "label": "maybe_start_gateway()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2384",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_write_bootstrap_marker",
+      "label": "write_bootstrap_marker()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2481",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_print_success",
+      "label": "print_success()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2523",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_ensure_browser",
+      "label": "ensure_browser()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2604",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_ensure_mode",
+      "label": "ensure_mode()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2674",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_clear_electron_build_cache",
+      "label": "clear_electron_build_cache()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2721",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_desktop_pack",
+      "label": "_desktop_pack()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2780",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_electron_dir",
+      "label": "_electron_dir()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2806",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_electron_dist_ok",
+      "label": "_electron_dist_ok()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2816",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_restore_electron_dist",
+      "label": "_restore_electron_dist()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2828",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_electron_pkg_staged_missing_dist",
+      "label": "_electron_pkg_staged_missing_dist()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2849",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_restore_electron_dist_with_fallback",
+      "label": "_restore_electron_dist_with_fallback()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2856",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_desktop_voice_deps",
+      "label": "install_desktop_voice_deps()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2868",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_install_desktop",
+      "label": "install_desktop()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L2899",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_require_install_dir",
+      "label": "require_install_dir()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L3118",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_stage_body",
+      "label": "run_stage_body()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L3129",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_run_stage_protocol",
+      "label": "run_stage_protocol()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L3228",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    },
+    {
+      "id": "$graphify-root$_install_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L3271",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_sh__entry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_uv_no_config",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_print_banner",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L211",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L222",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L226",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L230",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L234",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_json_escape",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L238",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_restore_dirty_lockfiles",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_discard_update_lockfile_churn",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L267",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_emit_manifest",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L315",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_stage_needs_user_input",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L329",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_emit_stage_json",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L336",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_prompt_yes_no",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L350",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_is_termux",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L389",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_resolve_install_layout",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L407",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_get_command_link_dir",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L450",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_get_command_link_display_dir",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L460",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L481",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_get_hermes_command_path",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L489",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_detect_os",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L503",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_uv",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L549",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_check_python",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L612",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_attempt_install_git",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L660",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_check_git",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L722",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_node_satisfies_build",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L789",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_check_node",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L800",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_node",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L832",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_check_network_prerequisites",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L947",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_system_packages",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1003",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_show_manual_install_hint",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1175",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_clone_repo",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1198",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_setup_venv",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1370",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_deps",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1413",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_install_tier",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1629",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_setup_path",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1667",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_copy_config_templates",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1867",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_find_system_browser",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1940",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_strip_snap_browser_override",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1974",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_browser_install_with_timeout",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2001",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_with_timeout",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2019",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_playwright_host_unrecognized",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2104",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_playwright_host_unrecognized",
+      "target": "$graphify-root$_install_ver_gt",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2106",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_playwright_fallback_platform",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2124",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_playwright_install",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2156",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2190",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_node_deps",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2220",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_setup_wizard",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2350",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_maybe_start_gateway",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2384",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_write_bootstrap_marker",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2481",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_print_success",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2523",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_ensure_browser",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2604",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_ensure_mode",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2674",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_clear_electron_build_cache",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2721",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_desktop_pack",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2780",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_electron_dir",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2806",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_electron_dist_ok",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2816",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_restore_electron_dist",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2828",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_electron_pkg_staged_missing_dist",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2849",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_restore_electron_dist_with_fallback",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2856",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_desktop_voice_deps",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2868",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_install_desktop",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2899",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_require_install_dir",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3118",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_stage_body",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3129",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_run_stage_protocol",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3228",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh",
+      "target": "$graphify-root$_install_main",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3271",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_install_sh__entry",
+      "target": "$graphify-root$_install_emit_manifest",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3310",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_sh__entry",
+      "target": "$graphify-root$_install_run_stage_protocol",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3312",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_sh__entry",
+      "target": "$graphify-root$_install_ensure_mode",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3314",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_sh__entry",
+      "target": "$graphify-root$_install_main",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3316",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_discard_update_lockfile_churn",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L312",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_resolve_install_layout",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L409",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_resolve_install_layout",
+      "target": "$graphify-root$_install_is_termux",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L414",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_get_command_link_dir",
+      "target": "$graphify-root$_install_is_termux",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L451",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_get_command_link_display_dir",
+      "target": "$graphify-root$_install_is_termux",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L461",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_detect_os",
+      "target": "$graphify-root$_install_is_termux",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L506",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_detect_os",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L531",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_detect_os",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L532",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_detect_os",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L538",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_detect_os",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L542",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_uv",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L551",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_uv",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L565",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_uv",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L579",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_python",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L614",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_python",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L619",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_python",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L649",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_attempt_install_git",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L665",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_git",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L723",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_git",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L728",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_git",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L732",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_git",
+      "target": "$graphify-root$_install_attempt_install_git",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L746",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_git",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L752",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L801",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L806",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_node_satisfies_build",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L808",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L809",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L823",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_node",
+      "target": "$graphify-root$_install_install_node",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L829",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L834",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L838",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L841",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node",
+      "target": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L937",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_network_prerequisites",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L948",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_network_prerequisites",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L955",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_check_network_prerequisites",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L988",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_system_packages",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1010",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_system_packages",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1012",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_system_packages",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1046",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_system_packages",
+      "target": "$graphify-root$_install_prompt_yes_no",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1123",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_system_packages",
+      "target": "$graphify-root$_install_show_manual_install_hint",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1167",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_show_manual_install_hint",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1177",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_clone_repo",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1199",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_clone_repo",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1208",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_clone_repo",
+      "target": "$graphify-root$_install_discard_update_lockfile_churn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1219",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_clone_repo",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1287",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_clone_repo",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1324",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_setup_venv",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1372",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_setup_venv",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1385",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1414",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1453",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1465",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1473",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_prompt_yes_no",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1505",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_deps",
+      "target": "$graphify-root$_install_install_tier",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1643",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_tier",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1631",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_tier",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1633",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_tier",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1638",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_setup_path",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1668",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_setup_path",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1676",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_setup_path",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1726",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_copy_config_templates",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1868",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_copy_config_templates",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1877",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_copy_config_templates",
+      "target": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1889",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_strip_snap_browser_override",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1992",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_strip_snap_browser_override",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1993",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_browser_install_with_timeout",
+      "target": "$graphify-root$_install_run_with_timeout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2002",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_playwright_host_unrecognized",
+      "target": "$graphify-root$_install_ver_gt",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2111",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_playwright_install",
+      "target": "$graphify-root$_install_run_browser_install_with_timeout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2161",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_playwright_install",
+      "target": "$graphify-root$_install_playwright_host_unrecognized",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2174",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_playwright_install",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2184",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_playwright_install",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2185",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2208",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2217",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2222",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_run_with_timeout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2238",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2239",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2241",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_strip_snap_browser_override",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2255",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_run_playwright_install",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2272",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_node_deps",
+      "target": "$graphify-root$_install_restore_dirty_lockfiles",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2347",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_setup_wizard",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2352",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_maybe_start_gateway",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2405",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_maybe_start_gateway",
+      "target": "$graphify-root$_install_prompt_yes_no",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2417",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_maybe_start_gateway",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2452",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_maybe_start_gateway",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2456",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_write_bootstrap_marker",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2493",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2610",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2622",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_run_with_timeout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2627",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_strip_snap_browser_override",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2639",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2643",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_browser",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2652",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_mode",
+      "target": "$graphify-root$_install_detect_os",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2675",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_mode",
+      "target": "$graphify-root$_install_check_node",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2682",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_mode",
+      "target": "$graphify-root$_install_ensure_browser",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2687",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_mode",
+      "target": "$graphify-root$_install_install_system_packages",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2694",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_ensure_mode",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2705",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_restore_electron_dist",
+      "target": "$graphify-root$_install_electron_dist_ok",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2833",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_electron_pkg_staged_missing_dist",
+      "target": "$graphify-root$_install_electron_dist_ok",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2853",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_restore_electron_dist_with_fallback",
+      "target": "$graphify-root$_install_restore_electron_dist",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2858",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop_voice_deps",
+      "target": "$graphify-root$_install_install_uv",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2881",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop_voice_deps",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2884",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop_voice_deps",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2887",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop_voice_deps",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2889",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_check_node",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2911",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2913",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2914",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_log_warn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2918",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_run_with_timeout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2950",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_log_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2951",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_electron_pkg_staged_missing_dist",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2956",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_restore_electron_dist_with_fallback",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2958",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_electron_dist_ok",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2988",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_restore_electron_dist",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L2990",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_install_desktop",
+      "target": "$graphify-root$_install_restore_dirty_lockfiles",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3111",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_require_install_dir",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3120",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_require_install_dir",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3121",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_print_banner",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3134",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_detect_os",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3135",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_resolve_install_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3136",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_uv",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3137",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_check_python",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3138",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_check_git",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3139",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_check_node",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3140",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_check_network_prerequisites",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3141",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_system_packages",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3142",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_clone_repo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3148",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_require_install_dir",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3153",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_setup_venv",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3156",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3164",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_node_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3171",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_setup_path",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3177",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_copy_config_templates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3183",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_run_setup_wizard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3189",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_maybe_start_gateway",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3195",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_desktop_voice_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3206",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_install_desktop",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3207",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_print_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3212",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_write_bootstrap_marker",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3213",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_body",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3222",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_protocol",
+      "target": "$graphify-root$_install_log_error",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3231",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_protocol",
+      "target": "$graphify-root$_install_emit_stage_json",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3233",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_protocol",
+      "target": "$graphify-root$_install_stage_needs_user_input",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3238",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_protocol",
+      "target": "$graphify-root$_install_log_info",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3239",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_run_stage_protocol",
+      "target": "$graphify-root$_install_run_stage_body",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3253",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_print_banner",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3272",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_detect_os",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3274",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_resolve_install_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3275",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_uv",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3276",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_check_python",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3277",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_check_git",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3278",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_check_node",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3279",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_check_network_prerequisites",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3280",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_system_packages",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3281",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_clone_repo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3283",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_setup_venv",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3284",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3285",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_node_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3286",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_setup_path",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3287",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_copy_config_templates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3288",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_run_setup_wizard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3289",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_maybe_start_gateway",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3290",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_desktop_voice_deps",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3293",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_install_desktop",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3294",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_print_success",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3297",
+      "weight": 1.0,
+      "context": "call"
+    },
+    {
+      "source": "$graphify-root$_install_main",
+      "target": "$graphify-root$_install_write_bootstrap_marker",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L3299",
+      "weight": 1.0,
+      "context": "call"
+    }
+  ],
+  "raw_calls": [
+    {
+      "language": "bash",
+      "callee": "set",
+      "caller_nid": "$graphify-root$_install_sh__entry",
+      "source_file": "install.sh",
+      "source_location": "L16"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_sh__entry",
+      "source_file": "install.sh",
+      "source_location": "L23"
+    },
+    {
+      "language": "bash",
+      "callee": "shift",
+      "caller_nid": "$graphify-root$_install_sh__entry",
+      "source_file": "install.sh",
+      "source_location": "L99"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_sh__entry",
+      "source_file": "install.sh",
+      "source_location": "L198"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_print_banner",
+      "source_file": "install.sh",
+      "source_location": "L212"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_log_info",
+      "source_file": "install.sh",
+      "source_location": "L223"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_log_success",
+      "source_file": "install.sh",
+      "source_location": "L227"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_log_warn",
+      "source_file": "install.sh",
+      "source_location": "L231"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_log_error",
+      "source_file": "install.sh",
+      "source_location": "L235"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_json_escape",
+      "source_file": "install.sh",
+      "source_location": "L241"
+    },
+    {
+      "language": "bash",
+      "callee": "tr",
+      "caller_nid": "$graphify-root$_install_json_escape",
+      "source_file": "install.sh",
+      "source_location": "L241"
+    },
+    {
+      "language": "bash",
+      "callee": "sed",
+      "caller_nid": "$graphify-root$_install_json_escape",
+      "source_file": "install.sh",
+      "source_location": "L241"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L253"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L254"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L258"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L258"
+    },
+    {
+      "language": "bash",
+      "callee": "git",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L259"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_restore_dirty_lockfiles",
+      "source_file": "install.sh",
+      "source_location": "L259"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L269"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L270"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L277"
+    },
+    {
+      "language": "bash",
+      "callee": "continue",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L295"
+    },
+    {
+      "language": "bash",
+      "callee": "git",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L308"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_discard_update_lockfile_churn",
+      "source_file": "install.sh",
+      "source_location": "L308"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_emit_manifest",
+      "source_file": "install.sh",
+      "source_location": "L325"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_stage_needs_user_input",
+      "source_file": "install.sh",
+      "source_location": "L331"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_emit_stage_json",
+      "source_file": "install.sh",
+      "source_location": "L344"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_prompt_yes_no",
+      "source_file": "install.sh",
+      "source_location": "L365"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_prompt_yes_no",
+      "source_file": "install.sh",
+      "source_location": "L367"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_prompt_yes_no",
+      "source_file": "install.sh",
+      "source_location": "L378"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_resolve_install_layout",
+      "source_file": "install.sh",
+      "source_location": "L410"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_get_command_link_dir",
+      "source_file": "install.sh",
+      "source_location": "L452"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_get_command_link_display_dir",
+      "source_file": "install.sh",
+      "source_location": "L462"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "source_file": "install.sh",
+      "source_location": "L482"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "source_file": "install.sh",
+      "source_location": "L485"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_configure_managed_node_npm_prefix",
+      "source_file": "install.sh",
+      "source_location": "L486"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_get_hermes_command_path",
+      "source_file": "install.sh",
+      "source_location": "L493"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_detect_os",
+      "source_file": "install.sh",
+      "source_location": "L533"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L553"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L570"
+    },
+    {
+      "language": "bash",
+      "callee": "curl",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L578"
+    },
+    {
+      "language": "bash",
+      "callee": "sed",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L581"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L583"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_install_uv",
+      "source_file": "install.sh",
+      "source_location": "L584"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_check_python",
+      "source_file": "install.sh",
+      "source_location": "L615"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_check_python",
+      "source_file": "install.sh",
+      "source_location": "L620"
+    },
+    {
+      "language": "bash",
+      "callee": "pkg",
+      "caller_nid": "$graphify-root$_install_check_python",
+      "source_file": "install.sh",
+      "source_location": "L625"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_check_python",
+      "source_file": "install.sh",
+      "source_location": "L651"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L664"
+    },
+    {
+      "language": "bash",
+      "callee": "brew",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L666"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L666"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L667"
+    },
+    {
+      "language": "bash",
+      "callee": "xcode-select",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L676"
+    },
+    {
+      "language": "bash",
+      "callee": "git",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L680"
+    },
+    {
+      "language": "bash",
+      "callee": "sleep",
+      "caller_nid": "$graphify-root$_install_attempt_install_git",
+      "source_file": "install.sh",
+      "source_location": "L683"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_check_git",
+      "source_file": "install.sh",
+      "source_location": "L726"
+    },
+    {
+      "language": "bash",
+      "callee": "git",
+      "caller_nid": "$graphify-root$_install_check_git",
+      "source_file": "install.sh",
+      "source_location": "L726"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_check_git",
+      "source_file": "install.sh",
+      "source_location": "L729"
+    },
+    {
+      "language": "bash",
+      "callee": "pkg",
+      "caller_nid": "$graphify-root$_install_check_git",
+      "source_file": "install.sh",
+      "source_location": "L736"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_check_git",
+      "source_file": "install.sh",
+      "source_location": "L780"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_node_satisfies_build",
+      "source_file": "install.sh",
+      "source_location": "L793"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_check_node",
+      "source_file": "install.sh",
+      "source_location": "L808"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_check_node",
+      "source_file": "install.sh",
+      "source_location": "L811"
+    },
+    {
+      "language": "bash",
+      "callee": "pkg",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L835"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L844"
+    },
+    {
+      "language": "bash",
+      "callee": "curl",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L898"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L900"
+    },
+    {
+      "language": "bash",
+      "callee": "tar",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L907"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L926"
+    },
+    {
+      "language": "bash",
+      "callee": "mv",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L927"
+    },
+    {
+      "language": "bash",
+      "callee": "ln",
+      "caller_nid": "$graphify-root$_install_install_node",
+      "source_file": "install.sh",
+      "source_location": "L933"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L954"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L956"
+    },
+    {
+      "language": "bash",
+      "callee": "curl",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L968"
+    },
+    {
+      "language": "bash",
+      "callee": ":",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L969"
+    },
+    {
+      "language": "bash",
+      "callee": "wait",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L975"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_check_network_prerequisites",
+      "source_file": "install.sh",
+      "source_location": "L985"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1011"
+    },
+    {
+      "language": "bash",
+      "callee": "pkg",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1039"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1043"
+    },
+    {
+      "language": "bash",
+      "callee": "brew",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1074"
+    },
+    {
+      "language": "bash",
+      "callee": "sudo",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1110"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1120"
+    },
+    {
+      "language": "bash",
+      "callee": ":",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1130"
+    },
+    {
+      "language": "bash",
+      "callee": "cargo",
+      "caller_nid": "$graphify-root$_install_install_system_packages",
+      "source_file": "install.sh",
+      "source_location": "L1157"
+    },
+    {
+      "language": "bash",
+      "callee": "git",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1206"
+    },
+    {
+      "language": "bash",
+      "callee": "mv",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1210"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1216"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1245"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1260"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1263"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1264"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1315"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_clone_repo",
+      "source_file": "install.sh",
+      "source_location": "L1326"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_setup_venv",
+      "source_file": "install.sh",
+      "source_location": "L1373"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_setup_venv",
+      "source_file": "install.sh",
+      "source_location": "L1381"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1468"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1478"
+    },
+    {
+      "language": "bash",
+      "callee": "dpkg",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1491"
+    },
+    {
+      "language": "bash",
+      "callee": "break",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1493"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1498"
+    },
+    {
+      "language": "bash",
+      "callee": "sudo",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1499"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1500"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1614"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_install_deps",
+      "source_file": "install.sh",
+      "source_location": "L1647"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_tier",
+      "source_file": "install.sh",
+      "source_location": "L1636"
+    },
+    {
+      "language": "bash",
+      "callee": "head",
+      "caller_nid": "$graphify-root$_install_install_tier",
+      "source_file": "install.sh",
+      "source_location": "L1639"
+    },
+    {
+      "language": "bash",
+      "callee": "sed",
+      "caller_nid": "$graphify-root$_install_install_tier",
+      "source_file": "install.sh",
+      "source_location": "L1639"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1677"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1701"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1705"
+    },
+    {
+      "language": "bash",
+      "callee": "cat",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1711"
+    },
+    {
+      "language": "bash",
+      "callee": "chmod",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1725"
+    },
+    {
+      "language": "bash",
+      "callee": "env",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1771"
+    },
+    {
+      "language": "bash",
+      "callee": "continue",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1782"
+    },
+    {
+      "language": "bash",
+      "callee": "grep",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1783"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1785"
+    },
+    {
+      "language": "bash",
+      "callee": "tr",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1798"
+    },
+    {
+      "language": "bash",
+      "callee": "touch",
+      "caller_nid": "$graphify-root$_install_setup_path",
+      "source_file": "install.sh",
+      "source_location": "L1808"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1871"
+    },
+    {
+      "language": "bash",
+      "callee": "cp",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1876"
+    },
+    {
+      "language": "bash",
+      "callee": "touch",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1879"
+    },
+    {
+      "language": "bash",
+      "callee": "chmod",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1888"
+    },
+    {
+      "language": "bash",
+      "callee": "cat",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1907"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1920"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_copy_config_templates",
+      "source_file": "install.sh",
+      "source_location": "L1923"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_find_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L1953"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_find_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L1963"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_find_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L1966"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_strip_snap_browser_override",
+      "source_file": "install.sh",
+      "source_location": "L1985"
+    },
+    {
+      "language": "bash",
+      "callee": "grep",
+      "caller_nid": "$graphify-root$_install_strip_snap_browser_override",
+      "source_file": "install.sh",
+      "source_location": "L1986"
+    },
+    {
+      "language": "bash",
+      "callee": "mv",
+      "caller_nid": "$graphify-root$_install_strip_snap_browser_override",
+      "source_file": "install.sh",
+      "source_location": "L1991"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_strip_snap_browser_override",
+      "source_file": "install.sh",
+      "source_location": "L1997"
+    },
+    {
+      "language": "bash",
+      "callee": "shift",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2021"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2035"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2055"
+    },
+    {
+      "language": "bash",
+      "callee": "set",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2061"
+    },
+    {
+      "language": "bash",
+      "callee": "kill",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2069"
+    },
+    {
+      "language": "bash",
+      "callee": "wait",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2073"
+    },
+    {
+      "language": "bash",
+      "callee": "sleep",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2076"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_run_with_timeout",
+      "source_file": "install.sh",
+      "source_location": "L2089"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_playwright_host_unrecognized",
+      "source_file": "install.sh",
+      "source_location": "L2113"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_ver_gt",
+      "source_file": "install.sh",
+      "source_location": "L2107"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_playwright_fallback_platform",
+      "source_file": "install.sh",
+      "source_location": "L2126"
+    },
+    {
+      "language": "bash",
+      "callee": ":",
+      "caller_nid": "$graphify-root$_install_playwright_fallback_platform",
+      "source_file": "install.sh",
+      "source_location": "L2128"
+    },
+    {
+      "language": "bash",
+      "callee": "shift",
+      "caller_nid": "$graphify-root$_install_run_playwright_install",
+      "source_file": "install.sh",
+      "source_location": "L2158"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_run_playwright_install",
+      "source_file": "install.sh",
+      "source_location": "L2162"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L2199"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L2202"
+    },
+    {
+      "language": "bash",
+      "callee": "touch",
+      "caller_nid": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L2204"
+    },
+    {
+      "language": "bash",
+      "callee": "grep",
+      "caller_nid": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L2207"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_configure_browser_env_from_system_browser",
+      "source_file": "install.sh",
+      "source_location": "L2213"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2223"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2235"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2270"
+    },
+    {
+      "language": "bash",
+      "callee": "sudo",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2270"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2293"
+    },
+    {
+      "language": "bash",
+      "callee": "pacman",
+      "caller_nid": "$graphify-root$_install_install_node_deps",
+      "source_file": "install.sh",
+      "source_location": "L2295"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_run_setup_wizard",
+      "source_file": "install.sh",
+      "source_location": "L2353"
+    },
+    {
+      "language": "bash",
+      "callee": ":",
+      "caller_nid": "$graphify-root$_install_run_setup_wizard",
+      "source_file": "install.sh",
+      "source_location": "L2364"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_run_setup_wizard",
+      "source_file": "install.sh",
+      "source_location": "L2369"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_run_setup_wizard",
+      "source_file": "install.sh",
+      "source_location": "L2373"
+    },
+    {
+      "language": "bash",
+      "callee": "python",
+      "caller_nid": "$graphify-root$_install_run_setup_wizard",
+      "source_file": "install.sh",
+      "source_location": "L2380"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2388"
+    },
+    {
+      "language": "bash",
+      "callee": "break",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2396"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2404"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2419"
+    },
+    {
+      "language": "bash",
+      "callee": ":",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2429"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2449"
+    },
+    {
+      "language": "bash",
+      "callee": "nohup",
+      "caller_nid": "$graphify-root$_install_maybe_start_gateway",
+      "source_file": "install.sh",
+      "source_location": "L2467"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_write_bootstrap_marker",
+      "source_file": "install.sh",
+      "source_location": "L2494"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_write_bootstrap_marker",
+      "source_file": "install.sh",
+      "source_location": "L2516"
+    },
+    {
+      "language": "bash",
+      "callee": "mv",
+      "caller_nid": "$graphify-root$_install_write_bootstrap_marker",
+      "source_file": "install.sh",
+      "source_location": "L2520"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_print_success",
+      "source_file": "install.sh",
+      "source_location": "L2524"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_ensure_browser",
+      "source_file": "install.sh",
+      "source_location": "L2605"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_ensure_browser",
+      "source_file": "install.sh",
+      "source_location": "L2611"
+    },
+    {
+      "language": "bash",
+      "callee": "cat",
+      "caller_nid": "$graphify-root$_install_ensure_browser",
+      "source_file": "install.sh",
+      "source_location": "L2632"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_ensure_browser",
+      "source_file": "install.sh",
+      "source_location": "L2633"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_ensure_mode",
+      "source_file": "install.sh",
+      "source_location": "L2677"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_ensure_mode",
+      "source_file": "install.sh",
+      "source_location": "L2691"
+    },
+    {
+      "language": "bash",
+      "callee": "continue",
+      "caller_nid": "$graphify-root$_install_clear_electron_build_cache",
+      "source_file": "install.sh",
+      "source_location": "L2740"
+    },
+    {
+      "language": "bash",
+      "callee": "read",
+      "caller_nid": "$graphify-root$_install_clear_electron_build_cache",
+      "source_file": "install.sh",
+      "source_location": "L2743"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_clear_electron_build_cache",
+      "source_file": "install.sh",
+      "source_location": "L2745"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_clear_electron_build_cache",
+      "source_file": "install.sh",
+      "source_location": "L2770"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_desktop_pack",
+      "source_file": "install.sh",
+      "source_location": "L2784"
+    },
+    {
+      "language": "bash",
+      "callee": "npm",
+      "caller_nid": "$graphify-root$_install_desktop_pack",
+      "source_file": "install.sh",
+      "source_location": "L2784"
+    },
+    {
+      "language": "bash",
+      "callee": "printf",
+      "caller_nid": "$graphify-root$_install_electron_dir",
+      "source_file": "install.sh",
+      "source_location": "L2809"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2833"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2836"
+    },
+    {
+      "language": "bash",
+      "callee": "rm",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2838"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2838"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2842"
+    },
+    {
+      "language": "bash",
+      "callee": "node",
+      "caller_nid": "$graphify-root$_install_restore_electron_dist",
+      "source_file": "install.sh",
+      "source_location": "L2842"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_install_desktop_voice_deps",
+      "source_file": "install.sh",
+      "source_location": "L2881"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_desktop_voice_deps",
+      "source_file": "install.sh",
+      "source_location": "L2885"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_install_desktop_voice_deps",
+      "source_file": "install.sh",
+      "source_location": "L2888"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L2912"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L2915"
+    },
+    {
+      "language": "bash",
+      "callee": "true",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L2958"
+    },
+    {
+      "language": "bash",
+      "callee": "break",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3038"
+    },
+    {
+      "language": "bash",
+      "callee": "chown",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3056"
+    },
+    {
+      "language": "bash",
+      "callee": "chmod",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3056"
+    },
+    {
+      "language": "bash",
+      "callee": "sudo",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3061"
+    },
+    {
+      "language": "bash",
+      "callee": "xattr",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3104"
+    },
+    {
+      "language": "bash",
+      "callee": "codesign",
+      "caller_nid": "$graphify-root$_install_install_desktop",
+      "source_file": "install.sh",
+      "source_location": "L3105"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_require_install_dir",
+      "source_file": "install.sh",
+      "source_location": "L3122"
+    },
+    {
+      "language": "bash",
+      "callee": "cd",
+      "caller_nid": "$graphify-root$_install_require_install_dir",
+      "source_file": "install.sh",
+      "source_location": "L3124"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_run_stage_body",
+      "source_file": "install.sh",
+      "source_location": "L3219"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_run_stage_body",
+      "source_file": "install.sh",
+      "source_location": "L3223"
+    },
+    {
+      "language": "bash",
+      "callee": "return",
+      "caller_nid": "$graphify-root$_install_run_stage_protocol",
+      "source_file": "install.sh",
+      "source_location": "L3235"
+    },
+    {
+      "language": "bash",
+      "callee": "set",
+      "caller_nid": "$graphify-root$_install_run_stage_protocol",
+      "source_file": "install.sh",
+      "source_location": "L3252"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "$graphify-root$_install_main",
+      "source_file": "install.sh",
+      "source_location": "L3306"
+    }
+  ],
+  "bash_sources": []
+}

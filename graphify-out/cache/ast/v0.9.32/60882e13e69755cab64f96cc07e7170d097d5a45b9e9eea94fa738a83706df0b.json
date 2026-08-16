@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_getfieldstate_for_single_field_md",
+      "label": "formstate-getfieldstate-for-single-field.md",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/formstate-getfieldstate-for-single-field.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_getfieldstate_for_single_field_use_getfieldstate_for_single_field_state_access",
+      "label": "Use getFieldState for Single Field State Access",
+      "file_type": "document",
+      "source_file": ".gemini/skills/i-react-hook-form/references/formstate-getfieldstate-for-single-field.md",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_getfieldstate_for_single_field_md",
+      "target": "$graphify-root$_gemini_skills_i_react_hook_form_references_formstate_getfieldstate_for_single_field_use_getfieldstate_for_single_field_state_access",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".gemini/skills/i-react-hook-form/references/formstate-getfieldstate-for-single-field.md",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
