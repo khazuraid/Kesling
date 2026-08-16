@@ -1,7 +1,18 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Check, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Play, X } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Clock,
+  Play,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -41,6 +52,11 @@ interface Kategori {
   kategoriIcon: string;
   list: RencanaItem[];
 }
+interface LiburItem {
+  tanggal: string;
+  keterangan: string;
+  sumber: string;
+}
 interface RencanaData {
   bulan: number;
   tahun: number;
@@ -49,6 +65,7 @@ interface RencanaData {
   totalSelesai: number;
   totalTerjadwal: number;
   progress: number;
+  libur: LiburItem[];
   kategori: Kategori[];
 }
 
@@ -75,6 +92,9 @@ export default function RencanaBulananPage() {
   const [bulan, setBulan] = useState(Number(sp.get("bulan")) || now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
   const [kapasitas, setKapasitas] = useState(5);
+  const [showLiburPanel, setShowLiburPanel] = useState(false);
+  const [newLiburDate, setNewLiburDate] = useState("");
+  const [newLiburDesc, setNewLiburDesc] = useState("");
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery<RencanaData>({
@@ -112,6 +132,39 @@ export default function RencanaBulananPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rencana-bulanan"] }),
   });
 
+  const addLiburMut = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/libur", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [
+            ...(data?.libur ?? [])
+              .filter((l) => l.sumber === "custom")
+              .map((l) => ({ tanggal: l.tanggal, keterangan: l.keterangan })),
+            { tanggal: newLiburDate, keterangan: newLiburDesc || "Libur Khusus" },
+          ],
+        }),
+      });
+      if (!res.ok) throw new Error("Gagal simpan libur");
+      return res.json();
+    },
+    onSuccess: () => {
+      setNewLiburDate("");
+      setNewLiburDesc("");
+      qc.invalidateQueries({ queryKey: ["rencana-bulanan"] });
+    },
+  });
+
+  const delLiburMut = useMutation({
+    mutationFn: async (tanggal: string) => {
+      const res = await fetch(`/api/libur?tanggal=${tanggal}&tahun=${tahun}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal hapus libur");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rencana-bulanan"] }),
+  });
+
   const prevMonth = () => {
     const nb = bulan === 1 ? 12 : bulan - 1;
     const nt = bulan === 1 ? tahun - 1 : tahun;
@@ -141,6 +194,8 @@ export default function RencanaBulananPage() {
   }
 
   const selesaiVal = data?.totalSelesai ?? 0;
+  const liburByDate = new Map<string, LiburItem>();
+  for (const l of data?.libur ?? []) liburByDate.set(l.tanggal, l);
   const stats = [
     { label: "Progress", value: `${data?.progress ?? 0}%`, color: "text-[hsl(var(--accent))]" },
     { label: "Total", value: data?.totalSasaran ?? 0, color: "text-[hsl(var(--foreground))]" },
@@ -213,7 +268,74 @@ export default function RencanaBulananPage() {
             </>
           )}
         </Button>
+        <Button
+          variant={showLiburPanel ? "secondary" : "outline"}
+          onClick={() => setShowLiburPanel(!showLiburPanel)}
+          size="sm"
+        >
+          <Calendar className="w-3.5 h-3.5" /> Hari Libur ({data?.libur?.length ?? 0})
+        </Button>
       </div>
+
+      {/* Panel hari libur */}
+      {showLiburPanel && (
+        <div className="card-shell p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] font-bold">
+              Kelola Hari Libur — {BULAN_FULL[bulan - 1]} {tahun}
+            </p>
+            <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              Minggu & tanggal merah nasional otomatis dilewati saat jadwalkan
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              type="date"
+              value={newLiburDate}
+              onChange={(e) => setNewLiburDate(e.target.value)}
+              className="w-44 h-9"
+            />
+            <Input
+              placeholder="Keterangan (mis. Libur kantor)"
+              value={newLiburDesc}
+              onChange={(e) => setNewLiburDesc(e.target.value)}
+              className="w-56 h-9"
+            />
+            <Button onClick={() => addLiburMut.mutate()} disabled={!newLiburDate || addLiburMut.isPending} size="sm">
+              <Calendar className="w-3.5 h-3.5" /> Tambah
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+            {data?.libur?.map((l) => (
+              <div
+                key={l.tanggal}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border ${
+                  l.sumber === "custom"
+                    ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border-[hsl(var(--accent))]/20"
+                    : l.sumber === "minggu"
+                      ? "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]"
+                      : "bg-[hsl(var(--error-light))] text-[hsl(var(--error))] border-[hsl(var(--error))]/20"
+                }`}
+              >
+                <span className="tabular-nums">{l.tanggal.split("-").reverse().join("/")}</span>
+                <span>{l.keterangan}</span>
+                {l.sumber === "custom" && (
+                  <button
+                    onClick={() => delLiburMut.mutate(l.tanggal)}
+                    className="ml-0.5 hover:text-[hsl(var(--error))] transition-colors"
+                    title="Hapus libur"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {(!data?.libur || data.libur.length === 0) && (
+              <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Tidak ada hari libur bulan ini.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Calendar + List */}
       <div className="grid lg:grid-cols-[320px_1fr] gap-6">
@@ -241,21 +363,31 @@ export default function RencanaBulananPage() {
               const items = itemsByDate[day] || [];
               const hasSelesai = items.some((it) => it.sudahDiperiksa);
               const hasTerjadwal = items.some((it) => it.status === "TERJADWAL" && !it.sudahDiperiksa);
+              const tanggalKey = `${tahun}-${String(bulan).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const libur = liburByDate.get(tanggalKey);
               return (
                 <div
                   key={day}
+                  title={libur ? libur.keterangan : undefined}
                   className={`aspect-square rounded-lg flex flex-col items-center justify-center text-[11px] font-semibold relative ${
-                    items.length > 0
-                      ? hasSelesai
-                        ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
-                        : hasTerjadwal
-                          ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                          : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50"
+                    libur
+                      ? "bg-[hsl(var(--error-light))] text-[hsl(var(--error))]"
+                      : items.length > 0
+                        ? hasSelesai
+                          ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
+                          : hasTerjadwal
+                            ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
+                            : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                        : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50"
                   }`}
                 >
                   {day}
-                  {items.length > 0 && (
+                  {libur && (
+                    <span className="absolute bottom-0.5 right-0.5 text-[7px] leading-none font-bold text-[hsl(var(--error))]">
+                      ●
+                    </span>
+                  )}
+                  {!libur && items.length > 0 && (
                     <span className="absolute bottom-0.5 right-0.5 text-[8px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full w-3.5 h-3.5 flex items-center justify-center">
                       {items.length}
                     </span>

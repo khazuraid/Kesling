@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api-auth";
+import { getLibur, isLibur } from "@/lib/libur";
 
 // POST: auto-generate rencana (kan operator & admin utk bulan)
 export const POST = withAuth(async (req: NextRequest) => {
@@ -16,12 +17,18 @@ export const POST = withAuth(async (req: NextRequest) => {
   const sasarans = await prisma.sasaran.findMany({ where: { puskesmasId }, orderBy: { nama: "asc" } });
   if (!sasarans.length) return NextResponse.json({ error: "Belum ada sasaran terdaftar" }, { status: 400 });
 
+  // Ambil hari libur (Minggu + nasional + custom)
+  const libur = await getLibur(tahun);
+  const liburSet = new Set(libur.map((l) => l.tanggal));
+
+  // Kumpulkan hari kerja (Sen–Sab, bukan libur)
   const daysInMonth = new Date(tahun, bulan, 0).getDate();
   const workingDays: Date[] = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(tahun, bulan - 1, d);
-    if (date.getDay() !== 0) workingDays.push(date);
+    if (date.getDay() !== 0 && !isLibur(date, liburSet)) workingDays.push(date);
   }
+  if (!workingDays.length) return NextResponse.json({ error: "Tidak ada hari kerja di bulan ini" }, { status: 400 });
 
   let dayIndex = 0,
     slotInDay = 0;
@@ -43,5 +50,5 @@ export const POST = withAuth(async (req: NextRequest) => {
     }
   }
 
-  return NextResponse.json({ success: true, count: sasarans.length, bulan, tahun });
+  return NextResponse.json({ success: true, count: sasarans.length, bulan, tahun, hariKerja: workingDays.length });
 });

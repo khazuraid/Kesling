@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api-auth";
+import { getLibur } from "@/lib/libur";
 
 const BULAN_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -79,6 +80,12 @@ export const GET = withAuth(async (req: NextRequest) => {
     const totalSelesai = sasarans.filter((s) => s.results.length > 0).length;
     const totalTerjadwal = sasarans.filter((s) => s.rencanaBulanan.length > 0).length;
 
+    // Hari libur untuk bulan ini
+    const allLibur = await getLibur(tahun);
+    const liburBulanIni = allLibur
+      .filter((l) => l.tanggal.startsWith(`${tahun}-${String(bulan).padStart(2, "0")}`))
+      .map((l) => ({ tanggal: l.tanggal, keterangan: l.keterangan, sumber: l.sumber }));
+
     return NextResponse.json({
       bulan,
       tahun,
@@ -87,6 +94,7 @@ export const GET = withAuth(async (req: NextRequest) => {
       totalSelesai,
       totalTerjadwal,
       progress: totalSasaran > 0 ? Math.round((totalSelesai / totalSasaran) * 100) : 0,
+      libur: liburBulanIni,
       kategori: Object.values(byKategori).map((k) => ({
         kategoriNama: k.kategoriNama,
         kategoriIcon: k.kategoriIcon,
