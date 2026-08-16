@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronRight, ClipboardCheck, Zap } from "@tamagui/lucide-icons-2";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FadeIn, ScalePress, useCountUp } from "../../src/components/motion/primitives";
@@ -8,6 +8,7 @@ import { ProgressRing } from "../../src/components/motion/Ring";
 import { ProfileSheet } from "../../src/components/ProfileSheet";
 import { api } from "../../src/lib/api";
 import { useAuth } from "../../src/lib/auth";
+import { getDrafts } from "../../src/lib/drafts";
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const MONTHS_ID = [
@@ -44,6 +45,11 @@ export default function HariIni() {
   const today = now.toISOString().slice(0, 10);
   const [refreshing, setRefreshing] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
+
+  useFocusEffect(() => {
+    getDrafts().then((d) => setDraftCount(d.length));
+  });
 
   const { data: dash, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
   const { data: notifData } = useQuery({ queryKey: ["notifications"], queryFn: () => api.notifications() });
@@ -114,6 +120,13 @@ export default function HariIni() {
             </Pressable>
           </View>
         </FadeIn>
+
+        {/* Offline banner */}
+        {draftCount > 0 ? (
+          <Pressable onPress={() => router.push("/drafts")} style={styles.offlineBanner}>
+            <Text style={styles.offlineText}>{draftCount} draft belum disinkronkan</Text>
+          </Pressable>
+        ) : null}
 
         {/* Ring progress */}
         <FadeIn delay={60}>
@@ -265,6 +278,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
+  offlineBanner: {
+    backgroundColor: "#FEF4E2",
+    borderWidth: 1,
+    borderColor: "#F59E0B",
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+  offlineText: { color: "#F59E0B", fontSize: 13, fontWeight: "600" },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,

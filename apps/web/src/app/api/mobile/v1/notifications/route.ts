@@ -48,7 +48,36 @@ export async function GET(req: NextRequest) {
       }),
     }));
 
-  return NextResponse.json({ notifications, unreadCount, liburMendatang });
+  // Deadline rencana bulanan: belum SELESAI, tanggalRencana lewat atau ≤3 hari lagi
+  let deadlineRencana: { id: number; tanggal: string; sasaranNama: string }[] = [];
+  if (user.role === "OPERATOR" && user.puskesmasId) {
+    const now2 = new Date();
+    const in3Days = new Date(now2.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const rencana = await prisma.rencanaBulanan.findMany({
+      where: {
+        puskesmasId: user.puskesmasId,
+        bulan: now2.getMonth() + 1,
+        tahun: now2.getFullYear(),
+        status: { not: "SELESAI" },
+        tanggalRencana: { not: null, lte: in3Days },
+      },
+      orderBy: { tanggalRencana: "asc" },
+      take: 10,
+    });
+    const sasaranIds = Array.from(new Set(rencana.map((r) => r.sasaranId)));
+    const sasarans = await prisma.sasaran.findMany({
+      where: { id: { in: sasaranIds } },
+      select: { id: true, nama: true },
+    });
+    const namaById = new Map(sasarans.map((s) => [s.id, s.nama]));
+    deadlineRencana = rencana.map((r) => ({
+      id: r.id,
+      tanggal: (r.tanggalRencana as Date).toISOString().slice(0, 10),
+      sasaranNama: namaById.get(r.sasaranId) || "Sasaran",
+    }));
+  }
+
+  return NextResponse.json({ notifications, unreadCount, liburMendatang, deadlineRencana });
 }
 
 // PUT mark as read (single or all)

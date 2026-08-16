@@ -10,17 +10,28 @@ export default function SasaranList() {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [kategori, setKategori] = useState<string>("Semua");
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["sasaran"],
     queryFn: api.sasaran,
   });
 
+  const kategoriList = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of data || []) set.add(s.kategoriNama || s.kategori?.nama || "Lainnya");
+    return ["Semua", ...Array.from(set)];
+  }, [data]);
+
   const filtered = useMemo(() => {
     const list = data || [];
-    if (!q) return list;
+    const byKat =
+      kategori === "Semua"
+        ? list
+        : list.filter((s: any) => (s.kategoriNama || s.kategori?.nama || "Lainnya") === kategori);
+    if (!q) return byKat;
     const ql = q.toLowerCase();
-    return list.filter((s: any) => s.nama?.toLowerCase().includes(ql) || s.alamat?.toLowerCase().includes(ql));
-  }, [data, q]);
+    return byKat.filter((s: any) => s.nama?.toLowerCase().includes(ql) || s.alamat?.toLowerCase().includes(ql));
+  }, [data, q, kategori]);
 
   return (
     <View style={styles.root}>
@@ -46,6 +57,22 @@ export default function SasaranList() {
           onChangeText={setQ}
         />
       </View>
+
+      {/* Filter chips kategori */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}
+      >
+        {kategoriList.map((k) => {
+          const active = k === kategori;
+          return (
+            <Pressable key={k} onPress={() => setKategori(k)} style={[styles.chip, active && styles.chipActive]}>
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>{k}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
 
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 8 }}
@@ -117,6 +144,17 @@ const styles = StyleSheet.create({
     height: 42,
   },
   searchInput: { flex: 1, fontSize: 15, color: "#1F1D1B", padding: 0 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#ECE7E1",
+  },
+  chipActive: { backgroundColor: "#E6F6F0", borderColor: "#00A876" },
+  chipText: { fontSize: 12, fontWeight: "600", color: "#8A8580" },
+  chipTextActive: { color: "#00A876" },
   card: {
     flexDirection: "row",
     alignItems: "center",

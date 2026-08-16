@@ -1,8 +1,8 @@
-import { Check, ChevronLeft } from "@tamagui/lucide-icons-2";
+import { Check, ChevronLeft, Share2 } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Share } from "react-native";
 import { Button, Card, Input, ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 import { SectionLabel } from "../../src/components/ui";
 import { AppButton } from "../../src/components/ui/Button";
@@ -143,12 +143,30 @@ export default function LaporanDetailScreen() {
           <Text color="rgba(255,255,255,0.85)" fontSize="$3">
             {bulanNames[data.bulan - 1]} {data.tahun}
           </Text>
-          <XStack mt="$2" gap="$2">
+          <XStack mt="$2" gap="$2" alignItems="center">
             <YStack bg="rgba(255,255,255,0.2)" px="$3" py="$1" borderRadius={8}>
               <Text color="white" fontSize="$2.5" fontWeight="600">
                 {data.status}
               </Text>
             </YStack>
+            <Button
+              unstyled
+              chromeless
+              onPress={() =>
+                Share.share({
+                  message: `Laporan ${data.categoryName} — ${bulanNames[data.bulan - 1]} ${data.tahun} (${data.status})`,
+                })
+              }
+              ml="auto"
+              hitSlop={8}
+            >
+              <XStack bg="rgba(255,255,255,0.2)" px="$3" py="$1" borderRadius={8} gap="$1.5" alignItems="center">
+                <Share2 size={14} color="white" />
+                <Text color="white" fontSize="$2.5" fontWeight="600">
+                  Bagikan
+                </Text>
+              </XStack>
+            </Button>
           </XStack>
         </YStack>
 

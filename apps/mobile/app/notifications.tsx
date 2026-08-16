@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, CheckCheck } from "@tamagui/lucide-icons-2";
+import { Bell, CalendarDays, CheckCheck, Clock } from "@tamagui/lucide-icons-2";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
@@ -87,6 +87,47 @@ export default function NotificationsPage() {
                   </Text>
                   <Text fontSize="$2.5" color="$muted">
                     {l.hari}
+                  </Text>
+                </YStack>
+              </YStack>
+            ))}
+          </YStack>
+        </>
+      ) : null}
+
+      {/* Deadline rencana ≤3 hari */}
+      {data && (data as any).deadlineRencana?.length > 0 ? (
+        <>
+          <SectionLabel>Deadline Pemeriksaan</SectionLabel>
+          <YStack mx="$4" mb="$3" gap="$2">
+            {(data as any).deadlineRencana.map((r: any) => (
+              <YStack
+                key={r.id}
+                bg="$warningSoft"
+                borderRadius={16}
+                borderWidth={1}
+                borderColor="$warning"
+                p="$3.5"
+                flexDirection="row"
+                alignItems="center"
+                gap="$3"
+              >
+                <YStack w={40} h={40} borderRadius={12} bg="$warning" alignItems="center" justifyContent="center">
+                  <Clock size={20} color="white" />
+                </YStack>
+                <YStack flex={1} gap={2}>
+                  <Text fontSize="$2" color="$warning" fontWeight="800" letterSpacing={0.5}>
+                    BATAS WAKTU
+                  </Text>
+                  <Text fontSize="$3.5" fontWeight="700" color="$fg">
+                    {r.sasaranNama}
+                  </Text>
+                  <Text fontSize="$2.5" color="$muted">
+                    {new Date(r.tanggal + "T00:00:00").toLocaleDateString("id-ID", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}
                   </Text>
                 </YStack>
               </YStack>
