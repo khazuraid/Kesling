@@ -108,9 +108,23 @@ export const GET = withAuth(async (request: NextRequest) => {
     const activeJobId = await redis.get(ACTIVE_KEY);
     const queueItems = await redis.lrange(QUEUE_KEY, 0, -1);
     const userJobsKey = `inspection-import:user:${req.user.id}:jobs`;
-    const jobIds = await redis.lrange(userJobsKey, 0, 19);
+    const userJobIds = await redis.lrange(userJobsKey, 0, 19);
+
+    // Collect all job IDs: active first, then all waiting queue items, then user past jobs
+    const allJobIds = new Set<string>();
+    if (activeJobId) allJobIds.add(activeJobId);
+    for (const item of queueItems) {
+      try {
+        const parsed = JSON.parse(item);
+        if (parsed.id) allJobIds.add(parsed.id);
+      } catch {}
+    }
+    for (const jId of userJobIds) {
+      allJobIds.add(jId);
+    }
+
     const jobs = [];
-    for (const jId of jobIds) {
+    for (const jId of allJobIds) {
       const data = await redis.hgetall(`inspection-import:${jId}`);
       if (data && data.fileName) {
         let fieldCount = 0;
@@ -156,6 +170,35 @@ export const GET = withAuth(async (request: NextRequest) => {
         isWorkerActive: Boolean(activeJobId),
       },
     });
+  }
+
+  // Cancel single job from queue
+  if (req.nextUrl.searchParams.get("action") === "cancel") {
+    const cancelJobId = req.nextUrl.searchParams.get("jobId");
+    if (cancelJobId) {
+      const queueItems = await redis.lrange(QUEUE_KEY, 0, -1);
+      for (const item of queueItems) {
+        try {
+          const parsed = JSON.parse(item);
+          if (parsed.id === cancelJobId) {
+            await redis.lrem(QUEUE_KEY, 0, item);
+          }
+        } catch {}
+      }
+      await redis.hset(`inspection-import:${cancelJobId}`, {
+        status: "failed",
+        error: "Dibatalkan",
+        progress: "100",
+      });
+      return NextResponse.json({ success: true });
+    }
+  }
+
+  // Clear all pending queue
+  if (req.nextUrl.searchParams.get("action") === "clear-queue") {
+    await redis.del(QUEUE_KEY);
+    await redis.del(ACTIVE_KEY);
+    return NextResponse.json({ success: true });
   }
 
   const jobId = req.nextUrl.searchParams.get("jobId");

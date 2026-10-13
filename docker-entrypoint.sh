@@ -102,6 +102,12 @@ elif [ -f "/app/apps/web/server.js" ] && [ ! -f "/app/server.js" ]; then
   ln -sf /app/apps/web/server.js /app/server.js
 fi
 
+# Auto-start background inspection queue worker
+if [ "${DISABLE_INTERNAL_WORKER:-0}" != "1" ] && [ -f "/app/apps/web/worker.js" ]; then
+  echo "👷 Starting background queue worker..."
+  node /app/apps/web/worker.js &
+fi
+
 # Start app
 echo "🚀 Starting apps-kes..."
 exec "$@"

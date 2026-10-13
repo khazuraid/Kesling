@@ -41,7 +41,7 @@ ENV HOSTNAME="0.0.0.0"
 
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs --create-home --home-dir /home/nextjs nextjs && \
-    apt-get update && apt-get install -y --no-install-recommends ca-certificates postgresql-client && \
+    apt-get update && apt-get install -y --no-install-recommends ca-certificates postgresql-client default-jre-headless && \
     rm -rf /var/lib/apt/lists/*
 
 # Next.js standalone output already contains traced production dependencies.

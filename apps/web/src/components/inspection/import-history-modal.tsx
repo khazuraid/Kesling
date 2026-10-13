@@ -12,6 +12,7 @@ import {
   Loader2,
   RefreshCw,
   Terminal,
+  Trash2,
   X,
 } from "lucide-react";
 import type { ImportJobState } from "./import-inspection-modal";
@@ -98,6 +99,22 @@ export function ImportHistoryModal({
     } catch (e: any) {
       alert(e?.message || "Gagal memuat template");
     }
+  };
+
+  const handleCancelJob = async (jobId: string) => {
+    if (!confirm("Batalkan file ini dari antrean?")) return;
+    try {
+      await fetch(`/api/inspection/templates/import?action=cancel&jobId=${jobId}`);
+      refetch();
+    } catch {}
+  };
+
+  const handleClearQueue = async () => {
+    if (!confirm("Kosongkan semua antrean yang tertunda?")) return;
+    try {
+      await fetch("/api/inspection/templates/import?action=clear-queue");
+      refetch();
+    } catch {}
   };
 
   return (
@@ -220,9 +237,19 @@ export function ImportHistoryModal({
 
           {/* History List */}
           <div>
-            <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2.5">
-              Daftar Riwayat Upload
-            </h4>
+            <div className="flex items-center justify-between mb-2.5">
+              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                Daftar Riwayat & Antrean Upload
+              </h4>
+              {(queueInfo?.totalQueued || 0) > 0 && (
+                <button
+                  onClick={handleClearQueue}
+                  className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition"
+                >
+                  Kosongkan Antrean ({queueInfo?.totalQueued})
+                </button>
+              )}
+            </div>
 
             {isLoading ? (
               <div className="py-8 flex flex-col items-center justify-center gap-2 text-[hsl(var(--muted-foreground))]">
@@ -313,6 +340,15 @@ export function ImportHistoryModal({
                         >
                           <Terminal className="w-4 h-4" />
                         </button>
+                        {item.status === "queued" && (
+                          <button
+                            onClick={() => handleCancelJob(item.jobId)}
+                            title="Batalkan dari antrean"
+                            className="p-1.5 rounded-md text-rose-400 hover:text-rose-600 hover:bg-rose-500/10 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
