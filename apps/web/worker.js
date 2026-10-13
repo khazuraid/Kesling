@@ -145,7 +145,7 @@ async function extract(job, dir) {
 // @opendataloader/pdf is optional at runtime: resolve its CLI once, fall back to npx.
 function getRunnerArgs() {
   try {
-    const pkg = require.resolve("@opendataloader/pdf/package.json", { paths: [__dirname] });
+    const pkg = require.resolve("@opendataloader/pdf/package.json", { paths: [__dirname, "/app", process.cwd()] });
     const bin = require("node:path").join(
       require("node:path").dirname(pkg),
       require(pkg).bin["opendataloader-pdf"] || "cli.js",
@@ -236,11 +236,13 @@ async function handleJob(job) {
 }
 
 async function main() {
+  await redis.del(ACTIVE_KEY).catch(() => {});
   console.log(`[worker] listening ${QUEUE_KEY} (opendataloader-pdf hybrid=${process.env.HYBRID_URL || "off"})`);
   while (true) {
     const item = await redis.blpop(QUEUE_KEY, 5);
     if (!item) continue;
     try {
+      console.log(`[worker] picked up item from queue`);
       await handleJob(JSON.parse(item[1]));
     } catch (error) {
       console.error("[worker] job failed", error);

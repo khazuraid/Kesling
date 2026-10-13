@@ -38,6 +38,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_PATH="/app/node_modules:/app/apps/web/node_modules"
 
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs --create-home --home-dir /home/nextjs nextjs && \
@@ -52,14 +53,17 @@ COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY apps/web/worker.js ./apps/web/worker.js
 COPY apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh && \
+RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf && \
+    chmod +x /app/docker-entrypoint.sh && \
     mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache /app/apps/web/public/uploads/mobile && \
     PRISMA_PNPM_DIR=$(find /app/node_modules/.pnpm -name "@prisma+client@*_*" -type d | head -n 1) && \
-    ENGINE_SOURCE="${PRISMA_PNPM_DIR}/node_modules/.prisma/client" && \
-    cp -r "${ENGINE_SOURCE}"/* /app/apps/web/node_modules/.prisma/client/ && \
+    if [ -n "$PRISMA_PNPM_DIR" ]; then \
+      ENGINE_SOURCE="${PRISMA_PNPM_DIR}/node_modules/.prisma/client" && \
+      cp -r "${ENGINE_SOURCE}"/* /app/apps/web/node_modules/.prisma/client/; \
+    fi && \
     if [ ! -f "/app/apps/web/server.js" ] && [ -f "/app/server.js" ]; then mkdir -p /app/apps/web && ln -sf /app/server.js /app/apps/web/server.js; fi && \
     if [ -f "/app/apps/web/server.js" ] && [ ! -f "/app/server.js" ]; then ln -sf /app/apps/web/server.js /app/server.js; fi && \
-    chown -R nextjs:nodejs /app/apps/web /app/packages/database/prisma /home/nextjs/.cache
+    chown -R nextjs:nodejs /app/apps/web /app/packages/database/prisma /app/node_modules /home/nextjs/.cache
 
 USER nextjs
 EXPOSE 3000
