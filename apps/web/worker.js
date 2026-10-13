@@ -35,11 +35,19 @@ async function extract(job, dir) {
   const inputPath = join(dir, job.fileName.replace(/[^a-zA-Z0-9._-]/g, "_"));
   const mdPath = `${inputPath}.md`;
   await writeFile(inputPath, Buffer.from(job.fileBase64, "base64"));
-  // CLI writes <input>.md next to input; fallback mode allows java engine fallback if hybrid backend fails.
+  // CLI writes <input>.md next to input; --hybrid-fallback opts in to Java fallback if backend fails.
   const args = ["--format", "markdown", "--output-dir", dir];
   if (process.env.HYBRID_URL) {
-    const mode = process.env.HYBRID_MODE || "fallback";
-    args.push("--hybrid", "docling-fast", "--hybrid-url", process.env.HYBRID_URL, "--hybrid-mode", mode);
+    const mode = process.env.HYBRID_MODE || "auto";
+    args.push(
+      "--hybrid",
+      "docling-fast",
+      "--hybrid-url",
+      process.env.HYBRID_URL,
+      "--hybrid-mode",
+      mode,
+      "--hybrid-fallback",
+    );
   }
   const pages = estimatePages(Buffer.from(job.fileBase64, "base64"), job.fileName);
   const timeout =
