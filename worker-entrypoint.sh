@@ -2,7 +2,7 @@
 # Start opendataloader-pdf hybrid docling backend, wait for health, then run the worker.
 set -e
 
-/opt/odl-hybrid/bin/opendataloader-pdf-hybrid --port 5002 --enrich-formula --enrich-picture-description &
+/opt/odl-hybrid/bin/opendataloader-pdf-hybrid --port 5002 --enrich-formula &
 BACKEND_PID=$!
 
 for i in $(seq 1 60); do
