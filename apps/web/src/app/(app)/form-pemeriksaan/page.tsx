@@ -17,6 +17,8 @@ import {
 import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
+import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
 
 const FIELD_TYPES = [
   { value: "BOOLEAN", label: "Ceklis" },
@@ -54,9 +56,9 @@ export default function FormPemeriksaanPage() {
   const queryClient = useQueryClient();
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importStage, setImportStage] = useState("");
-  const [importProgress, setImportProgress] = useState(0);
+  const [activeImportJob, setActiveImportJob] = useState<ImportJobState | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isImportWidgetVisible, setIsImportWidgetVisible] = useState(false);
 
   const [nama, setNama] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
@@ -172,9 +174,24 @@ export default function FormPemeriksaanPage() {
   }
 
   async function handleImportFile(file: File) {
-    setIsImporting(true);
-    setImportProgress(10);
-    setImportStage("Mengunggah file...");
+    const initialJob: ImportJobState = {
+      jobId: "",
+      fileName: file.name,
+      status: "queued",
+      progress: 5,
+      message: "Mengunggah file ke server...",
+      logs: [
+        {
+          timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
+          level: "info",
+          message: `Mengunggah file ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`,
+        },
+      ],
+    };
+
+    setActiveImportJob(initialJob);
+    setIsImportModalOpen(true);
+    setIsImportWidgetVisible(false);
 
     try {
       const formData = new FormData();
@@ -189,60 +206,108 @@ export default function FormPemeriksaanPage() {
       if (!res.ok) throw new Error(initData?.error || "Gagal memproses file");
 
       const jobId = initData.jobId;
-      setImportProgress(20);
-      setImportStage("Menganalisis struktur tabel...");
-
-      const poll = () =>
-        new Promise<any>((resolve, reject) => {
-          const interval = setInterval(async () => {
-            try {
-              const checkRes = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
-              if (!checkRes.ok) throw new Error("Gagal memeriksa status import");
-              const statusData = await checkRes.json();
-
-              setImportStage(statusData.message || "Memproses...");
-              setImportProgress(statusData.progress || 50);
-
-              if (statusData.status === "COMPLETED") {
-                clearInterval(interval);
-                resolve(statusData.result);
-              } else if (statusData.status === "FAILED") {
-                clearInterval(interval);
-                reject(new Error(statusData.error || "Gagal memproses file di worker"));
-              }
-            } catch (err) {
-              clearInterval(interval);
-              reject(err);
+      setActiveImportJob((prev) =>
+        prev
+          ? {
+              ...prev,
+              jobId,
+              progress: 10,
+              message: "File masuk antrean worker...",
+              logs: [
+                ...prev.logs,
+                {
+                  timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
+                  level: "info",
+                  message: `Job ID ${jobId} terdaftar, menunggu giliran worker...`,
+                },
+              ],
             }
-          }, 2000);
-        });
+          : null,
+      );
 
-      const result = await poll();
-      setSelectedTemplateId(null);
-      setIsCreating(true);
-      setNama(result.nama || file.name.replace(/\.(pdf|docx?)$/i, ""));
-      setDeskripsi(result.deskripsi || `Diimpor dari file ${file.name}`);
-      setSubCategoryId(null);
-      setDataDasarCategoryId(null);
-      setRumus("sum");
-      setCustomFormula("");
-      setThresholdOperator(">=");
-      setThresholdValue(80);
-      setThresholdPassText("Memenuhi Syarat");
-      setThresholdFailText("Tidak Memenuhi Syarat");
-      setDefaultYa(false);
-      setParamDiperiksaId(null);
-      setParamMsId(null);
-      setParamTmsId(null);
-      setFields(result.fields || []);
-      toast.success(`Import berhasil: ${(result.fields || []).length} butir pemeriksaan`);
+      const interval = setInterval(async () => {
+        try {
+          const checkRes = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
+          if (!checkRes.ok) return;
+          const statusData = await checkRes.json();
+
+          setActiveImportJob((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              jobId,
+              fileName: statusData.fileName || prev.fileName,
+              status: statusData.status,
+              progress: statusData.progress || 10,
+              message: statusData.message || "",
+              queuePosition: statusData.queuePosition,
+              totalQueued: statusData.totalQueued,
+              logs: statusData.logs?.length ? statusData.logs : prev.logs,
+              result: statusData.result,
+              error: statusData.error,
+            };
+          });
+
+          if (statusData.status === "complete") {
+            clearInterval(interval);
+            toast.success(
+              `Import selesai: ${(statusData.result?.fields || []).length} butir pemeriksaan terdeteksi`,
+            );
+          } else if (statusData.status === "failed") {
+            clearInterval(interval);
+            toast.error(statusData.error || "Gagal memproses file di worker");
+          }
+        } catch (err) {
+          console.error("Polling import error:", err);
+        }
+      }, 2000);
     } catch (error: any) {
-      toast.error(error?.message || "Gagal import file");
-    } finally {
-      setIsImporting(false);
-      setImportStage("");
-      setImportProgress(0);
+      const errMsg = error?.message || "Gagal import file";
+      setActiveImportJob((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "failed",
+              progress: 100,
+              message: "Gagal mengunggah file",
+              error: errMsg,
+              logs: [
+                ...prev.logs,
+                {
+                  timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
+                  level: "error",
+                  message: `Gagal: ${errMsg}`,
+                },
+              ],
+            }
+          : null,
+      );
+      toast.error(errMsg);
     }
+  }
+
+  function handleApplyImportResult(result: any) {
+    setSelectedTemplateId(null);
+    setIsCreating(true);
+    setNama(result.nama || "");
+    setDeskripsi(result.deskripsi || "");
+    setSubCategoryId(null);
+    setDataDasarCategoryId(null);
+    setRumus("sum");
+    setCustomFormula("");
+    setThresholdOperator(">=");
+    setThresholdValue(80);
+    setThresholdPassText("Memenuhi Syarat");
+    setThresholdFailText("Tidak Memenuhi Syarat");
+    setDefaultYa(false);
+    setParamDiperiksaId(null);
+    setParamMsId(null);
+    setParamTmsId(null);
+    setFields(result.fields || []);
+    setIsImportModalOpen(false);
+    setIsImportWidgetVisible(false);
+    setActiveImportJob(null);
+    toast.success("Draft template berhasil diterapkan ke form builder!");
   }
 
   function addField(grup?: string) {
@@ -438,47 +503,6 @@ export default function FormPemeriksaanPage() {
     );
   }
 
-  if (isImporting) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div className="w-[320px] max-w-[calc(100vw-32px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 shrink-0 animate-spin border-2 border-[hsl(var(--border))] border-t-[hsl(var(--foreground))] rounded-full" />
-            <div className="space-y-1">
-              <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">Memproses Template...</h3>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                <span className="font-medium text-[hsl(var(--foreground))]">{importStage || "Menyiapkan..."}</span>
-              </p>
-            </div>
-          </div>
-          <div className="w-full bg-[hsl(var(--border))] h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-[hsl(var(--foreground))] h-full transition-all duration-300"
-              style={{ width: `${importProgress}%` }}
-            />
-          </div>
-          <div className="space-y-2 text-[10px] text-[hsl(var(--muted-foreground))]">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-              <span>Mengirim ke server...</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-              <span>Ekstraksi tabel PDF...</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-              <span>Menyusun butir pemeriksaan...</span>
-            </div>
-          </div>
-          <p className="text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
-            PDF memerlukan 30-120 detik tergantung kompleksitas tabel.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   if (!selectedTemplateId && !isCreating) {
     return (
       <div className="w-full mx-auto pb-4 fade-in">
@@ -499,7 +523,7 @@ export default function FormPemeriksaanPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   className="hidden"
-                  disabled={isImporting}
+                  disabled={activeImportJob?.status === "processing" || activeImportJob?.status === "queued"}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleImportFile(f);
@@ -625,6 +649,33 @@ export default function FormPemeriksaanPage() {
               })}
             </div>
           </div>
+        )}
+
+        <ImportInspectionModal
+          open={isImportModalOpen}
+          job={activeImportJob}
+          onClose={() => setIsImportModalOpen(false)}
+          onMinimize={() => {
+            setIsImportModalOpen(false);
+            if (activeImportJob) setIsImportWidgetVisible(true);
+          }}
+          onApplyResult={handleApplyImportResult}
+        />
+
+        {isImportWidgetVisible && (
+          <ImportFloatingWidget
+            job={activeImportJob}
+            onOpenModal={() => {
+              setIsImportModalOpen(true);
+              setIsImportWidgetVisible(false);
+            }}
+            onDismiss={() => {
+              setIsImportWidgetVisible(false);
+              if (activeImportJob?.status === "complete" || activeImportJob?.status === "failed") {
+                setActiveImportJob(null);
+              }
+            }}
+          />
         )}
       </div>
     );
@@ -1277,6 +1328,33 @@ export default function FormPemeriksaanPage() {
           </div>
         </div>
       </div>
+
+      <ImportInspectionModal
+        open={isImportModalOpen}
+        job={activeImportJob}
+        onClose={() => setIsImportModalOpen(false)}
+        onMinimize={() => {
+          setIsImportModalOpen(false);
+          if (activeImportJob) setIsImportWidgetVisible(true);
+        }}
+        onApplyResult={handleApplyImportResult}
+      />
+
+      {isImportWidgetVisible && (
+        <ImportFloatingWidget
+          job={activeImportJob}
+          onOpenModal={() => {
+            setIsImportModalOpen(true);
+            setIsImportWidgetVisible(false);
+          }}
+          onDismiss={() => {
+            setIsImportWidgetVisible(false);
+            if (activeImportJob?.status === "complete" || activeImportJob?.status === "failed") {
+              setActiveImportJob(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -9,12 +9,14 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const QUEUE_KEY = "queue:inspection-import";
+const ACTIVE_KEY = "inspection-import:active";
 const JOB_TTL_SECONDS = 60 * 60 * 24;
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", { maxRetriesPerRequest: 2 });
 
 type AuthenticatedRequest = NextRequest & { user: { id: number | string } };
 
 const MAX_QUEUE = Number(process.env.INSPECTION_IMPORT_MAX_QUEUE || 10);
+
 export const POST = withAuth(async (request: NextRequest) => {
   const req = request as AuthenticatedRequest;
   const queued = await redis.llen(QUEUE_KEY);
@@ -37,16 +39,27 @@ export const POST = withAuth(async (request: NextRequest) => {
   await writeFile(tempPath, buffer);
 
   const jobKey = `inspection-import:${jobId}`;
+  const now = new Date().toISOString();
   await redis.hset(jobKey, {
     status: "queued",
     progress: "5",
-    message: "File diterima; menunggu worker",
+    message: "File diterima; menunggu giliran worker",
     fileName: file.name,
     ownerId: String(req.user.id),
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   });
   await redis.expire(jobKey, JOB_TTL_SECONDS);
-  // Containers do not share /tmp. Payload guarantees worker access; tempPath remains useful for same-host deployments/debugging.
+
+  // Initial log entry
+  const initialLog = JSON.stringify({
+    timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
+    level: "info",
+    message: `File ${file.name} diterima (${(file.size / 1024).toFixed(1)} KB), masuk ke antrean`,
+  });
+  await redis.rpush(`inspection-import:${jobId}:logs`, initialLog);
+  await redis.expire(`inspection-import:${jobId}:logs`, JOB_TTL_SECONDS);
+
+  // Push to FIFO Redis queue
   await redis.rpush(
     QUEUE_KEY,
     JSON.stringify({
@@ -57,23 +70,78 @@ export const POST = withAuth(async (request: NextRequest) => {
       fileBase64: buffer.toString("base64"),
     }),
   );
+
   return NextResponse.json({ jobId }, { status: 202 });
 });
 
 export const GET = withAuth(async (request: NextRequest) => {
   const req = request as AuthenticatedRequest;
+
+  // Endpoint to check queue overview
+  if (req.nextUrl.searchParams.get("action") === "queue") {
+    const totalQueued = await redis.llen(QUEUE_KEY);
+    const activeJobId = await redis.get(ACTIVE_KEY);
+    let activeJob = null;
+    if (activeJobId) {
+      const activeData = await redis.hgetall(`inspection-import:${activeJobId}`);
+      if (activeData?.fileName) {
+        activeJob = {
+          id: activeJobId,
+          fileName: activeData.fileName,
+          progress: Number(activeData.progress || 0),
+          message: activeData.message || "",
+        };
+      }
+    }
+    return NextResponse.json({ totalQueued, activeJob });
+  }
+
   const jobId = req.nextUrl.searchParams.get("jobId");
   if (!jobId || !/^[0-9a-f-]{36}$/i.test(jobId))
     return NextResponse.json({ error: "jobId tidak valid" }, { status: 400 });
+
   const data = await redis.hgetall(`inspection-import:${jobId}`);
   if (!data.status || data.ownerId !== String(req.user.id))
     return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
+
+  // Read logs array
+  const logsRaw = await redis.lrange(`inspection-import:${jobId}:logs`, 0, -1);
+  const logs = logsRaw.map((entry) => {
+    try {
+      return JSON.parse(entry);
+    } catch {
+      return { timestamp: "", level: "info", message: entry };
+    }
+  });
+
+  // Calculate queue position if still queued
+  let queuePosition = 0;
+  const queueItems = await redis.lrange(QUEUE_KEY, 0, -1);
+  const totalQueued = queueItems.length;
+
+  if (data.status === "queued") {
+    const idx = queueItems.findIndex((item) => {
+      try {
+        return JSON.parse(item).id === jobId;
+      } catch {
+        return false;
+      }
+    });
+    queuePosition = idx >= 0 ? idx + 1 : 1;
+  }
+
   return NextResponse.json({
     jobId,
     status: data.status,
     progress: Number(data.progress || 0),
     message: data.message || "",
+    fileName: data.fileName || "",
+    queuePosition,
+    totalQueued,
+    logs,
     result: data.result ? JSON.parse(data.result) : undefined,
     error: data.error || undefined,
+    createdAt: data.createdAt,
+    completedAt: data.completedAt,
   });
 });

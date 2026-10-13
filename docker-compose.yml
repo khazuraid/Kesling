@@ -30,6 +30,18 @@ services:
     env_file: .env.docker
     environment:
       RUN_MIGRATIONS: "0"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      TORCH_NUM_THREADS: "1"
+      _JAVA_OPTIONS: "-Xmx512m"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.2"
+          memory: 3500M
+        reservations:
+          cpus: "0.4"
+          memory: 1024M
 
     command: ["node", "apps/web/worker.js"]
     depends_on:

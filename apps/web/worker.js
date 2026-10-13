@@ -1,16 +1,16 @@
-const { execFile } = require("node:child_process");
+const { spawn } = require("node:child_process");
 const { readFile, rm, writeFile } = require("node:fs/promises");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
-const { promisify } = require("node:util");
 const Redis = require("ioredis");
+const { normalizeInspectionTemplate } = require("./inspection-import-parser");
 
-const execFileAsync = promisify(execFile);
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   maxRetriesPerRequest: null,
   retryStrategy: (times) => Math.min(times * 200, 2000),
 });
 const QUEUE_KEY = "queue:inspection-import";
+const ACTIVE_KEY = "inspection-import:active";
 const JOB_TTL_SECONDS = 86400;
 const MAX_ATTEMPTS = Number(process.env.IMPORT_MAX_ATTEMPTS || 3);
 // Hybrid mode ≈ 31x slower than Java-only per benchmark; give it headroom.
@@ -23,6 +23,14 @@ async function update(id, values) {
   await redis.expire(key, JOB_TTL_SECONDS);
 }
 
+async function addLog(id, message, level = "info") {
+  const timestamp = new Date().toLocaleTimeString("id-ID", { hour12: false });
+  const entry = JSON.stringify({ timestamp, level, message });
+  await redis.rpush(`inspection-import:${id}:logs`, entry);
+  await redis.expire(`inspection-import:${id}:logs`, JOB_TTL_SECONDS);
+  await redis.hset(`inspection-import:${id}`, { message, lastUpdated: new Date().toISOString() });
+}
+
 // Rough page count from PDF trailer (fast heuristic; DOCX falls back to file size).
 function estimatePages(buffer, fileName) {
   if (!/\.pdf$/i.test(fileName)) return Math.max(1, Math.ceil(buffer.length / 200000));
@@ -30,11 +38,59 @@ function estimatePages(buffer, fileName) {
   return matches ? matches.length : Math.max(1, Math.ceil(buffer.length / 200000));
 }
 
+function runStreamingCommand(execPath, args, options, onLog) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(execPath, args, options);
+    let errorOutput = "";
+
+    child.stdout.on("data", (data) => {
+      const lines = data.toString().split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) onLog(trimmed, "info");
+      }
+    });
+
+    child.stderr.on("data", (data) => {
+      const text = data.toString();
+      errorOutput += text;
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) onLog(trimmed, "warn");
+      }
+    });
+
+    const timeoutMs = options.timeout || 120000;
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(new Error(`Command timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (code === 0) resolve();
+      else reject(new Error(`Process exited with code ${code}: ${errorOutput.slice(-500)}`));
+    });
+  });
+}
+
 async function extract(job, dir) {
   // opendataloader-pdf CLI needs a real file; write base64 payload to disk.
   const inputPath = join(dir, job.fileName.replace(/[^a-zA-Z0-9._-]/g, "_"));
   const mdPath = `${inputPath}.md`;
-  await writeFile(inputPath, Buffer.from(job.fileBase64, "base64"));
+  const fileBuffer = Buffer.from(job.fileBase64, "base64");
+  await writeFile(inputPath, fileBuffer);
+  await addLog(job.id, `File berhasil ditulis ke temp: ${job.fileName} (${(fileBuffer.length / 1024).toFixed(1)} KB)`);
+
+  const pages = estimatePages(fileBuffer, job.fileName);
+  await addLog(job.id, `Estimasi dokumen: ${pages} halaman`);
+
   // CLI writes <input>.md next to input; --hybrid-fallback opts in to Java fallback if backend fails.
   const args = ["--format", "markdown", "--output-dir", dir];
   if (process.env.HYBRID_URL) {
@@ -48,20 +104,41 @@ async function extract(job, dir) {
       mode,
       "--hybrid-fallback",
     );
+    await addLog(job.id, `Engine hybrid aktif: mode=${mode}, url=${process.env.HYBRID_URL}`);
+  } else {
+    await addLog(job.id, "Engine hybrid tidak aktif, menggunakan parser PDF Java bawaan");
   }
-  const pages = estimatePages(Buffer.from(job.fileBase64, "base64"), job.fileName);
+
   const timeout =
     Math.min(
       MAX_TIMEOUT_MS,
       Math.max(Number(process.env.HYBRID_MIN_TIMEOUT_MS || 120000), pages * SECONDS_PER_PAGE * 1000),
     ) + 60000;
+
   const { execPath, nodeArgs } = getRunnerArgs();
-  await execFileAsync(execPath, [...nodeArgs, ...args, inputPath], {
-    timeout,
-    maxBuffer: 20 * 1024 * 1024,
-    cwd: dir,
-    env: process.env,
-  });
+  await addLog(job.id, "Menjalankan ekstraktor opendataloader-pdf...");
+
+  await runStreamingCommand(
+    execPath,
+    [...nodeArgs, ...args, inputPath],
+    {
+      timeout,
+      cwd: dir,
+      env: {
+        ...process.env,
+        OMP_NUM_THREADS: "1",
+        MKL_NUM_THREADS: "1",
+        TORCH_NUM_THREADS: "1",
+      },
+    },
+    (line, level) => {
+      // Filter out overly noisy progress bars, keep informative logs
+      if (line.includes("%") && line.length < 30) return;
+      addLog(job.id, `[cli] ${line}`, level);
+    },
+  );
+
+  await addLog(job.id, "Ekstraksi dokumen ke Markdown selesai");
   return readFile(mdPath, "utf8");
 }
 
@@ -94,17 +171,33 @@ async function extractWithOpendataloader(job) {
 async function handleJob(job) {
   if (job.type !== "inspection-template-import") throw new Error(`unknown job type: ${job.type}`);
   const attempt = Number(job.attempt || 1);
+  await redis.set(ACTIVE_KEY, job.id);
+
   await update(job.id, {
     status: "processing",
     progress: "15",
     message: `Menyiapkan ekstraksi (percobaan ${attempt}/${MAX_ATTEMPTS})`,
   });
+  await addLog(job.id, `Mulai memproses job ${job.id} (percobaan ${attempt}/${MAX_ATTEMPTS})`);
+
   try {
     await update(job.id, { progress: "30", message: "Membaca dokumen dan struktur tabel (hybrid)" });
+    await addLog(job.id, "Menganalisis tata letak tabel dan sel OCR...");
     const text = await extractWithOpendataloader(job);
+
     await update(job.id, { progress: "80", message: "Menyusun butir pemeriksaan" });
+    await addLog(job.id, "Mem-parsing tabel Markdown ke butir pemeriksaan...");
+
     const result = normalizeInspectionTemplate(text, job.fileName);
     result.deskripsi = `${result.deskripsi} (${result.fields.length} butir, ekstraksi opendataloader-pdf hybrid)`;
+
+    const grupCount = new Set((result.fields || []).map((f) => f.grup || "Umum")).size;
+    await addLog(
+      job.id,
+      `Berhasil mengekstrak ${result.fields.length} butir pemeriksaan dalam ${grupCount} grup`,
+      "success",
+    );
+
     await update(job.id, {
       status: "complete",
       progress: "100",
@@ -112,14 +205,19 @@ async function handleJob(job) {
       result: JSON.stringify(result),
       completedAt: new Date().toISOString(),
     });
+    await addLog(job.id, "Pemrosesan selesai. Draft template siap ditinjau.", "success");
   } catch (error) {
     const retryable = attempt < MAX_ATTEMPTS;
+    const errMsg = error instanceof Error ? error.message : String(error);
+    await addLog(job.id, `Terjadi kesalahan: ${errMsg}`, "error");
+
     if (retryable) {
       const delayMs = Math.min(30000, 2000 * 2 ** attempt);
       await update(job.id, {
         message: `Gagal, ulangi dalam ${Math.round(delayMs / 1000)}s`,
-        error: error instanceof Error ? error.message : String(error),
+        error: errMsg,
       });
+      await addLog(job.id, `Menjadwalkan retry dalam ${Math.round(delayMs / 1000)} detik...`, "warn");
       await new Promise((r) => setTimeout(r, delayMs));
       await redis.rpush(QUEUE_KEY, JSON.stringify({ ...job, attempt: attempt + 1 }));
       return;
@@ -128,9 +226,12 @@ async function handleJob(job) {
       status: "failed",
       progress: "100",
       message: "Import gagal",
-      error: error instanceof Error ? error.message : String(error),
+      error: errMsg,
     });
+    await addLog(job.id, `Import gagal permanen setelah ${MAX_ATTEMPTS} percobaan`, "error");
     throw error;
+  } finally {
+    await redis.del(ACTIVE_KEY);
   }
 }
 
@@ -147,6 +248,7 @@ async function main() {
   }
 }
 process.on("SIGTERM", async () => {
+  await redis.del(ACTIVE_KEY).catch(() => {});
   await redis.quit();
   process.exit(0);
 });
