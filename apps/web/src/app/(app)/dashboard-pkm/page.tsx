@@ -1,14 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ArrowUpRight, Building2, CheckCircle2, Download, Info, TrendingUp } from "lucide-react";
+import { AlertCircle, ArrowUpRight, CheckCircle2, Download, Info, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { ComplianceBar } from "@/components/ui/compliance-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 
 const BULAN_NAMES = [
@@ -113,12 +112,9 @@ export default function DashboardPkmPage() {
     );
   }
 
-  let _statusClass = "bg-[hsl(var(--error)/0.06)] text-[hsl(var(--error))] border-[hsl(var(--error)/0.15)]";
-  let _statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--error))] stroke-[2]" />;
   let statusTitle = "Data Belum Lengkap";
   let statusMsg = "Silakan lengkapi input laporan bulanan.";
   let statusAccent = "error";
-  let _statusShell = "card-shell";
 
   async function handleExportPDF() {
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
@@ -172,139 +168,120 @@ export default function DashboardPkmPage() {
   }
 
   if (totalWithData === 0) {
-    _statusClass = "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]";
-    _statusIcon = <AlertCircle className="w-5 h-5 text-[hsl(var(--muted-foreground))] opacity-40" />;
     statusTitle = "Belum Ada Data";
     statusMsg = `Belum ada laporan yang disubmit untuk ${BULAN_NAMES[bulan]} ${tahun}.`;
     statusAccent = "neutral";
-    _statusShell = "card-flat";
   } else if (achievedCount === totalWithData && totalWithData > 0) {
-    _statusClass = "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border-[hsl(var(--accent)/0.15)]";
-    _statusIcon = <CheckCircle2 className="w-5 h-5 text-[hsl(var(--accent))] stroke-[2]" />;
     statusTitle = "Semua Target Tercapai!";
     statusMsg = "Seluruh indikator kesehatan lingkungan memenuhi target wilayah.";
     statusAccent = "success";
-    _statusShell = "card-accent";
   } else if (achievedCount > 0) {
-    _statusClass = "bg-[hsl(var(--warning)/0.06)] text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.15)]";
-    _statusIcon = <TrendingUp className="w-5 h-5 text-[hsl(var(--warning))] stroke-[2]" />;
     statusTitle = `${achievedCount} dari ${totalWithData} Target Tercapai`;
     statusMsg = "Fokuskan pembinaan pada indikator yang masih di bawah target.";
     statusAccent = "warning";
-    _statusShell = "card-shell";
   }
 
-  const _getStatusBadge = (status: string | null, hasData: boolean) => {
-    if (!hasData) return <span className="stat-label">Belum Ada</span>;
-    return <StatusBadge status={status || "DRAFT"} />;
-  };
-
   return (
-    <div className="w-full mx-auto pb-10 space-y-8 fade-in">
-      {/* ── HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] md:text-[32px] font-extrabold tracking-tight text-[hsl(var(--foreground))] flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-[hsl(var(--accent))] p-1 bg-[hsl(var(--accent))]/10 rounded-md" />
-            Dashboard {data?.puskesmas?.nama || "Puskesmas"}
-          </h1>
-          <p className="text-[13px] font-medium text-[hsl(var(--muted-foreground))] mt-1 flex items-center gap-2">
-            Periode:{" "}
-            <span className="text-[hsl(var(--foreground))] font-bold">
+    <div className="w-full mx-auto pb-4 fade-in">
+      {/* ── HERO ── */}
+      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.05]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+        <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
               {BULAN_NAMES[bulan]} {tahun}
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <LaporanFilter />
-          {data && categories.length > 0 && (
-            <button
-              onClick={handleExportPDF}
-              className="h-9 px-4 rounded-full flex items-center gap-1.5 border border-[hsl(var(--border))]/50 bg-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--foreground))] hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] hover:border-[hsl(var(--foreground))] transition-all shadow-sm"
-            >
-              <Download className="w-3 h-3" /> Cetak PDF
-            </button>
-          )}
+            </p>
+            <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">
+              {data?.puskesmas?.nama || "Puskesmas"}
+            </h1>
+            <p className="text-[13px] font-medium text-white/50 mt-2">
+              {achievedCount}/{summary.length} indikator tercapai
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <LaporanFilter />
+            {data && categories.length > 0 && (
+              <button
+                onClick={handleExportPDF}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+              >
+                <Download className="w-3.5 h-3.5" /> Cetak PDF
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── BANNER STATUS & METRIK ── */}
+      {/* ── BANNER STATUS ── */}
       <div
-        className={`relative overflow-hidden rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center justify-between border ${
+        className={`mt-6 rounded-3xl border p-6 flex flex-wrap items-center gap-6 ${
           statusAccent === "success"
-            ? "bg-[hsl(var(--accent))]/10 border-[hsl(var(--accent))]/20"
+            ? "bg-[#00A876]/[0.06] border-[#00A876]/25"
             : statusAccent === "warning"
-              ? "bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20"
-              : "bg-[hsl(var(--error))]/10 border-[hsl(var(--error))]/20"
+              ? "bg-[#E8A33D]/[0.06] border-[#E8A33D]/25"
+              : statusAccent === "neutral"
+                ? "bg-[hsl(var(--muted))]/30 border-[hsl(var(--border))]"
+                : "bg-[#E15A4F]/[0.05] border-[#E15A4F]/25"
         }`}
       >
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-3 mb-3">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                statusAccent === "success"
-                  ? "bg-[hsl(var(--accent))] text-white shadow-[0_0_15px_hsl(var(--accent)/0.3)]"
-                  : statusAccent === "warning"
-                    ? "bg-[hsl(var(--warning))] text-white shadow-[0_0_15px_hsl(var(--warning)/0.3)]"
-                    : "bg-[hsl(var(--error))] text-white shadow-[0_0_15px_hsl(var(--error)/0.3)]"
-              }`}
-            >
-              {statusAccent === "success" ? (
-                <CheckCircle2 className="w-5 h-5" />
-              ) : statusAccent === "warning" ? (
-                <TrendingUp className="w-5 h-5" />
-              ) : (
-                <AlertCircle className="w-5 h-5" />
-              )}
-            </div>
-            <h2 className="text-[20px] font-bold text-[hsl(var(--foreground))] tracking-tight">{statusTitle}</h2>
+        <div className="flex items-center gap-4 flex-1 min-w-[240px]">
+          <span
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white ${
+              statusAccent === "success"
+                ? "bg-[#00A876]"
+                : statusAccent === "warning"
+                  ? "bg-[#E8A33D]"
+                  : statusAccent === "neutral"
+                    ? "bg-[hsl(var(--muted-foreground))]"
+                    : "bg-[#E15A4F]"
+            }`}
+          >
+            {statusAccent === "success" ? (
+              <CheckCircle2 className="w-5 h-5" />
+            ) : statusAccent === "warning" ? (
+              <TrendingUp className="w-5 h-5" />
+            ) : (
+              <AlertCircle className="w-5 h-5" />
+            )}
+          </span>
+          <div>
+            <h2 className="text-[16px] font-extrabold text-[hsl(var(--foreground))] leading-tight">{statusTitle}</h2>
+            <p className="text-[12px] font-medium text-[hsl(var(--muted-foreground))] mt-1">{statusMsg}</p>
           </div>
-          <p className="text-[14px] font-medium text-[hsl(var(--muted-foreground))] max-w-lg">{statusMsg}</p>
         </div>
 
-        <div className="flex items-center gap-6 md:gap-10 shrink-0 w-full md:w-auto">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">
+              {achievedCount}
+              <span className="text-[11px] font-bold text-[#00A876]/60">/{summary.length}</span>
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">
               Tercapai
             </span>
-            <span className="text-[36px] font-extrabold text-[hsl(var(--foreground))] leading-none tabular-nums flex items-baseline gap-1">
-              {achievedCount}
-              <span className="text-[14px] font-medium text-[hsl(var(--muted-foreground))]">/ {summary.length}</span>
-            </span>
-          </div>
-          <div className="w-px h-12 bg-[hsl(var(--border))]/50"></div>
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-2xl bg-[#E8A33D]/10 border border-[#E8A33D]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#C07F1F] leading-none">{deficitCount}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#C07F1F]/70 mt-1">
               Defisit
             </span>
-            <span
-              className={`text-[36px] font-extrabold leading-none tabular-nums flex items-baseline gap-1 ${deficitCount > 0 ? "text-[hsl(var(--warning))]" : "text-[hsl(var(--foreground))]"}`}
-            >
-              {deficitCount}
-            </span>
-          </div>
-          <div className="w-px h-12 bg-[hsl(var(--border))]/50 hidden sm:block"></div>
-          <div className="flex flex-col gap-1 hidden sm:flex">
-            <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
-              Kosong
-            </span>
-            <span
-              className={`text-[36px] font-extrabold leading-none tabular-nums flex items-baseline gap-1 ${noDataCount > 0 ? "text-[hsl(var(--error))]" : "text-[hsl(var(--foreground))]"}`}
-            >
-              {noDataCount}
-            </span>
-          </div>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-2xl bg-[#E15A4F]/[0.07] border border-[#E15A4F]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#E15A4F] leading-none">{noDataCount}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#E15A4F]/70 mt-1">Kosong</span>
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-        {/* ── KIRI: LIST KATEGORI ── */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between pb-2">
-            <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))] uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 bg-[hsl(var(--accent))] rounded-full"></span> Capaian Indikator
-            </h3>
-          </div>
+      {/* ── KATEGORI + CHART ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-6">
+        {/* KIRI: list kategori */}
+        <div className="lg:col-span-2 space-y-2.5">
+          <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-1">
+            Indikator Kategori
+          </h3>
 
           {summary.length === 0 ? (
             <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-8 flex flex-col items-center justify-center text-center">
@@ -313,83 +290,53 @@ export default function DashboardPkmPage() {
               <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Laporan belum tersedia.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {summary.map((s) => {
                 const isMet = s.hasData && s.persen >= s.target;
+                const rail = !s.hasData ? "#d6d3d1" : isMet ? "#00A876" : "#E8A33D";
+                const valColor = !s.hasData
+                  ? "text-[hsl(var(--muted-foreground))]"
+                  : isMet
+                    ? "text-[#00A876]"
+                    : "text-[#C07F1F]";
                 return (
                   <a
                     key={s.code}
                     href={`/laporan/${s.code}?bulan=${bulan}&tahun=${tahun}`}
-                    className={`group block p-4 rounded-xl border transition-all duration-300 ${
-                      !s.hasData
-                        ? "bg-[hsl(var(--background))] border-[hsl(var(--border))]/40 hover:border-[hsl(var(--border))] hover:shadow-sm"
-                        : isMet
-                          ? "bg-[hsl(var(--accent))]/5 border-[hsl(var(--accent))]/20 hover:border-[hsl(var(--accent))]/40 hover:shadow-[0_4px_20px_hsl(var(--accent)/0.1)]"
-                          : "bg-[hsl(var(--warning))]/5 border-[hsl(var(--warning))]/20 hover:border-[hsl(var(--warning))]/40 hover:shadow-[0_4px_20px_hsl(var(--warning)/0.1)]"
-                    }`}
+                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      {/* Icon & Label */}
-                      <div className="flex items-center gap-4 w-full sm:w-1/3 shrink-0">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-[18px] ${
-                            !s.hasData
-                              ? "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                              : isMet
-                                ? "bg-[hsl(var(--accent))]/20 text-[hsl(var(--accent))]"
-                                : "bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning))]"
-                          }`}
-                        >
-                          {s.icon}
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-[14px] font-bold text-[hsl(var(--foreground))] truncate group-hover:text-[hsl(var(--accent))] transition-colors">
-                            {s.label}
-                          </h4>
-                          {s.hasData ? (
-                            <p className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] mt-0.5">
-                              {s.laporanCount} baris data
-                            </p>
-                          ) : (
-                            <p className="text-[11px] font-bold text-[hsl(var(--error))]/80 mt-0.5">Kosong</p>
-                          )}
-                        </div>
+                    <div className="w-1 shrink-0" style={{ background: rail }} />
+                    <div className="flex-1 flex items-center gap-4 px-5 py-4">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0 ${
+                          !s.hasData ? "bg-[hsl(var(--muted))]" : isMet ? "bg-[#00A876]/10" : "bg-[#E8A33D]/10"
+                        }`}
+                      >
+                        {s.icon}
                       </div>
-
-                      {/* Bar */}
-                      <div className="flex-1 w-full flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">{s.label}</h4>
+                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                          {s.hasData ? `${s.laporanCount} laporan` : "Belum ada laporan"}
+                        </p>
+                      </div>
+                      <div className="flex-1 hidden sm:block">
                         {s.hasData ? (
-                          <div className="flex-1">
-                            <ComplianceBar value={s.persen} target={s.target} label="" size="sm" compact />
-                          </div>
+                          <ComplianceBar value={s.persen} target={s.target} label="" size="sm" compact />
                         ) : (
-                          <div className="flex-1 h-1.5 rounded-full bg-[hsl(var(--muted))]/50"></div>
+                          <div className="flex-1 h-1.5 rounded-full bg-[hsl(var(--muted))]/60" />
                         )}
-
-                        {/* Stats */}
-                        <div className="flex items-center gap-4 shrink-0 text-right w-24 justify-end">
-                          <div className="flex flex-col">
-                            <span
-                              className={`text-[15px] font-black tabular-nums leading-none ${
-                                !s.hasData
-                                  ? "text-[hsl(var(--muted-foreground))]"
-                                  : isMet
-                                    ? "text-[hsl(var(--accent))]"
-                                    : "text-[hsl(var(--warning))]"
-                              }`}
-                            >
-                              {s.hasData ? `${s.persen.toFixed(1)}%` : "—"}
-                            </span>
-                            <span className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest mt-1">
-                              TGT: {s.target}%
-                            </span>
-                          </div>
-                          <ArrowUpRight
-                            className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1 group-hover:-translate-y-1 ${
-                              isMet ? "text-[hsl(var(--accent))]" : "text-[hsl(var(--warning))]"
-                            }`}
-                          />
+                      </div>
+                      <div className="shrink-0 text-right w-24 flex items-center justify-end gap-2">
+                        <div className="flex flex-col items-end">
+                          <span className={`text-[18px] font-black tabular-nums leading-none ${valColor}`}>
+                            {s.hasData ? `${s.persen.toFixed(1)}%` : "—"}
+                          </span>
+                          <span className="text-[8px] font-extrabold text-[hsl(var(--muted-foreground))] tracking-[0.15em] mt-1">
+                            TGT {s.target}%
+                          </span>
                         </div>
+                        <ArrowUpRight className="w-4 h-4 text-[#00A876] opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                       </div>
                     </div>
                   </a>
@@ -438,7 +385,6 @@ export default function DashboardPkmPage() {
                         if (!active || !payload?.length) return null;
                         const capaian = payload[0]?.value as number;
                         const targetVal = (payload[1]?.value as number) ?? 80;
-                        const _diff = capaian - targetVal;
                         return (
                           <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg shadow-xl p-3">
                             <p className="text-[11px] font-bold uppercase tracking-widest mb-2 pb-2 border-b border-[hsl(var(--border))]/50">

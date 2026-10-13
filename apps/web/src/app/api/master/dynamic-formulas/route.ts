@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { cacheInvalidate } from "@/lib/redis";
 
 // POST or PUT to upsert compliance formula for a category
@@ -35,14 +36,12 @@ export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: "UPDATE",
-        tableName: "dynamic_formula",
-        recordId: data.categoryId,
-        newData: { numeratorCode, denominatorCode },
-      },
+    await createAuditLog({
+      userId,
+      action: "UPDATE",
+      tableName: "dynamic_formula",
+      recordId: data.categoryId,
+      newData: { numeratorCode, denominatorCode },
     });
 
     await cacheInvalidate("laporan:*");

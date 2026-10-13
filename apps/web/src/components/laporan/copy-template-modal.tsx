@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Building2, Calendar, Copy } from "lucide-react";
+import { ArrowDown, Building2, Calendar, Copy } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 // ─── Component Props ───────────────────────────────────────────────────
@@ -51,41 +51,44 @@ export function CopyTemplateModal({
       description={`Salin data ${categoryNama} dari periode sebelumnya`}
       icon={<Copy className="w-4.5 h-4.5" />}
       size="sm"
+      variant="hero"
       footer={
         <>
           <button
             onClick={onClose}
-            className="h-9 px-5 bg-transparent text-[hsl(var(--muted-foreground))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
           >
             Batal
           </button>
           <button
             onClick={() => copyMutation.mutate()}
             disabled={copyMutation.isPending || (!isOperator && !copyPuskesmasId)}
-            className="h-9 px-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
           >
             {copyMutation.isPending ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
             ) : (
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3.5 h-3.5" />
             )}
             {copyMutation.isPending ? "Menyalin..." : "Salin Data"}
           </button>
         </>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {!isOperator && (
-          <div className="space-y-1.5">
-            <label className="stat-label flex items-center gap-1.5">
-              <Building2 className="w-3 h-3" />
-              Puskesmas
-            </label>
-            <div className="relative">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div className="w-9 h-9 rounded-xl bg-[#00A876]/10 flex items-center justify-center shrink-0">
+              <Building2 className="w-4 h-4 text-[#00A876]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
+                Puskesmas
+              </p>
               <select
                 value={copyPuskesmasId || ""}
                 onChange={(e) => setCopyPuskesmasId(Number(e.target.value))}
-                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none cursor-pointer"
+                className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-[hsl(var(--foreground))] outline-none appearance-none cursor-pointer"
               >
                 <option value="">Pilih Puskesmas</option>
                 {puskesmasList.map((p: any) => (
@@ -99,30 +102,27 @@ export function CopyTemplateModal({
         )}
 
         {/* Source period */}
-        <div className="space-y-1.5">
-          <label className="stat-label flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            Periode Asal
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
-              <select
-                value={copyBulanFrom}
-                onChange={(e) => setCopyBulanFrom(Number(e.target.value))}
-                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none cursor-pointer"
-              >
-                {BULAN_NAMES.map((b, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="px-4 py-3.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-2.5">
+            <Calendar className="w-3 h-3" /> Periode Asal
+          </p>
+          <div className="grid grid-cols-2 gap-2.5">
+            <select
+              value={copyBulanFrom}
+              onChange={(e) => setCopyBulanFrom(Number(e.target.value))}
+              className="w-full h-10 px-3 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[13px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors appearance-none cursor-pointer"
+            >
+              {BULAN_NAMES.map((b, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {b}
+                </option>
+              ))}
+            </select>
             <input
               type="number"
               value={copyTahunFrom}
               onChange={(e) => setCopyTahunFrom(Number(e.target.value))}
-              className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors"
+              className="w-full h-10 px-3 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[13px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors tabular-nums"
               min={2020}
               max={2100}
             />
@@ -130,11 +130,13 @@ export function CopyTemplateModal({
         </div>
 
         {/* Arrow + target */}
-        <div className="flex items-center gap-3 p-3.5 rounded-[var(--radius)] bg-[hsl(var(--accent-light)/0.5)] border border-[hsl(var(--accent)/0.12)]">
-          <ArrowRight className="w-4 h-4 text-[hsl(var(--accent))] shrink-0" />
-          <div className="text-[var(--text-sm)]">
-            <span className="text-[hsl(var(--muted-foreground))]">Salin ke: </span>
-            <span className="font-bold text-[hsl(var(--foreground))]">
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-[#00A876]/[0.06] border border-[#00A876]/20">
+          <span className="w-8 h-8 rounded-full bg-[#00A876]/15 flex items-center justify-center shrink-0">
+            <ArrowDown className="w-4 h-4 text-[#00A876]" />
+          </span>
+          <div className="text-[12px]">
+            <span className="text-[hsl(var(--muted-foreground))] font-semibold">Salin ke: </span>
+            <span className="font-extrabold text-[hsl(var(--foreground))]">
               {BULAN_NAMES[bulan - 1]} {tahun}
             </span>
           </div>

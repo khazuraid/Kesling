@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Database, Download, Search } from "lucide-react";
-import { Fragment, useState } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Database, Download, Search } from "lucide-react";
+import { useState } from "react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -103,19 +104,39 @@ function calcSubCompliance(
   return ((numerator / denominator) * 100).toFixed(1);
 }
 
-function pctColor(pct: number | null) {
-  if (pct === null) return "text-[hsl(var(--muted-foreground))]";
-  if (pct >= 80) return "text-[hsl(var(--success))]";
-  if (pct >= 60) return "text-[hsl(var(--warning))]";
-  return "text-[hsl(var(--error))]";
+function tierOf(pct: number | null): "high" | "mid" | "low" | "none" {
+  if (pct === null) return "none";
+  if (pct >= 80) return "high";
+  if (pct >= 60) return "mid";
+  return "low";
 }
 
-function pctBg(pct: number | null) {
-  if (pct === null) return "bg-[hsl(var(--muted))]";
-  if (pct >= 80) return "bg-[hsl(var(--success))]";
-  if (pct >= 60) return "bg-[hsl(var(--warning))]";
-  return "bg-[hsl(var(--error))]";
-}
+const tierStyles = {
+  high: {
+    ring: "bg-[#00A876]",
+    text: "text-[#00A876]",
+    chip: "bg-[#00A876]/10 text-[#00A876]",
+    bar: "bg-[#00A876]",
+  },
+  mid: {
+    ring: "bg-[#E8A33D]",
+    text: "text-[#C07F1F]",
+    chip: "bg-[#E8A33D]/10 text-[#C07F1F]",
+    bar: "bg-[#E8A33D]",
+  },
+  low: {
+    ring: "bg-[#E15A4F]",
+    text: "text-[#E15A4F]",
+    chip: "bg-[#E15A4F]/10 text-[#E15A4F]",
+    bar: "bg-[#E15A4F]",
+  },
+  none: {
+    ring: "bg-[hsl(var(--border))]",
+    text: "text-[hsl(var(--muted-foreground))]",
+    chip: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]",
+    bar: "bg-[hsl(var(--border))]",
+  },
+};
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -167,72 +188,32 @@ export function LaporanTable({
 
   const hasData = paginatedList.length > 0 && !isLoading;
 
-  // ── Summary stats ──
-  const totalSubmitted = laporanList.length;
-  const totalPuskesmas = puskesmasTotal;
-  const avgPct = (() => {
-    if (!category.formula || laporanList.length === 0) return null;
-    let sum = 0,
-      count = 0;
-    for (const laporan of laporanList) {
-      const pct = calcCompliance(
-        buildValueMap(laporan.values),
-        category.parameters,
-        category.subCategories,
-        category.formula,
-        category.isRowBased,
-      );
-      if (pct !== null) {
-        sum += Number(pct);
-        count++;
-      }
-    }
-    return count > 0 ? (sum / count).toFixed(1) : null;
-  })();
+  // ── Distribution stats (for header strip) ──
+  const dist = { high: 0, mid: 0, low: 0, none: 0 };
+  for (const laporan of laporanList) {
+    const pct = calcCompliance(
+      buildValueMap(laporan.values),
+      category.parameters,
+      category.subCategories,
+      category.formula,
+      category.isRowBased,
+    );
+    dist[tierOf(pct ? Number(pct) : null)]++;
+  }
+  dist.none += Math.max(0, puskesmasTotal - laporanList.length);
 
   return (
-    <div className="space-y-4">
-      {/* ── Summary Stat Cards ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">Terinput</p>
-          <p className="text-[22px] font-bold tabular-nums mt-1 text-[hsl(var(--foreground))]">
-            {totalSubmitted}
-            <span className="text-[14px] text-[hsl(var(--muted-foreground))] font-normal">/{totalPuskesmas}</span>
-          </p>
-        </div>
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-            Belum Input
-          </p>
-          <p className="text-[22px] font-bold tabular-nums mt-1 text-[hsl(var(--muted-foreground))]">
-            {totalPuskesmas - totalSubmitted}
-          </p>
-        </div>
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-            Rata-rata Capaian
-          </p>
-          <p className={`text-[22px] font-bold tabular-nums mt-1 ${pctColor(avgPct ? Number(avgPct) : null)}`}>
-            {avgPct ? `${avgPct}%` : "—"}
-          </p>
-        </div>
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">Target</p>
-          <p className="text-[22px] font-bold tabular-nums mt-1 text-[hsl(var(--foreground))]">80%</p>
-        </div>
-      </div>
-
-      {/* ── Tab Bar (only for row-based) ── */}
-      {isRowBased && (
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-          <div className="flex items-center overflow-x-auto border-b border-[hsl(var(--border))]">
+    <div className="space-y-5">
+      {/* ── Toolbar: tabs kiri, aksi kanan ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {isRowBased ? (
+          <div className="inline-flex items-center gap-1 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 max-w-full overflow-x-auto">
             <button
               onClick={() => setActiveTab("ringkasan")}
-              className={`px-4 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-colors ${
+              className={`px-4 h-8 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
                 activeTab === "ringkasan"
-                  ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
-                  : "border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  ? "bg-[#0C1B16] text-white"
+                  : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
               }`}
             >
               Ringkasan
@@ -241,429 +222,279 @@ export function LaporanTable({
               <button
                 key={sc.id}
                 onClick={() => setActiveTab(String(sc.id))}
-                className={`px-4 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-colors ${
+                className={`px-4 h-8 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
                   activeTab === String(sc.id)
-                    ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
-                    : "border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                    ? "bg-[#0C1B16] text-white"
+                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
                 }`}
               >
                 {sc.nama}
               </button>
             ))}
           </div>
-
-          {/* ── Toolbar ── */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-b border-[hsl(var(--border))]">
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] opacity-50" />
-              <input
-                type="text"
-                placeholder="Cari puskesmas..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] opacity-50 outline-none transition-colors focus:border-[hsl(var(--accent))] focus:opacity-100"
-              />
-            </div>
-            <a
-              href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" /> Export
-            </a>
+        ) : (
+          /* Distribution legend (non-row-based) */
+          <div className="flex items-center gap-3 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#00A876]" /> ≥80% ({dist.high})
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#E8A33D]" /> 60–79% ({dist.mid})
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#E15A4F]" /> &lt;60% ({dist.low})
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[hsl(var(--border))]" /> Belum ({dist.none})
+            </span>
           </div>
+        )}
 
-          {/* ── Table Content ── */}
-          <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] animate-spin rounded-full" />
-                <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                  Memuat data...
-                </p>
-              </div>
-            ) : paginatedList.length === 0 ? (
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border border-[hsl(var(--border))] bg-[hsl(var(--muted))] flex items-center justify-center">
-                  <Database className="w-5 h-5 text-[hsl(var(--muted-foreground))] opacity-50" />
-                </div>
-                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum ada data laporan</p>
-                <button
-                  onClick={() => openForm()}
-                  className="text-[11px] font-bold text-[hsl(var(--accent))] hover:underline"
-                >
-                  Klik "Input Laporan" untuk mulai mengisi data
-                </button>
-              </div>
-            ) : activeTab === "ringkasan" ? (
-              /* ── RINGKASAN TAB: Puskesmas | Status | Capaian (compact) ── */
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <th className="w-[40px] py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      Puskesmas
-                    </th>
-                    <th className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      Status
-                    </th>
-                    {category.formula && (
-                      <th className="py-2.5 px-3 text-right text-[10px] font-bold text-[hsl(var(--accent))] uppercase tracking-wider">
-                        Capaian
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedList.map((pkm: any, i: number) => {
-                    const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
-                    const vm = laporan ? buildValueMap(laporan.values) : {};
-                    const totalPct = calcCompliance(
-                      vm,
-                      category.parameters,
-                      category.subCategories,
-                      category.formula,
-                      category.isRowBased,
-                    );
-                    const totalPctNum = totalPct ? Number(totalPct) : null;
-                    const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
-                    return (
-                      <tr
-                        key={pkm.id}
-                        onClick={() => onRowClick(pkm.id)}
-                        className="cursor-pointer border-b border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/30 transition-colors"
-                      >
-                        <td className="py-2.5 px-3 text-[11px] font-medium text-[hsl(var(--muted-foreground))] tabular-nums">
-                          {rowIdx + 1}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[hsl(var(--muted))] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--accent))] shrink-0">
-                              {pkm.nama.charAt(0)}
-                            </div>
-                            <span className="text-[13px] font-semibold text-[hsl(var(--foreground))]">{pkm.nama}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          {!laporan ? (
-                            <span className="text-[10px] text-[hsl(var(--muted-foreground))]">-</span>
-                          ) : (
-                            <StatusBadge status={laporan.status} />
-                          )}
-                        </td>
-                        {category.formula && (
-                          <td className="py-2.5 px-3">
-                            {totalPctNum !== null ? (
-                              <div className="flex items-center gap-2 justify-end">
-                                <div className="w-24 h-2 bg-[hsl(var(--muted))] shrink-0">
-                                  <div
-                                    className={`h-full ${pctBg(totalPctNum)}`}
-                                    style={{ width: `${Math.min(totalPctNum, 100)}%` }}
-                                  />
-                                </div>
-                                <span
-                                  className={`text-[14px] font-bold tabular-nums w-12 text-right ${pctColor(totalPctNum)}`}
-                                >
-                                  {totalPct}%
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-[11px] text-[hsl(var(--muted-foreground))] opacity-40">—</span>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              /* ── SUB-CATEGORY TAB: Puskesmas | params | % ── */
-              (() => {
-                const activeSc = category.subCategories.find((sc) => String(sc.id) === activeTab);
-                if (!activeSc) return null;
-                return (
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[hsl(var(--border))]">
-                        <th className="w-[40px] py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                          #
-                        </th>
-                        <th className="py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                          Puskesmas
-                        </th>
-                        {reportParameters.map((p) => (
-                          <th
-                            key={p.id}
-                            className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider whitespace-nowrap"
-                          >
-                            {p.nama}
-                          </th>
-                        ))}
-                        {category.formula && (
-                          <th className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--accent))] uppercase tracking-wider">
-                            %
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedList.map((pkm: any, i: number) => {
-                        const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
-                        const vm = laporan ? buildValueMap(laporan.values) : {};
-                        const scPct = calcSubCompliance(vm, category.parameters, activeSc.id, category.formula);
-                        const scPctNum = scPct ? Number(scPct) : null;
-                        const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
-                        return (
-                          <tr
-                            key={pkm.id}
-                            onClick={() => onRowClick(pkm.id)}
-                            className="cursor-pointer border-b border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/30 transition-colors"
-                          >
-                            <td className="py-2.5 px-3 text-[11px] font-medium text-[hsl(var(--muted-foreground))] tabular-nums">
-                              {rowIdx + 1}
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-[hsl(var(--muted))] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--accent))] shrink-0">
-                                  {pkm.nama.charAt(0)}
-                                </div>
-                                <span className="text-[13px] font-semibold text-[hsl(var(--foreground))]">
-                                  {pkm.nama}
-                                </span>
-                              </div>
-                            </td>
-                            {reportParameters.map((p) => {
-                              const val = vm[buildKey(p.id, activeSc.id)];
-                              return (
-                                <td
-                                  key={p.id}
-                                  className={`py-2.5 px-3 text-center text-[12px] font-medium tabular-nums ${val ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))] opacity-40"}`}
-                                >
-                                  {val || "—"}
-                                </td>
-                              );
-                            })}
-                            {category.formula && (
-                              <td className="py-2.5 px-3 text-center">
-                                {scPctNum !== null ? (
-                                  <div className="inline-flex flex-col items-center gap-1">
-                                    <span className={`text-[13px] font-bold tabular-nums ${pctColor(scPctNum)}`}>
-                                      {scPct}%
-                                    </span>
-                                    <div className="w-14 h-1.5 bg-[hsl(var(--muted))]">
-                                      <div
-                                        className={`h-full ${pctBg(scPctNum)}`}
-                                        style={{ width: `${Math.min(scPctNum, 100)}%` }}
-                                      />
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <span className="text-[11px] text-[hsl(var(--muted-foreground))] opacity-40">—</span>
-                                )}
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                );
-              })()
-            )}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+            <input
+              type="text"
+              placeholder="Cari puskesmas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-56 pl-9 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] outline-none transition-colors focus:border-[#00A876]"
+            />
           </div>
+          <a
+            href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[11px] font-extrabold text-[hsl(var(--foreground))] hover:border-[#00A876] hover:text-[#00A876] transition"
+          >
+            <Download className="w-3.5 h-3.5" /> Export
+          </a>
         </div>
-      )}
+      </div>
 
-      {/* ── Non-row-based: simple table ── */}
-      {!isRowBased && (
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-b border-[hsl(var(--border))]">
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] opacity-50" />
-              <input
-                type="text"
-                placeholder="Cari puskesmas..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] opacity-50 outline-none transition-colors focus:border-[hsl(var(--accent))] focus:opacity-100"
-              />
-            </div>
-            <a
-              href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" /> Export
-            </a>
-          </div>
-          <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] animate-spin rounded-full" />
-                <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                  Memuat data...
-                </p>
-              </div>
-            ) : paginatedList.length === 0 ? (
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border border-[hsl(var(--border))] bg-[hsl(var(--muted))] flex items-center justify-center">
-                  <Database className="w-5 h-5 text-[hsl(var(--muted-foreground))] opacity-50" />
-                </div>
-                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum ada data laporan</p>
-                <button
-                  onClick={() => openForm()}
-                  className="text-[11px] font-bold text-[hsl(var(--accent))] hover:underline"
-                >
-                  Klik "Input Laporan" untuk mulai mengisi data
-                </button>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <th className="w-[40px] py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="py-2.5 px-3 text-left text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      Puskesmas
-                    </th>
-                    <th className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      Status
-                    </th>
-                    {reportParameters.map((p) => (
-                      <th
-                        key={p.id}
-                        className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {p.nama}
+      {/* ── Body ── */}
+      {isLoading ? (
+        <div className="py-20 flex flex-col items-center gap-3">
+          <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[#00A876] animate-spin rounded-full" />
+          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+            Memuat data...
+          </p>
+        </div>
+      ) : paginatedList.length === 0 ? (
+        <EmptyState
+          icon={Database}
+          title="Belum ada data laporan"
+          description="Belum ada puskesmas yang menginput laporan untuk periode ini. Mulai dengan mengisi data sekarang."
+          actionLabel="Input Laporan"
+          onAction={() => openForm()}
+        />
+      ) : isRowBased && activeTab !== "ringkasan" ? (
+        /* ── SUB-CATEGORY: dense table ── */
+        (() => {
+          const activeSc = category.subCategories.find((sc) => String(sc.id) === activeTab);
+          if (!activeSc) return null;
+          return (
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead>
+                    <tr className="border-b border-[hsl(var(--border))]">
+                      <th className="w-[44px] py-3 px-4 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                        #
                       </th>
-                    ))}
-                    {category.formula && (
-                      <th className="py-2.5 px-3 text-center text-[10px] font-bold text-[hsl(var(--accent))] uppercase tracking-wider">
-                        Capaian
+                      <th className="py-3 px-4 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                        Puskesmas
                       </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedList.map((pkm: any, i: number) => {
-                    const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
-                    const vm = laporan ? buildValueMap(laporan.values) : {};
-                    const totalPct = calcCompliance(
-                      vm,
-                      category.parameters,
-                      category.subCategories,
-                      category.formula,
-                      category.isRowBased,
-                    );
-                    const totalPctNum = totalPct ? Number(totalPct) : null;
-                    const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
-                    return (
-                      <tr
-                        key={pkm.id}
-                        onClick={() => onRowClick(pkm.id)}
-                        className="cursor-pointer border-b border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/30 transition-colors"
-                      >
-                        <td className="py-2.5 px-3 text-[11px] font-medium text-[hsl(var(--muted-foreground))] tabular-nums">
-                          {rowIdx + 1}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[hsl(var(--muted))] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--accent))] shrink-0">
-                              {pkm.nama.charAt(0)}
+                      {reportParameters.map((p) => (
+                        <th
+                          key={p.id}
+                          className="py-3 px-4 text-center text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] whitespace-nowrap"
+                        >
+                          {p.nama}
+                        </th>
+                      ))}
+                      {category.formula && (
+                        <th className="py-3 px-4 text-right text-[10px] font-extrabold text-[#00A876] uppercase tracking-[0.15em]">
+                          %
+                        </th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedList.map((pkm: any, i: number) => {
+                      const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
+                      const vm = laporan ? buildValueMap(laporan.values) : {};
+                      const scPct = calcSubCompliance(vm, category.parameters, activeSc.id, category.formula);
+                      const scPctNum = scPct ? Number(scPct) : null;
+                      const tier = tierOf(scPctNum);
+                      const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
+                      return (
+                        <tr
+                          key={pkm.id}
+                          onClick={() => onRowClick(pkm.id)}
+                          className="cursor-pointer border-b border-[hsl(var(--border))]/60 hover:bg-[hsl(var(--muted))]/40 transition-colors"
+                        >
+                          <td className="py-3 px-4 text-[11px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums">
+                            {rowIdx + 1}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <span className={`w-1.5 h-6 rounded-full shrink-0 ${tierStyles[tier].ring}`} />
+                              <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{pkm.nama}</span>
                             </div>
-                            <span className="text-[13px] font-semibold text-[hsl(var(--foreground))]">{pkm.nama}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          {!laporan ? (
-                            <span className="text-[10px] text-[hsl(var(--muted-foreground))]">-</span>
-                          ) : (
-                            <StatusBadge status={laporan.status} />
+                          </td>
+                          {reportParameters.map((p) => {
+                            const val = vm[buildKey(p.id, activeSc.id)];
+                            return (
+                              <td
+                                key={p.id}
+                                className={`py-3 px-4 text-center font-semibold tabular-nums ${
+                                  val
+                                    ? "text-[hsl(var(--foreground))]"
+                                    : "text-[hsl(var(--muted-foreground))] opacity-40"
+                                }`}
+                              >
+                                {val || "—"}
+                              </td>
+                            );
+                          })}
+                          {category.formula && (
+                            <td className="py-3 px-4 text-right">
+                              <span
+                                className={`inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-extrabold tabular-nums ${tierStyles[tier].chip}`}
+                              >
+                                {scPct !== null ? `${scPct}%` : "—"}
+                              </span>
+                            </td>
                           )}
-                        </td>
-                        {reportParameters.map((p) => {
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        /* ── RINGKASAN: card list ── */
+        <div className="space-y-2">
+          {paginatedList.map((pkm: any, i: number) => {
+            const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
+            const vm = laporan ? buildValueMap(laporan.values) : {};
+            const totalPct = calcCompliance(
+              vm,
+              category.parameters,
+              category.subCategories,
+              category.formula,
+              category.isRowBased,
+            );
+            const totalPctNum = totalPct ? Number(totalPct) : null;
+            const tier = tierOf(totalPctNum);
+            const t = tierStyles[tier];
+            const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
+
+            return (
+              <button
+                key={pkm.id}
+                onClick={() => onRowClick(pkm.id)}
+                className="group w-full text-left rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/50 transition-colors overflow-hidden"
+              >
+                <div className="flex items-stretch">
+                  {/* Tier rail */}
+                  <div className={`w-1 shrink-0 ${t.ring}`} />
+
+                  <div className="flex-1 flex items-center gap-4 px-5 py-4 min-w-0">
+                    {/* Rank */}
+                    <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums w-6 shrink-0">
+                      {String(rowIdx + 1).padStart(2, "0")}
+                    </span>
+
+                    {/* Identity */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">{pkm.nama}</p>
+                      <div className="mt-1">
+                        {!laporan ? (
+                          <span className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
+                            Belum input
+                          </span>
+                        ) : (
+                          <StatusBadge status={laporan.status} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Parameter values (non-row-based only, inline chips) */}
+                    {!isRowBased && (
+                      <div className="hidden lg:flex items-center gap-4 shrink-0">
+                        {reportParameters.slice(0, 4).map((p) => {
                           const val = vm[buildKey(p.id)];
                           return (
-                            <td
-                              key={p.id}
-                              className={`py-2.5 px-3 text-center text-[12px] font-medium tabular-nums ${val ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))] opacity-40"}`}
-                            >
-                              {val || "—"}
-                            </td>
+                            <div key={p.id} className="text-right">
+                              <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]">
+                                {p.nama}
+                              </p>
+                              <p
+                                className={`text-[13px] font-extrabold tabular-nums ${
+                                  val
+                                    ? "text-[hsl(var(--foreground))]"
+                                    : "text-[hsl(var(--muted-foreground))] opacity-40"
+                                }`}
+                              >
+                                {val || "—"}
+                              </p>
+                            </div>
                           );
                         })}
-                        {category.formula && (
-                          <td className="py-2.5 px-3 text-center">
-                            {totalPctNum !== null ? (
-                              <div className="inline-flex flex-col items-center gap-1">
-                                <span className={`text-[14px] font-bold tabular-nums ${pctColor(totalPctNum)}`}>
-                                  {totalPct}%
-                                </span>
-                                <div className="w-16 h-1.5 bg-[hsl(var(--muted))]">
-                                  <div
-                                    className={`h-full ${pctBg(totalPctNum)}`}
-                                    style={{ width: `${Math.min(totalPctNum, 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-[11px] text-[hsl(var(--muted-foreground))] opacity-40">—</span>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+                      </div>
+                    )}
+
+                    {/* Capaian gauge */}
+                    {category.formula && (
+                      <div className="shrink-0 w-32">
+                        <div className="flex items-baseline justify-end gap-1 mb-1.5">
+                          <span className={`text-[18px] font-black tabular-nums leading-none ${t.text}`}>
+                            {totalPct !== null ? totalPct : "—"}
+                          </span>
+                          {totalPct !== null && <span className={`text-[10px] font-bold ${t.text}`}>%</span>}
+                        </div>
+                        <div className="h-1.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${t.bar}`}
+                            style={{ width: `${Math.min(totalPctNum ?? 0, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chevron */}
+                    <ArrowRight className="w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* ── Pagination ── */}
       {hasData && totalPages > 1 && (
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
-            Hal {currentPage} / {totalPages}
+        <div className="flex items-center justify-between pt-1">
+          <span className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] tabular-nums">
+            {String(currentPage).padStart(2, "0")} — {String(totalPages).padStart(2, "0")}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="w-7 h-7 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30 transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 disabled:hover:border-[hsl(var(--border))] disabled:hover:text-[hsl(var(--muted-foreground))] transition-colors"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-3.5 h-3.5" /> Prev
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-              .map((p, idx, arr) => (
-                <Fragment key={p}>
-                  {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span className="w-7 h-7 flex items-center justify-center text-[10px] text-[hsl(var(--muted-foreground))]">
-                      ...
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setCurrentPage(p)}
-                    className={`w-7 h-7 flex items-center justify-center text-[11px] font-bold transition-all ${
-                      p === currentPage
-                        ? "bg-[hsl(var(--accent))] text-white"
-                        : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                </Fragment>
-              ))}
             <button
               onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="w-7 h-7 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30 transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 disabled:hover:border-[hsl(var(--border))] disabled:hover:text-[hsl(var(--muted-foreground))] transition-colors"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              Next <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

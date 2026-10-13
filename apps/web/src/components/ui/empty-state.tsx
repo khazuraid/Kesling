@@ -1,11 +1,8 @@
-"use client";
-
-import { cn } from "@/lib/utils";
-
-/* ── EmptyState ─────────────────────────────────────────────────── */
+import type { LucideIcon } from "lucide-react";
+import { isValidElement } from "react";
 
 interface EmptyStateProps {
-  icon?: React.ReactNode;
+  icon: LucideIcon | React.ReactNode;
   title: string;
   description?: string;
   actionLabel?: string;
@@ -14,76 +11,43 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon, title, description, actionLabel, onAction, className }: EmptyStateProps) {
+  const Icon = icon as LucideIcon;
   return (
-    <div className={cn("flex flex-col items-center justify-center py-24 px-4 fade-in", className)}>
-      {/* ── Icon placeholder ── */}
-      {icon && (
-        <div
-          className={cn(
-            "w-16 h-16 rounded-2xl flex items-center justify-center mb-6",
-            "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]",
-            "border border-[hsl(var(--border))] shadow-[var(--shadow-xs)]",
-            "dark:bg-[hsl(var(--muted))] dark:text-[hsl(var(--muted-foreground))]",
-          )}
-        >
-          {icon}
+    <div
+      className={`relative overflow-hidden rounded-3xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 py-16 ${className ?? ""}`}
+    >
+      {/* Decorative glow */}
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.06] pointer-events-none" />
+
+      <div className="relative z-10 flex flex-col items-center gap-4 text-center">
+        {/* Icon stack */}
+        <div className="relative">
+          <div className="w-16 h-16 rounded-3xl bg-[#0C1B16] flex items-center justify-center text-[#7CF5CE] [&>svg]:w-7 [&>svg]:h-7">
+            {isValidElement(icon) ? icon : <Icon />}
+          </div>
+          <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-[#BEF264] flex items-center justify-center">
+            <span className="text-[12px] font-black text-[#06281E] leading-none">0</span>
+          </div>
         </div>
-      )}
 
-      {!icon && (
-        <div
-          className={cn(
-            "w-20 h-20 rounded-[var(--radius-xl)] mb-6",
-            "bg-[hsl(var(--muted))] dark:bg-[hsl(var(--muted))]",
-            "flex items-center justify-center",
+        <div>
+          <p className="text-[15px] font-extrabold text-[hsl(var(--foreground))]">{title}</p>
+          {description && (
+            <p className="text-[12px] font-medium text-[hsl(var(--muted-foreground))] mt-1.5 max-w-[320px]">
+              {description}
+            </p>
           )}
-        >
-          {/* Illustration placeholder — simple dashed circle */}
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="text-[hsl(var(--muted-foreground))]">
-            <title>Illustration</title>
-            <circle
-              cx="20"
-              cy="16"
-              r="6"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeDasharray="3 2"
-            />
-            <path
-              d="M10 34c0-5.5 4.5-10 10-10s10 4.5 10 10"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeDasharray="3 2"
-            />
-          </svg>
         </div>
-      )}
 
-      <h3 className={cn("text-[var(--text-lg)] font-bold text-[hsl(var(--foreground))] tracking-tight mb-2")}>
-        {title}
-      </h3>
-
-      {description && (
-        <p
-          className={cn(
-            "text-[var(--text-sm)] text-[hsl(var(--muted-foreground))] font-medium leading-relaxed",
-            "max-w-sm text-center mb-6",
-          )}
-        >
-          {description}
-        </p>
-      )}
-
-      {actionLabel && onAction && (
-        <button
-          onClick={onAction}
-          className="h-9 px-4 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors"
-        >
-          {actionLabel}
-        </button>
-      )}
+        {actionLabel && onAction && (
+          <button
+            onClick={onAction}
+            className="mt-1 inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+          >
+            {actionLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

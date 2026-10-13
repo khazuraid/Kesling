@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
-  AlertOctagon,
+  ArrowLeftRight,
   BarChart3,
   Building2,
   Calendar,
@@ -13,23 +13,26 @@ import {
   ClipboardList,
   Database,
   Droplets,
+  FileEdit,
   Folder,
   GlassWater,
+  HardDrive,
   Home,
   LayoutDashboard,
-  LayoutTemplate,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Search,
   Settings2,
   ShieldCheck,
   Toilet,
   UtensilsCrossed,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
-import { useSidebarStore } from "@/stores/sidebar";
+import { useEffect, useState } from "react";
+import { NotificationBell } from "@/components/notification-bell";
 
 interface DynamicCategory {
   id: number;
@@ -41,12 +44,12 @@ interface DynamicCategory {
 }
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  tpp: <UtensilsCrossed className="w-[16px] h-[16px]" />,
-  spal: <Droplets className="w-[16px] h-[16px]" />,
-  sab: <GlassWater className="w-[16px] h-[16px]" />,
-  jamban: <Toilet className="w-[16px] h-[16px]" />,
-  rumah: <Home className="w-[16px] h-[16px]" />,
-  ttu: <Building2 className="w-[16px] h-[16px]" />,
+  tpp: <UtensilsCrossed className="w-4 h-4" />,
+  spal: <Droplets className="w-4 h-4" />,
+  sab: <GlassWater className="w-4 h-4" />,
+  jamban: <Toilet className="w-4 h-4" />,
+  rumah: <Home className="w-4 h-4" />,
+  ttu: <Building2 className="w-4 h-4" />,
 };
 
 const SHORT_NAMES: Record<string, string> = {
@@ -58,12 +61,98 @@ const SHORT_NAMES: Record<string, string> = {
   ttu: "TTU",
 };
 
-function NavContent({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+type MenuItem = {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  role?: "ADMIN" | "OPERATOR" | "DINKES";
+  roles?: ("ADMIN" | "OPERATOR" | "DINKES")[];
+  puskesmasOnly?: boolean;
+};
+
+type MenuGroup = {
+  title: string;
+  items: MenuItem[];
+};
+
+function useMenuGroups() {
   const { data: session } = useSession();
-  const [openMenus, setOpenMenus] = useState<string[]>(["Laporan"]);
   const userRole = (session?.user as any)?.role || "OPERATOR";
-  const _isAdmin = userRole === "ADMIN";
+
+  const isPkm = userRole === "OPERATOR";
+  const isAdmin = userRole === "ADMIN";
+  const isDinkes = userRole === "DINKES";
+  const isAdminOrDinkes = isAdmin || isDinkes;
+
+  const groups: MenuGroup[] = [
+    {
+      title: "Utama",
+      items: [
+        ...(isAdminOrDinkes ? [{ label: "Overview", href: "/", icon: <LayoutDashboard className="w-4 h-4" /> }] : []),
+        ...(isPkm ? [{ label: "Command Center", href: "/dashboard-pkm", icon: <Activity className="w-4 h-4" /> }] : []),
+        { label: "Laporan", href: "/laporan", icon: <Folder className="w-4 h-4" /> },
+        { label: "Rekap", href: "/rekap", icon: <BarChart3 className="w-4 h-4" /> },
+        { label: "Perbandingan", href: "/perbandingan", icon: <ArrowLeftRight className="w-4 h-4" /> },
+      ],
+    },
+    ...(isPkm
+      ? [
+          {
+            title: "Pemeriksaan",
+            items: [
+              { label: "Pemeriksaan Baru", href: "/pemeriksaan", icon: <ClipboardList className="w-4 h-4" /> },
+              { label: "Form Pemeriksaan", href: "/form-pemeriksaan", icon: <ClipboardCheck className="w-4 h-4" /> },
+              { label: "Data Dasar", href: "/data-dasar", icon: <Database className="w-4 h-4" /> },
+            ],
+          },
+          {
+            title: "Perencanaan",
+            items: [
+              { label: "Rencana Bulanan", href: "/rencana-bulanan", icon: <Calendar className="w-4 h-4" /> },
+              { label: "Rencana Tahunan", href: "/rencana-tahunan", icon: <CalendarRange className="w-4 h-4" /> },
+            ],
+          },
+        ]
+      : []),
+    ...(isAdminOrDinkes
+      ? [
+          {
+            title: "Admin",
+            items: [
+              { label: "Approval", href: "/approval", icon: <ShieldCheck className="w-4 h-4" /> },
+              { label: "Format Laporan", href: "/laporan-builder", icon: <FileEdit className="w-4 h-4" /> },
+              ...(isAdmin
+                ? [
+                    { label: "Audit Log", href: "/audit-log", icon: <ClipboardCheck className="w-4 h-4" /> },
+                    { label: "File Manager", href: "/file-manager", icon: <HardDrive className="w-4 h-4" /> },
+                    { label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+  ];
+
+  return { groups, userRole, session };
+}
+
+const LS_KEY = "kesling:sidebar-collapsed";
+
+export function SideNav() {
+  const pathname = usePathname();
+  const { groups, userRole, session } = useMenuGroups();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const v = localStorage.getItem(LS_KEY);
+    if (v === "1") setCollapsed(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, collapsed ? "1" : "0");
+    document.documentElement.style.setProperty("--sidebar-w", collapsed ? "64px" : "232px");
+  }, [collapsed]);
 
   const { data: categories = [] } = useQuery<DynamicCategory[]>({
     queryKey: ["laporan-categories"],
@@ -74,290 +163,218 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     },
   });
 
-  const _laporanChildren =
-    categories.length > 0
-      ? categories.map((cat) => ({
-          label: SHORT_NAMES[cat.code.toLowerCase()] || cat.nama,
-          href: `/laporan/${cat.code.toLowerCase()}`,
-          code: cat.code.toLowerCase(),
-        }))
-      : Object.entries(SHORT_NAMES).map(([code, label]) => ({
-          label,
-          href: `/laporan/${code}`,
-          code,
-        }));
-
-  type MenuItem = {
-    label: string;
-    href?: string;
-    icon: React.ReactNode;
-    children?: { label: string; href: string; code: string }[];
-    role?: "ADMIN" | "OPERATOR" | "DINKES";
-    roles?: ("ADMIN" | "OPERATOR" | "DINKES")[];
-    puskesmasOnly?: boolean;
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href === "/laporan") return pathname === "/laporan"; // jangan startsWith — submenu punya path sendiri
+    return pathname.startsWith(href);
   };
 
-  const menuItems: MenuItem[] = [
-    {
-      label: "Overview",
-      href: "/",
-      icon: <LayoutDashboard className="w-[17px] h-[17px]" />,
-      roles: ["ADMIN", "DINKES"],
-    },
-    {
-      label: "Command Center",
-      href: "/dashboard-pkm",
-      icon: <Activity className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-    },
-    {
-      label: "Laporan",
-      href: "/laporan",
-      icon: <Folder className="w-[17px] h-[17px]" />,
-    },
-    {
-      label: "Rekap Tahunan",
-      href: "/rekap",
-      icon: <BarChart3 className="w-[17px] h-[17px]" />,
-    },
-    {
-      label: "Perbandingan",
-      href: "/perbandingan",
-      icon: <LayoutTemplate className="w-[17px] h-[17px]" />,
-    },
-    {
-      label: "Format Laporan Bulanan",
-      href: "/laporan-builder",
-      icon: <LayoutTemplate className="w-[17px] h-[17px]" />,
-      roles: ["ADMIN", "DINKES"],
-    },
-    {
-      label: "Form Pemeriksaan Lapangan",
-      href: "/form-pemeriksaan",
-      icon: <ClipboardCheck className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-      puskesmasOnly: true,
-    },
-    {
-      label: "Pemeriksaan Baru",
-      href: "/pemeriksaan",
-      icon: <ClipboardList className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-      puskesmasOnly: true,
-    },
-    {
-      label: "Data Dasar",
-      href: "/data-dasar",
-      icon: <Database className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-      puskesmasOnly: true,
-    },
-    {
-      label: "Rencana Bulanan",
-      href: "/rencana-bulanan",
-      icon: <Calendar className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-      puskesmasOnly: true,
-    },
-    {
-      label: "Rencana Tahunan",
-      href: "/rencana-tahunan",
-      icon: <CalendarRange className="w-[17px] h-[17px]" />,
-      role: "OPERATOR",
-      puskesmasOnly: true,
-    },
-    {
-      label: "Approval",
-      href: "/approval",
-      icon: <ShieldCheck className="w-[17px] h-[17px]" />,
-      roles: ["ADMIN", "DINKES"],
-    },
-    {
-      label: "Audit Log",
-      href: "/audit-log",
-      icon: <ClipboardCheck className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
-    },
-    {
-      label: "Error Logs",
-      href: "/settings/errors",
-      icon: <AlertOctagon className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
-    },
-    {
-      label: "Settings",
-      href: "/settings",
-      icon: <Settings2 className="w-[17px] h-[17px]" />,
-      role: "ADMIN",
-    },
-  ];
-
-  const filteredMenu = menuItems.filter((item) => {
-    if (item.puskesmasOnly && userRole !== "OPERATOR") return false;
-    if (item.roles) return item.roles.includes(userRole as "ADMIN" | "OPERATOR" | "DINKES");
-    return !item.role || item.role === userRole;
-  });
-
-  function toggleMenu(label: string) {
-    setOpenMenus((prev) => (prev.includes(label) ? prev.filter((m) => m !== label) : [...prev, label]));
-  }
-
-  const isActive = (href: string) => pathname === href;
-  const isChildActive = (children: { href: string }[]) => children.some((c) => pathname.startsWith(c.href));
+  const renderItem = (item: MenuItem) => {
+    const active = isActive(item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        title={collapsed ? item.label : undefined}
+        className={`flex items-center rounded-lg h-9 text-[12px] font-bold transition-colors ${
+          collapsed ? "justify-center px-0" : "gap-2.5 px-3"
+        } ${active ? "bg-[#00A876] text-[#06281E]" : "text-white/60 hover:text-white hover:bg-white/8"}`}
+      >
+        <span className="shrink-0">{item.icon}</span>
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </Link>
+    );
+  };
 
   return (
-    <>
-      {/* ── Logo ── */}
-      <div className="flex items-center gap-3 px-5 h-16 shrink-0">
-        <div className="w-9 h-9 border border-[hsl(var(--accent))] flex items-center justify-center shrink-0">
-          <span className="text-sm font-black text-[hsl(var(--foreground))] tracking-tight">KC</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-[13px] font-bold tracking-tight text-[hsl(var(--foreground))] leading-tight">
-            Kesling Core
-          </p>
-          <p className="text-[9px] font-semibold text-[hsl(var(--accent))]/70 uppercase tracking-[0.15em]">Cirebon</p>
-        </div>
-      </div>
-
-      {/* ── Divider ── */}
-      <div className="mx-4 h-px bg-[hsl(var(--border))]" />
-
-      {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5 scrollbar-thin">
-        <p className="px-3 mb-2 text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.2em]">
-          Menu
-        </p>
-
-        {filteredMenu.map((item) =>
-          item.children ? (
-            <div key={item.label}>
-              <button
-                onClick={() => toggleMenu(item.label)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold transition-all duration-150 ${
-                  isChildActive(item.children)
-                    ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                    : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
-                }`}
-              >
-                <span className="shrink-0">{item.icon}</span>
-                <span className="flex-1 text-left">{item.label}</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
-                    openMenus.includes(item.label) ? "" : "-rotate-90"
-                  }`}
-                />
-              </button>
-
-              <div
-                className={`grid transition-all duration-200 ${
-                  openMenus.includes(item.label) ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                }`}
-              >
-                <div className="overflow-hidden">
-                  <div className="py-1 space-y-0.5">
-                    {item.children.map((child: any) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={onNavigate}
-                        className={`flex items-center gap-2.5 pl-9 pr-3 py-1.5 text-[12px] font-semibold transition-all duration-150 ${
-                          isActive(child.href)
-                            ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                            : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
-                        }`}
-                      >
-                        <span className="shrink-0">
-                          {CATEGORY_ICONS[child.code] || <Folder className="w-[14px] h-[14px]" />}
-                        </span>
-                        <span className="flex-1">{child.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <Link
-              key={item.href}
-              href={item.href || "/"}
-              onClick={onNavigate}
-              className={`flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold transition-all duration-150 ${
-                isActive(item.href || "/")
-                  ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
-              }`}
-            >
-              <span className="shrink-0">{item.icon}</span>
-              <span className="flex-1">{item.label}</span>
-            </Link>
-          ),
-        )}
-      </nav>
-
-      {/* ── User Section ── */}
-      <div className="shrink-0 px-3 pb-3 pt-2">
-        <div className="mx-1 mb-3 h-px bg-[hsl(var(--border))]" />
-        <Link
-          href="/profile"
-          onClick={onNavigate}
-          className="flex items-center gap-3 p-2 hover:bg-[hsl(var(--muted))] transition-colors duration-150 group"
-        >
-          <div className="avatar-initial shrink-0">{session?.user?.name?.charAt(0) || "U"}</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate leading-tight">
-              {session?.user?.name || "User"}
-            </p>
-            <p className="text-[9px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.12em]">
-              {userRole}
-            </p>
+    <aside
+      className={`fixed left-0 top-0 bottom-0 z-40 bg-[#0C1B16] text-white flex flex-col transition-[width] duration-200 overflow-hidden ${
+        collapsed ? "w-16" : "w-[232px]"
+      }`}
+    >
+      {/* Logo */}
+      <div
+        className={`flex items-center h-14 shrink-0 border-b border-white/8 ${
+          collapsed ? "justify-center px-0" : "gap-2.5 px-4"
+        }`}
+      >
+        <Link href="/" className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#00A876] flex items-center justify-center shrink-0">
+            <span className="text-[11px] font-black text-[#06281E]">KC</span>
           </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              signOut({ callbackUrl: "/login" });
-            }}
-            className="w-8 h-8 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--error))/0.1] hover:text-[hsl(var(--error))] transition-colors opacity-0 group-hover:opacity-100"
-            title="Logout"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
+          {!collapsed && (
+            <div className="leading-none min-w-0">
+              <p className="text-[13px] font-extrabold tracking-tight truncate">Kesling</p>
+              <p className="text-[8px] font-bold text-[#7CF5CE]/60 uppercase tracking-[0.22em] mt-0.5">Cirebon</p>
+            </div>
+          )}
         </Link>
       </div>
-    </>
+
+      {/* Search */}
+      <div className="shrink-0 pt-3 pb-1 px-3">
+        <button
+          onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
+          title="Cari (⌘K)"
+          className={`flex items-center rounded-lg bg-white/6 hover:bg-white/10 text-white/50 hover:text-white transition-colors h-9 w-full ${
+            collapsed ? "justify-center" : "gap-2 px-3"
+          }`}
+        >
+          <Search className="w-4 h-4 shrink-0" />
+          {!collapsed && (
+            <>
+              <span className="text-[12px] font-semibold flex-1 text-left">Cari...</span>
+              <kbd className="text-[9px] font-bold text-white/30 border border-white/15 rounded px-1 py-px">⌘K</kbd>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 scrollbar-none">
+        {groups.map((group, gi) => (
+          <div key={group.title}>
+            {gi > 0 && !collapsed && (
+              <p className="px-3 pt-4 pb-1 text-[9px] font-extrabold text-white/35 uppercase tracking-[0.22em]">
+                {group.title}
+              </p>
+            )}
+            {gi > 0 && collapsed && <div className="mx-2 my-2 border-t border-white/8" />}
+            {group.items.map((item) => {
+              if (item.href === "/laporan") {
+                const lapActive = pathname === "/laporan";
+                const catActive = pathname.startsWith("/laporan/");
+                return (
+                  <div key={item.href}>
+                    <Link
+                      href={item.href}
+                      title={collapsed ? item.label : undefined}
+                      className={`flex items-center rounded-lg h-9 text-[12px] font-bold transition-colors ${
+                        collapsed ? "justify-center px-0" : "gap-2.5 px-3"
+                      } ${lapActive ? "bg-[#00A876] text-[#06281E]" : "text-white/60 hover:text-white hover:bg-white/8"}`}
+                    >
+                      <span className="shrink-0">{item.icon}</span>
+                      {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                      {!collapsed && categories.length > 0 && (
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 shrink-0 transition-transform ${catActive ? "rotate-180" : ""}`}
+                        />
+                      )}
+                    </Link>
+                    {/* Submenu kategori — inline indent */}
+                    {!collapsed && categories.length > 0 && (
+                      <div className="mt-0.5 mb-1 ml-[26px] space-y-0.5 border-l border-white/10 pl-2">
+                        {categories.map((cat) => {
+                          const code = cat.code.toLowerCase();
+                          const href = `/laporan/${code}`;
+                          const active = pathname === href;
+                          return (
+                            <Link
+                              key={cat.id}
+                              href={href}
+                              className={`flex items-center gap-2 rounded-md h-8 px-2.5 text-[11px] font-bold transition-colors ${
+                                active
+                                  ? "bg-[#00A876]/20 text-[#7CF5CE]"
+                                  : "text-white/50 hover:text-white hover:bg-white/6"
+                              }`}
+                            >
+                              <span className="shrink-0 scale-90">
+                                {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
+                              </span>
+                              <span className="truncate">{SHORT_NAMES[code] || cat.nama}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* Collapsed: kategori jadi icon row */}
+                    {collapsed &&
+                      categories.map((cat) => {
+                        const code = cat.code.toLowerCase();
+                        const href = `/laporan/${code}`;
+                        const active = pathname === href;
+                        return (
+                          <Link
+                            key={cat.id}
+                            href={href}
+                            title={SHORT_NAMES[code] || cat.nama}
+                            className={`flex items-center justify-center rounded-lg h-9 transition-colors ${
+                              active ? "bg-[#00A876] text-[#06281E]" : "text-white/55 hover:text-white hover:bg-white/8"
+                            }`}
+                          >
+                            {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
+                          </Link>
+                        );
+                      })}
+                  </div>
+                );
+              }
+              return renderItem(item);
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Bottom */}
+      <div className="shrink-0 border-t border-white/8 p-2 space-y-1">
+        <div className={`flex items-center ${collapsed ? "justify-center" : "px-1"}`}>
+          <div className="[&_button]:!text-white/60 [&_button:hover]:!text-white [&_button]:!bg-transparent [&_button:hover]:!bg-white/8 [&_button]:!rounded-lg">
+            <NotificationBell />
+          </div>
+          {!collapsed && <span className="text-[11px] font-bold text-white/50 ml-1">Notifikasi</span>}
+        </div>
+
+        <Link
+          href="/profile"
+          title={collapsed ? session?.user?.name || "Profil" : undefined}
+          className={`flex items-center rounded-lg hover:bg-white/8 transition-colors h-11 ${
+            collapsed ? "justify-center px-0" : "gap-2.5 px-2"
+          }`}
+        >
+          <div className="w-7 h-7 rounded-lg bg-[#00A876] flex items-center justify-center text-[11px] font-extrabold text-[#06281E] shrink-0">
+            {session?.user?.name?.charAt(0) || "U"}
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold truncate">{session?.user?.name || "User"}</p>
+              <p className="text-[8px] font-bold text-white/35 uppercase tracking-[0.18em]">{userRole}</p>
+            </div>
+          )}
+        </Link>
+
+        <div className={`flex items-center ${collapsed ? "flex-col gap-1" : ""}`}>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            title="Logout"
+            className={`flex items-center rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors h-9 ${
+              collapsed ? "justify-center w-full" : "gap-2.5 px-3 flex-1"
+            }`}
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {!collapsed && <span className="text-[12px] font-bold">Keluar</span>}
+          </button>
+          <button
+            onClick={() => {
+              setCollapsed(!collapsed);
+              document.dispatchEvent(new CustomEvent("kesling:toggle-sidebar"));
+            }}
+            title={collapsed ? "Buka sidebar" : "Sembunyikan sidebar"}
+            className={`flex items-center justify-center rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors h-9 ${
+              collapsed ? "w-full" : "w-9"
+            }`}
+          >
+            {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 }
 
+// Back-compat exports
+export function TopNav() {
+  return <SideNav />;
+}
 export function Sidebar() {
-  const { isOpen: mobileOpen, close } = useSidebarStore();
-
-  return (
-    <>
-      {/* ── Desktop: Fixed sidebar ── */}
-      <aside className="hidden lg:flex w-[248px] h-dvh flex-col fixed left-0 top-0 z-40 bg-[hsl(var(--background))] border-r border-[hsl(var(--border))]">
-        <NavContent />
-      </aside>
-
-      {/* ── Mobile: Sheet overlay ── */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-[hsl(var(--foreground))]/40 backdrop-blur-sm fade-in" onClick={close} />
-          <aside className="relative w-[280px] h-full bg-[hsl(var(--background))] border-r border-[hsl(var(--border))] flex flex-col fade-in">
-            <div className="flex items-center justify-between px-5 h-16 shrink-0">
-              <span className="text-[13px] font-bold text-[hsl(var(--foreground))]">Navigation</span>
-              <button
-                onClick={close}
-                className="w-8 h-8 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="h-px bg-[hsl(var(--border))]" />
-            <NavContent onNavigate={close} />
-          </aside>
-        </div>
-      )}
-    </>
-  );
+  return <SideNav />;
 }

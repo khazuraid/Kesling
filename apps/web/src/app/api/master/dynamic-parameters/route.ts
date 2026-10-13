@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { cacheInvalidate } from "@/lib/redis";
 
 // POST a new parameter
@@ -46,14 +47,12 @@ export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: "CREATE",
-        tableName: "dynamic_parameter",
-        recordId: data.id,
-        newData: { nama, code, categoryId: catId },
-      },
+    await createAuditLog({
+      userId,
+      action: "CREATE",
+      tableName: "dynamic_parameter",
+      recordId: data.id,
+      newData: { nama, code, categoryId: catId },
     });
 
     await cacheInvalidate("laporan:*");
@@ -91,8 +90,12 @@ export const PUT = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: { userId, action: "UPDATE", tableName: "dynamic_parameter", recordId: paramId, newData: { nama, code } },
+    await createAuditLog({
+      userId,
+      action: "UPDATE",
+      tableName: "dynamic_parameter",
+      recordId: paramId,
+      newData: { nama, code },
     });
 
     await cacheInvalidate("laporan:*");
@@ -133,8 +136,11 @@ export const DELETE = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) =>
       where: { id },
     });
 
-    await prisma.auditLog.create({
-      data: { userId, action: "DELETE", tableName: "dynamic_parameter", recordId: id, newData: undefined },
+    await createAuditLog({
+      userId,
+      action: "DELETE",
+      tableName: "dynamic_parameter",
+      recordId: id,
     });
 
     await cacheInvalidate("laporan:*");

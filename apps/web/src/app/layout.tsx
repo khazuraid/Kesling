@@ -4,7 +4,7 @@ import Script from "next/script";
 import { Providers } from "@/components/providers";
 
 export const viewport: Viewport = {
-  themeColor: "#7C6BF0",
+  themeColor: "#00A876",
 };
 
 export const metadata: Metadata = {

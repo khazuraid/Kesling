@@ -58,7 +58,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     headStyles: { fillColor: [0, 168, 118] },
   });
 
-  const rows = result.values.map((v) => [
+  const rows = result.values.map((v: any) => [
     v.field?.pertanyaan ?? `Field ${v.fieldId}`,
     v.valueString ?? (v.valueNumber != null ? String(v.valueNumber) : "-"),
   ]);
@@ -82,14 +82,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     });
   }
 
-  const sig = result.signatureData as { petugas?: string } | null;
-  if (sig?.petugas) {
-    doc.setFontSize(9);
-    doc.text(
-      `Ditandatangani digital oleh petugas (${result.user?.nama ?? "-"}).`,
-      14,
-      (doc as any).lastAutoTable.finalY + 8,
-    );
+  const sig = result.signatureData as { petugas?: string; pemilik?: string } | null;
+  const petugasB64 = sig?.petugas;
+  const pemilikB64 = sig?.pemilik;
+  let sigY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 10 : 40;
+  if (petugasB64 || pemilikB64) {
+    doc.setFontSize(10);
+    doc.text("Tanda Tangan:", 14, sigY);
+    sigY += 4;
+    const sigW = 60;
+    const sigH = 24;
+    if (petugasB64) {
+      doc.text("Petugas,", 14, sigY + 2);
+      try {
+        doc.addImage(`data:image/png;base64,${petugasB64}`, "PNG", 14, sigY + 4, sigW, sigH);
+      } catch {}
+      doc.text(`(${result.user?.nama ?? "Petugas"})`, 14, sigY + sigH + 10);
+    }
+    if (pemilikB64) {
+      const x2 = 110;
+      doc.text("Pemilik Sasaran,", x2, sigY + 2);
+      try {
+        doc.addImage(`data:image/png;base64,${pemilikB64}`, "PNG", x2, sigY + 4, sigW, sigH);
+      } catch {}
+      doc.text(`(${result.namaSasaran ?? "Pemilik"})`, x2, sigY + sigH + 10);
+    }
   }
 
   const pdf = Buffer.from(doc.output("arraybuffer"));

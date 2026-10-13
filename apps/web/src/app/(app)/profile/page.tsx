@@ -96,13 +96,22 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-      {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <User className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
-        <div>
-          <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Profil Saya</h1>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Kelola informasi personal dan keamanan akun</p>
+    <div className="w-full mx-auto pb-4 space-y-6 fade-in">
+      {/* HERO */}
+      <div className="relative overflow-hidden rounded-3xl bg-[#0C1B16] text-white px-8 py-7">
+        <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.14]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#123527_0%,transparent_60%)]" />
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#00A876] flex items-center justify-center text-[22px] font-black text-[#06281E] shrink-0">
+            {user?.name?.charAt(0) || "U"}
+          </div>
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-1">
+              {user?.role} {user?.puskesmasNama ? `· ${user.puskesmasNama}` : ""}
+            </p>
+            <h1 className="text-[26px] font-black tracking-[-0.03em] leading-none">{user?.name || "Profil"}</h1>
+            <p className="text-[12px] font-medium text-white/50 mt-1.5">{user?.email}</p>
+          </div>
         </div>
       </div>
 

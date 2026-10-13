@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import Animated, { Easing, useAnimatedProps, useSharedValue, withTiming } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
+import { useTheme } from "tamagui";
 import { useCountUp } from "./primitives";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -25,6 +26,9 @@ export function GaugeChart({
   const color = pct < 60 ? "#EF4444" : pct < 80 ? "#F59E0B" : "#22C55E";
   const progress = useSharedValue(0);
   const count = useCountUp(pct, 800);
+  const theme = useTheme();
+  const trackColor = theme.border.val;
+  const labelColor = theme.muted.val;
 
   const r = (size - strokeWidth) / 2;
   // semicircle arc from 180° to 0°
@@ -49,7 +53,7 @@ export function GaugeChart({
         {/* Track */}
         <Path
           d={`M ${startX} ${cy} A ${r} ${r} 0 0 1 ${endX} ${cy}`}
-          stroke="#ECE7E1"
+          stroke={trackColor}
           strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"
@@ -66,7 +70,7 @@ export function GaugeChart({
       </Svg>
       <View style={styles.valueWrap}>
         <Text style={[styles.value, { color }]}>{count}</Text>
-        {label ? <Text style={styles.label}>{label}</Text> : null}
+        {label ? <Text style={[styles.label, { color: labelColor }]}>{label}</Text> : null}
       </View>
     </View>
   );
@@ -75,5 +79,5 @@ export function GaugeChart({
 const styles = StyleSheet.create({
   valueWrap: { position: "absolute", bottom: 0, alignItems: "center" },
   value: { fontSize: 32, fontWeight: "800" },
-  label: { fontSize: 12, color: "#8A8580", marginTop: 2 },
+  label: { fontSize: 12, color: "#71717A", marginTop: 2 },
 });

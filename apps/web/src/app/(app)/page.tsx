@@ -1,17 +1,9 @@
 import { prisma } from "@apps-kes/database";
-import { ArrowRight, BarChart3, Building2, ChevronRight, Download } from "lucide-react";
-import nextDynamic from "next/dynamic";
+import { ArrowRight, ArrowUpRight, Download, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ModuleSparkChips } from "@/components/module-spark-chips";
 import { getCurrentUser } from "@/lib/session";
-
-const DashboardChart = nextDynamic(
-  () => import("@/components/dashboard-chart").then((m) => ({ default: m.DashboardChart })),
-  {
-    loading: () => (
-      <div className="h-[350px] w-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] animate-pulse" />
-    ),
-  },
-);
 
 export const dynamic = "force-dynamic";
 
@@ -44,33 +36,42 @@ export default async function DashboardPage() {
     prisma.dynamicCategory.findMany({ orderBy: { urutan: "asc" } }),
   ]);
 
-  const grouped = await prisma.dynamicLaporan.groupBy({
-    by: ["categoryId"],
-    where: { bulan, tahun, status: { in: ["SUBMITTED", "APPROVED"] } },
-    _count: { id: true },
-  });
+  // Bulan ini + bulan lalu (untuk delta)
+  const prevBulan = bulan === 1 ? 12 : bulan - 1;
+  const prevTahun = bulan === 1 ? tahun - 1 : tahun;
+
+  const [grouped, prevGrouped] = await Promise.all([
+    prisma.dynamicLaporan.groupBy({
+      by: ["categoryId"],
+      where: { bulan, tahun, status: { in: ["SUBMITTED", "APPROVED"] } },
+      _count: { id: true },
+    }),
+    prisma.dynamicLaporan.groupBy({
+      by: ["categoryId"],
+      where: { bulan: prevBulan, tahun: prevTahun, status: { in: ["SUBMITTED", "APPROVED"] } },
+      _count: { id: true },
+    }),
+  ]);
 
   const countMap = new Map(
     (grouped as Array<{ categoryId: number; _count: { id: number } }>).map((g) => [g.categoryId, g._count.id]),
   );
+  const prevCountMap = new Map(
+    (prevGrouped as Array<{ categoryId: number; _count: { id: number } }>).map((g) => [g.categoryId, g._count.id]),
+  );
+
   const counts = (categories as Array<{ id: number; nama: string; code: string; icon: string | null }>).map((cat) => ({
     ...cat,
     count: countMap.get(cat.id) || 0,
+    prevCount: prevCountMap.get(cat.id) || 0,
   }));
 
   const totalData = counts.reduce((acc, c) => acc + c.count, 0);
+  const prevTotal = counts.reduce((acc, c) => acc + c.prevCount, 0);
+  const delta = totalData - prevTotal;
   const targetPerPkm = categories.length;
-  const completionRate =
-    pkmCount > 0 && targetPerPkm > 0 ? Math.round((totalData / (pkmCount * targetPerPkm)) * 100) : 0;
-
-  const stats = counts.map((c) => ({
-    id: c.id,
-    nama: c.nama,
-    code: c.code,
-    count: c.count,
-    href: `/laporan/${c.code}`,
-    icon: c.icon || "📄",
-  }));
+  const totalTarget = pkmCount * targetPerPkm;
+  const completionRate = totalTarget > 0 ? Math.round((totalData / totalTarget) * 100) : 0;
 
   const puskesmasList = await prisma.puskesmas.findMany({ orderBy: { nama: "asc" } });
   const pkmGrouped = await prisma.dynamicLaporan.groupBy({
@@ -90,230 +91,211 @@ export default async function DashboardPage() {
     })
     .sort((a, b) => b.percentage - a.percentage);
 
+  const achieved = pkmStats.filter((p) => p.percentage >= 80).length;
+  const partial = pkmStats.filter((p) => p.percentage >= 50 && p.percentage < 80).length;
+  const low = pkmStats.filter((p) => p.percentage < 50).length;
+  const top3 = pkmStats.slice(0, 3);
+  const rest = pkmStats.slice(3);
+
   return (
-    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-      {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <BarChart3 className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
-        <div>
-          <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Overview</h1>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-            Dashboard · {BULAN[bulan]} {tahun}
+    <div className="w-full mx-auto pb-10 fade-in">
+      {/* ── HEADER HERO ── */}
+      <div className="relative overflow-hidden rounded-3xl bg-[#0C1B16] text-white px-8 py-7 mb-8">
+        <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.14]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#123527_0%,transparent_60%)]" />
+        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
+              {BULAN[bulan]} {tahun} · Kota Cirebon
+            </p>
+            <h1 className="text-[32px] font-black tracking-[-0.03em] leading-none">Overview</h1>
+            <p className="text-[13px] font-medium text-white/50 mt-2">
+              {pkmCount} puskesmas · {categories.length} kategori · {totalData} laporan masuk
+            </p>
+          </div>
+          <div className="flex items-end gap-6">
+            <div className="text-right">
+              <p className="text-[44px] font-black tabular-nums leading-none text-[#BEF264]">{completionRate}%</p>
+              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mt-1">Capaian bulan ini</p>
+            </div>
+            <a
+              href="/api/export/all"
+              className="h-10 px-4 flex items-center gap-2 rounded-2xl bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+            >
+              <Download className="w-3.5 h-3.5" /> Export
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── KPI STRIP ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--border))]">
+        {/* Capaian — highlighted */}
+        <div className="bg-[#0C1B16] text-white p-6">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]/70">Capaian</p>
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-extrabold ${
+                delta >= 0 ? "text-[#7CF5CE]" : "text-red-300"
+              }`}
+            >
+              {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              {delta >= 0 ? "+" : ""}
+              {delta}
+            </span>
+          </div>
+          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em]">
+            {completionRate}
+            <span className="text-[22px] font-bold text-white/40">%</span>
+          </p>
+          <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full rounded-full bg-[#7CF5CE]" style={{ width: `${Math.max(completionRate, 2)}%` }} />
+          </div>
+          <p className="text-[10px] font-semibold text-white/50 mt-2">
+            {totalData} dari {totalTarget} laporan
           </p>
         </div>
-        <a
-          href="/api/export/all"
-          className="h-9 px-3 flex items-center gap-1.5 border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors ml-auto"
-        >
-          <Download className="w-3 h-3" /> Export
-        </a>
-      </div>
 
-      {/* STAT STRIP */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-[hsl(var(--border))] overflow-hidden bg-[hsl(var(--card))]">
-        <div className="flex flex-col items-center justify-center py-5 px-4 border-r border-[hsl(var(--border))]">
-          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-1">
-            Completion
-          </span>
-          <span className="text-[28px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-            {completionRate}
-            <span className="text-[14px] text-[hsl(var(--muted-foreground))]">%</span>
-          </span>
-          <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))] mt-1">
-            dari {pkmCount * targetPerPkm} target
-          </span>
+        {/* Tercapai */}
+        <div className="bg-[hsl(var(--card))] p-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
+            Tercapai
+          </p>
+          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--success))]">
+            {achieved}
+          </p>
+          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">puskesmas ≥ 80%</p>
         </div>
-        <div className="flex flex-col items-center justify-center py-5 px-4 border-r border-[hsl(var(--border))]">
-          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-1">
-            Puskesmas
-          </span>
-          <span className="text-[28px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-            {pkmCount}
-          </span>
-          <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))] mt-1">Unit aktif</span>
+
+        {/* Parsial */}
+        <div className="bg-[hsl(var(--card))] p-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
+            Parsial
+          </p>
+          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--warning))]">
+            {partial}
+          </p>
+          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">50–79% target</p>
         </div>
-        <div className="flex flex-col items-center justify-center py-5 px-4 border-r border-[hsl(var(--border))]">
-          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-1">
-            Laporan
-          </span>
-          <span className="text-[28px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-            {totalData}
-          </span>
-          <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))] mt-1">
-            {BULAN[bulan]} {tahun}
-          </span>
-        </div>
-        <div className="flex flex-col items-center justify-center py-5 px-4">
-          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-1">
-            Target
-          </span>
-          <span className="text-[28px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-            {pkmCount * targetPerPkm}
-          </span>
-          <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))] mt-1">
-            {pkmCount} × {targetPerPkm} kategori
-          </span>
+
+        {/* Rendah */}
+        <div className="bg-[hsl(var(--card))] p-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
+            Rendah
+          </p>
+          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--error))]">
+            {low}
+          </p>
+          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">&lt; 50% target</p>
         </div>
       </div>
 
-      {/* CHART + MODULE ACCESS */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-8 border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))]">
-            <div>
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
-                <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
-                  Volume Laporan
+      {/* ── MODUL SPARK CHIPS ── */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[14px] font-extrabold tracking-tight text-[hsl(var(--foreground))]">Modul</h2>
+          <Link
+            href="/laporan"
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00A876] hover:underline"
+          >
+            Semua <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <ModuleSparkChips
+          stats={counts.map((c) => ({
+            id: c.id,
+            nama: c.nama,
+            code: c.code,
+            icon: c.icon,
+            count: c.count,
+            prevCount: c.prevCount,
+            pkmCount,
+          }))}
+        />
+      </div>
+
+      {/* ── LEADERBOARD ── */}
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top 3 podium */}
+        <div className="rounded-2xl bg-[#0C1B16] text-white p-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]/70 mb-5">
+            Teratas Bulan Ini
+          </p>
+          <div className="space-y-4">
+            {top3.map((pkm, idx) => (
+              <Link key={pkm.id} href={`/laporan/tpp?puskesmasId=${pkm.id}`} className="flex items-center gap-3 group">
+                <span
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black tabular-nums shrink-0 ${
+                    idx === 0
+                      ? "bg-[#BEF264] text-[#06281E]"
+                      : idx === 1
+                        ? "bg-white/20 text-white"
+                        : "bg-white/10 text-white/70"
+                  }`}
+                >
+                  {idx + 1}
                 </span>
-              </div>
-              <h3 className="text-[15px] font-bold text-[hsl(var(--foreground))] tracking-tight mt-1">
-                Tren Pengumpulan — Tahun {tahun}
-              </h3>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <p className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-0.5">
-                  Entri
-                </p>
-                <p className="text-[18px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-                  {totalData}
-                </p>
-              </div>
-              <div className="w-px h-8 bg-[hsl(var(--border))]" />
-              <div className="text-center">
-                <p className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-0.5">
-                  PKM
-                </p>
-                <p className="text-[18px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-                  {pkmCount}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="p-5 min-h-[320px]">
-            <DashboardChart />
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-[hsl(var(--border))]">
-            <div className="flex items-center gap-2">
-              <Download className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
-              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
-                Unduh & Kelola
-              </span>
-            </div>
-            <h3 className="text-[15px] font-bold text-[hsl(var(--foreground))] tracking-tight mt-1">Akses Modul</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto max-h-[460px]">
-            {stats.map((s) => (
-              <a
-                key={s.code}
-                href={`/api/export/${s.code}?bulan=${bulan}&tahun=${tahun}`}
-                className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--border))]/50 hover:bg-[hsl(var(--muted))]/30 transition-colors group/item"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 bg-[hsl(var(--muted))] flex items-center justify-center text-sm shrink-0">
-                    {s.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">{s.nama}</p>
-                    <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mt-0.5">
-                      {s.count} entri
-                    </p>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-extrabold truncate group-hover:text-[#7CF5CE] transition-colors">
+                    {pkm.nama}
+                  </p>
+                  <p className="text-[10px] font-semibold text-white/40">
+                    {pkm.submitted} / {pkm.target} laporan
+                  </p>
                 </div>
-                <div className="w-7 h-7 border border-[hsl(var(--border))] flex items-center justify-center group-hover/item:bg-[hsl(var(--foreground))] group-hover/item:border-[hsl(var(--foreground))] transition-colors shrink-0">
-                  <Download className="w-3 h-3 text-[hsl(var(--muted-foreground))] group-hover/item:text-[hsl(var(--background))] transition-colors" />
-                </div>
-              </a>
+                <span className="text-[18px] font-black tabular-nums text-[#BEF264]">{pkm.percentage}%</span>
+              </Link>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* LEADERBOARD */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))]">
-          <div>
-            <div className="flex items-center gap-2">
-              <ChevronRight className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
-              <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
-                Peringkat
-              </span>
-            </div>
-            <h3 className="text-[15px] font-bold text-[hsl(var(--foreground))] tracking-tight mt-1">
-              Leaderboard Puskesmas — {BULAN[bulan]} {tahun}
-            </h3>
-          </div>
-          <div className="hidden md:flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.1em]">
-            <span className="flex items-center gap-1.5 text-[hsl(var(--success))]">
-              <span className="w-2.5 h-2.5 bg-[hsl(var(--success))]" /> ≥ 80%
-            </span>
-            <span className="flex items-center gap-1.5 text-[hsl(var(--warning))]">
-              <span className="w-2.5 h-2.5 bg-[hsl(var(--warning))]" /> 50-79%
-            </span>
-            <span className="flex items-center gap-1.5 text-[hsl(var(--error))]">
-              <span className="w-2.5 h-2.5 bg-[hsl(var(--error))]" /> &lt; 50%
-            </span>
-          </div>
-        </div>
-        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {pkmStats.map((pkm, idx) => {
-            const isMet = pkm.percentage >= 80;
-            const tierColor =
-              pkm.percentage >= 80
-                ? "bg-[hsl(var(--success))]"
-                : pkm.percentage >= 50
-                  ? "bg-[hsl(var(--warning))]"
-                  : "bg-[hsl(var(--error))]";
-            return (
-              <div
+        {/* Sisanya — compact list */}
+        <div className="lg:col-span-2">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
+            Peringkat Lengkap
+          </p>
+          <div className="space-y-1">
+            {rest.map((pkm, idx) => (
+              <Link
                 key={pkm.id}
-                className={`relative border p-4 flex flex-col gap-3 transition-colors ${isMet ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5" : "border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--foreground))]/20"}`}
+                href={`/laporan/tpp?puskesmasId=${pkm.id}`}
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-[hsl(var(--muted))]/40 transition-colors group"
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`w-7 h-7 flex items-center justify-center text-[11px] font-black tabular-nums ${idx === 0 ? "bg-[hsl(var(--foreground))] text-[hsl(var(--background))]" : idx === 1 ? "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]" : idx === 2 ? "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]" : "bg-transparent text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]"}`}
-                  >
-                    {idx + 1}
-                  </span>
-                  <div className="w-8 h-8 bg-[hsl(var(--muted))] flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4 text-[hsl(var(--muted-foreground))] stroke-[2]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">{pkm.nama}</p>
-                    <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mt-0.5">
-                      {pkm.submitted} / {pkm.target} laporan
-                    </p>
-                  </div>
+                <span className="w-6 text-[11px] font-extrabold tabular-nums text-[hsl(var(--muted-foreground))]">
+                  {idx + 4}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
+                    {pkm.nama}
+                  </p>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
-                      Progress
-                    </span>
-                    <span className="text-[14px] font-black tabular-nums text-[hsl(var(--foreground))]">
-                      {pkm.percentage}%
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-[hsl(var(--muted))] overflow-hidden">
-                    <div
-                      className={`h-full ${tierColor} transition-all duration-500`}
-                      style={{ width: `${pkm.percentage}%` }}
-                    />
-                  </div>
+                <div className="hidden sm:block w-24 h-1 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      pkm.percentage >= 80
+                        ? "bg-[hsl(var(--success))]"
+                        : pkm.percentage >= 50
+                          ? "bg-[hsl(var(--warning))]"
+                          : "bg-[hsl(var(--error))]"
+                    }`}
+                    style={{ width: `${pkm.percentage}%` }}
+                  />
                 </div>
-                <a
-                  href={`/laporan/tpp?puskesmasId=${pkm.id}`}
-                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+                <span
+                  className={`w-12 text-right text-[12px] font-extrabold tabular-nums ${
+                    pkm.percentage >= 80
+                      ? "text-[hsl(var(--success))]"
+                      : pkm.percentage >= 50
+                        ? "text-[hsl(var(--warning))]"
+                        : "text-[hsl(var(--error))]"
+                  }`}
                 >
-                  Detail <ArrowRight className="w-3 h-3" />
-                </a>
-              </div>
-            );
-          })}
+                  {pkm.percentage}%
+                </span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

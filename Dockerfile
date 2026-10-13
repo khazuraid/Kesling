@@ -48,7 +48,7 @@ COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh && \
-    mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache && \
+    mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache /app/apps/web/public/uploads/mobile && \
     PRISMA_PNPM_DIR=$(find /app/node_modules/.pnpm -name "@prisma+client@*_*" -type d | head -n 1) && \
     ENGINE_SOURCE="${PRISMA_PNPM_DIR}/node_modules/.prisma/client" && \
     cp -r "${ENGINE_SOURCE}"/* /app/apps/web/node_modules/.prisma/client/ && \
@@ -61,33 +61,40 @@ CMD ["node", "apps/web/server.js"]
 
 # ─── Heavy import worker runtime ──────────────────────────────
 # Built only when worker/parser dependencies change. The web image never
-# contains Python, Torch, OpenCV, Docling, or downloaded document models.
+# contains Python, Torch, Docling, or downloaded document models. The worker
+# image carries Java (opendataloader-pdf CLI) plus a Python/Torch venv for the
+# hybrid docling backend — both bundled inside opendataloader-pdf[hybrid].
 FROM web-runner AS worker-runner
 USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    poppler-utils libgl1 libglib2.0-0 libxcb1 libxrender1 libxext6 \
+    default-jre-headless libgl1 libglib2.0-0 libxcb1 libxrender1 libxext6 \
     python3 python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m venv /opt/docling && \
-    /opt/docling/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/docling/bin/pip install --no-cache-dir \
-      --extra-index-url https://download.pytorch.org/whl/cpu "docling==2.113.0"
+RUN python3 -m venv /opt/odl-hybrid && \
+    /opt/odl-hybrid/bin/pip install --no-cache-dir --upgrade pip && \
+    /opt/odl-hybrid/bin/pip install --no-cache-dir \
+      --extra-index-url https://download.pytorch.org/whl/cpu "opendataloader-pdf[hybrid]"
 
+# Pre-download docling models so the first job does not fetch them at runtime.
 RUN mkdir -p /opt/docling-models && \
-    /opt/docling/bin/python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'), progress=True)"
+    /opt/odl-hybrid/bin/python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'), progress=True)" && \
+    chown -R nextjs:nodejs /opt/docling-models
 
-ENV DOCLING_PYTHON=/opt/docling/bin/python
-ENV INSPECTION_IMPORT_ENGINE=docling
-ENV DOCLING_TIMEOUT_MS=240000
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
+ENV HYBRID_URL=http://127.0.0.1:5002
+ENV HYBRID_SECONDS_PER_PAGE=20
+ENV HYBRID_MAX_TIMEOUT_MS=1800000
 
 COPY --from=builder /app/apps/web/worker.js ./apps/web/worker.js
 COPY --from=builder /app/apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
-RUN npm install --omit=dev --no-package-lock ioredis && \
-    chown nextjs:nodejs /app/apps/web/worker.js /app/apps/web/inspection-import-parser.js && \
-    chown -R nextjs:nodejs /opt/docling-models
+RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf && \
+    chown nextjs:nodejs /app/apps/web/worker.js /app/apps/web/inspection-import-parser.js
+
+COPY worker-entrypoint.sh /app/worker-entrypoint.sh
+RUN chmod +x /app/worker-entrypoint.sh && chown nextjs:nodejs /app/worker-entrypoint.sh
 
 USER nextjs
+ENTRYPOINT ["/app/worker-entrypoint.sh"]
 CMD ["node", "apps/web/worker.js"]

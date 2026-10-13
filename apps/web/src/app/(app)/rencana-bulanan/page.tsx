@@ -1,24 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Calendar,
-  Check,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  Clock,
-  Play,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Calendar, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Play, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PageHeader } from "@/components/ui/page-header";
 
 const BULAN_FULL = [
   "Januari",
@@ -52,11 +39,6 @@ interface Kategori {
   kategoriIcon: string;
   list: RencanaItem[];
 }
-interface LiburItem {
-  tanggal: string;
-  keterangan: string;
-  sumber: string;
-}
 interface RencanaData {
   bulan: number;
   tahun: number;
@@ -65,7 +47,6 @@ interface RencanaData {
   totalSelesai: number;
   totalTerjadwal: number;
   progress: number;
-  libur: LiburItem[];
   kategori: Kategori[];
 }
 
@@ -92,9 +73,6 @@ export default function RencanaBulananPage() {
   const [bulan, setBulan] = useState(Number(sp.get("bulan")) || now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
   const [kapasitas, setKapasitas] = useState(5);
-  const [showLiburPanel, setShowLiburPanel] = useState(false);
-  const [newLiburDate, setNewLiburDate] = useState("");
-  const [newLiburDesc, setNewLiburDesc] = useState("");
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery<RencanaData>({
@@ -132,39 +110,6 @@ export default function RencanaBulananPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rencana-bulanan"] }),
   });
 
-  const addLiburMut = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/libur", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: [
-            ...(data?.libur ?? [])
-              .filter((l) => l.sumber === "custom")
-              .map((l) => ({ tanggal: l.tanggal, keterangan: l.keterangan })),
-            { tanggal: newLiburDate, keterangan: newLiburDesc || "Libur Khusus" },
-          ],
-        }),
-      });
-      if (!res.ok) throw new Error("Gagal simpan libur");
-      return res.json();
-    },
-    onSuccess: () => {
-      setNewLiburDate("");
-      setNewLiburDesc("");
-      qc.invalidateQueries({ queryKey: ["rencana-bulanan"] });
-    },
-  });
-
-  const delLiburMut = useMutation({
-    mutationFn: async (tanggal: string) => {
-      const res = await fetch(`/api/libur?tanggal=${tanggal}&tahun=${tahun}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Gagal hapus libur");
-      return res.json();
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["rencana-bulanan"] }),
-  });
-
   const prevMonth = () => {
     const nb = bulan === 1 ? 12 : bulan - 1;
     const nt = bulan === 1 ? tahun - 1 : tahun;
@@ -180,7 +125,6 @@ export default function RencanaBulananPage() {
     router.replace(`/rencana-bulanan?bulan=${nb}&tahun=${nt}`);
   };
 
-  // Calendar grid
   const daysInMonth = getDaysInMonth(tahun, bulan);
   const firstDay = getFirstDayOfWeek(tahun, bulan);
   const allItems = data?.kategori?.flatMap((k) => k.list) ?? [];
@@ -194,322 +138,262 @@ export default function RencanaBulananPage() {
   }
 
   const selesaiVal = data?.totalSelesai ?? 0;
-  const liburByDate = new Map<string, LiburItem>();
-  for (const l of data?.libur ?? []) liburByDate.set(l.tanggal, l);
-  const stats = [
-    { label: "Progress", value: `${data?.progress ?? 0}%`, color: "text-[hsl(var(--accent))]" },
-    { label: "Total", value: data?.totalSasaran ?? 0, color: "text-[hsl(var(--foreground))]" },
-    {
-      label: "Selesai",
-      value: selesaiVal,
-      color: selesaiVal > 0 ? "text-[hsl(var(--success))]" : "text-[hsl(var(--muted-foreground))]",
-    },
-    { label: "Terjadwal", value: data?.totalTerjadwal ?? 0, color: "text-[hsl(var(--accent))]" },
-  ];
+  const today = new Date();
+  const isCurrentMonth = bulan === today.getMonth() + 1 && tahun === today.getFullYear();
+  const todayDate = isCurrentMonth ? today.getDate() : -1;
 
   return (
-    <div className="pr-5 py-5 space-y-6 fade-in">
-      <PageHeader
-        title="Rencana Bulanan"
-        description="Jadwal pemeriksaan sasaran per bulan"
-        icon={<Calendar className="w-4 h-4" />}
-        actions={
-          <div className="flex items-center gap-2">
-            <button
-              onClick={prevMonth}
-              className="w-9 h-9 rounded-xl border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-[15px] font-bold min-w-[150px] text-center">
+    <div className="w-full mx-auto pb-4 fade-in">
+      {/* ── HERO ── */}
+      <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+        <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Perencanaan</p>
+            <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">
               {BULAN_FULL[bulan - 1]} {tahun}
-            </span>
-            <button
-              onClick={nextMonth}
-              className="w-9 h-9 rounded-xl border border-[hsl(var(--border))] flex items-center justify-center hover:bg-[hsl(var(--muted))] transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        }
-      />
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="card-shell p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
-              {s.label}
+            </h1>
+            <p className="text-[13px] font-medium text-white/50 mt-2">
+              {selesaiVal}/{data?.totalSasaran ?? 0} selesai · {data?.totalTerjadwal ?? 0} terjadwal
             </p>
-            <p className={`text-[28px] font-bold tabular-nums ${s.color} mt-1`}>{s.value}</p>
           </div>
-        ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className="card-shell p-4 flex items-center gap-3 flex-wrap">
-        <label className="text-[12px] font-semibold text-[hsl(var(--muted-foreground))]">Kapasitas sasaran/hari:</label>
-        <Input
-          type="number"
-          min={1}
-          max={50}
-          value={kapasitas}
-          onChange={(e) => setKapasitas(Number(e.target.value) || 1)}
-          className="w-20 h-9"
-        />
-        <Button onClick={() => generateMut.mutate()} disabled={generateMut.isPending} size="sm">
-          {generateMut.isPending ? (
-            <>
-              <Clock className="w-3.5 h-3.5 animate-spin" /> Mengenerate...
-            </>
-          ) : (
-            <>
-              <Play className="w-3.5 h-3.5" /> Jadwalkan
-            </>
-          )}
-        </Button>
-        <Button
-          variant={showLiburPanel ? "secondary" : "outline"}
-          onClick={() => setShowLiburPanel(!showLiburPanel)}
-          size="sm"
-        >
-          <Calendar className="w-3.5 h-3.5" /> Hari Libur ({data?.libur?.length ?? 0})
-        </Button>
-      </div>
-
-      {/* Panel hari libur */}
-      {showLiburPanel && (
-        <div className="card-shell p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[13px] font-bold">
-              Kelola Hari Libur — {BULAN_FULL[bulan - 1]} {tahun}
-            </p>
-            <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Minggu & tanggal merah nasional otomatis dilewati saat jadwalkan
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Input
-              type="date"
-              value={newLiburDate}
-              onChange={(e) => setNewLiburDate(e.target.value)}
-              className="w-44 h-9"
-            />
-            <Input
-              placeholder="Keterangan (mis. Libur kantor)"
-              value={newLiburDesc}
-              onChange={(e) => setNewLiburDesc(e.target.value)}
-              className="w-56 h-9"
-            />
-            <Button onClick={() => addLiburMut.mutate()} disabled={!newLiburDate || addLiburMut.isPending} size="sm">
-              <Calendar className="w-3.5 h-3.5" /> Tambah
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-            {data?.libur?.map((l) => (
-              <div
-                key={l.tanggal}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border ${
-                  l.sumber === "custom"
-                    ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border-[hsl(var(--accent))]/20"
-                    : l.sumber === "minggu"
-                      ? "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]"
-                      : "bg-[hsl(var(--error-light))] text-[hsl(var(--error))] border-[hsl(var(--error))]/20"
-                }`}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1">
+              <button
+                onClick={prevMonth}
+                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
               >
-                <span className="tabular-nums">{l.tanggal.split("-").reverse().join("/")}</span>
-                <span>{l.keterangan}</span>
-                {l.sumber === "custom" && (
-                  <button
-                    onClick={() => delLiburMut.mutate(l.tanggal)}
-                    className="ml-0.5 hover:text-[hsl(var(--error))] transition-colors"
-                    title="Hapus libur"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            ))}
-            {(!data?.libur || data.libur.length === 0) && (
-              <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Tidak ada hari libur bulan ini.</p>
-            )}
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={nextMonth}
+                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              onClick={() => generateMut.mutate()}
+              disabled={generateMut.isPending}
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+            >
+              {generateMut.isPending ? (
+                <Clock className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Play className="w-3.5 h-3.5" />
+              )}
+              Jadwalkan
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Calendar + List */}
-      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
-        {/* Calendar */}
-        <div className="card-shell p-4">
-          <p className="text-[13px] font-bold mb-3">
-            {BULAN_FULL[bulan - 1]} {tahun}
-          </p>
-          <div className="grid grid-cols-6 gap-1 mb-1">
+      {/* ── STAT PILLS ── */}
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
+          <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">
+            {data?.progress ?? 0}%
+          </span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">Progress</span>
+        </span>
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]">
+          <span className="text-[18px] font-black tabular-nums text-[hsl(var(--foreground))] leading-none">
+            {data?.totalSasaran ?? 0}
+          </span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mt-1">
+            Sasaran
+          </span>
+        </span>
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
+          <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">{selesaiVal}</span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">Selesai</span>
+        </span>
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#E8A33D]/10 border border-[#E8A33D]/20">
+          <span className="text-[18px] font-black tabular-nums text-[#C07F1F] leading-none">
+            {data?.totalTerjadwal ?? 0}
+          </span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#C07F1F]/70 mt-1">
+            Terjadwal
+          </span>
+        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Kapasitas/hari:</label>
+          <Input
+            type="number"
+            min={1}
+            max={50}
+            value={kapasitas}
+            onChange={(e) => setKapasitas(Number(e.target.value) || 1)}
+            className="w-20 h-9"
+          />
+        </div>
+      </div>
+
+      {/* Kalender hero full-width */}
+      <div className="pt-6">
+        <div className="border border-[hsl(var(--border))] rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-6 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
             {HARI.map((h) => (
               <div
                 key={h}
-                className="text-center text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))] py-1"
+                className="text-center text-[11px] font-extrabold uppercase tracking-widest text-[hsl(var(--muted-foreground))] py-3 border-r border-[hsl(var(--border))] last:border-r-0"
               >
                 {h}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-6 gap-1">
+          <div className="grid grid-cols-6">
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="aspect-square" />
+              <div
+                key={`empty-${i}`}
+                className="aspect-[4/3] border-r border-b border-[hsl(var(--border))]/50 bg-[hsl(var(--muted))]/10"
+              />
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const items = itemsByDate[day] || [];
               const hasSelesai = items.some((it) => it.sudahDiperiksa);
               const hasTerjadwal = items.some((it) => it.status === "TERJADWAL" && !it.sudahDiperiksa);
-              const tanggalKey = `${tahun}-${String(bulan).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-              const libur = liburByDate.get(tanggalKey);
+              const isToday = day === todayDate;
               return (
                 <div
                   key={day}
-                  title={libur ? libur.keterangan : undefined}
-                  className={`aspect-square rounded-lg flex flex-col items-center justify-center text-[11px] font-semibold relative ${
-                    libur
-                      ? "bg-[hsl(var(--error-light))] text-[hsl(var(--error))]"
-                      : items.length > 0
-                        ? hasSelesai
-                          ? "bg-[hsl(var(--success-light))] text-[hsl(var(--success))]"
-                          : hasTerjadwal
-                            ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]"
-                            : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                        : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/50"
+                  className={`aspect-[4/3] border-r border-b border-[hsl(var(--border))]/50 p-2 flex flex-col transition-colors ${
+                    isToday ? "bg-[hsl(var(--accent-light))]/60" : "hover:bg-[hsl(var(--muted))]/20"
                   }`}
                 >
-                  {day}
-                  {libur && (
-                    <span className="absolute bottom-0.5 right-0.5 text-[7px] leading-none font-bold text-[hsl(var(--error))]">
-                      ●
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-[13px] font-bold tabular-nums ${
+                        isToday
+                          ? "w-6 h-6 flex items-center justify-center rounded-full bg-[hsl(var(--accent))] text-white text-[11px]"
+                          : "text-[hsl(var(--muted-foreground))]"
+                      }`}
+                    >
+                      {day}
                     </span>
-                  )}
-                  {!libur && items.length > 0 && (
-                    <span className="absolute bottom-0.5 right-0.5 text-[8px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                      {items.length}
-                    </span>
+                    {items.length > 0 && (
+                      <span className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))]">
+                        {items.length}
+                      </span>
+                    )}
+                  </div>
+                  {items.length > 0 && (
+                    <div className="mt-auto space-y-1">
+                      <div
+                        className={`h-1.5 rounded-full ${
+                          hasSelesai
+                            ? "bg-[hsl(var(--success))]"
+                            : hasTerjadwal
+                              ? "bg-[hsl(var(--accent))]"
+                              : "bg-[hsl(var(--border))]"
+                        }`}
+                      />
+                      <div className="text-[9px] font-bold truncate text-[hsl(var(--muted-foreground))]">
+                        {items[0].nama}
+                        {items.length > 1 && ` +${items.length - 1}`}
+                      </div>
+                    </div>
                   )}
                 </div>
               );
             })}
           </div>
         </div>
+      </div>
 
-        {/* List per kategori */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="card-shell p-8 text-center text-[13px] text-[hsl(var(--muted-foreground))] animate-pulse">
-              Memuat jadwal...
-            </div>
-          ) : !data || data.kategori.length === 0 ? (
-            <div className="card-shell p-12 flex flex-col items-center justify-center text-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
-                <Calendar className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
+      {/* Timeline per kategori */}
+      <div className="pt-6 space-y-0 border border-[hsl(var(--border))] rounded-2xl overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-[13px] text-[hsl(var(--muted-foreground))] animate-pulse">
+            Memuat jadwal...
+          </div>
+        ) : !data || data.kategori.length === 0 ? (
+          <div className="p-16 flex flex-col items-center justify-center text-center gap-3">
+            <Calendar className="w-8 h-8 text-[hsl(var(--muted-foreground))] opacity-50" />
+            <p className="text-[14px] font-bold">Belum ada jadwal</p>
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Klik Jadwalkan Otomatis untuk generate.</p>
+          </div>
+        ) : (
+          data.kategori.map((kat, katIdx) => (
+            <div key={kat.kategoriNama} className={katIdx !== 0 ? "border-t-2 border-[hsl(var(--border))]" : ""}>
+              <div className="flex items-center gap-3 px-5 py-3 bg-[hsl(var(--muted))]/30 border-b border-[hsl(var(--border))]">
+                <span className="text-base">{kat.kategoriIcon}</span>
+                <span className="text-[13px] font-extrabold uppercase tracking-wider">{kat.kategoriNama}</span>
+                <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] ml-auto">
+                  {kat.list.length} sasaran
+                </span>
               </div>
               <div>
-                <p className="text-[14px] font-bold">Belum ada jadwal</p>
-                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                  Klik tombol Jadwalkan untuk generate otomatis.
-                </p>
-              </div>
-            </div>
-          ) : (
-            data.kategori.map((kat) => (
-              <div key={kat.kategoriNama} className="card-shell overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
-                  <span className="text-base">{kat.kategoriIcon}</span>
-                  <span className="text-[13px] font-bold">{kat.kategoriNama}</span>
-                  <span className="text-[11px] text-[hsl(var(--muted-foreground))] ml-auto bg-[hsl(var(--card))] px-2 py-0.5 rounded-full">
-                    {kat.list.length} sasaran
-                  </span>
-                </div>
-                <div>
-                  {kat.list.map((item) => {
-                    const badge = STATUS_BADGE[item.status] || STATUS_BADGE.BELUM;
-                    return (
+                {kat.list.map((item) => {
+                  const badge = STATUS_BADGE[item.status] || STATUS_BADGE.BELUM;
+                  return (
+                    <div
+                      key={item.sasaranId}
+                      className="flex items-center gap-4 px-5 py-3 border-b border-[hsl(var(--border))]/50 last:border-0 hover:bg-[hsl(var(--muted))]/20 transition-colors"
+                    >
                       <div
-                        key={item.sasaranId}
-                        className="flex items-center gap-3 px-4 py-3 border-b border-[hsl(var(--border))] last:border-0 hover:bg-[hsl(var(--muted))]/40 transition-colors"
-                      >
-                        <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                            item.sudahDiperiksa
-                              ? "bg-[hsl(var(--success))] text-white"
-                              : item.status === "TERJADWAL"
-                                ? "bg-[hsl(var(--accent))] text-white"
-                                : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                          }`}
-                        >
-                          {item.sudahDiperiksa ? (
-                            <CheckCircle2 className="w-4 h-4" />
-                          ) : item.status === "TERJADWAL" ? (
-                            <Clock className="w-4 h-4" />
-                          ) : (
-                            <Check className="w-4 h-4 opacity-0" />
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          item.sudahDiperiksa
+                            ? "bg-[hsl(var(--success))]"
+                            : item.status === "TERJADWAL"
+                              ? "bg-[hsl(var(--accent))]"
+                              : "bg-[hsl(var(--border))]"
+                        }`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-bold truncate">{item.nama}</span>
+                          {item.prioritas === 1 && (
+                            <span className="text-[9px] font-extrabold text-[hsl(var(--error))]">PRIORITAS</span>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[14px] font-semibold truncate">{item.nama}</span>
-                            {item.prioritas === 1 && (
-                              <span className="text-[9px] font-bold text-[hsl(var(--error))] bg-[hsl(var(--error-light))] px-1.5 py-0.5 rounded-md">
-                                PRIORITAS
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">
-                            {item.sudahDiperiksa && item.tanggalPeriksa
-                              ? `Diperiksa ${new Date(item.tanggalPeriksa).toLocaleDateString("id-ID")}`
-                              : item.tanggalRencana
-                                ? `Jadwal: ${new Date(item.tanggalRencana).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`
-                                : item.alamat || "Belum dijadwalkan"}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${badge.cls}`}>
-                            {badge.label}
-                          </span>
-                          {item.sudahDiperiksa ? (
-                            <a
-                              href="/pemeriksaan"
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[hsl(var(--success))] text-white hover:opacity-90 transition-opacity"
-                            >
-                              <CheckCircle2 className="w-3 h-3" /> Detail
-                            </a>
-                          ) : (
-                            <>
-                              <a
-                                href="/pemeriksaan"
-                                title="Isi pemeriksaan"
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90 transition-opacity"
-                              >
-                                <ClipboardCheck className="w-3 h-3" /> Periksa
-                              </a>
-                              {item.rencanaId && (
-                                <button
-                                  onClick={() =>
-                                    updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
-                                  }
-                                  title="Tandai dilewati"
-                                  className="p-1.5 rounded-lg hover:bg-[hsl(var(--error-light))] hover:text-[hsl(var(--error))] transition-colors"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </>
-                          )}
+                        <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">
+                          {item.sudahDiperiksa && item.tanggalPeriksa
+                            ? `Diperiksa ${new Date(item.tanggalPeriksa).toLocaleDateString("id-ID")}`
+                            : item.tanggalRencana
+                              ? `Jadwal: ${new Date(item.tanggalRencana).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`
+                              : item.alamat || "Belum dijadwalkan"}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded ${badge.cls}`}>{badge.label}</span>
+                        {item.sudahDiperiksa ? (
+                          <a
+                            href="/pemeriksaan"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] font-bold bg-[hsl(var(--success))] text-white hover:opacity-90"
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> Detail
+                          </a>
+                        ) : (
+                          <>
+                            <a
+                              href="/pemeriksaan"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] font-bold bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90"
+                            >
+                              <ClipboardCheck className="w-3 h-3" /> Periksa
+                            </a>
+                            {item.rencanaId && (
+                              <button
+                                onClick={() =>
+                                  updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
+                                }
+                                className="p-1.5 rounded hover:bg-[hsl(var(--error-light))] hover:text-[hsl(var(--error))] transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))
-          )}
-        </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

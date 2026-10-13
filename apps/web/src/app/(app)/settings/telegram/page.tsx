@@ -1,9 +1,15 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, CheckCircle2, Eye, EyeOff, Link, Send, Trash2 } from "lucide-react";
+import { Bot, CheckCircle2, Eye, EyeOff, Link2, Send, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+const inputCls =
+  "w-full h-10 px-3.5 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] transition-all";
+const labelCls =
+  "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mb-1.5";
+const hintCls = "text-[10px] font-medium text-[hsl(var(--muted-foreground))] mt-1.5 leading-relaxed";
 
 export default function TelegramSettingsPage() {
   const queryClient = useQueryClient();
@@ -73,95 +79,103 @@ export default function TelegramSettingsPage() {
     onError: () => toast.error("Gagal menjalankan aksi"),
   });
 
-  const inputClass =
-    "w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors";
-  const labelClass = "text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5";
-
   return (
-    <div className="max-w-2xl">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 bg-[hsl(var(--muted))] border border-[hsl(var(--border))] flex items-center justify-center">
-          <Bot className="w-4 h-4 text-[hsl(var(--foreground))]" />
-        </div>
-        <div>
-          <h2 className="text-[13px] font-bold text-[hsl(var(--foreground))]">Telegram Bot</h2>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
-            Konfigurasi bot Telegram untuk notifikasi approval, laporan, dan error sistem
+    <div className="max-w-2xl space-y-4">
+      {/* Status banner */}
+      <div
+        className={`rounded-2xl border px-5 py-4 flex items-center gap-3 ${
+          settings?.hasToken ? "border-[#00A876]/25 bg-[#00A876]/[0.05]" : "border-[#E8A33D]/25 bg-[#E8A33D]/[0.05]"
+        }`}
+      >
+        <span
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            settings?.hasToken ? "bg-[#00A876]/15 text-[#00A876]" : "bg-[#E8A33D]/15 text-[#C07F1F]"
+          }`}
+        >
+          <Bot className="w-5 h-5" />
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-extrabold text-[hsl(var(--foreground))]">Telegram Bot</p>
+          <p className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] mt-0.5">
+            Notifikasi approval, laporan, dan error sistem
           </p>
         </div>
-        {settings?.hasToken && (
-          <span className="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-[hsl(var(--success))] uppercase tracking-wider">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Aktif
-          </span>
-        )}
+        <span
+          className={`shrink-0 inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+            settings?.hasToken
+              ? "bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25"
+              : "bg-[#E8A33D]/10 text-[#C07F1F] border border-[#E8A33D]/25"
+          }`}
+        >
+          {settings?.hasToken ? (
+            <>
+              <CheckCircle2 className="w-3 h-3" /> Aktif
+            </>
+          ) : (
+            "Belum dikonfigurasi"
+          )}
+        </span>
       </div>
 
-      {/* Token & Chat IDs */}
-      <div className="border border-[hsl(var(--border))] p-5 space-y-4 mb-4">
-        <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+      {/* Kredensial */}
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
+        <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))]">
           Kredensial Bot
         </p>
 
         <div>
-          <label className={labelClass}>Bot Token</label>
+          <label className={labelCls}>Bot Token</label>
           <div className="relative">
             <input
               type={showToken ? "text" : "password"}
               value={form.telegramBotToken}
               onChange={(e) => setForm({ ...form, telegramBotToken: e.target.value })}
               placeholder="Dapatkan dari @BotFather di Telegram"
-              className={`${inputClass} pr-10`}
+              className={`${inputCls} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowToken(!showToken)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[#00A876] transition-colors"
             >
-              {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
-            Buat bot baru via @BotFather → /newbot → salin token-nya ke sini
-          </p>
+          <p className={hintCls}>Buat bot baru via @BotFather → /newbot → salin token-nya ke sini</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Admin Chat ID</label>
+            <input
+              value={form.telegramAdminChatId}
+              onChange={(e) => setForm({ ...form, telegramAdminChatId: e.target.value })}
+              placeholder="123456789"
+              className={inputCls}
+            />
+            <p className={hintCls}>Untuk alert error sistem (developer/IT)</p>
+          </div>
+          <div>
+            <label className={labelCls}>Dinkes Chat ID</label>
+            <input
+              value={form.telegramDinkesChatId}
+              onChange={(e) => setForm({ ...form, telegramDinkesChatId: e.target.value })}
+              placeholder="-1001234567890"
+              className={inputCls}
+            />
+            <p className={hintCls}>Grup/personal Dinkes untuk notifikasi laporan</p>
+          </div>
         </div>
 
         <div>
-          <label className={labelClass}>Admin Chat ID</label>
-          <input
-            value={form.telegramAdminChatId}
-            onChange={(e) => setForm({ ...form, telegramAdminChatId: e.target.value })}
-            placeholder="Contoh: 123456789 (untuk notifikasi error sistem)"
-            className={inputClass}
-          />
-          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
-            Chat ID developer/IT yang menerima alert error. Kirim /start ke bot lalu cek /api/telegram/webhook atau
-            getUpdates.
-          </p>
-        </div>
-
-        <div>
-          <label className={labelClass}>Dinkes Chat ID</label>
-          <input
-            value={form.telegramDinkesChatId}
-            onChange={(e) => setForm({ ...form, telegramDinkesChatId: e.target.value })}
-            placeholder="Contoh: -1001234567890 (grup Dinkes)"
-            className={inputClass}
-          />
-          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
-            Chat ID grup atau personal Dinkes untuk menerima notifikasi laporan masuk baru.
-          </p>
-        </div>
-
-        <div>
-          <label className={labelClass}>
+          <label className={labelCls}>
             Webhook Secret <span className="font-medium normal-case">(opsional)</span>
           </label>
           <input
             value={form.telegramWebhookSecret}
             onChange={(e) => setForm({ ...form, telegramWebhookSecret: e.target.value })}
             placeholder="String acak untuk keamanan webhook"
-            className={inputClass}
+            className={inputCls}
           />
         </div>
 
@@ -170,29 +184,29 @@ export default function TelegramSettingsPage() {
             type="button"
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="h-9 px-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
           >
             {saveMutation.isPending ? "Menyimpan..." : "Simpan Pengaturan"}
           </button>
         </div>
       </div>
 
-      {/* Webhook Management */}
-      <div className="border border-[hsl(var(--border))] p-5 space-y-4">
-        <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">
+      {/* Webhook */}
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
+        <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))]">
           Manajemen Webhook
         </p>
 
         <div>
-          <label className={labelClass}>URL Aplikasi (untuk webhook)</label>
+          <label className={labelCls}>URL Aplikasi</label>
           <input
             value={appUrl}
             onChange={(e) => setAppUrl(e.target.value)}
             placeholder="https://domain-anda.com"
-            className={inputClass}
+            className={inputCls}
           />
-          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
-            Webhook akan didaftarkan ke: <span className="font-mono">{appUrl}/api/telegram/webhook</span>
+          <p className={hintCls}>
+            Webhook didaftarkan ke: <span className="font-mono text-[#00A876]">{appUrl}/api/telegram/webhook</span>
           </p>
         </div>
 
@@ -201,37 +215,32 @@ export default function TelegramSettingsPage() {
             type="button"
             onClick={() => actionMutation.mutate("setWebhook")}
             disabled={actionMutation.isPending || !settings?.hasToken}
-            className="flex items-center gap-2 h-9 px-4 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors disabled:opacity-40"
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-40"
           >
-            <Link className="w-3.5 h-3.5" />
-            Daftarkan Webhook
+            <Link2 className="w-3.5 h-3.5" /> Daftarkan
           </button>
-
           <button
             type="button"
             onClick={() => actionMutation.mutate("testAdmin")}
             disabled={actionMutation.isPending || !settings?.hasToken}
-            className="flex items-center gap-2 h-9 px-4 bg-transparent border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-40"
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-full border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-[11px] font-extrabold uppercase tracking-wider hover:border-[#00A876] hover:text-[#00A876] transition disabled:opacity-40"
           >
-            <Send className="w-3.5 h-3.5" />
-            Test Kirim ke Admin
+            <Send className="w-3.5 h-3.5" /> Test Admin
           </button>
-
           <button
             type="button"
             onClick={() => actionMutation.mutate("deleteWebhook")}
             disabled={actionMutation.isPending || !settings?.hasToken}
-            className="flex items-center gap-2 h-9 px-4 bg-transparent border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--error))] transition-colors disabled:opacity-40"
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold uppercase tracking-wider hover:bg-[#E15A4F]/10 transition disabled:opacity-40"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            Hapus Webhook
+            <Trash2 className="w-3.5 h-3.5" /> Hapus
           </button>
         </div>
 
         {!settings?.hasToken && (
-          <p className="text-[11px] text-[hsl(var(--warning))] mt-1">
-            ⚠ Simpan Bot Token terlebih dahulu untuk mengaktifkan webhook.
-          </p>
+          <div className="rounded-xl border border-[#E8A33D]/25 bg-[#E8A33D]/[0.06] px-4 py-3 text-[11px] font-semibold text-[#C07F1F]">
+            Simpan Bot Token terlebih dahulu untuk mengaktifkan webhook.
+          </div>
         )}
       </div>
     </div>

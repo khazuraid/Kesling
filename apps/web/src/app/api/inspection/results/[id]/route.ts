@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { aggregateInspectionToLaporan } from "@/lib/aggregate-inspection";
 import { withAuth } from "@/lib/api-auth";
+import { deletePhotoFiles } from "@/lib/photo-files";
 
 // PUT - Edit hasil pemeriksaan
 export const PUT = withAuth(async (req: NextRequest, context: any) => {
@@ -105,6 +106,7 @@ export const DELETE = withAuth(async (req: NextRequest, context: any) => {
 
     await prisma.inspectionResultValue.deleteMany({ where: { resultId } });
     await prisma.inspectionResult.delete({ where: { id: resultId } });
+    await deletePhotoFiles(existing.fotoPaths);
 
     await prisma.auditLog.create({
       data: {

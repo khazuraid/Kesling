@@ -92,15 +92,16 @@ export function DataDasarModal({
       open={open}
       onClose={onClose}
       title="Data Dasar"
-      description={`${category.nama} • ${baselineParams.length} field`}
-      icon={<Database className="w-4 h-4" />}
+      description={`${category.nama} • ${baselineParams.length} field baseline`}
+      icon={<Database className="w-4.5 h-4.5" />}
       size="lg"
+      variant="hero"
       footer={
         <>
           <button
             type="button"
             onClick={onClose}
-            className="h-9 px-5 bg-transparent text-[hsl(var(--muted-foreground))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
           >
             Batal
           </button>
@@ -108,12 +109,12 @@ export function DataDasarModal({
             type="submit"
             form="data-dasar-form"
             disabled={submitMutation.isPending}
-            className="h-9 px-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
           >
             {submitMutation.isPending ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
             ) : (
-              <Save className="w-4 h-4" />
+              <Save className="w-3.5 h-3.5" />
             )}
             {submitMutation.isPending ? "Menyimpan..." : "Simpan"}
           </button>
@@ -122,51 +123,60 @@ export function DataDasarModal({
     >
       <form id="data-dasar-form" onSubmit={(e) => handleSubmit(e, true)} className="space-y-5">
         {!isOperator && (
-          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-[hsl(var(--accent))]/5 to-transparent border-l-2 border-[hsl(var(--accent))]">
-            <div className="w-8 h-8 rounded-full bg-[hsl(var(--accent))]/10 flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-[hsl(var(--accent))]" />
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div className="w-9 h-9 rounded-xl bg-[#00A876]/10 flex items-center justify-center shrink-0">
+              <Building2 className="w-4 h-4 text-[#00A876]" />
             </div>
-            <select
-              value={formPuskesmasId}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setFormPuskesmasId(id);
-                const existing = dataDasarList.find((l) => l.puskesmasId === id);
-                setFormValues(existing ? buildValueMapFromLaporan(existing.values) : {});
-              }}
-              className="flex-1 h-9 bg-transparent border-0 text-[14px] font-bold text-[hsl(var(--foreground))] outline-none appearance-none cursor-pointer"
-            >
-              {puskesmasList.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.nama}
-                </option>
-              ))}
-            </select>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
+                Puskesmas
+              </p>
+              <select
+                value={formPuskesmasId}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setFormPuskesmasId(id);
+                  const existing = dataDasarList.find((l) => l.puskesmasId === id);
+                  setFormValues(existing ? buildValueMapFromLaporan(existing.values) : {});
+                }}
+                className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-[hsl(var(--foreground))] outline-none appearance-none cursor-pointer"
+              >
+                {puskesmasList.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
-        <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-1">
           {baselineParams.map((p, idx) => {
             const key = buildKey(p.id);
             const val = formValues[key] ?? "";
             return (
               <div
                 key={p.id}
-                className={`group flex items-center justify-between gap-6 px-4 py-3.5 rounded-lg transition-all duration-150 ${
-                  p.isBaseline
-                    ? "bg-[hsl(var(--muted))]/20 border border-dashed border-[hsl(var(--border))]/30"
-                    : val !== ""
-                      ? "bg-[hsl(var(--accent))]/5 border border-[hsl(var(--accent))]/20 hover:border-[hsl(var(--accent))]/40"
-                      : "bg-[hsl(var(--background))] border border-transparent hover:border-[hsl(var(--border))]/40 hover:bg-[hsl(var(--muted))]/10"
+                className={`group flex items-center justify-between gap-6 px-4 py-3.5 rounded-2xl transition-all ${
+                  val !== ""
+                    ? "bg-[#00A876]/[0.05] border border-[#00A876]/25"
+                    : "bg-[hsl(var(--card))] border border-[hsl(var(--border))]/70 hover:border-[hsl(var(--border))]"
                 }`}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="w-7 h-7 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] shrink-0 group-hover:bg-[hsl(var(--accent))]/10 group-hover:text-[hsl(var(--accent))] transition-colors">
-                    {idx + 1}
+                  <span
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-extrabold shrink-0 transition-colors ${
+                      val !== ""
+                        ? "bg-[#00A876] text-white"
+                        : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                    }`}
+                  >
+                    {String(idx + 1).padStart(2, "0")}
                   </span>
-                  <span className="text-[13px] font-semibold text-[hsl(var(--foreground))] truncate">
+                  <span className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">
                     {p.nama}
-                    {p.required && <span className="text-[hsl(var(--error))] ml-1">*</span>}
+                    {p.required && <span className="text-[#E15A4F] ml-1">*</span>}
                   </span>
                 </div>
                 <input
@@ -176,10 +186,10 @@ export function DataDasarModal({
                   value={val}
                   onChange={(e) => setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))}
                   placeholder="0"
-                  className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-lg outline-none transition-all duration-150 ${
+                  className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-xl outline-none transition-all ${
                     val !== ""
-                      ? "bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/30 text-[hsl(var(--foreground))] focus:border-[hsl(var(--accent))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.15)]"
-                      : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/20 focus:border-[hsl(var(--accent))] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
+                      ? "bg-[#00A876]/10 border border-[#00A876]/30 text-[hsl(var(--foreground))] focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.15)]"
+                      : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] focus:border-[#00A876] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)]"
                   }`}
                 />
               </div>

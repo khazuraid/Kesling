@@ -1,12 +1,16 @@
-import { Plus, Search } from "@tamagui/lucide-icons-2";
+import { ArrowLeft, MapPin, Plus, Search, X } from "@tamagui/lucide-icons-2";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { FadeIn } from "../../src/components/motion/primitives";
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { FadeIn, ListSkeleton, ScalePress } from "../../src/components/motion/primitives";
 import { api } from "../../src/lib/api";
 import { cacheGet, cacheSet, cacheTimestamp } from "../../src/lib/cache";
+import { C, katColor } from "../../src/lib/tokens";
 import type { Sasaran } from "../../src/types";
+
+const STATUS_CHIPS = ["Semua", "Selesai", "Terjadwal", "Belum"] as const;
 
 export default function SasaranList() {
   const router = useRouter();
@@ -24,15 +28,13 @@ export default function SasaranList() {
     },
     initialData: undefined as never,
     initialDataUpdatedAt: 0,
-    // stale-while-revalidate: show cache instantly when offline
     retryOnMount: false,
   });
 
-  // hydrate from cache once (offline-first)
   const [cacheAt, setCacheAt] = useState<number | null>(null);
   useEffect(() => {
     cacheGet<Sasaran[]>("sasaran").then((cached) => {
-      if (cached && cached.length) qc.setQueryData(["sasaran"], cached);
+      if (cached?.length) qc.setQueryData(["sasaran"], cached);
     });
     cacheTimestamp("sasaran").then(setCacheAt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,7 +42,7 @@ export default function SasaranList() {
 
   const kategoriList = useMemo(() => {
     const set = new Set<string>();
-    for (const s of data || []) set.add(s.kategoriNama || s.kategori?.nama || "Lainnya");
+    for (const sv of data || []) set.add(sv.kategoriNama || sv.kategori?.nama || "Lainnya");
     return ["Semua", ...Array.from(set)];
   }, [data]);
 
@@ -49,185 +51,410 @@ export default function SasaranList() {
     const byKat =
       kategori === "Semua"
         ? list
-        : list.filter((s: any) => (s.kategoriNama || s.kategori?.nama || "Lainnya") === kategori);
+        : list.filter((sv: any) => (sv.kategoriNama || sv.kategori?.nama || "Lainnya") === kategori);
     const byStatus =
       status === "Semua"
         ? byKat
         : status === "Belum"
-          ? byKat.filter((s: any) => !s.lastInspection)
+          ? byKat.filter((sv: any) => !sv.lastInspection)
           : status === "Terjadwal"
-            ? byKat.filter((s: any) => s.lastInspection?.status === "TERJADWAL")
-            : byKat.filter((s: any) => s.lastInspection?.status === "SELESAI");
+            ? byKat.filter((sv: any) => sv.lastInspection?.status === "TERJADWAL")
+            : byKat.filter((sv: any) => sv.lastInspection?.status === "SELESAI");
     if (!q) return byStatus;
     const ql = q.toLowerCase();
-    return byStatus.filter((s: any) => s.nama?.toLowerCase().includes(ql) || s.alamat?.toLowerCase().includes(ql));
+    return byStatus.filter((sv: any) => sv.nama?.toLowerCase().includes(ql) || sv.alamat?.toLowerCase().includes(ql));
   }, [data, q, kategori, status]);
 
+  const stats = useMemo(() => {
+    const list = data || [];
+    return {
+      done: list.filter((v: any) => v.lastInspection?.status || v.sudahDiperiksa).length,
+      todo: list.filter((v: any) => !(v.lastInspection?.status || v.sudahDiperiksa)).length,
+    };
+  }, [data]);
+
   return (
-    <View style={styles.root}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.backBtn}>‹ Kembali</Text>
-        </Pressable>
-        <Text style={styles.pageTitle}>Data Sasaran</Text>
-        <Pressable onPress={() => router.push("/sasaran/new")} hitSlop={8}>
-          <Plus size={24} color="#00A876" />
-        </Pressable>
-      </View>
-
-      {/* Search */}
-      <View style={styles.searchWrap}>
-        <Search size={16} color="#8A8580" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Cari nama atau alamat..."
-          placeholderTextColor="#8A8580"
-          value={q}
-          onChangeText={setQ}
+    <ScrollView
+      style={s.root}
+      contentContainerStyle={s.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={async () => {
+            setRefreshing(true);
+            await refetch();
+            setRefreshing(false);
+          }}
+          tintColor="#D9F99D"
         />
+      }
+    >
+      {/* Hero — gelap, match periksa/kategori/drafts */}
+      <FadeIn>
+        <View style={s.hero}>
+          <LinearGradient
+            colors={["#0C1B16", "#123527"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1.1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={s.heroBlob} />
+          <View style={s.heroTop}>
+            <Pressable onPress={() => router.back()} hitSlop={10} style={s.backBtn}>
+              <ArrowLeft size={13} color="#fff" strokeWidth={2.4} />
+              <Text style={s.backText}>Kembali</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push("/sasaran/new")} hitSlop={8} style={s.addBtn}>
+              <Plus size={13} color="#06281E" strokeWidth={2.8} />
+              <Text style={s.addText}>Tambah</Text>
+            </Pressable>
+          </View>
+          <Text style={s.heroOverline}>DATA MASTER</Text>
+          <Text style={s.heroTitle}>Sasaran</Text>
+
+          <View style={s.statRow}>
+            <View style={s.statChip}>
+              <Text style={[s.statValue, { color: "#D9F99D" }]}>{data?.length ?? 0}</Text>
+              <Text style={s.statLabel}>Terdaftar</Text>
+            </View>
+            <View style={s.statChip}>
+              <Text style={[s.statValue, { color: "#6EE7B7" }]}>{stats.done}</Text>
+              <Text style={s.statLabel}>Diperiksa</Text>
+            </View>
+            <View style={s.statChip}>
+              <Text style={[s.statValue, { color: "#FCD34D" }]}>{stats.todo}</Text>
+              <Text style={s.statLabel}>Belum</Text>
+            </View>
+          </View>
+
+          <View style={s.searchWrap}>
+            <Search size={15} color="rgba(255,255,255,0.5)" strokeWidth={2.2} />
+            <TextInput
+              style={s.searchInput}
+              placeholder="Cari nama atau alamat..."
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              value={q}
+              onChangeText={setQ}
+            />
+            {q ? (
+              <Pressable onPress={() => setQ("")} hitSlop={8}>
+                <X size={15} color="rgba(255,255,255,0.5)" />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      </FadeIn>
+
+      {/* Sheet menyelip hero */}
+      <View style={s.sheet}>
+        {/* Filter chips kategori */}
+        <FadeIn delay={40}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterContent}>
+            {kategoriList.map((k) => {
+              const active = k === kategori;
+              const kc = k === "Semua" ? null : katColor(k);
+              return (
+                <Pressable
+                  key={k}
+                  onPress={() => setKategori(k)}
+                  style={[
+                    s.chip,
+                    active
+                      ? { backgroundColor: kc ? kc.color : C.accent, borderColor: kc ? kc.color : C.accent }
+                      : null,
+                  ]}
+                >
+                  <Text style={[s.chipText, active && s.chipTextActive]}>{k}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </FadeIn>
+
+        {/* Filter segmented status */}
+        <View style={s.segWrap}>
+          {STATUS_CHIPS.map((st) => {
+            const active = st === status;
+            return (
+              <Pressable key={st} onPress={() => setStatus(st)} style={[s.seg, active && s.segActive]}>
+                <Text style={[s.segText, active && s.segTextActive]}>{st}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {cacheAt ? (
+          <Text style={s.cacheText}>
+            Data per{" "}
+            {new Date(cacheAt).toLocaleString("id-ID", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            {isLoading ? " · menyegarkan..." : ""}
+          </Text>
+        ) : null}
+
+        {/* List */}
+        <View style={s.listCol}>
+          {isLoading ? (
+            <ListSkeleton rows={4} />
+          ) : filtered.length === 0 ? (
+            <FadeIn delay={80}>
+              <View style={s.emptyCard}>
+                <View style={s.emptyIcon}>
+                  <Search size={30} color={C.accent} strokeWidth={1.5} />
+                </View>
+                <Text style={s.emptyTitle}>Tidak ditemukan</Text>
+                <Text style={s.emptyText}>Coba ubah filter atau kata kunci pencarian.</Text>
+              </View>
+            </FadeIn>
+          ) : (
+            filtered.map((sv: any, i: number) => {
+              const done = !!sv.lastInspection?.status || sv.sudahDiperiksa;
+              const prio = sv.prioritas === 1;
+              const katNama = sv.kategoriNama || sv.kategori?.nama || "Lainnya";
+              const kc = katColor(katNama);
+              return (
+                <FadeIn key={sv.id} delay={Math.min(70 + i * 45, 500)}>
+                  <ScalePress onPress={() => router.push(`/sasaran/${sv.id}` as any)}>
+                    <View style={s.card}>
+                      <View style={[s.cardIcon, { backgroundColor: `${kc.color}14` }]}>
+                        <Text style={[s.cardIconText, { color: kc.color }]}>{(sv.nama || "?")[0].toUpperCase()}</Text>
+                      </View>
+                      <View style={{ flex: 1, gap: 3 }}>
+                        <Text style={s.cardTitle} numberOfLines={1}>
+                          {sv.nama}
+                        </Text>
+                        {sv.alamat ? (
+                          <View style={s.addrRow}>
+                            <MapPin size={10} color={C.muted} />
+                            <Text style={s.addrText} numberOfLines={1}>
+                              {sv.alamat}
+                            </Text>
+                          </View>
+                        ) : null}
+                        <View style={s.cardChips}>
+                          <View style={[s.chipSm, { backgroundColor: `${kc.color}12` }]}>
+                            <Text style={[s.chipSmText, { color: kc.color }]} numberOfLines={1}>
+                              {katNama}
+                            </Text>
+                          </View>
+                          <View
+                            style={[
+                              s.chipSm,
+                              { backgroundColor: done ? "rgba(22,163,74,0.10)" : "rgba(217,119,6,0.10)" },
+                            ]}
+                          >
+                            <Text style={[s.chipSmText, { color: done ? C.ok : C.warn }]}>
+                              {done ? "Diperiksa" : "Belum"}
+                            </Text>
+                          </View>
+                          {prio ? (
+                            <View style={[s.chipSm, { backgroundColor: "rgba(220,38,38,0.08)" }]}>
+                              <Text style={[s.chipSmText, { color: C.err }]}>Prioritas</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                      </View>
+                      <View style={[s.goCircle, { backgroundColor: kc.color }]}>
+                        <ArrowLeft
+                          size={14}
+                          color="#fff"
+                          strokeWidth={2.6}
+                          style={{ transform: [{ rotate: "180deg" }] }}
+                        />
+                      </View>
+                    </View>
+                  </ScalePress>
+                </FadeIn>
+              );
+            })
+          )}
+        </View>
       </View>
 
-      {/* Filter chips status */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 4, gap: 8 }}
-      >
-        {["Semua", "Selesai", "Terjadwal", "Belum"].map((st) => {
-          const active = st === status;
-          return (
-            <Pressable key={st} onPress={() => setStatus(st)} style={[styles.chip, active && styles.chipActive]}>
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{st}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-
-      {/* Filter chips kategori */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}
-      >
-        {kategoriList.map((k) => {
-          const active = k === kategori;
-          return (
-            <Pressable key={k} onPress={() => setKategori(k)} style={[styles.chip, active && styles.chipActive]}>
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{k}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-
-      {/* Offline cache timestamp */}
-      {cacheAt ? (
-        <Text style={{ fontSize: 11, color: "#8A8580", paddingHorizontal: 16, paddingBottom: 4 }}>
-          Data per{" "}
-          {new Date(cacheAt).toLocaleString("id-ID", {
-            day: "numeric",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {isLoading ? " · menyegarkan..." : ""}
-        </Text>
-      ) : null}
-
-      <ScrollView
-        contentContainerStyle={{ padding: 16, paddingTop: 8 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={async () => {
-              setRefreshing(true);
-              await refetch();
-              setRefreshing(false);
-            }}
-            tintColor="#00A876"
-          />
-        }
-      >
-        {isLoading ? (
-          <Text style={styles.emptyText}>Memuat sasaran...</Text>
-        ) : filtered.length === 0 ? (
-          <Text style={styles.emptyText}>Tidak ada sasaran{q ? ` untuk "${q}"` : ""}.</Text>
-        ) : (
-          filtered.map((s: any, i: number) => (
-            <FadeIn key={s.id} delay={Math.min(i * 30, 300)}>
-              <Pressable
-                onPress={() => router.push(`/sasaran/${s.id}` as any)}
-                style={({ pressed }) => [styles.card, pressed && { transform: [{ scale: 0.98 }], opacity: 0.8 }]}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {s.nama}
-                  </Text>
-                  <Text style={styles.cardSub} numberOfLines={1}>
-                    {s.kategoriNama || s.kategori?.nama || "—"} · {s.alamat || "Tanpa alamat"}
-                  </Text>
-                </View>
-                {s.prioritas === 1 ? <Text style={styles.prioBadge}>⚡</Text> : null}
-              </Pressable>
-            </FadeIn>
-          ))
-        )}
-        <View style={{ height: 100 }} />
-      </ScrollView>
-    </View>
+      <View style={{ height: 130 }} />
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F7F5F2" },
-  header: {
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: C.bgForm },
+  content: { paddingBottom: 130 },
+
+  hero: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "web" ? 28 : 60,
+    paddingBottom: 32,
+    overflow: "hidden",
+  },
+  heroBlob: {
+    position: "absolute",
+    top: -80,
+    right: -70,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: "#00A876",
+    opacity: 0.14,
+  },
+  heroTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
+  backBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 64,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
-  backBtn: { fontSize: 15, color: "#00A876", fontWeight: "600" },
-  pageTitle: { fontSize: 20, fontWeight: "800", color: "#1F1D1B" },
+  backText: { fontSize: 12, fontWeight: "700", color: "#fff" },
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#BEF264",
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+  },
+  addText: { fontSize: 12, fontWeight: "800", color: "#06281E" },
+  heroOverline: {
+    fontSize: 10.5,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.55)",
+    letterSpacing: 1.4,
+    marginBottom: 6,
+  },
+  heroTitle: { fontSize: 27, fontWeight: "900", color: "#fff", letterSpacing: -0.7, lineHeight: 32 },
+  statRow: { flexDirection: "row", gap: 10, marginTop: 18 },
+  statChip: {
+    flex: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  statValue: { fontSize: 18, fontWeight: "800", lineHeight: 18, fontVariant: ["tabular-nums"] },
+  statLabel: { fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 3, lineHeight: 12 },
+
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    backgroundColor: "#FFFFFF",
+    height: 44,
+    backgroundColor: "rgba(255,255,255,0.10)",
     borderWidth: 1,
-    borderColor: "#ECE7E1",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    height: 42,
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    marginTop: 16,
   },
-  searchInput: { flex: 1, fontSize: 15, color: "#1F1D1B", padding: 0 },
+  searchInput: { flex: 1, fontSize: 13.5, color: "#fff", paddingVertical: 0 },
+
+  sheet: { paddingHorizontal: 16, gap: 12, paddingTop: 16 },
+
+  filterContent: { gap: 8, paddingVertical: 2 },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: C.surface,
     borderWidth: 1,
-    borderColor: "#ECE7E1",
+    borderColor: "rgba(0,0,0,0.07)",
   },
-  chipActive: { backgroundColor: "#E6F6F0", borderColor: "#00A876" },
-  chipText: { fontSize: 12, fontWeight: "600", color: "#8A8580" },
-  chipTextActive: { color: "#00A876" },
+  chipText: { fontSize: 12, fontWeight: "700", color: C.muted },
+  chipTextActive: { color: "#fff" },
+
+  segWrap: {
+    flexDirection: "row",
+    backgroundColor: "rgba(0,0,0,0.06)",
+    borderRadius: 16,
+    padding: 4,
+    gap: 4,
+  },
+  seg: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: "center",
+    borderRadius: 12,
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
+  },
+  segActive: {
+    backgroundColor: C.accent,
+    borderColor: C.accent,
+    shadowColor: C.accent,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  segText: { fontSize: 12, fontWeight: "700", color: C.muted },
+  segTextActive: { color: "#fff" },
+
+  cacheText: { fontSize: 11, color: C.muted, paddingHorizontal: 4 },
+
+  listCol: { gap: 10, marginTop: 2 },
   card: {
+    backgroundColor: C.surface,
+    borderRadius: 20,
+    padding: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#ECE7E1",
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 10,
+    shadowColor: "#1B1917",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  cardTitle: { fontSize: 15, fontWeight: "600", color: "#1F1D1B" },
-  cardSub: { fontSize: 12, color: "#8A8580", marginTop: 2 },
-  prioBadge: { fontSize: 14 },
-  emptyText: { fontSize: 14, color: "#8A8580", textAlign: "center", marginTop: 40 },
+  cardIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  cardIconText: { fontSize: 18, fontWeight: "900" },
+  cardTitle: { fontSize: 14.5, fontWeight: "800", color: C.ink, letterSpacing: -0.2, lineHeight: 19 },
+  addrRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  addrText: { fontSize: 11.5, color: C.muted, flexShrink: 1 },
+  cardChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 },
+  chipSm: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  chipSmText: { fontSize: 10, fontWeight: "700" },
+  goCircle: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+
+  emptyCard: {
+    backgroundColor: C.surface,
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#1B1917",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+    marginTop: 8,
+  },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,168,118,0.10)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "900", color: C.ink, letterSpacing: -0.3 },
+  emptyText: { fontSize: 12.5, color: C.ink2, textAlign: "center", lineHeight: 19, maxWidth: 280 },
+  loadingText: { fontSize: 14, color: C.muted, textAlign: "center", marginTop: 40 },
 });

@@ -2,12 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowDown,
-  ArrowUp,
+  ArrowLeft,
   Check,
+  ChevronRight,
   FileText,
   FolderPlus,
-  Hash,
   Plus,
   Settings2,
   ShieldAlert,
@@ -59,14 +58,18 @@ export default function FormPemeriksaanPage() {
   const [importStage, setImportStage] = useState("");
   const [importProgress, setImportProgress] = useState(0);
 
-  // Form state
   const [nama, setNama] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [subCategoryId, setSubCategoryId] = useState<number | null>(null);
   const [dataDasarCategoryId, setDataDasarCategoryId] = useState<number | null>(null);
   const [fields, setFields] = useState<any[]>([]);
-
-  // Agregasi Laporan State
+  const [rumus, setRumus] = useState("sum");
+  const [customFormula, setCustomFormula] = useState("");
+  const [thresholdOperator, setThresholdOperator] = useState(">=");
+  const [thresholdValue, setThresholdValue] = useState(80);
+  const [thresholdPassText, setThresholdPassText] = useState("Memenuhi Syarat");
+  const [thresholdFailText, setThresholdFailText] = useState("Tidak Memenuhi Syarat");
+  const [defaultYa, setDefaultYa] = useState(false);
   const [paramDiperiksaId, setParamDiperiksaId] = useState<number | null>(null);
   const [paramMsId, setParamMsId] = useState<number | null>(null);
   const [paramTmsId, setParamTmsId] = useState<number | null>(null);
@@ -109,91 +112,101 @@ export default function FormPemeriksaanPage() {
     onError: () => toast.error("Gagal menyimpan template"),
   });
 
-  const deleteMutation = useMutation({
+  const _deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/inspection/templates/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/inspection/templates/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
-      setSelectedTemplateId(null);
       toast.success("Template dihapus");
     },
+    onError: () => toast.error("Gagal menghapus template"),
   });
 
-  // ─── Mutations ───────────────────────────
-
   function handleSave() {
-    if (!nama) {
+    if (!nama.trim()) {
       toast.error("Nama template wajib diisi");
       return;
     }
-    // Auto-set fields without a grup to "Lainnya"
-    const cleanFields = fields.map((f, i) => ({
-      ...f,
-      grup: f.grup || "Lainnya",
-      urutan: i,
-      config: { skor: f.skor ?? 0, skorBenar: f.skorBenar ?? f.skor ?? 1, skorSalah: f.skorSalah ?? 0 },
-    }));
     createMutation.mutate({
-      id: selectedTemplateId || undefined,
+      id: selectedTemplateId,
       nama,
       deskripsi,
       subCategoryId,
       config: {
         dataDasarCategoryId,
         rumus,
-        customFormula: rumus === "custom" ? customFormula : undefined,
+        customFormula,
         thresholdOperator,
         thresholdValue,
         thresholdPassText,
         thresholdFailText,
+        defaultYa,
         agregasi: {
           paramDiperiksaId,
           paramMsId,
           paramTmsId,
         },
       },
-      fields: cleanFields,
+      fields: fields.map((f, i) => ({
+        pertanyaan: f.pertanyaan,
+        tipe: f.tipe,
+        isRequired: f.isRequired ?? false,
+        grup: f.grup || "",
+        opsi: f.opsi || null,
+        skor: f.skor ?? 0,
+        skorBenar: f.skorBenar ?? 1,
+        skorSalah: f.skorSalah ?? 0,
+        urutan: i,
+        config: {
+          skor: f.skor ?? 0,
+          skorBenar: f.skorBenar ?? 1,
+          skorSalah: f.skorSalah ?? 0,
+          dataDasarCode: f.config?.dataDasarCode,
+          syncToEntityField: f.config?.syncToEntityField,
+        },
+      })),
     });
   }
 
   async function handleImportFile(file: File) {
     setIsImporting(true);
-    setImportStage("Mengunggah file ke server...");
     setImportProgress(10);
+    setImportStage("Mengunggah file...");
+
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/inspection/templates/import", { method: "POST", body: formData });
+
+      const res = await fetch("/api/inspection/templates/import", {
+        method: "POST",
+        body: formData,
+      });
+
       const initData = await res.json();
-      if (!res.ok) throw new Error(initData?.error || "Gagal import file");
+      if (!res.ok) throw new Error(initData?.error || "Gagal memproses file");
 
       const jobId = initData.jobId;
-      setImportStage("File diterima; menunggu worker...");
       setImportProgress(20);
+      setImportStage("Menganalisis struktur tabel...");
 
-      const poll = async () => {
-        return new Promise<any>((resolve, reject) => {
+      const poll = () =>
+        new Promise<any>((resolve, reject) => {
           const interval = setInterval(async () => {
             try {
               const checkRes = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
+              if (!checkRes.ok) throw new Error("Gagal memeriksa status import");
               const statusData = await checkRes.json();
-              if (!checkRes.ok) {
-                clearInterval(interval);
-                reject(new Error(statusData?.error || "Gagal memantau job import"));
-                return;
-              }
-              if (statusData.status === "processing") {
-                setImportStage(statusData.message || "Memproses...");
-                setImportProgress(statusData.progress || 50);
-              } else if (statusData.status === "complete") {
+
+              setImportStage(statusData.message || "Memproses...");
+              setImportProgress(statusData.progress || 50);
+
+              if (statusData.status === "COMPLETED") {
                 clearInterval(interval);
                 resolve(statusData.result);
-              } else if (statusData.status === "failed") {
+              } else if (statusData.status === "FAILED") {
                 clearInterval(interval);
                 reject(new Error(statusData.error || "Gagal memproses file di worker"));
               }
@@ -203,7 +216,6 @@ export default function FormPemeriksaanPage() {
             }
           }, 2000);
         });
-      };
 
       const result = await poll();
       setSelectedTemplateId(null);
@@ -218,6 +230,7 @@ export default function FormPemeriksaanPage() {
       setThresholdValue(80);
       setThresholdPassText("Memenuhi Syarat");
       setThresholdFailText("Tidak Memenuhi Syarat");
+      setDefaultYa(false);
       setParamDiperiksaId(null);
       setParamMsId(null);
       setParamTmsId(null);
@@ -232,8 +245,6 @@ export default function FormPemeriksaanPage() {
     }
   }
 
-  // ─── Field Helpers ───────────────────────
-
   function addField(grup?: string) {
     setFields([
       ...fields,
@@ -245,77 +256,101 @@ export default function FormPemeriksaanPage() {
         skor: 1,
         skorBenar: 1,
         skorSalah: 0,
+        opsi: "",
       },
     ]);
+  }
+
+  function addFieldAt(grup: string, afterIndex: number) {
+    const newField = {
+      pertanyaan: "",
+      tipe: "BOOLEAN",
+      isRequired: false,
+      grup,
+      skor: 1,
+      skorBenar: 1,
+      skorSalah: 0,
+      opsi: "",
+    };
+    const next = [...fields];
+    next.splice(afterIndex + 1, 0, newField);
+    setFields(next);
+  }
+
+  // Inline add form state: { type: "bagian" } untuk bagian baru di bawah list,
+  // { type: "sub", area } untuk subbagian di bawah grup tertentu
+  const [addingInline, setAddingInline] = useState<{ type: "bagian" } | { type: "sub"; area: string } | null>(null);
+  const [inlineName, setInlineName] = useState("");
+
+  function submitInline() {
+    if (!addingInline) return;
+    const name = inlineName.trim();
+    if (!name) {
+      toast.error("Nama wajib diisi");
+      return;
+    }
+    if (addingInline.type === "bagian") {
+      if (fields.some((f) => f.grup === name)) {
+        toast.error(`Bagian "${name}" sudah ada`);
+        return;
+      }
+      addField(name);
+    } else {
+      const grup = `${addingInline.area.trim()} — ${name}`;
+      if (fields.some((f) => f.grup === grup)) {
+        toast.error("Subbagian sudah ada");
+        return;
+      }
+      let lastIdx = -1;
+      fields.forEach((f, i) => {
+        if (f.grup === addingInline.area || f.grup?.startsWith(`${addingInline.area} — `)) lastIdx = i;
+      });
+      addFieldAt(grup, lastIdx);
+    }
+    setAddingInline(null);
+    setInlineName("");
+  }
+
+  function _addGrup(name: string) {
+    if (!name.trim()) {
+      toast.error("Nama grup wajib diisi");
+      return;
+    }
+    if (fields.some((f) => f.grup === name.trim())) {
+      toast.error(`Bagian "${name.trim()}" sudah ada`);
+      return;
+    }
+    addField(name.trim());
+  }
+
+  function addSubbagian(area: string) {
+    setAddingInline({ type: "sub", area });
+    setInlineName("");
+  }
+
+  function deleteGrup(grup: string) {
+    setFields(fields.filter((f) => f.grup !== grup));
+    toast.success("Grup dihapus");
+  }
+
+  function updateField(index: number, key: string, value: any) {
+    setFields(fields.map((f, i) => (i === index ? { ...f, [key]: value } : f)));
   }
 
   function removeField(index: number) {
     setFields(fields.filter((_, i) => i !== index));
   }
 
-  function updateField(index: number, key: string, value: any) {
+  function moveField(index: number, direction: "up" | "down") {
     const next = [...fields];
-    next[index] = { ...next[index], [key]: value };
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]];
     setFields(next);
   }
-
-  function moveField(index: number, dir: "up" | "down") {
-    if (dir === "up" && index === 0) return;
-    if (dir === "down" && index === fields.length - 1) return;
-    const next = [...fields];
-    const tgt = dir === "up" ? index - 1 : index + 1;
-    [next[index], next[tgt]] = [next[tgt], next[index]];
-    setFields(next);
-  }
-
-  function addGrup(name: string) {
-    if (!name.trim()) {
-      toast.error("Nama grup tidak boleh kosong");
-      return;
-    }
-    addField(name.trim());
-    toast.success(`Grup "${name}" ditambahkan`);
-  }
-
-  function addSubbagian(area: string) {
-    const name = prompt(`Nama subbagian untuk "${area}":`);
-    if (!name?.trim()) return;
-    const cleanName = name.trim().replace(/\s+—\s+/g, " - ");
-    const grup = `${area} — ${cleanName}`;
-    if (fields.some((field) => field.grup === grup)) {
-      toast.error(`Subbagian "${cleanName}" sudah ada`);
-      return;
-    }
-    addField(grup);
-    toast.success(`Subbagian "${cleanName}" ditambahkan`);
-  }
-
-  function renameGrup(oldName: string, newName: string) {
-    if (!newName.trim()) return;
-    setFields(fields.map((f) => (f.grup === oldName ? { ...f, grup: newName } : f)));
-  }
-
-  function deleteGrup(grupName: string) {
-    const count = fields.filter((f) => f.grup === grupName).length;
-    if (confirm(`Hapus grup "${grupName}" dan ${count} item di dalamnya?`)) {
-      setFields(fields.filter((f) => f.grup !== grupName));
-      toast.success(`Grup "${grupName}" dihapus`);
-    }
-  }
-
-  // ─── Grouping ────────────────────────────
 
   const groupedFields = useMemo(() => {
-    const groups: {
-      grup: string;
-      area: string;
-      subbagian: string | null;
-      areaIndex: number;
-      firstInArea: boolean;
-      fields: { field: any; index: number }[];
-    }[] = [];
     const groupMap = new Map<string, { field: any; index: number }[]>();
-
     fields.forEach((f, i) => {
       const g = f.grup || "Tanpa Grup";
       if (!groupMap.has(g)) groupMap.set(g, []);
@@ -323,985 +358,925 @@ export default function FormPemeriksaanPage() {
     });
 
     const areaIndexes = new Map<string, number>();
+    const subIndexes = new Map<string, number>(); // per-area sub counter
+    const groups: any[] = [];
     groupMap.forEach((items, grup) => {
       const delimiterIndex = grup.indexOf(" — ");
       const area = delimiterIndex >= 0 ? grup.slice(0, delimiterIndex).trim() : grup;
       const subbagian = delimiterIndex >= 0 ? grup.slice(delimiterIndex + 3).trim() || null : null;
       if (!areaIndexes.has(area)) areaIndexes.set(area, areaIndexes.size + 1);
+      let subIndex: number | null = null;
+      if (subbagian) {
+        const key = `${area}::${subbagian}`;
+        if (!subIndexes.has(key)) {
+          const countInArea = [...subIndexes.keys()].filter((k) => k.startsWith(`${area}::`)).length;
+          subIndexes.set(key, countInArea + 1);
+        }
+        subIndex = subIndexes.get(key)!;
+      }
       groups.push({
         grup,
         area,
         subbagian,
         areaIndex: areaIndexes.get(area)!,
-        firstInArea: !groups.some((group) => group.area === area),
+        subIndex,
         fields: items,
       });
     });
-
+    // Sort: bagian (non-sub) dulu, lalu sub-bagiannya, per area
+    groups.sort((a, b) => {
+      if (a.areaIndex !== b.areaIndex) return a.areaIndex - b.areaIndex;
+      if (!a.subbagian && b.subbagian) return -1;
+      if (a.subbagian && !b.subbagian) return 1;
+      if (a.subbagian && b.subbagian) return (a.subIndex ?? 0) - (b.subIndex ?? 0);
+      return 0;
+    });
     return groups;
   }, [fields]);
 
-  const totalSkor = useMemo(() => {
-    return fields.reduce((s, f) => s + (f.skor ?? 0), 0);
-  }, [fields]);
+  const totalSkor = useMemo(() => fields.reduce((s, f) => s + (f.skor ?? 0), 0), [fields]);
+  const rumusLabel = RUMUS_OPTIONS.find((r) => r.value === rumus)?.label || rumus;
 
-  // ─── Group Name Editor State ─────────────
-  const [editingGrup, setEditingGrup] = useState<string | null>(null);
-  const [grupEditValue, setGrupEditValue] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
-  // ─── Rumus State ─────────────────────────
-  const [rumus, setRumus] = useState<string>("sum");
-  const [customFormula, setCustomFormula] = useState<string>("");
+  function toggleGroup(grup: string) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(grup)) next.delete(grup);
+      else next.add(grup);
+      return next;
+    });
+  }
 
-  // ─── Kesimpulan State ─────────────────────
-  const [thresholdOperator, setThresholdOperator] = useState<string>(">=");
-  const [thresholdValue, setThresholdValue] = useState<number>(80);
-  const [thresholdPassText, setThresholdPassText] = useState<string>("Memenuhi Syarat");
-  const [thresholdFailText, setThresholdFailText] = useState<string>("Tidak Memenuhi Syarat");
+  function scrollToGroup(grup: string) {
+    setActiveGroup(grup);
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      next.delete(grup);
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document.getElementById(`grup-${CSS.escape(grup)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
-  const rumusLabel = useMemo(() => {
-    const opt = RUMUS_OPTIONS.find((r) => r.value === rumus);
-    return opt ? opt.label : "Jumlah";
-  }, [rumus]);
-
-  const rumusDesc = useMemo(() => {
-    if (rumus === "custom") return customFormula || customFormula.trim() ? customFormula : "Rumus kustom";
-    const opt = RUMUS_OPTIONS.find((r) => r.value === rumus);
-    return opt ? opt.desc : "";
-  }, [rumus, customFormula]);
-
-  const maxSkor = useMemo(() => totalSkor, [totalSkor]);
-
-  // Example preview values when formula is applied
-  // sum = totalSkor
-  // percentage = (totalSkor / maxSkor) * 100 (but maxSkor is totalSkor here, so 100%)
-  // For demo purposes, we show what happens if half the fields are scored
   const demoSkorTerisi = useMemo(() => {
-    // Assume roughly 70% of fields are marked "terpenuhi" for preview
     const filled = fields.filter((f) => f.skor > 0);
     if (filled.length === 0) return 0;
-    const halfScore = filled.reduce((s, f) => s + (f.skor ?? 0), 0) * 0.7;
-    return Math.round(halfScore);
+    return Math.round(filled.reduce((s, f) => s + (f.skor ?? 0), 0) * 0.7);
   }, [fields]);
+  const demoPersentase = totalSkor > 0 ? Math.round((demoSkorTerisi / totalSkor) * 100) : 0;
 
-  const demoPersentase = useMemo(() => {
-    if (maxSkor === 0) return 0;
-    return Math.round((demoSkorTerisi / maxSkor) * 100);
-  }, [demoSkorTerisi, maxSkor]);
-
-  // ─── Role Guard ──────────────────────────
   if ((session?.user as any)?.role === "ADMIN") {
     return (
-      <div className="w-full mx-auto pt-0 pb-4 flex flex-col items-center justify-center min-h-[50vh] gap-3">
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
         <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
         <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Akses Ditolak</p>
-        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Puskesmas.</p>
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Operator / Puskesmas</p>
       </div>
     );
   }
 
-  // ─── RENDER: List View ───────────────────
-
-  if (!selectedTemplateId && !isCreating) {
+  if (isImporting) {
     return (
-      <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-        {isImporting && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="w-[420px] max-w-[calc(100vw-32px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-2xl">
-              <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 shrink-0 animate-spin border-2 border-[hsl(var(--border))] border-t-[hsl(var(--foreground))]" />
-                <div className="space-y-1">
-                  <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">Memproses Import Template...</h3>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                    Status:{" "}
-                    <span className="font-medium text-[hsl(var(--foreground))]">{importStage || "Menyiapkan..."}</span>{" "}
-                    ({importProgress}%)
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 w-full bg-[hsl(var(--border))] h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-[hsl(var(--foreground))] h-full transition-all duration-300"
-                  style={{ width: `${importProgress}%` }}
-                />
-              </div>
-              <div className="mt-4 space-y-2 text-[11px] text-[hsl(var(--muted-foreground))]">
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-                  <span>Mengunggah file ke server...</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-                  <span>Membaca PDF dengan Docling dan model tabel...</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
-                  <span>Menyusun butir pertanyaan ke Form Pemeriksaan...</span>
-                </div>
-              </div>
-              <p className="mt-4 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
-                Proses PDF besar bisa memakan waktu 30-120 detik. Jangan tutup halaman ini.
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="w-[320px] max-w-[calc(100vw-32px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 shrink-0 animate-spin border-2 border-[hsl(var(--border))] border-t-[hsl(var(--foreground))] rounded-full" />
+            <div className="space-y-1">
+              <h3 className="text-[13px] font-bold text-[hsl(var(--foreground))]">Memproses Template...</h3>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                <span className="font-medium text-[hsl(var(--foreground))]">{importStage || "Menyiapkan..."}</span>
               </p>
             </div>
           </div>
-        )}
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <FileText className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
-          <div>
-            <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Form Pemeriksaan</h1>
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Template formulir inspeksi — format tabel ceklis
-            </p>
+          <div className="w-full bg-[hsl(var(--border))] h-2 rounded-full overflow-hidden">
+            <div
+              className="bg-[hsl(var(--foreground))] h-full transition-all duration-300"
+              style={{ width: `${importProgress}%` }}
+            />
           </div>
-          <div className="ml-auto flex items-center gap-2">
-            <label className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors cursor-pointer">
-              <Upload className="w-3.5 h-3.5" />
-              {isImporting ? "Mengimpor..." : "Import PDF/Word"}
-              <input
-                type="file"
-                className="hidden"
-                accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                disabled={isImporting}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImportFile(file);
-                  e.target.value = "";
+          <div className="space-y-2 text-[10px] text-[hsl(var(--muted-foreground))]">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+              <span>Mengirim ke server...</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+              <span>Ekstraksi tabel PDF...</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+              <span>Menyusun butir pemeriksaan...</span>
+            </div>
+          </div>
+          <p className="text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+            PDF memerlukan 30-120 detik tergantung kompleksitas tabel.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedTemplateId && !isCreating) {
+    return (
+      <div className="w-full mx-auto pb-4 fade-in">
+        {/* ── HERO ── */}
+        <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
+          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+          <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Builder</p>
+              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Form Pemeriksaan</h1>
+              <p className="text-[13px] font-medium text-white/50 mt-2">{templates.length} template tersedia</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 transition cursor-pointer">
+                <Upload className="w-3.5 h-3.5" /> Import
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="hidden"
+                  disabled={isImporting}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImportFile(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                onClick={() => {
+                  setSelectedTemplateId(null);
+                  setIsCreating(true);
+                  setNama("");
+                  setDeskripsi("");
+                  setSubCategoryId(null);
+                  setDataDasarCategoryId(null);
+                  setFields([]);
+                  setRumus("sum");
+                  setCustomFormula("");
+                  setThresholdOperator(">=");
+                  setThresholdValue(80);
+                  setThresholdPassText("Memenuhi Syarat");
+                  setThresholdFailText("Tidak Memenuhi Syarat");
+                  setDefaultYa(false);
+                  setParamDiperiksaId(null);
+                  setParamMsId(null);
+                  setParamTmsId(null);
                 }}
-              />
-            </label>
-            <button
-              onClick={() => {
-                setIsCreating(true);
-                setNama("");
-                setDeskripsi("");
-                setSubCategoryId(null);
-                setDataDasarCategoryId(null);
-                setRumus("sum");
-                setCustomFormula("");
-                setThresholdOperator(">=");
-                setThresholdValue(80);
-                setThresholdPassText("Memenuhi Syarat");
-                setThresholdFailText("Tidak Memenuhi Syarat");
-                setParamDiperiksaId(null);
-                setParamMsId(null);
-                setParamTmsId(null);
-                setFields([]);
-              }}
-              className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" /> Template Baru
-            </button>
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+              >
+                <Plus className="w-3.5 h-3.5" /> Buat Baru
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Template List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[hsl(var(--accent))] animate-spin" />
+          <div className="pt-6 flex flex-col gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-[72px] rounded-2xl bg-[hsl(var(--muted))]/20 animate-pulse" />
+            ))}
           </div>
         ) : templates.length === 0 ? (
-          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col items-center justify-center py-20 gap-2">
-            <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))] opacity-30" />
-            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum ada template</p>
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Klik "Template Baru" untuk membuat formulir pertama.
-            </p>
+          <div className="mt-6 border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
+            <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
+            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Template</p>
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Import PDF/Word atau buat manual.</p>
           </div>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {templates.map((tpl: any) => (
-              <button
-                key={tpl.id}
-                onClick={() => {
-                  setSelectedTemplateId(tpl.id);
-                  setNama(tpl.nama);
-                  setDeskripsi(tpl.deskripsi || "");
-                  setRumus(tpl.config?.rumus || "sum");
-                  setCustomFormula(tpl.config?.customFormula || "");
-                  setThresholdOperator(tpl.config?.thresholdOperator || ">=");
-                  setThresholdValue(tpl.config?.thresholdValue ?? 80);
-                  setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
-                  setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
-
-                  // Set Agregasi Config
-                  setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
-                  setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
-                  setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
-
-                  setFields(
-                    (tpl.fields || []).map((f: any) => ({
-                      ...f,
-                      skor: f.config?.skor ?? 0,
-                      skorBenar: f.config?.skorBenar ?? f.config?.skor ?? 1,
-                      skorSalah: f.config?.skorSalah ?? 0,
-                    })),
-                  );
-                  setSubCategoryId(tpl.subCategoryId || null);
-                  setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
-                }}
-                className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-left hover:border-[hsl(var(--accent))] transition-colors"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 bg-[hsl(var(--muted))] flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-                  </div>
-                  <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-                    {tpl.fields?.length || 0} field
-                  </span>
-                </div>
-                <h3 className="text-[12px] font-bold text-[hsl(var(--foreground))] mb-1">{tpl.nama}</h3>
-                {tpl.deskripsi && (
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] line-clamp-2 mb-2">{tpl.deskripsi}</p>
-                )}
-                {/* Metadata: Pembuat & Koneksi Laporan */}
-                <div className="flex flex-wrap gap-1.5 mt-auto">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
-                    {tpl.puskesmas?.nama || "Dinas"}
-                  </span>
-                  {tpl.subCategory?.category?.nama && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-[hsl(var(--accent))]/10 text-[hsl(var(--accent))]">
-                      {tpl.subCategory.category.icon} {tpl.subCategory.category.nama}
-                      {tpl.subCategory?.nama ? ` → ${tpl.subCategory.nama}` : ""}
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
+          <div className="pt-6">
+            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
+              Daftar Template
+            </h3>
+            <div className="flex flex-col gap-2">
+              {templates.map((tpl: any) => {
+                const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                const grupCount = new Set(
+                  (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
+                ).size;
+                return (
+                  <button
+                    key={tpl.id}
+                    onClick={() => {
+                      setSelectedTemplateId(tpl.id);
+                      setIsCreating(false);
+                      setNama(tpl.nama);
+                      setDeskripsi(tpl.deskripsi || "");
+                      setRumus(tpl.config?.rumus || "sum");
+                      setCustomFormula(tpl.config?.customFormula || "");
+                      setThresholdOperator(tpl.config?.thresholdOperator || ">=");
+                      setThresholdValue(tpl.config?.thresholdValue ?? 80);
+                      setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
+                      setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
+                      setDefaultYa(tpl.config?.defaultYa ?? false);
+                      setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
+                      setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
+                      setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
+                      setFields(
+                        (tpl.fields || []).map((f: any) => ({
+                          ...f,
+                          skor: f.config?.skor ?? 0,
+                          skorBenar: f.config?.skorBenar ?? 1,
+                          skorSalah: f.config?.skorSalah ?? 0,
+                        })),
+                      );
+                      setSubCategoryId(tpl.subCategoryId ?? null);
+                      setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                    }}
+                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden text-left"
+                  >
+                    <div className="w-1 shrink-0 bg-[#00A876]" />
+                    <div className="flex-1 flex items-center gap-4 px-5 py-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                          {tpl.nama}
+                        </h4>
+                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                          {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
+                        </p>
+                      </div>
+                      <div className="shrink-0 flex items-center gap-5">
+                        <div className="text-center">
+                          <div className="text-[16px] font-black tabular-nums leading-none">{fieldCount}</div>
+                          <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
+                            Butir
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[16px] font-black tabular-nums leading-none text-[#00A876]">
+                            {grupCount}
+                          </div>
+                          <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
+                            Grup
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all" />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
     );
   }
 
-  // ─── RENDER: Table Checklist Editor ──────
-
   return (
-    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-      {/* Top Bar */}
-      <div className="flex items-center gap-3">
+    <div className="w-full pb-8 fade-in">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => {
             setSelectedTemplateId(null);
             setIsCreating(false);
           }}
-          className="text-[11px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] font-bold"
+          className="flex items-center gap-2 text-[13px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
         >
-          &larr; Kembali
+          <ArrowLeft className="h-5 w-5" /> Kembali
         </button>
-        <div className="h-5 w-px bg-[hsl(var(--border))]" />
+        <div className="h-6 w-px bg-[hsl(var(--border))]" />
         <input
           type="text"
           value={nama}
           onChange={(e) => setNama(e.target.value)}
           placeholder="Nama Template..."
-          className="flex-1 text-[14px] font-bold text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent"
+          className="flex-1 text-[22px] font-black text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent tracking-tight"
         />
         <button
           onClick={handleSave}
           disabled={createMutation.isPending}
-          className="flex items-center gap-1.5 h-8 px-4 text-[11px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors"
+          className="flex items-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg"
         >
-          <Check className="w-3.5 h-3.5" />
+          <Check className="w-4 h-4" />
           {createMutation.isPending ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
 
-      {/* Description */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-        <div className="px-4 py-2.5 border-b border-[hsl(var(--border))]">
-          <span className="text-[13px] font-bold">Deskripsi &amp; Koneksi Laporan</span>
-        </div>
-        <div className="p-4 space-y-4">
-          <div>
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
-              Deskripsi
-            </label>
-            <textarea
-              value={deskripsi}
-              onChange={(e) => setDeskripsi(e.target.value)}
-              placeholder="Deskripsi atau petunjuk penggunaan template..."
-              rows={2}
-              className="w-full text-[12px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border border-[hsl(var(--border))] px-3 py-2 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
-              Kategori Data Dasar
-            </label>
-            <select
-              value={dataDasarCategoryId || ""}
-              onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full h-9 px-3 text-[12px] font-medium border border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none"
-            >
-              <option value="">— Tidak terhubung —</option>
-              {categories
-                .filter((category: any) => (category.parameters ?? []).some((parameter: any) => parameter.isBaseline))
-                .map((category: any) => (
-                  <option key={category.id} value={category.id}>
-                    {category.nama}
-                  </option>
-                ))}
-            </select>
-            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1.5">
-              Menentukan daftar sasaran Data Dasar dan sumber autofill saat pemeriksaan.
-            </p>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
-              Koneksi Laporan Bulanan
-            </label>
-            <select
-              value={subCategoryId || ""}
-              onChange={(e) => setSubCategoryId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full h-9 px-3 text-[12px] font-medium border border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none"
-            >
-              <option value="">-- Pilih Koneksi Laporan (Opsional) --</option>
-              {categories.map((cat: any) =>
-                (cat.subCategories || []).map((sub: any) => (
-                  <option key={sub.id} value={sub.id}>
-                    {cat.icon} {cat.nama} &rarr; {sub.nama}
-                  </option>
-                )),
-              )}
-            </select>
-            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1.5">
-              Hubungkan template ini ke jenis laporan bulanan. Skor hasil pemeriksaan lapangan akan diintegrasikan
-              langsung sebagai data input/referensi laporan bulanan.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Scoring Formula Section */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-          <Hash className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-          <span className="text-[13px] font-bold">Rumus Penilaian</span>
-          <span className="ml-auto text-[10px] font-bold text-[hsl(var(--muted-foreground))]">{rumusLabel}</span>
-        </div>
-        <div className="flex items-center gap-4 px-4 py-3">
-          <div className="flex-1">
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
-              Metode Perhitungan
-            </label>
-            <select
-              value={rumus}
-              onChange={(e) => setRumus(e.target.value)}
-              className="w-full h-9 px-3 text-[12px] font-medium border border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none"
-            >
-              {RUMUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label} — {opt.desc}
-                </option>
-              ))}
-            </select>
-            {rumus === "custom" && (
-              <div className="mt-2">
-                <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1">
-                  Rumus Kustom
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
+        {/* Left Panel: Config */}
+        <div className="space-y-4">
+          {/* Deskripsi */}
+          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
+            <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+              <span className="text-[12px] font-bold">Deskripsi Laporan</span>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                  Deskripsi
                 </label>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}SUM()`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    SUM
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}AVG()`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    AVG
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}MIN()`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    MIN
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}MAX()`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    MAX
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}COUNT()`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    COUNT
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}✓`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    ✓ (Benar)
-                  </button>
-                  <button
-                    onClick={() => setCustomFormula((prev) => `${prev}✗`)}
-                    className="text-[9px] font-bold px-2 py-0.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-                  >
-                    ✗ (Salah)
-                  </button>
-                </div>
                 <textarea
-                  value={customFormula}
-                  onChange={(e) => setCustomFormula(e.target.value)}
-                  placeholder="Contoh: (SUM(✓) × 2) / (COUNT() + 1) atau deskripsi manual..."
+                  value={deskripsi}
+                  onChange={(e) => setDeskripsi(e.target.value)}
                   rows={2}
-                  className="w-full text-[11px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border border-[hsl(var(--border))] px-3 py-2 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none"
+                  className="w-full text-[13px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border-2 border-[hsl(var(--border))] px-3 py-2.5 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none rounded-lg"
                 />
               </div>
-            )}
+              <div>
+                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                  Kategori Data Dasar
+                </label>
+                <select
+                  value={dataDasarCategoryId || ""}
+                  onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                >
+                  <option value="">— Pilih Kategori —</option>
+                  {categories
+                    .filter((c: any) => (c.parameters || []).some((p: any) => p.isBaseline))
+                    .map((c: any) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nama}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2">
+                  Sumber data sasaran untuk form ini
+                </p>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                  Sub Kategori Laporan
+                </label>
+                <select
+                  value={subCategoryId || ""}
+                  onChange={(e) => setSubCategoryId(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                >
+                  <option value="">— Pilih Sub Kategori —</option>
+                  {categories.map((cat: any) =>
+                    (cat.subCategories || []).map((sub: any) => (
+                      <option key={sub.id} value={sub.id}>
+                        {cat.icon} {cat.nama} — {sub.nama}
+                      </option>
+                    )),
+                  )}
+                </select>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2">
+                  Referensi input untuk agregasi laporan
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Live Score Preview */}
-          <div className="border-l border-[hsl(var(--border))] pl-4">
-            <div className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider mb-1">
-              Pratinjau Skor
+          {/* Rumus Penilaian */}
+          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
+            <div className="flex items-center gap-2 px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+              <span className="text-[12px] font-bold">Rumus Penilaian</span>
+              <span className="ml-auto text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{rumusLabel}</span>
             </div>
-            <div className="flex items-baseline gap-2">
-              {rumus === "sum" && (
-                <>
-                  <span className="text-[24px] font-extrabold text-[hsl(var(--foreground))] tabular-nums">
-                    {totalSkor}
-                  </span>
-                  <span className="text-[11px] text-[hsl(var(--muted-foreground))]">/ {totalSkor}</span>
-                  <span className="text-[12px] font-bold text-[hsl(var(--accent))]">100%</span>
-                </>
-              )}
-              {rumus === "percentage" && (
-                <>
-                  <span className="text-[24px] font-extrabold text-[hsl(var(--foreground))] tabular-nums">
-                    {demoPersentase}
-                  </span>
-                  <span className="text-[11px] text-[hsl(var(--muted-foreground))]">%</span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                    (est. {demoSkorTerisi}/{totalSkor})
-                  </span>
-                </>
-              )}
-              {rumus === "weighted" && (
-                <>
-                  <span className="text-[24px] font-extrabold text-[hsl(var(--foreground))] tabular-nums">
-                    {demoPersentase}
-                  </span>
-                  <span className="text-[11px] text-[hsl(var(--muted-foreground))]">%</span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">(est. nilai tertimbang)</span>
-                </>
-              )}
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                  Metode
+                </label>
+                <select
+                  value={rumus}
+                  onChange={(e) => setRumus(e.target.value)}
+                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                >
+                  {RUMUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label} — {opt.desc}
+                    </option>
+                  ))}
+                </select>
+              </div>
               {rumus === "custom" && (
-                <>
-                  <span className="text-[14px] font-extrabold text-[hsl(var(--foreground))] italic">ƒ(x)</span>
-                  <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Rumus manual</span>
-                </>
+                <div>
+                  <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                    Rumus Kustom
+                  </label>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {["SUM()", "AVG()", "MIN()", "MAX()", "COUNT()", "✓", "✗"].map((fn) => (
+                      <button
+                        key={fn}
+                        onClick={() => setCustomFormula((prev) => `${prev}${fn}`)}
+                        className="text-[10px] font-bold px-2.5 py-1 border-2 border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                      >
+                        {fn === "✓" ? "✓ (Benar)" : fn === "✗" ? "✗ (Salah)" : fn}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={customFormula}
+                    onChange={(e) => setCustomFormula(e.target.value)}
+                    placeholder="(SUM(✓) * 2) / (COUNT() + 1)"
+                    rows={2}
+                    className="w-full text-[13px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border-2 border-[hsl(var(--border))] px-3 py-2.5 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none font-mono rounded-lg"
+                  />
+                </div>
               )}
+              <div className="flex items-baseline gap-2 pt-2">
+                <span className="text-[32px] font-black text-[hsl(var(--foreground))] tabular-nums leading-none">
+                  {demoSkorTerisi}
+                </span>
+                <span className="text-[13px] text-[hsl(var(--muted-foreground))]">/ {totalSkor}</span>
+                <span className="text-[13px] font-bold text-[hsl(var(--accent))]">{demoPersentase}%</span>
+              </div>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                {RUMUS_OPTIONS.find((r) => r.value === rumus)?.desc}
+              </p>
             </div>
-            <p className="text-[9px] text-[hsl(var(--muted-foreground))] mt-1">{rumusDesc}</p>
           </div>
-        </div>
 
-        {/* Threshold Section */}
-        <div className="border-t border-[hsl(var(--border))] px-4 py-3 bg-[hsl(var(--muted))]/10">
-          <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-2">
-            Kriteria Kesimpulan
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Jika Nilai Akhir</span>
+          {/* Ambang Batas */}
+          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
+            <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+              <span className="text-[12px] font-bold">Ambang Batas Kelulusan</span>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Jika Akhir</span>
                 <select
                   value={thresholdOperator}
                   onChange={(e) => setThresholdOperator(e.target.value)}
-                  className="h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none"
+                  className="h-9 px-3 text-[12px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none rounded-lg"
                 >
-                  <option value=">=">&ge; (Lebih dari sama dengan)</option>
-                  <option value=">">&gt; (Lebih dari)</option>
-                  <option value="=">= (Sama dengan)</option>
+                  <option value=">=">&ge;</option>
+                  <option value=">">&gt;</option>
+                  <option value="<=">&le;</option>
+                  <option value="<">&lt;</option>
                 </select>
                 <input
                   type="number"
                   value={thresholdValue}
                   onChange={(e) => setThresholdValue(parseInt(e.target.value, 10) || 0)}
-                  className="w-16 h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none"
+                  className="w-20 h-9 px-3 text-[12px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none rounded-lg"
                 />
               </div>
-              <input
-                type="text"
-                value={thresholdPassText}
-                onChange={(e) => setThresholdPassText(e.target.value)}
-                placeholder="Teks (Misal: Memenuhi Syarat)"
-                className="w-full h-8 px-3 text-[11px] text-green-700 font-bold bg-green-50 border border-green-200 outline-none focus:border-green-400"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Sebaliknya</span>
+              <div>
+                <input
+                  type="text"
+                  value={thresholdPassText}
+                  onChange={(e) => setThresholdPassText(e.target.value)}
+                  placeholder="Teks lulus"
+                  className="w-full h-10 px-3 text-[12px] text-green-700 font-bold bg-green-50 border-2 border-green-200 outline-none focus:border-green-400 rounded-lg"
+                />
               </div>
-              <input
-                type="text"
-                value={thresholdFailText}
-                onChange={(e) => setThresholdFailText(e.target.value)}
-                placeholder="Teks (Misal: Tidak Memenuhi Syarat)"
-                className="w-full h-8 px-3 text-[11px] text-red-700 font-bold bg-red-50 border border-red-200 outline-none focus:border-red-400"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Agregasi Laporan Bulanan Section */}
-        {subCategoryId && (
-          <div className="border-t border-[hsl(var(--border))] px-4 py-3 bg-[hsl(var(--muted))]/10">
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-2">
-              Koneksi Agregasi Laporan Bulanan
-            </label>
-            <p className="text-[9px] text-[hsl(var(--muted-foreground))] mb-3 leading-relaxed">
-              Petakan nilai dari form ini agar masuk secara akurat ke kolom Parameter Laporan Bulanan yang tepat. Sistem
-              akan otomatis menambahkan angka +1 ke kolom Laporan Bulanan yang Anda pilih.
-            </p>
-            <div className="grid gap-3">
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-[hsl(var(--foreground))] w-[120px] shrink-0">
-                  1. Jumlah Diperiksa
-                </span>
-                <select
-                  value={paramDiperiksaId || ""}
-                  onChange={(e) => setParamDiperiksaId(e.target.value ? Number(e.target.value) : null)}
-                  className="flex-1 h-8 px-2 text-[11px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none focus:border-[hsl(var(--accent))]"
-                >
-                  <option value="">— Jangan agregasi —</option>
-                  {categories
-                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
-                    ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama} (Kode: {p.code})
-                      </option>
-                    ))}
-                </select>
+              <div>
+                <input
+                  type="text"
+                  value={thresholdFailText}
+                  onChange={(e) => setThresholdFailText(e.target.value)}
+                  placeholder="Teks tidak lulus"
+                  className="w-full h-10 px-3 text-[12px] text-red-700 font-bold bg-red-50 border-2 border-red-200 outline-none focus:border-red-400 rounded-lg"
+                />
               </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-green-700 w-[120px] shrink-0">
-                  2. {thresholdPassText || "Memenuhi Syarat"}
-                </span>
-                <select
-                  value={paramMsId || ""}
-                  onChange={(e) => setParamMsId(e.target.value ? Number(e.target.value) : null)}
-                  className="flex-1 h-8 px-2 text-[11px] font-bold border border-green-200 bg-green-50 outline-none focus:border-green-400 text-green-800"
-                >
-                  <option value="">— Jangan agregasi —</option>
-                  {categories
-                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
-                    ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama} (Kode: {p.code})
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-red-700 w-[120px] shrink-0">
-                  3. {thresholdFailText || "Tdk Memenuhi Syarat"}
-                </span>
-                <select
-                  value={paramTmsId || ""}
-                  onChange={(e) => setParamTmsId(e.target.value ? Number(e.target.value) : null)}
-                  className="flex-1 h-8 px-2 text-[11px] font-bold border border-red-200 bg-red-50 outline-none focus:border-red-400 text-red-800"
-                >
-                  <option value="">— Jangan agregasi —</option>
-                  {categories
-                    .find((c) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
-                    ?.parameters?.map((p: any) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama} (Kode: {p.code})
-                      </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Checklist Tables — One per Group */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--border))]">
-          <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-          <span className="text-[13px] font-bold">Daftar Ceklis</span>
-          <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] ml-auto">
-            {fields.length} item &middot; {totalSkor} total bobot
-          </span>
-        </div>
-
-        {fields.length === 0 && (
-          <div className="p-8 text-center space-y-3">
-            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              Belum ada field. Mulai dengan menambah grup atau field:
-            </p>
-            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {/* Mode penilaian cepat */}
               <button
-                onClick={() => addField("__META__")}
-                className="flex items-center gap-1.5 h-9 px-4 text-[11px] font-bold border border-indigo-500 text-indigo-600 hover:bg-indigo-50 transition-colors"
+                type="button"
+                onClick={() => setDefaultYa(!defaultYa)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 text-left transition-colors ${
+                  defaultYa
+                    ? "border-[#00A876]/40 bg-[#00A876]/[0.06]"
+                    : "border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/40"
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" /> Info Sasaran
-              </button>
-              <button
-                onClick={() => {
-                  const name = prompt("Nama grup (contoh: AIR, BANGUNAN, UDARA):");
-                  if (name) addGrup(name);
-                }}
-                className="flex items-center gap-1.5 h-9 px-4 text-[11px] font-bold border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-              >
-                <FolderPlus className="w-3.5 h-3.5" /> Tambah Grup
-              </button>
-              <button
-                onClick={() => addField()}
-                className="flex items-center gap-1.5 h-9 px-4 text-[11px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" /> Tambah Item
-              </button>
-            </div>
-          </div>
-        )}
-
-        {groupedFields.map((group) => {
-          const romanIndex = group.areaIndex;
-
-          return (
-            <div key={group.grup} className="border-b border-[hsl(var(--border))] last:border-b-0">
-              {group.subbagian && group.firstInArea && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))]">
-                  <div className="w-7 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[9px] font-black shrink-0">
-                    {toRoman(romanIndex)}
-                  </div>
-                  <span className="flex-1 text-[11px] font-bold text-[hsl(var(--foreground))] uppercase tracking-wide">
-                    {group.area}
-                  </span>
-                  <button
-                    onClick={() => addSubbagian(group.area)}
-                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:opacity-80 transition-colors"
-                  >
-                    <FolderPlus className="w-3 h-3" /> Tambah Subbagian
-                  </button>
-                </div>
-              )}
-              {/* Group Header — Roman numeral + Editable name */}
-              <div
-                className={`flex items-center gap-3 px-4 py-3 border-b border-[hsl(var(--border))] ${group.subbagian ? "pl-14 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]"}`}
-              >
-                {!group.subbagian && (
-                  <div className="w-7 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[9px] font-black shrink-0">
-                    {toRoman(romanIndex)}
-                  </div>
-                )}
-                {group.grup === "__META__" ? (
-                  <span className="flex-1 text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">
-                    Data Pokok
-                  </span>
-                ) : editingGrup === group.grup ? (
-                  <input
-                    type="text"
-                    value={grupEditValue}
-                    onChange={(e) => setGrupEditValue(e.target.value)}
-                    onBlur={() => {
-                      if (grupEditValue.trim() && grupEditValue !== (group.subbagian ?? group.grup)) {
-                        renameGrup(
-                          group.grup,
-                          group.subbagian ? `${group.area} — ${grupEditValue.trim()}` : grupEditValue.trim(),
-                        );
-                      }
-                      setEditingGrup(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        if (grupEditValue.trim() && grupEditValue !== (group.subbagian ?? group.grup)) {
-                          renameGrup(
-                            group.grup,
-                            group.subbagian ? `${group.area} — ${grupEditValue.trim()}` : grupEditValue.trim(),
-                          );
-                        }
-                        setEditingGrup(null);
-                      }
-                      if (e.key === "Escape") {
-                        setEditingGrup(null);
-                      }
-                    }}
-                    className="flex-1 text-[11px] font-bold bg-transparent border-b border-[hsl(var(--accent))] outline-none px-1 py-0"
-                  />
-                ) : (
+                <span
+                  className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
+                    defaultYa ? "bg-[#00A876]" : "bg-[hsl(var(--muted))]"
+                  }`}
+                >
                   <span
-                    className="flex-1 text-[11px] font-bold text-[hsl(var(--foreground))] cursor-pointer hover:text-[hsl(var(--accent))] transition-colors uppercase tracking-wide"
-                    onClick={() => {
-                      setEditingGrup(group.grup);
-                      setGrupEditValue(group.subbagian ?? group.grup);
-                    }}
-                  >
-                    {(group.subbagian ?? group.grup).toUpperCase()}
+                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
+                      defaultYa ? "left-[18px]" : "left-0.5"
+                    }`}
+                  />
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[12px] font-bold">Mode Penilaian Cepat</span>
+                  <span className="block text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    Semua butir default Ya — operator cukup tandai yang negatif
                   </span>
-                )}
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{group.fields.length} item</span>
-                {!group.subbagian && group.grup !== "__META__" && (
-                  <button
-                    onClick={() => addSubbagian(group.area)}
-                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--card))] transition-colors"
-                  >
-                    <FolderPlus className="w-3 h-3" /> Tambah Subbagian
-                  </button>
-                )}
-                <button
-                  onClick={() => addField(group.grup)}
-                  className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] hover:bg-[hsl(var(--card))] transition-colors"
-                  title="Tambah item ke grup ini"
-                >
-                  <Plus className="w-3 h-3" /> Tambah
-                </button>
-                {group.grup !== "__META__" && (
-                  <button
-                    onClick={() => deleteGrup(group.grup)}
-                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
-                    title="Hapus grup ini"
-                  >
-                    <Trash2 className="w-3 h-3" /> Hapus
-                  </button>
-                )}
-              </div>
-
-              {/* Table */}
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[hsl(var(--border))]">
-                    <th className="w-10 px-2 py-2 text-left text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      No
-                    </th>
-                    <th className="px-2 py-2 text-left text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Variabel / Komponen
-                    </th>
-                    <th className="w-16 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Tipe
-                    </th>
-                    <th className="px-2 py-2 text-left text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Opsi
-                    </th>
-                    <th className="w-14 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Wajib
-                    </th>
-                    <th className="w-14 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Nilai ✓
-                    </th>
-                    <th className="w-14 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Nilai ✗
-                    </th>
-                    <th className="w-14 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Bobot
-                    </th>
-                    <th className="w-20 px-2 py-2 text-center text-[9px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {group.fields.map(({ field, index }) => {
-                    const globalIndex = index + 1;
-                    return (
-                      <tr
-                        key={index}
-                        className="border-b border-[hsl(var(--border))] last:border-b-0 hover:bg-[hsl(var(--muted))]/30 transition-colors"
-                      >
-                        {/* No */}
-                        <td className="px-2 py-2 text-center">
-                          <span className="w-6 h-6 inline-flex items-center justify-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]">
-                            {globalIndex}
-                          </span>
-                        </td>
-
-                        {/* Variabel */}
-                        <td className="px-2 py-2">
-                          <input
-                            type="text"
-                            value={field.pertanyaan}
-                            onChange={(e) => updateField(index, "pertanyaan", e.target.value)}
-                            placeholder="Ketik pertanyaan/komponen..."
-                            className="w-full text-[11px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent"
-                          />
-                        </td>
-
-                        {/* Tipe */}
-                        <td className="px-2 py-2 text-center">
-                          <select
-                            value={field.tipe}
-                            onChange={(e) => updateField(index, "tipe", e.target.value)}
-                            className="text-[9px] border border-[hsl(var(--border))] px-1.5 py-1 outline-none bg-[hsl(var(--card))] w-full"
-                          >
-                            {FIELD_TYPES.map((t) => (
-                              <option key={t.value} value={t.value}>
-                                {t.label}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
-                        {/* Opsi (untuk SELECT/DROPDOWN) */}
-                        <td className="px-2 py-2">
-                          {field.tipe === "SELECT" || field.tipe === "DROPDOWN" ? (
-                            <input
-                              value={
-                                typeof field.options === "string"
-                                  ? field.options
-                                  : Array.isArray(field.options)
-                                    ? field.options.join(", ")
-                                    : ""
-                              }
-                              onChange={(e) => updateField(index, "options", e.target.value)}
-                              placeholder="Opsi, pisahkan dengan koma"
-                              className="w-full max-w-[220px] text-[10px] border border-[hsl(var(--border))] px-1.5 py-1 outline-none bg-[hsl(var(--card))]"
-                            />
-                          ) : (
-                            <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-40">-</span>
-                          )}
-                        </td>
-
-                        {/* Wajib */}
-                        <td className="px-2 py-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={field.isRequired}
-                            onChange={(e) => updateField(index, "isRequired", e.target.checked)}
-                            className="w-4 h-4 border-[hsl(var(--border))] accent-[hsl(var(--foreground))] cursor-pointer"
-                          />
-                        </td>
-
-                        {/* Skor Benar / Salah / Bobot */}
-                        <td className="px-2 py-2 text-center">
-                          {field.tipe === "BOOLEAN" ? (
-                            <input
-                              type="number"
-                              value={field.skorBenar ?? 1}
-                              onChange={(e) => updateField(index, "skorBenar", parseInt(e.target.value, 10) || 0)}
-                              className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-green-50 text-green-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              title="Nilai jika terpenuhi (Ya)"
-                            />
-                          ) : (
-                            <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          {field.tipe === "BOOLEAN" ? (
-                            <input
-                              type="number"
-                              value={field.skorSalah ?? 0}
-                              onChange={(e) => updateField(index, "skorSalah", parseInt(e.target.value, 10) || 0)}
-                              className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-red-50 text-red-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              title="Nilai jika tidak terpenuhi (Tidak)"
-                            />
-                          ) : (
-                            <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <input
-                            type="number"
-                            value={field.skor ?? 0}
-                            onChange={(e) => updateField(index, "skor", parseInt(e.target.value, 10) || 0)}
-                            min={0}
-                            className="w-12 text-[10px] font-bold text-center border border-[hsl(var(--border))] px-1 py-1 outline-none bg-[hsl(var(--card))] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            title={field.tipe === "BOOLEAN" ? "Bobot pengali" : "Nilai/Bobot"}
-                          />
-                        </td>
-
-                        {/* Aksi */}
-                        <td className="px-2 py-2">
-                          <div className="flex items-center justify-center gap-0.5">
-                            <button
-                              onClick={() => moveField(index, "up")}
-                              disabled={index === 0}
-                              className="w-6 h-6 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30 transition-colors"
-                              title="Naik"
-                            >
-                              <ArrowUp className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={() => moveField(index, "down")}
-                              disabled={index === fields.length - 1}
-                              className="w-6 h-6 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] disabled:opacity-30 transition-colors"
-                              title="Turun"
-                            >
-                              <ArrowDown className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={() => removeField(index)}
-                              className="w-6 h-6 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-red-500 hover:bg-[hsl(var(--muted))] transition-colors"
-                              title="Hapus"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-
-              {/* Group Footer — Subtotal Score */}
-              {group.fields.some((f) => (f.field.skor ?? 0) > 0) && (
-                <div className="flex items-center justify-end gap-2 px-4 py-2 border-t border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
-                  <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-                    Subtotal Bobot {toRoman(romanIndex)}:
-                  </span>
-                  <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">
-                    {group.fields.reduce((s, { field }) => s + (field.skor ?? 0), 0)}
-                  </span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Bottom: Add Group */}
-        {fields.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[hsl(var(--border))]">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => addField("__META__")}
-                className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-indigo-500 text-indigo-600 hover:bg-indigo-50 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" /> Info Sasaran
+                </span>
               </button>
-              <button
-                onClick={() => {
-                  const name = prompt("Nama grup (contoh: AIR, BANGUNAN, UDARA):");
-                  if (name) addGrup(name);
-                }}
-                className="flex items-center gap-1.5 h-9 px-3 text-[11px] font-bold border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors"
-              >
-                <FolderPlus className="w-3.5 h-3.5" /> Tambah Grup
-              </button>
-            </div>
-
-            {/* Total Score */}
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Total Bobot</span>
-              <span className="text-[18px] font-bold text-[hsl(var(--foreground))]">{totalSkor}</span>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Delete */}
-      {selectedTemplateId && (
-        <button
-          onClick={() => {
-            if (confirm("Hapus template ini?")) {
-              deleteMutation.mutate(selectedTemplateId);
-            }
-          }}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-red-500 hover:underline"
-        >
-          <Trash2 className="w-3.5 h-3.5" /> Hapus Template
-        </button>
-      )}
+          {/* Agregasi */}
+          {subCategoryId && (
+            <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
+              <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+                <span className="text-[12px] font-bold">Agregasi Laporan Bulanan</span>
+              </div>
+              <div className="p-5 space-y-4">
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                  Petakan nilai form ke parameter laporan bulanan.
+                </p>
+                {[
+                  { label: "1. Jumlah Diperiksa", value: paramDiperiksaId, setter: setParamDiperiksaId, color: "" },
+                  { label: "2. Memenuhi Syarat", value: paramMsId, setter: setParamMsId, color: "text-green-700" },
+                  { label: "3. Tidak Memenuhi", value: paramTmsId, setter: setParamTmsId, color: "text-red-700" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-3">
+                    <span className={`text-[12px] font-bold w-[130px] shrink-0 ${item.color}`}>{item.label}</span>
+                    <select
+                      value={item.value || ""}
+                      onChange={(e) => item.setter(e.target.value ? Number(e.target.value) : null)}
+                      className={`flex-1 h-10 px-3 text-[12px] font-bold border-2 outline-none rounded-lg ${
+                        item.color
+                          ? item.color === "text-green-700"
+                            ? "border-green-200 bg-green-50 text-green-800 focus:border-green-400"
+                            : "border-red-200 bg-red-50 text-red-800 focus:border-red-400"
+                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:border-[hsl(var(--accent))]"
+                      }`}
+                    >
+                      <option value="">—</option>
+                      {categories
+                        .find((c: any) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
+                        ?.parameters?.map((p: any) => (
+                          <option key={p.id} value={p.id}>
+                            {p.nama} ({p.code})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel: Fields */}
+        <div className="min-w-0">
+          {/* Sticky mini-nav */}
+          {groupedFields.length > 1 && (
+            <div className="sticky top-0 z-20 -mx-1 px-1 py-2 mb-3 bg-[hsl(var(--background))]/95 backdrop-blur border-b border-[hsl(var(--border))]">
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                {groupedFields.map((g) => (
+                  <button
+                    key={g.grup}
+                    onClick={() => scrollToGroup(g.grup)}
+                    className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-bold transition-colors ${
+                      activeGroup === g.grup
+                        ? "bg-[#00A876] text-white"
+                        : "bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                    }`}
+                  >
+                    <span className="font-black">
+                      {g.grup === "__META__"
+                        ? "M"
+                        : g.subbagian
+                          ? `${toRoman(g.areaIndex)}.${g.subIndex}`
+                          : toRoman(g.areaIndex)}
+                    </span>
+                    <span className="max-w-[120px] truncate">
+                      {g.grup === "__META__" ? "Metadata" : g.subbagian || g.area}
+                    </span>
+                    <span className="text-[9px] opacity-70">{g.fields.length}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+              <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+              <span className="text-[12px] font-bold">Daftar Ceklis</span>
+              <span className="ml-auto text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
+                {fields.length} item
+              </span>
+            </div>
+
+            {fields.length === 0 ? (
+              <div className="p-12 text-center space-y-4">
+                <p className="text-[14px] text-[hsl(var(--muted-foreground))]">Belum ada butir pemeriksaan</p>
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => addField("__META__")}
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 transition-colors rounded-lg"
+                  >
+                    <Plus className="w-4 h-4" /> Metadata
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFields([
+                        {
+                          pertanyaan: "",
+                          tipe: "BOOLEAN",
+                          isRequired: false,
+                          grup: "",
+                          skor: 1,
+                          skorBenar: 1,
+                          skorSalah: 0,
+                          opsi: "",
+                        },
+                      ]);
+                      setAddingInline({ type: "bagian" });
+                      setInlineName("");
+                    }}
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border-2 border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors rounded-lg"
+                  >
+                    <FolderPlus className="w-4 h-4" /> Tambah Grup
+                  </button>
+                  <button
+                    onClick={() => addField()}
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 transition-colors rounded-lg"
+                  >
+                    <Plus className="w-4 h-4" /> Tambah Butir
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-[hsl(var(--border))]">
+                {groupedFields.map((group) => {
+                  const isCollapsed = collapsedGroups.has(group.grup);
+                  return (
+                    <div key={group.grup} id={`grup-${group.grup}`} className="scroll-mt-16">
+                      {/* Group Header — klik untuk collapse */}
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleGroup(group.grup)}
+                        onKeyDown={(e) => e.key === "Enter" && toggleGroup(group.grup)}
+                        className={`flex items-center gap-3 px-5 py-3 cursor-pointer select-none transition-colors hover:bg-[hsl(var(--muted))]/60 ${
+                          group.subbagian ? "pl-10 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]/30"
+                        }`}
+                      >
+                        <ChevronRight
+                          className={`w-4 h-4 text-[hsl(var(--muted-foreground))] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+                        />
+                        <div className="w-9 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[11px] font-black shrink-0 rounded-lg">
+                          {group.grup === "__META__"
+                            ? "M"
+                            : group.subbagian
+                              ? `${toRoman(group.areaIndex)}.${group.subIndex}`
+                              : toRoman(group.areaIndex)}
+                        </div>
+                        {group.grup === "__META__" ? (
+                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--muted-foreground))] tracking-wide">
+                            Metadata
+                          </span>
+                        ) : (
+                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--foreground))] tracking-wide">
+                            {(group.subbagian || group.grup).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                          {group.fields.length} item
+                        </span>
+                        {!group.subbagian && group.grup !== "__META__" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addSubbagian(group.area);
+                            }}
+                            className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                          >
+                            <FolderPlus className="w-3 h-3" /> Subbagian
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addField(group.grup);
+                          }}
+                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                        >
+                          <Plus className="w-3 h-3" /> Butir
+                        </button>
+                        {group.grup !== "__META__" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteGrup(group.grup);
+                            }}
+                            className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-md"
+                          >
+                            <Trash2 className="w-3 h-3" /> Hapus
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Inline add subbagian */}
+                      {addingInline?.type === "sub" && addingInline.area === group.area && !group.subbagian && (
+                        <div className="flex items-center gap-2 px-5 py-3 bg-[#00A876]/[0.04] border-t border-[#00A876]/20">
+                          <span className="text-[11px] font-bold text-[#00A876] shrink-0">Subbagian {group.area}:</span>
+                          <input
+                            autoFocus
+                            value={inlineName}
+                            onChange={(e) => setInlineName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") submitInline();
+                              if (e.key === "Escape") setAddingInline(null);
+                            }}
+                            placeholder="Nama subbagian..."
+                            className="flex-1 h-8 px-3 text-[12px] border border-[#00A876]/30 rounded-lg outline-none focus:border-[#00A876] bg-white"
+                          />
+                          <button
+                            onClick={submitInline}
+                            className="h-8 px-3 text-[11px] font-bold bg-[#00A876] text-white rounded-lg hover:opacity-90"
+                          >
+                            Tambah
+                          </button>
+                          <button
+                            onClick={() => setAddingInline(null)}
+                            className="h-8 px-3 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      )}
+                      {!isCollapsed && (
+                        <div className="w-full overflow-x-auto border-t border-[hsl(var(--border))]">
+                          <table className="w-full text-left">
+                            <thead>
+                              <tr className="border-b-2 border-[hsl(var(--border))]">
+                                <th className="w-12 px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  No
+                                </th>
+                                <th className="px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Pertanyaan
+                                </th>
+                                <th className="w-20 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Tipe
+                                </th>
+                                <th className="px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Opsi
+                                </th>
+                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Wajib
+                                </th>
+                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Skor
+                                </th>
+                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Benar
+                                </th>
+                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Salah
+                                </th>
+                                <th className="w-24 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Aksi
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[hsl(var(--border))]">
+                              {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => (
+                                <tr key={index} className="hover:bg-[hsl(var(--muted))]/20">
+                                  <td className="px-3 py-3 text-[12px] font-mono text-[hsl(var(--muted-foreground))]">
+                                    {localIdx + 1}
+                                  </td>
+                                  <td className="px-3 py-3">
+                                    <input
+                                      type="text"
+                                      value={field.pertanyaan}
+                                      onChange={(e) => updateField(index, "pertanyaan", e.target.value)}
+                                      placeholder="Tulis pertanyaan..."
+                                      className="w-full text-[12px] font-medium bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <select
+                                      value={field.tipe}
+                                      onChange={(e) => updateField(index, "tipe", e.target.value)}
+                                      className="text-[11px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1 outline-none rounded-md"
+                                    >
+                                      {FIELD_TYPES.map((t) => (
+                                        <option key={t.value} value={t.value}>
+                                          {t.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </td>
+                                  <td className="px-3 py-3">
+                                    {field.tipe === "SELECT" && (
+                                      <input
+                                        type="text"
+                                        value={field.opsi || ""}
+                                        onChange={(e) => updateField(index, "opsi", e.target.value)}
+                                        placeholder="opsi1,opsi2"
+                                        className="w-full text-[11px] bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1"
+                                      />
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.isRequired}
+                                      onChange={(e) => updateField(index, "isRequired", e.target.checked)}
+                                      className="w-4 h-4 accent-[hsl(var(--accent))]"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <input
+                                      type="number"
+                                      value={field.skor ?? 0}
+                                      onChange={(e) => updateField(index, "skor", parseFloat(e.target.value) || 0)}
+                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <input
+                                      type="number"
+                                      value={field.skorBenar ?? 1}
+                                      onChange={(e) => updateField(index, "skorBenar", parseFloat(e.target.value) || 0)}
+                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <input
+                                      type="number"
+                                      value={field.skorSalah ?? 0}
+                                      onChange={(e) => updateField(index, "skorSalah", parseFloat(e.target.value) || 0)}
+                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button
+                                        onClick={() => moveField(index, "up")}
+                                        disabled={index === 0}
+                                        className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
+                                      >
+                                        ↑
+                                      </button>
+                                      <button
+                                        onClick={() => moveField(index, "down")}
+                                        disabled={index === fields.length - 1}
+                                        className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
+                                      >
+                                        ↓
+                                      </button>
+                                      <button
+                                        onClick={() => removeField(index)}
+                                        className="p-1.5 text-red-400 hover:text-red-600"
+                                      >
+                                        <X className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Tambah Bagian — inline, selalu terlihat saat ada fields */}
+            {fields.length > 0 && (
+              <div className="px-5 py-4 border-t border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
+                {addingInline?.type === "bagian" ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-[#00A876] shrink-0">Bagian baru:</span>
+                    <input
+                      autoFocus
+                      value={inlineName}
+                      onChange={(e) => setInlineName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") submitInline();
+                        if (e.key === "Escape") setAddingInline(null);
+                      }}
+                      placeholder="Contoh: AIR, BANGUNAN, UDARA..."
+                      className="flex-1 h-8 px-3 text-[12px] border border-[#00A876]/30 rounded-lg outline-none focus:border-[#00A876] bg-white"
+                    />
+                    <button
+                      onClick={submitInline}
+                      className="h-8 px-3 text-[11px] font-bold bg-[#00A876] text-white rounded-lg hover:opacity-90"
+                    >
+                      Tambah
+                    </button>
+                    <button
+                      onClick={() => setAddingInline(null)}
+                      className="h-8 px-3 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <button
+                      onClick={() => {
+                        setAddingInline({ type: "bagian" });
+                        setInlineName("");
+                      }}
+                      className="flex items-center gap-2 h-9 px-4 text-[11px] font-bold border border-dashed border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[#00A876]/50 hover:text-[#00A876] transition-colors rounded-lg"
+                    >
+                      <FolderPlus className="w-3.5 h-3.5" /> Tambah Bagian
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

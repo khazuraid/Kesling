@@ -1,4 +1,4 @@
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 
 export function Skeleton({
   width = "100%",
@@ -14,7 +14,7 @@ export function Skeleton({
   );
 }
 
-export function ListSkeleton({ rows = 6, height = 64 }: { rows?: number; height?: number }) {
+export function ListSkeleton({ rows = 6 }: { rows?: number; height?: number }) {
   return (
     <YStack gap="$3" paddingHorizontal="$4">
       {Array.from({ length: rows }).map((_, i) => (

@@ -2,6 +2,7 @@ import { Camera, X } from "@tamagui/lucide-icons-2";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { C } from "../lib/tokens";
 
 export type PhotoItem = { base64: string; mimeType: string };
 
@@ -80,7 +81,7 @@ export function PhotoCapture({
           </Pressable>
         ) : null}
         {photos.length < max ? (
-          <Pressable style={[styles.addBtn, { backgroundColor: "#F7F5F2" }]} onPress={pick} disabled={busy}>
+          <Pressable style={[styles.addBtn, { backgroundColor: C.bg }]} onPress={pick} disabled={busy}>
             <Text style={styles.addText}>📁</Text>
             <Text style={styles.addText}>Galeri</Text>
           </Pressable>
@@ -95,7 +96,7 @@ export function PhotoCapture({
 
 const styles = StyleSheet.create({
   thumbWrap: { position: "relative" },
-  thumb: { width: 76, height: 76, borderRadius: 14, borderWidth: 1, borderColor: "#ECE7E1" },
+  thumb: { width: 76, height: 76, borderRadius: 14, borderWidth: 1, borderColor: "#E4E4E0" },
   removeBtn: {
     position: "absolute",
     top: -6,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#ECE7E1",
+    borderColor: "#E4E4E0",
     borderStyle: "dashed",
     backgroundColor: "#FFFFFF",
     alignItems: "center",
@@ -120,5 +121,5 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   addText: { fontSize: 10, color: "#00A876", fontWeight: "600" },
-  hint: { fontSize: 11, color: "#8A8580", marginTop: 8 },
+  hint: { fontSize: 11, color: "#71717A", marginTop: 8 },
 });

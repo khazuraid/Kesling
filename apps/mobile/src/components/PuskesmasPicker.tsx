@@ -1,7 +1,6 @@
 import { Check, MapPin } from "@tamagui/lucide-icons-2";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { api } from "../lib/api";
 import { ActionSheet } from "./motion/ActionSheet";
 
@@ -48,7 +47,7 @@ export function PuskesmasPicker({
       title="Pilih Puskesmas"
       items={[
         {
-          icon: <MapPin size={18} color="#8A8580" />,
+          icon: <MapPin size={18} color="#71717A" />,
           label: "Semua / Default",
           onPress: () => {
             onPicked(null);

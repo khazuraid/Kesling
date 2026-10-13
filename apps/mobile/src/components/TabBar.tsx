@@ -1,6 +1,9 @@
+import { BarChart3, ClipboardList, Home, Plus } from "@tamagui/lucide-icons-2";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import { C } from "../lib/tokens";
 
 type Route = { key: string; name: string };
 type TabBarProps = {
@@ -9,6 +12,12 @@ type TabBarProps = {
   navigation: any;
   onFabPress?: () => void;
   fabOpen?: boolean;
+};
+
+const ICONS: Record<string, any> = {
+  index: Home,
+  pemeriksaan: ClipboardList,
+  rekap: BarChart3,
 };
 
 function TabItem({
@@ -24,12 +33,17 @@ function TabItem({
 }) {
   const { options } = descriptors[route.key];
   const label = options.title ?? route.name;
-  const Icon = options.tabBarIcon as any;
+  const Icon = ICONS[route.name] ?? (options.tabBarIcon as any);
 
   const scale = useSharedValue(1);
-  const scaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const pillOpacity = useSharedValue(isFocused ? 1 : 0);
+
+  useEffect(() => {
+    pillOpacity.value = withTiming(isFocused ? 1 : 0, { duration: 220 });
+  }, [isFocused]);
+
+  const pillStyle = useAnimatedStyle(() => ({ opacity: pillOpacity.value }));
+  const scaleStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const onPress = () => {
     const event = navigation.emit({
@@ -37,21 +51,26 @@ function TabItem({
       target: route.key,
       canPreventDefault: true,
     });
-    if (!isFocused && !event.defaultPrevented) {
-      navigation.navigate(route.name);
-    }
+    if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
   };
 
   return (
     <Pressable
       onPress={onPress}
-      onPressIn={() => (scale.value = withSpring(1.1, { damping: 14 }))}
-      onPressOut={() => (scale.value = withSpring(1, { damping: 14 }))}
+      onPressIn={() => (scale.value = withSpring(0.9, { damping: 12 }))}
+      onPressOut={() => (scale.value = withSpring(1, { damping: 12 }))}
       style={styles.tabSlot}
     >
-      <Animated.View style={[styles.tabInner, scaleStyle, isFocused && styles.tabInnerActive]}>
-        {Icon ? <Icon color={isFocused ? "#00A876" : "#8A8580"} size={22} focused={isFocused} /> : null}
-        <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>{label}</Text>
+      <Animated.View style={[styles.tabInner, scaleStyle]}>
+        <View style={styles.iconWrap}>
+          <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />
+          {Icon ? <Icon color={isFocused ? C.accent : C.ink2} size={21} strokeWidth={isFocused ? 2.3 : 1.8} /> : null}
+        </View>
+        <Text
+          style={[styles.tabLabel, { color: isFocused ? C.accent : C.ink2, fontWeight: isFocused ? "700" : "500" }]}
+        >
+          {label}
+        </Text>
       </Animated.View>
     </Pressable>
   );
@@ -59,43 +78,79 @@ function TabItem({
 
 export function TabBar({ state, descriptors, navigation, onFabPress, fabOpen }: TabBarProps) {
   const routes = state.routes;
-  const left = routes.slice(0, 2);
-  const right = routes.slice(2);
-
+  const fabScale = useSharedValue(1);
   const fabRotate = useSharedValue(0);
+
   useEffect(() => {
-    fabRotate.value = withSpring(fabOpen ? 225 : 0, { damping: 14, stiffness: 200 });
+    fabRotate.value = withSpring(fabOpen ? 45 : 0, { damping: 15, stiffness: 260 });
+    fabScale.value = withSpring(fabOpen ? 0.92 : 1, { damping: 14 });
   }, [fabOpen]);
+
   const fabStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${fabRotate.value}deg` }],
+    transform: [{ scale: fabScale.value }, { rotate: `${fabRotate.value}deg` }],
   }));
 
   return (
-    <View pointerEvents="box-none" style={styles.container}>
+    <View style={styles.container} pointerEvents="box-none">
       <View style={styles.bar}>
-        {left.map((route, i) => (
+        {/* Tab pertama (Beranda) */}
+        {routes[0] && (
           <TabItem
-            key={route.key}
-            route={route}
-            isFocused={state.index === i}
+            key={routes[0].key}
+            route={routes[0]}
+            isFocused={state.index === 0}
             descriptors={descriptors}
             navigation={navigation}
           />
-        ))}
-        <Pressable onPress={onFabPress} style={styles.fabHit} hitSlop={8}>
-          <Animated.View style={[styles.fab, fabStyle]}>
-            <Text style={styles.fabIcon}>+</Text>
-          </Animated.View>
+        )}
+
+        {/* Tab kedua jika ada 3 routes (Draft) */}
+        {routes.length > 2 && routes[1] && (
+          <TabItem
+            key={routes[1].key}
+            route={routes[1]}
+            isFocused={state.index === 1}
+            descriptors={descriptors}
+            navigation={navigation}
+          />
+        )}
+
+        {/* FAB slot TENGAH (V40) */}
+        <Pressable
+          onPress={onFabPress}
+          onPressIn={() => {
+            fabScale.value = withSpring(0.88, { damping: 14 });
+          }}
+          onPressOut={() => {
+            fabScale.value = withSpring(fabOpen ? 0.92 : 1, { damping: 14 });
+          }}
+          style={styles.tabSlot}
+        >
+          <View style={styles.fabCol}>
+            <Animated.View style={fabStyle}>
+              <LinearGradient
+                colors={["#5B8DEF", "#7C3AED"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fabBtn}
+              >
+                <Plus size={22} color="#FFFFFF" strokeWidth={2.6} />
+              </LinearGradient>
+            </Animated.View>
+            <Text style={styles.fabLabel}>Periksa</Text>
+          </View>
         </Pressable>
-        {right.map((route, i) => (
+
+        {/* Tab Rekap (route terakhir) */}
+        {routes.length > 1 && (
           <TabItem
-            key={route.key}
-            route={route}
-            isFocused={state.index === i + 2}
+            key={routes[routes.length - 1].key}
+            route={routes[routes.length - 1]}
+            isFocused={state.index === routes.length - 1}
             descriptors={descriptors}
             navigation={navigation}
           />
-        ))}
+        )}
       </View>
     </View>
   );
@@ -107,78 +162,67 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 92,
+    zIndex: 30,
   },
   bar: {
-    position: "absolute",
-    bottom: 16,
-    left: 16,
-    right: 16,
-    height: 62,
+    backgroundColor: "#FFFFFF",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.06)",
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.94)",
-    borderWidth: 1,
-    borderColor: "#ECE7E1",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 12,
     paddingHorizontal: 6,
+    paddingBottom: 10,
   },
   tabSlot: {
     flex: 1,
-    height: 62,
     alignItems: "center",
     justifyContent: "center",
   },
   tabInner: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
+    gap: 5,
+    paddingVertical: 10,
   },
-  tabInnerActive: {
-    backgroundColor: "#E6F6F0",
+  iconWrap: {
+    width: 44,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pill: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 999,
+    backgroundColor: "rgba(37,99,235,0.08)",
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#8A8580",
-    marginTop: 2,
+    fontSize: 10,
+    letterSpacing: 0.3,
   },
-  tabLabelActive: {
-    color: "#00A876",
-    fontWeight: "700",
+  fabCol: {
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 6,
   },
-  fabHit: {
-    width: 64,
-    height: 64,
+  fabBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     alignItems: "center",
     justifyContent: "center",
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#00A876",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -28,
-    shadowColor: "#00A876",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    shadowColor: "#7C3AED",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 18,
     elevation: 8,
   },
-  fabIcon: {
-    fontSize: 30,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    lineHeight: 34,
-    marginTop: -2,
+  fabLabel: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: C.ink2,
+    letterSpacing: 0.3,
   },
 });

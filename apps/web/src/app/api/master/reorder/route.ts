@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { validateBody } from "@/lib/validations";
 
 const reorderSchema = z.object({
@@ -29,14 +30,12 @@ export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => 
     items.map((item) => (model as any).update({ where: { id: item.id }, data: { urutan: item.urutan } })),
   );
 
-  await prisma.auditLog.create({
-    data: {
-      userId,
-      action: "UPDATE",
-      tableName: table,
-      recordId: 0,
-      newData: { action: "reorder", count: items.length },
-    },
+  await createAuditLog({
+    userId,
+    action: "UPDATE",
+    tableName: table,
+    recordId: 0,
+    newData: { action: "reorder", count: items.length },
   });
 
   return NextResponse.json({ ok: true });

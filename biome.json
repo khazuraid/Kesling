@@ -15,7 +15,10 @@
         "noLabelWithoutControl": "off",
         "useButtonType": "off",
         "noStaticElementInteractions": "off",
-        "useKeyWithClickEvents": "off"
+        "useKeyWithClickEvents": "off",
+        "noAutofocus": "off",
+        "useSemanticElements": "off",
+        "noSvgWithoutTitle": "off"
       }
     }
   },
@@ -42,7 +45,14 @@
       "!**/.turbo",
       "!**/prisma/migrations",
       "!**/.expo",
-      "!**/expo-env.d.ts"
+      "!**/.tamagui",
+      "!**/expo-env.d.ts",
+      "!**/ios",
+      "!**/android",
+      "!**/Pods",
+      "!**/Kesling Mobile",
+      "!**/.claude",
+      "!**/graphify-out"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { cacheInvalidate } from "@/lib/redis";
 
 // GET all categories with parameters, subcategories, and formulas
@@ -107,6 +108,42 @@ export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
         });
       }
 
+      // Default Data Dasar (baseline) fields: Nama, Alamat, No HP — bisa diubah/dihapus di Builder
+      await tx.dynamicParameter.createMany({
+        data: [
+          {
+            categoryId: category.id,
+            nama: "Nama",
+            code: "nama",
+            type: "TEXT",
+            urutan: 90,
+            isBaseline: true,
+            required: true,
+            config: { syncToEntityField: "nama" },
+          },
+          {
+            categoryId: category.id,
+            nama: "Alamat",
+            code: "alamat",
+            type: "TEXT",
+            urutan: 91,
+            isBaseline: true,
+            required: false,
+            config: { syncToEntityField: "alamat" },
+          },
+          {
+            categoryId: category.id,
+            nama: "No HP",
+            code: "kontak",
+            type: "TEXT",
+            urutan: 92,
+            isBaseline: true,
+            required: false,
+            config: { syncToEntityField: "kontak" },
+          },
+        ],
+      });
+
       return tx.dynamicCategory.findUnique({
         where: { id: category.id },
         include: {
@@ -117,14 +154,12 @@ export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       });
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: "CREATE",
-        tableName: "dynamic_category",
-        recordId: data?.id ?? 0,
-        newData: { nama, code },
-      },
+    await createAuditLog({
+      userId,
+      action: "CREATE",
+      tableName: "dynamic_category",
+      recordId: data?.id ?? 0,
+      newData: { nama, code },
     });
 
     await cacheInvalidate("laporan:*");

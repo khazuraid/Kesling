@@ -22,7 +22,7 @@ const BULAN_NAMES = [
 // OR auto-generate if not exists yet
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req);
-  if (!user || !user.puskesmasId) {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const scopePuskesmasId = resolvePuskesmasId(req, user) ?? user.puskesmasId;
@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
 
   try {
     // Get all sasaran for this puskesmas, grouped by subCategory (kategori)
-    const sasarans = await prisma.sasaran.findMany({
-      where: { puskesmasId: scopePuskesmasId },
+    const sasarans: any[] = await prisma.sasaran.findMany({
+      where: { puskesmasId: scopePuskesmasId ?? undefined },
       include: {
         subCategory: { select: { id: true, nama: true, category: { select: { id: true, nama: true, icon: true } } } },
         rencanaBulanan: {

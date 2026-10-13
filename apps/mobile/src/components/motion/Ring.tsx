@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { Text, View } from "react-native";
-import Animated, { Easing, useAnimatedProps, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedProps, useSharedValue, withSpring } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
+import { useTheme } from "tamagui";
 import { useCountUp } from "./primitives";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -26,6 +27,7 @@ export function ProgressRing({
   const sv = useSharedValue(circumference);
   const pct = Math.max(0, Math.min(100, progress));
   const count = useCountUp(pct);
+  const theme = useTheme();
 
   useEffect(() => {
     sv.value = withSpring(circumference - (pct / 100) * circumference, {
@@ -42,7 +44,14 @@ export function ProgressRing({
     <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
       <Svg width={size} height={size}>
         {/* Track */}
-        <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#ECE7E1" strokeWidth={strokeWidth} fill="none" />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={theme.border.val}
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
         {/* Progress */}
         <AnimatedCircle
           cx={size / 2}
@@ -58,8 +67,8 @@ export function ProgressRing({
         />
       </Svg>
       <View style={{ position: "absolute", alignItems: "center" }}>
-        {label ? <Text style={{ fontSize: 28, fontWeight: "800", color: "#1F1D1B" }}>{count}%</Text> : null}
-        {sublabel ? <Text style={{ fontSize: 13, color: "#8A8580", marginTop: 2 }}>{sublabel}</Text> : null}
+        {label ? <Text style={{ fontSize: 28, fontWeight: "800", color: theme.fg.val }}>{count}%</Text> : null}
+        {sublabel ? <Text style={{ fontSize: 13, color: theme.muted.val, marginTop: 2 }}>{sublabel}</Text> : null}
       </View>
     </View>
   );

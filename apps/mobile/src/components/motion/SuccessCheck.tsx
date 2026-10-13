@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, { Easing, useAnimatedProps, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Path } from "react-native-svg";
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const _AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 export function SuccessCheck({ visible, onComplete }: { visible: boolean; onComplete?: () => void }) {
@@ -25,7 +25,7 @@ export function SuccessCheck({ visible, onComplete }: { visible: boolean; onComp
   const r = 54;
   const circumference = 2 * Math.PI * r;
 
-  const circleProps = useAnimatedProps(() => ({
+  const _circleProps = useAnimatedProps(() => ({
     strokeDashoffset: (1 - circleSv.value) * circumference,
   }));
   const checkProps = useAnimatedProps(() => ({
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#1F1D1B",
+    color: "#18181B",
   },
 });

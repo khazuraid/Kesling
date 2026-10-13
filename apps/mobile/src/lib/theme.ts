@@ -9,7 +9,6 @@ export async function getTheme(): Promise<ThemeName> {
   return ((await AsyncStorage.getItem(KEY)) as ThemeName) || "light";
 }
 
-/** Simple pub/sub so Provider re-reads theme after toggle without app restart. */
 export const __themeListeners = new Set<() => void>();
 
 export async function setThemePref(name: ThemeName) {
@@ -19,14 +18,11 @@ export async function setThemePref(name: ThemeName) {
   });
 }
 
-/** ponytail: app-level override; add "system" option when user asks. */
 export function useThemePref(): [ThemeName, (t: ThemeName) => void] {
   const [theme, setTheme] = useState<ThemeName>("light");
   useEffect(() => {
     getTheme().then(setTheme);
-    const sync = () => {
-      getTheme().then(setTheme);
-    };
+    const sync = () => getTheme().then(setTheme);
     __themeListeners.add(sync);
     return () => {
       __themeListeners.delete(sync);
@@ -52,24 +48,23 @@ export type Palette = {
 const LIGHT: Palette = {
   bg: "#F7F5F2",
   card: "#FFFFFF",
-  border: "#ECE7E1",
-  text: "#1F1D1B",
-  sub: "#8A8580",
+  border: "rgba(28,25,23,0.08)",
+  text: "#1B1917",
+  sub: "#57534E",
   accent: "#00A876",
-  accentSoft: "#E6F6F0",
+  accentSoft: "#E0F4EE",
 };
 
 const DARK: Palette = {
   bg: "#17140F",
-  card: "#211D17",
-  border: "#38332B",
-  text: "#F0EDE6",
-  sub: "#A39D92",
+  card: "#242019",
+  border: "rgba(250,248,244,0.1)",
+  text: "#FAF8F4",
+  sub: "#A8A29E",
   accent: "#00A876",
-  accentSoft: "#123B2E",
+  accentSoft: "rgba(0,168,118,0.18)",
 };
 
-/** Reactive palette utk screens dengan inline/StyleSheet hex — subscribe ke __themeListeners. */
 export function usePalette(): Palette {
   const [theme] = useThemePref();
   return theme === "dark" ? DARK : LIGHT;

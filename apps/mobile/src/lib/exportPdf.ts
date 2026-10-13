@@ -1,5 +1,6 @@
 import { Directory, EncodingType, File, Paths } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
+import { Platform } from "react-native";
 
 // ponytail: uses backend jsPDF endpoint; local render when offline PDF needed
 
@@ -13,6 +14,17 @@ export async function shareInspectionPdf(id: number, token: string) {
   const url = `${BASE}/api/mobile/v1/inspection/results/${id}/pdf`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Gagal membuat PDF (${res.status})`);
+
+  if (Platform.OS === "web") {
+    const blobUrl = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `inspeksi-${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+    return;
+  }
+
   const blob = await res.blob();
   const base64 = await blobToBase64(blob);
   const cacheDir = new Directory(Paths.cache);

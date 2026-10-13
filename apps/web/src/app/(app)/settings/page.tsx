@@ -1,15 +1,18 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Building2, Copy, Settings2, ShieldAlert, Sparkles, Target, Users } from "lucide-react";
+import { Activity, Bot, Building2, Copy, ShieldAlert, Sparkles, Target, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MasterCrud } from "@/components/master-crud";
+import { SystemHealthDashboard } from "@/components/system-health-dashboard";
 import { EmptyState } from "@/components/ui/empty-state";
 import AISettingsPage from "./ai/page";
 import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DynamicCategory {
   id: number;
@@ -28,6 +31,14 @@ interface DynamicTarget {
 interface Puskesmas {
   id: number;
   nama: string;
+}
+
+// ─── Target management ────────────────────────────────────────────────────────
+
+function targetTier(pct: number) {
+  if (pct >= 80) return { bar: "#00A876", text: "#00A876", soft: "rgba(0,168,118,0.12)" };
+  if (pct >= 60) return { bar: "#E8A33D", text: "#C07F1F", soft: "rgba(232,163,61,0.14)" };
+  return { bar: "#E15A4F", text: "#E15A4F", soft: "rgba(225,90,79,0.12)" };
 }
 
 function TargetManagement() {
@@ -97,20 +108,17 @@ function TargetManagement() {
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            value={tahun}
-            onChange={(e) => setTahun(Number(e.target.value))}
-            className="w-20 h-9 px-2.5 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors"
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2">
+        <input
+          type="number"
+          value={tahun}
+          onChange={(e) => setTahun(Number(e.target.value))}
+          className="w-24 h-10 px-3 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[13px] font-extrabold text-center tabular-nums text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+        />
         <select
           value={selectedPkmId}
           onChange={(e) => setSelectedPkmId(e.target.value)}
-          className="h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors cursor-pointer"
+          className="h-10 px-3.5 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-bold text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors cursor-pointer"
         >
           <option value="global">Target Global</option>
           {puskesmasList.map((p) => (
@@ -123,87 +131,91 @@ function TargetManagement() {
           <button
             onClick={() => bulkCopyMutation.mutate()}
             disabled={bulkCopyMutation.isPending}
-            className="h-9 px-3 border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            className="ml-auto inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
           >
-            <Copy className="w-3 h-3" />
-            {bulkCopyMutation.isPending ? "Menyalin..." : "Salin ke Semua"}
+            <Copy className="w-3.5 h-3.5" />
+            {bulkCopyMutation.isPending ? "Menyalin..." : "Salin ke Semua Puskesmas"}
           </button>
         )}
       </div>
 
-      {/* Category cards */}
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 bg-[hsl(var(--muted))] animate-pulse" />
+            <div key={i} className="h-16 rounded-2xl bg-[hsl(var(--muted))]/50 animate-pulse" />
           ))}
         </div>
       ) : categories.length === 0 ? (
-        <div className="py-12 text-center border border-[hsl(var(--border))]">
-          <Target className="w-8 h-8 mx-auto mb-2 text-[hsl(var(--muted-foreground))] opacity-30" />
-          <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Tidak ada kategori</p>
-        </div>
+        <EmptyState
+          icon={Target}
+          title="Tidak ada kategori"
+          description="Belum ada kategori laporan yang bisa diberi target."
+        />
       ) : (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {categories.map((cat) => {
             const currentTarget = getTarget(cat.id);
             const isEditing = editingId === cat.id;
+            const t = targetTier(currentTarget);
             return (
-              <div key={cat.id} className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-lg shrink-0">{cat.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">{cat.nama}</p>
-                    <p className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-                      {cat.code}
-                    </p>
-                  </div>
-                  {/* Target value + progress bar */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    {isEditing ? (
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="number"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          min={0}
-                          max={100}
-                          className="w-16 h-8 px-2 text-center bg-[hsl(var(--background))] border border-[hsl(var(--accent))] text-[12px] font-bold text-[hsl(var(--foreground))] outline-none"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              saveMutation.mutate({ categoryId: cat.id, targetPersen: Number(editValue) });
-                              setEditingId(null);
-                            }
-                            if (e.key === "Escape") setEditingId(null);
-                          }}
-                          onBlur={() => {
-                            saveMutation.mutate({ categoryId: cat.id, targetPersen: Number(editValue) });
-                            setEditingId(null);
-                          }}
-                        />
-                        <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">%</span>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setEditingId(cat.id);
-                          setEditValue(String(currentTarget));
-                        }}
-                        className="text-[18px] font-bold text-[hsl(var(--foreground))] tabular-nums hover:text-[hsl(var(--accent))] transition-colors min-w-[3ch] text-right"
-                        title="Klik untuk ubah"
-                      >
-                        {currentTarget}
-                      </button>
-                    )}
-                    <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">%</span>
-                    <div className="w-20 h-1.5 bg-[hsl(var(--muted))] hidden sm:block">
-                      <div
-                        className="h-full bg-[hsl(var(--foreground))] transition-all"
-                        style={{ width: `${Math.min(currentTarget, 100)}%` }}
-                      />
-                    </div>
+              <div
+                key={cat.id}
+                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-4 flex items-center gap-4 hover:border-[#00A876]/30 transition-colors"
+              >
+                <span className="w-10 h-10 rounded-xl bg-[#0C1B16] flex items-center justify-center text-[18px] shrink-0">
+                  {cat.icon}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">{cat.nama}</p>
+                  <p className="text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] mt-0.5">
+                    {cat.code}
+                  </p>
+                </div>
+                <div className="hidden sm:block w-36 shrink-0">
+                  <div className="h-1.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(currentTarget, 100)}%`, background: t.bar }}
+                    />
                   </div>
                 </div>
+                {isEditing ? (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      min={0}
+                      max={100}
+                      autoFocus
+                      className="w-16 h-9 px-2 text-center rounded-xl bg-[hsl(var(--background))] border border-[#00A876] text-[13px] font-extrabold tabular-nums text-[hsl(var(--foreground))] outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          saveMutation.mutate({ categoryId: cat.id, targetPersen: Number(editValue) });
+                          setEditingId(null);
+                        }
+                        if (e.key === "Escape") setEditingId(null);
+                      }}
+                      onBlur={() => {
+                        saveMutation.mutate({ categoryId: cat.id, targetPersen: Number(editValue) });
+                        setEditingId(null);
+                      }}
+                    />
+                    <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">%</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingId(cat.id);
+                      setEditValue(String(currentTarget));
+                    }}
+                    className="shrink-0 inline-flex items-center h-8 px-3 rounded-full text-[13px] font-extrabold tabular-nums transition hover:brightness-95"
+                    style={{ background: t.soft, color: t.text }}
+                    title="Klik untuk ubah"
+                  >
+                    {currentTarget}%
+                  </button>
+                )}
               </div>
             );
           })}
@@ -212,6 +224,8 @@ function TargetManagement() {
     </div>
   );
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -230,48 +244,54 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { key: "puskesmas", label: "Puskesmas", icon: <Building2 className="w-3.5 h-3.5" /> },
-    { key: "target", label: "Target", icon: <Target className="w-3.5 h-3.5" /> },
-    { key: "users", label: "Pengguna", icon: <Users className="w-3.5 h-3.5" /> },
-    { key: "telegram", label: "Telegram", icon: <Bot className="w-3.5 h-3.5" /> },
-    { key: "ai", label: "AI Import", icon: <Sparkles className="w-3.5 h-3.5" /> },
+    { key: "puskesmas", label: "Puskesmas", icon: Building2 },
+    { key: "target", label: "Target", icon: Target },
+    { key: "users", label: "Pengguna", icon: Users },
+    { key: "telegram", label: "Telegram", icon: Bot },
+    { key: "ai", label: "AI Import", icon: Sparkles },
+    { key: "health", label: "Status Sistem", icon: Activity },
   ];
 
   return (
-    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Settings2 className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
-        <div>
-          <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">Pengaturan</h1>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Master data, target, dan pengguna</p>
+    <div className="w-full mx-auto pb-4 fade-in">
+      {/* ── HERO + TABS (pola audit-log) ── */}
+      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.05]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+
+        <div className="relative z-10 px-8 pt-7 pb-5">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Sistem</p>
+          <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Pengaturan</h1>
+          <p className="text-[13px] font-medium text-white/50 mt-2">
+            Master data, target capaian, pengguna, dan integrasi
+          </p>
+
+          <div className="mt-5 inline-flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/10 p-1 max-w-full overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
+                  activeTab === tab.key ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" /> {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex items-center gap-0.5 border-b border-[hsl(var(--border))]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-bold border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
-                : "border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+      {/* ── CONTENT ── */}
+      <div className="pt-6">
+        {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
+        {activeTab === "target" && <TargetManagement />}
+        {activeTab === "users" && <UsersPage />}
+        {activeTab === "telegram" && <TelegramSettingsPage />}
+        {activeTab === "ai" && <AISettingsPage />}
+        {activeTab === "health" && <SystemHealthDashboard />}
       </div>
-
-      {/* Content */}
-      {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
-      {activeTab === "target" && <TargetManagement />}
-      {activeTab === "users" && <UsersPage />}
-      {activeTab === "telegram" && <TelegramSettingsPage />}
-      {activeTab === "ai" && <AISettingsPage />}
     </div>
   );
 }

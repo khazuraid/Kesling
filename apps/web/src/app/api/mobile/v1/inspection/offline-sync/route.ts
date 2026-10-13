@@ -88,12 +88,17 @@ export async function POST(req: NextRequest) {
 
   const tanggal = body.createdAt ? new Date(body.createdAt) : new Date();
   const fotoPaths = await saveMobilePhotos(body.photos);
-  const signatureData = body.signature ? { ...(body.signature as object), source: "mobile" } : undefined;
+  const sigPemilik = body.signature ? { pemilik: (body.signature as any).base64Data } : {};
+  const sigPetugas = body.signaturePetugas ? { petugas: (body.signaturePetugas as any).base64Data } : {};
+  const signatureData =
+    Object.keys(sigPemilik).length || Object.keys(sigPetugas).length
+      ? { ...sigPemilik, ...sigPetugas, source: "mobile" }
+      : undefined;
 
   const bodySasaranId = body.sasaranId ? Number(body.sasaranId) : null;
 
   // Auto-mark rencana bulanan as SELESAI (payload create already builds `created`)
-  const saved = await prisma.$transaction(async (tx) => {
+  const saved = await prisma.$transaction(async (tx: any) => {
     const created = await tx.inspectionResult.create({
       data: {
         templateId: template.id,
@@ -112,12 +117,12 @@ export async function POST(req: NextRequest) {
         catatan: hasil || null,
         values: {
           create: template.fields
-            .map((field) => {
+            .map((field: any) => {
               const raw = fieldValues[String(field.id)] ?? mapDraftValue(field.pertanyaan, values);
               const text = raw === undefined || raw === null ? "" : String(raw).trim();
               return { fieldId: field.id, valueString: text || null, valueNumber: null };
             })
-            .filter((item) => item.valueString !== null),
+            .filter((item: any) => item.valueString !== null),
         },
       },
     });

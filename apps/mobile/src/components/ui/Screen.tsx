@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { RefreshControl } from "react-native";
-import { ScrollView, type ScrollViewProps, YStack } from "tamagui";
+import { ScrollView, type ScrollViewProps } from "tamagui";
 
 type ScreenProps = ScrollViewProps & {
   children: React.ReactNode;

@@ -15,9 +15,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/ui/page-header";
 import { FormView } from "./FormView";
-/* NOTE: <Fragment key={...}> used wrap map groups instead of useMemo.Component */
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
@@ -30,11 +28,8 @@ export default function PemeriksaanPage() {
   const [metaValues, setMetaValues] = useState<Record<number, any>>({});
   const [tanggalPemeriksaan, setTanggalPemeriksaan] = useState<string>(new Date().toISOString().split("T")[0]);
   const [activeTab, setActiveTab] = useState<"formulir" | "riwayat">("formulir");
-
   const [sasaranId, setSasaranId] = useState<number | null>(null);
 
-  // Same Sasaran register and category semantics as /data-dasar/[categoryCode].
-  // API auth applies the identical Puskesmas visibility rule and createdAt ordering.
   const { data: sasaranResult = { data: [], total: 0, page: 1, totalPages: 1 } } = useQuery<any>({
     queryKey: ["sasarans-data-dasar", pendingForm?.config?.dataDasarCategoryId],
     queryFn: async () => {
@@ -128,21 +123,21 @@ export default function PemeriksaanPage() {
     const initMeta: Record<number, any> = {};
     const dynamicSource = (sasaran?.dataDinamis || {}) as Record<string, unknown>;
     const baselineParams = template.dataDasarCategory?.parameters || [];
+    const isDefaultYa = !!template.config?.defaultYa;
     template.fields.forEach((f: any) => {
       if (f.grup === "__META__") {
         const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
         const configuredEntityField = f.config?.syncToEntityField;
         const parameter = baselineParams.find(
-          (p: any) =>
-            p.code === configuredCode ||
-            (configuredEntityField && p.config?.syncToEntityField === configuredEntityField),
+          (p: any) => p.code === configuredCode || p.config?.syncToEntityField === configuredEntityField,
         );
-        const entityField = configuredEntityField || parameter?.config?.syncToEntityField;
-        initMeta[f.id] =
-          (parameter?.code ? dynamicSource[parameter.code] : undefined) ??
-          (entityField ? sasaran?.[entityField] : undefined) ??
-          "";
-      } else initVal[f.id] = null;
+        initMeta[f.id] = (parameter?.code ? dynamicSource[parameter.code] : "") ?? "";
+        initVal[f.id] = null;
+      } else if (isDefaultYa && f.tipe === "BOOLEAN") {
+        initVal[f.id] = "TRUE";
+      } else {
+        initVal[f.id] = null;
+      }
     });
     setSasaranId(sasaran.id);
     setFormValues(initVal);
@@ -153,19 +148,26 @@ export default function PemeriksaanPage() {
 
   function handleEditResult(result: any) {
     const template = templates.find((t) => t.id === result.templateId);
-    if (!template) return toast.error("Template form tidak ditemukan");
+    if (!template) {
+      toast.error("Template form tidak ditemukan");
+      return;
+    }
     setEditingId(result.id);
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
     template.fields.forEach((f: any) => {
-      if (f.grup === "__META__") initMeta[f.id] = "";
-      else initVal[f.id] = null;
+      if (f.grup === "__META__") {
+        initMeta[f.id] = "";
+        initVal[f.id] = null;
+      }
     });
     result.values?.forEach((v: any) => {
       const field = template.fields.find((f: any) => f.id === v.fieldId);
       if (field) {
-        if (field.grup === "__META__") initMeta[field.id] = v.valueString ?? "";
-        else initVal[field.id] = v.valueString ?? v.valueNumber;
+        if (field.grup === "__META__") {
+          initMeta[field.id] = v.valueString ?? "";
+          initVal[field.id] = v.valueString ?? v.valueNumber;
+        }
       }
     });
     setFormValues(initVal);
@@ -178,26 +180,25 @@ export default function PemeriksaanPage() {
   function handleGPS(id: number) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((pos) => {
-      handleMetaChange(id, `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
+      handleFieldChange(id, `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
     });
   }
 
-  async function exportResultPdf(res: any) {
+  async function handleExportPDF(res: any) {
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
       import("jspdf"),
       import("jspdf-autotable"),
     ]);
     const doc = new jsPDF();
     const template = templates.find((t) => t.id === res.templateId);
-    const namaSasaran = res.sasaran ? res.sasaran.nama : res.namaSasaran || "-";
-    const alamatSasaran = res.sasaran ? res.sasaran.alamat : res.alamatSasaran || "-";
+    const namaSasaran = res.sasaran?.nama || res.namaSasaran || "-";
+    const alamatSasaran = res.sasaran?.alamat || res.alamatSasaran || "-";
     const tanggal = res.tanggal
       ? new Date(res.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
       : new Date(res.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
-    // Header
     doc.setFontSize(14);
-    doc.setTextColor(0, 122, 255); // accent
+    doc.setTextColor(0, 122, 255);
     doc.text("HASIL PEMERIKSAAN KESEHATAN LINGKUNGAN", 14, 15);
     doc.setTextColor(9, 9, 11);
     doc.setFontSize(12);
@@ -206,7 +207,6 @@ export default function PemeriksaanPage() {
     doc.setTextColor(113, 113, 122);
     doc.text(`Dicetak: ${new Date().toLocaleString("id-ID")}`, 14, 28);
 
-    // Info sasaran
     autoTable(doc, {
       startY: 33,
       body: [
@@ -221,32 +221,32 @@ export default function PemeriksaanPage() {
       theme: "plain",
     });
 
-    // Hasil checklist
     const rows: (string | number)[][] = [];
     (template?.fields || [])
       .filter((f: any) => f.grup !== "__META__")
       .forEach((f: any) => {
         const v = (res.values || []).find((rv: any) => rv.fieldId === f.id);
         let answer = "-";
-        if (v) {
-          if (f.tipe === "BOOLEAN") answer = v.valueString === "True" || v.valueString === "true" ? "✔ Ya" : "✘ Tidak";
-          else if (v.valueNumber !== null && v.valueNumber !== undefined) answer = String(v.valueNumber);
-          else if (v.valueString) answer = v.valueString;
+        if (f.tipe === "BOOLEAN") {
+          answer = v?.valueString === "True" || v?.valueString === "true" ? "Ya" : "Tidak";
+        } else if (v?.valueNumber !== null && v?.valueNumber !== undefined) {
+          answer = String(v.valueNumber);
+        } else if (v?.valueString) {
+          answer = v.valueString;
         }
         rows.push([f.pertanyaan, answer]);
       });
 
-    const skor = res.skor;
-    if (skor !== undefined && skor !== null) {
-      rows.push(["SKOR AKHIR", String(skor)]);
+    if (res.skor !== undefined && res.skor !== null) {
+      rows.push(["SKOR AKHIR", String(res.skor)]);
     }
 
     autoTable(doc, {
-      startY: (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 6 : 55,
-      head: [["Variabel / Pertanyaan", "Hasil"]],
+      startY: (doc as any).lastAutoTable.finalY + 6,
+      head: [["Pertanyaan", "Jawaban"]],
       body: rows,
       styles: { fontSize: 9, cellPadding: 3, textColor: [9, 9, 11] },
-      headStyles: { fillColor: [0, 122, 255], textColor: [255, 255, 255], fontStyle: "bold" },
+      headStyles: { fillColor: [0, 122, 255], textColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [244, 244, 245] },
       columnStyles: { 1: { cellWidth: 60 } },
     });
@@ -255,17 +255,16 @@ export default function PemeriksaanPage() {
   }
 
   function handleSubmit() {
-    // Extract signature & photo from values → simpan ke kolom khusus
     const signatures: Record<string, string> = {};
     const fotoPaths: string[] = [];
-    let tanggalPemeriksaan: string | null = null;
+    let tanggalPemeriksaan = new Date().toISOString().split("T")[0];
 
     const valuesArray = Object.entries(formValues).map(([fid, val]) => {
       const field = activeForm.fields.find((f: any) => f.id === Number(fid));
-      if (field?.tipe === "SIGNATURE" && val && val !== "") {
-        signatures[field.pertanyaan || "petugas"] = val;
+      if (field?.tipe === "SIGNATURE" && val) {
+        signatures[field.pertanyaan] = val;
       }
-      if (field?.tipe === "PHOTO" && val && val !== "") {
+      if (field?.tipe === "PHOTO" && val) {
         fotoPaths.push(val);
       }
       if (field?.tipe === "DATE" && val && val !== "") {
@@ -278,6 +277,7 @@ export default function PemeriksaanPage() {
           field?.tipe === "NUMBER" && val !== null && val !== undefined && val !== "" ? parseFloat(val) || 0 : null,
       };
     });
+
     const metaArray = Object.entries(metaValues).map(([fid, val]) => {
       const field = activeForm.fields.find((f: any) => f.id === Number(fid));
       if (field?.tipe === "DATE" && val && val !== "") {
@@ -326,25 +326,10 @@ export default function PemeriksaanPage() {
     });
   }
 
-  const _metaFields = useMemo(() => activeForm?.fields.filter((f: any) => f.grup === "__META__") || [], [activeForm]);
   const fieldsToChecklist = useMemo(
     () => activeForm?.fields.filter((f: any) => f.grup !== "__META__") || [],
     [activeForm],
   );
-  const _groupedFields = useMemo(() => {
-    if (!activeForm) return [];
-    const groups: { grup: string; fields: any[] }[] = [];
-    const groupMap = new Map<string, any[]>();
-    fieldsToChecklist.forEach((f: any) => {
-      const g = f.grup || "Lainnya";
-      if (!groupMap.has(g)) groupMap.set(g, []);
-      groupMap.get(g)?.push(f);
-    });
-    groupMap.forEach((fields, grup) => {
-      groups.push({ grup, fields });
-    });
-    return groups;
-  }, [activeForm, fieldsToChecklist]);
 
   const liveSkor = useMemo(() => {
     if (!activeForm) return { gained: 0, max: 0, finalValue: 0, valueText: "0", pass: false, text: "" };
@@ -390,8 +375,8 @@ export default function PemeriksaanPage() {
           .replace(/SUM\(\)/g, String(gained))
           .replace(/AVG\(\)/g, String(countTotal > 0 ? gained / countTotal : 0))
           .replace(/COUNT\(\)/g, String(countTotal))
-          .replace(/✓/g, String(countBenar))
-          .replace(/✗/g, String(countSalah));
+          .replace(/\u2713/g, String(countBenar))
+          .replace(/\u2717/g, String(countSalah));
         const res = new Function(`return ${evalStr}`)();
         if (!Number.isNaN(res)) {
           finalValue = res;
@@ -416,9 +401,6 @@ export default function PemeriksaanPage() {
         return val !== null && val !== undefined && val !== "";
       });
 
-  // ══════════════════════════════════════
-  // PAGE GUARD — ADMIN tidak bisa akses
-  // ══════════════════════════════════════
   if ((session?.user as any)?.role === "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
@@ -441,7 +423,6 @@ export default function PemeriksaanPage() {
     );
   });
 
-  // ================= DATA DASAR CHOOSER =================
   if (pendingForm) {
     return (
       <div className="w-full pb-6 fade-in">
@@ -510,168 +491,153 @@ export default function PemeriksaanPage() {
     );
   }
 
-  // ================= LIST VIEW =================
   if (!activeForm) {
     return (
-      <div className="pr-5 py-5 space-y-6 fade-in">
-        <PageHeader
-          title="Pemeriksaan Lapangan"
-          description="Daftar form dan riwayat pemeriksaan"
-          icon={<FileText className="w-4 h-4" />}
-        />
-
-        <div className="flex items-center gap-1 border-b border-[hsl(var(--border))]">
-          <button
-            onClick={() => setActiveTab("formulir")}
-            className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition-colors ${
-              activeTab === "formulir"
-                ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
-                : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
-            }`}
-          >
-            Formulir
-            <span
-              className={`ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full ${activeTab === "formulir" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
-            >
-              {templates.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("riwayat")}
-            className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition-colors ${
-              activeTab === "riwayat"
-                ? "border-[hsl(var(--accent))] text-[hsl(var(--accent))]"
-                : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]"
-            }`}
-          >
-            Riwayat
-            <span
-              className={`ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full ${activeTab === "riwayat" ? "bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))]" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
-            >
-              {results.length}
-            </span>
-          </button>
+      <div className="w-full mx-auto pb-4 fade-in">
+        {/* ── HERO ── */}
+        <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
+          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+          <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Lapangan</p>
+              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Pemeriksaan</h1>
+              <p className="text-[13px] font-medium text-white/50 mt-2">
+                {templates.length} formulir · {results.length} riwayat
+              </p>
+            </div>
+            <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1">
+              <button
+                onClick={() => setActiveTab("formulir")}
+                className={`px-4 py-2 text-[12px] font-bold rounded-full transition-all ${
+                  activeTab === "formulir" ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                }`}
+              >
+                Formulir
+              </button>
+              <button
+                onClick={() => setActiveTab("riwayat")}
+                className={`px-4 py-2 text-[12px] font-bold rounded-full transition-all ${
+                  activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                }`}
+              >
+                Riwayat
+              </button>
+            </div>
+          </div>
         </div>
 
         {activeTab === "formulir" && (
-          <>
+          <div className="pt-6">
+            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
+              Template Pemeriksaan
+            </h3>
             {templates.length === 0 ? (
-              <div className="card-shell py-16 flex flex-col items-center justify-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--accent-light))] flex items-center justify-center">
-                  <FileText className="w-7 h-7 text-[hsl(var(--accent))] opacity-60" />
-                </div>
-                <div>
-                  <p className="text-[14px] font-bold">Belum ada template</p>
-                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                    Import template lewat Settings → Import.
-                  </p>
-                </div>
+              <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
+                <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
+                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Template</p>
+                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                  Import template lewat halaman Form Pemeriksaan.
+                </p>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-2">
                 {templates.map((tpl: any) => {
                   const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
                   return (
                     <button
                       key={tpl.id}
                       onClick={() => handleOpenForm(tpl)}
-                      className="card-hover group p-5 text-left flex flex-col gap-4"
+                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden text-left"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="w-11 h-11 rounded-xl bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0 border border-[hsl(var(--accent))]/10">
+                      <div className="w-1 shrink-0 bg-[#00A876]" />
+                      <div className="flex-1 flex items-center gap-4 px-5 py-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
                           <FileText className="w-5 h-5" />
                         </div>
-                        {tpl.subCategory && (
-                          <span className="text-[9px] font-bold text-[hsl(var(--accent))] uppercase bg-[hsl(var(--accent-light))] px-2 py-1 rounded-full shrink-0">
-                            {tpl.subCategory.nama}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-[15px] font-bold leading-tight line-clamp-2">{tpl.nama}</h3>
-                        <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                          {fieldCount} variabel pemeriksaan
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 text-[12px] font-bold text-[hsl(var(--accent))] uppercase tracking-wide pt-3 border-t border-[hsl(var(--border))]">
-                        Buka Form
-                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                            {tpl.nama}
+                          </h4>
+                          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                            {fieldCount} variabel{tpl.subCategory ? ` · ${tpl.subCategory.nama}` : ""}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
                     </button>
                   );
                 })}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {activeTab === "riwayat" && (
-          <div className="card-shell overflow-x-auto">
+          <div className="pt-6">
+            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
+              Riwayat Pemeriksaan
+            </h3>
             {results.length === 0 ? (
-              <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--success-light))] flex items-center justify-center">
-                  <ShieldAlert className="w-7 h-7 text-[hsl(var(--success))] opacity-60" />
-                </div>
-                <div>
-                  <p className="text-[14px] font-bold">Belum ada riwayat</p>
-                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                    Hasil pemeriksaan akan tampil di sini.
-                  </p>
-                </div>
+              <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
+                <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
+                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Riwayat</p>
+                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+                  Hasil pemeriksaan akan tampil di sini.
+                </p>
               </div>
             ) : (
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                    <th className="px-4 py-3">Tanggal</th>
-                    <th className="px-4 py-3">Sasaran</th>
-                    <th className="px-4 py-3">Template</th>
-                    <th className="px-4 py-3">Unit PKM</th>
-                    <th className="px-4 py-3 text-right w-28">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[hsl(var(--border))]/50 text-[13px]">
-                  {results.map((res: any) => (
-                    <tr key={res.id} className="hover:bg-[hsl(var(--muted))]/30 transition-colors">
-                      <td className="px-4 py-3">
-                        {new Date(res.createdAt).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td className="px-4 py-3 font-bold">{res.sasaran ? res.sasaran.nama : res.namaSasaran}</td>
-                      <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{res.template?.nama}</td>
-                      <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{res.puskesmas?.nama}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <button
-                            onClick={() => exportResultPdf(res)}
-                            title="Export PDF"
-                            className="text-[hsl(var(--accent))] hover:opacity-75"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleEditResult(res)}
-                            className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm("Hapus?")) deleteMut.mutate(res.id);
-                            }}
-                            className="text-[hsl(var(--muted-foreground))] hover:text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="flex flex-col gap-2">
+                {results.map((res: any) => (
+                  <div
+                    key={res.id}
+                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden"
+                  >
+                    <div className="w-1 shrink-0 bg-[#00A876]" />
+                    <div className="flex-1 flex items-center gap-4 px-5 py-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                          {res.sasaran?.nama || res.namaSasaran}
+                        </h4>
+                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                          {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
+                          {new Date(res.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          title="PDF"
+                          onClick={() => handleExportPDF(res)}
+                          className="p-2 text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          title="Edit"
+                          onClick={() => handleEditResult(res)}
+                          className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          title="Hapus"
+                          onClick={() => deleteMut.mutate(res.id)}
+                          className="p-2 text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-xl transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -679,7 +645,6 @@ export default function PemeriksaanPage() {
     );
   }
 
-  // ================= FORM CHECKLIST VIEW =================
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <FormView
@@ -691,16 +656,11 @@ export default function PemeriksaanPage() {
         canSubmit={canSubmit}
         isPending={submitMut.isPending}
         tanggalPemeriksaan={tanggalPemeriksaan}
-        onTanggalChange={setTanggalPemeriksaan}
-        onBack={() => {
-          setActiveForm(null);
-          setEditingId(null);
-          setFormValues({});
-          setMetaValues({});
-        }}
+        onBack={() => setActiveForm(null)}
         onFieldChange={handleFieldChange}
         onMetaChange={handleMetaChange}
         onGPS={handleGPS}
+        onTanggalChange={setTanggalPemeriksaan}
         onSubmit={handleSubmit}
       />
     </div>

@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { cacheInvalidate } from "@/lib/redis";
 
 // PUT to update a category
@@ -49,8 +50,12 @@ export const PUT = withRoles(
         },
       });
 
-      await prisma.auditLog.create({
-        data: { userId, action: "UPDATE", tableName: "dynamic_category", recordId: categoryId, newData: { nama } },
+      await createAuditLog({
+        userId,
+        action: "UPDATE",
+        tableName: "dynamic_category",
+        recordId: categoryId,
+        newData: { nama },
       });
 
       await cacheInvalidate("laporan:*");
@@ -117,16 +122,15 @@ export const DELETE = withRoles(
         await tx.dynamicCategory.delete({
           where: { id: categoryId },
         });
+      });
 
-        await tx.auditLog.create({
-          data: {
-            userId,
-            action: "DELETE",
-            tableName: "dynamic_category",
-            recordId: categoryId,
-            oldData: { nama: old?.nama },
-          },
-        });
+      // Audit di luar transaksi — kegagalan audit tidak boleh rollback delete
+      await createAuditLog({
+        userId,
+        action: "DELETE",
+        tableName: "dynamic_category",
+        recordId: categoryId,
+        oldData: { nama: old?.nama },
       });
 
       await cacheInvalidate("laporan:*");

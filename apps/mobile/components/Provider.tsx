@@ -11,7 +11,9 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
 });
 
-/** Manual theme override (default light). Key change triggers full re-render via `key`. */
+/** Manual theme override (default light). No `key`: defaultTheme prop change
+ * re-themes in place; keying would remount the whole tree (state loss + reanimated
+ * shared-value crashes mid-animation). */
 export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, "config" | "defaultTheme">) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
@@ -26,7 +28,7 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, "conf
   }, []);
 
   return (
-    <TamaguiProvider key={theme} config={config} defaultTheme={theme} {...rest}>
+    <TamaguiProvider config={config} defaultTheme={theme} {...rest}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ToastProvider swipeDirection="horizontal" duration={6000}>

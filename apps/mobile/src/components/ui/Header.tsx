@@ -32,7 +32,7 @@ export function PageHeader({
       ) : null}
       <XStack alignItems="flex-end" justifyContent="space-between" gap="$2">
         <YStack flex={1} gap="$1">
-          <Text fontSize={30} fontWeight="800" color="$fg" letterSpacing={-1.2}>
+          <Text fontSize={30} fontWeight="800" color="$fg">
             {title}
           </Text>
           {subtitle ? (

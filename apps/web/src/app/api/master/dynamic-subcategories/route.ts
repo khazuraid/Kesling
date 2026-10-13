@@ -1,6 +1,7 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withRoles } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { cacheInvalidate } from "@/lib/redis";
 
 // POST a new subcategory
@@ -25,14 +26,12 @@ export const POST = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: "CREATE",
-        tableName: "dynamic_sub_category",
-        recordId: data.id,
-        newData: { nama, categoryId },
-      },
+    await createAuditLog({
+      userId,
+      action: "CREATE",
+      tableName: "dynamic_sub_category",
+      recordId: data.id,
+      newData: { nama, categoryId },
     });
 
     await cacheInvalidate("laporan:*");
@@ -64,8 +63,12 @@ export const PUT = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: { userId, action: "UPDATE", tableName: "dynamic_sub_category", recordId: Number(id), newData: { nama } },
+    await createAuditLog({
+      userId,
+      action: "UPDATE",
+      tableName: "dynamic_sub_category",
+      recordId: Number(id),
+      newData: { nama },
     });
 
     await cacheInvalidate("laporan:*");
@@ -106,8 +109,11 @@ export const DELETE = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) =>
       where: { id },
     });
 
-    await prisma.auditLog.create({
-      data: { userId, action: "DELETE", tableName: "dynamic_sub_category", recordId: id, newData: undefined },
+    await createAuditLog({
+      userId,
+      action: "DELETE",
+      tableName: "dynamic_sub_category",
+      recordId: id,
     });
 
     await cacheInvalidate("laporan:*");

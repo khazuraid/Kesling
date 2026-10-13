@@ -31,6 +31,7 @@ export function CommandPalette() {
     { label: "Manajemen User", href: "/settings/users", group: "Admin" },
     { label: "Import Excel", href: "/settings/import", group: "Admin" },
     { label: "Audit Log", href: "/audit-log", group: "Admin" },
+    { label: "File Manager", href: "/file-manager", group: "Admin" },
     { label: "Profile", href: "/profile", group: "User" },
   ];
 
@@ -51,7 +52,12 @@ export function CommandPalette() {
       }
     }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    const onOpen = () => setOpen(true);
+    document.addEventListener("kesling:open-palette", onOpen);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("kesling:open-palette", onOpen);
+    };
   }, []);
 
   if (!open) return null;

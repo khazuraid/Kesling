@@ -1,7 +1,28 @@
-import { Alert } from "react-native";
+import { useMemo, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
+import { ActionSheet } from "./motion/ActionSheet";
 
 type FieldType = "BOOLEAN" | "TEXT" | "OPTIONS" | "SELECT" | "NUMBER" | "DATE";
+
+/** Parse options safely: JSON array or comma-separated. Never throws. */
+function parseOptions(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    if (raw.trim().startsWith("[")) {
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.map(String) : [];
+    }
+    return raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } catch {
+    return raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+}
 
 export function InspectionField({
   field,
@@ -18,48 +39,38 @@ export function InspectionField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const tipe = field.tipe.toUpperCase() as FieldType;
 
-  // BOOLEAN → Ya/Tidak segmented buttons (jelas, keduanya terlihat)
+  const options = useMemo(() => parseOptions(field.options), [field.options]);
+
   if (tipe === "BOOLEAN") {
-    const on = value === "TRUE" || value === "Ya" || value === "true" || value === "1";
     return (
-      <YStack gap="$2" p="$3.5" bg="$card" borderRadius={16} borderWidth={1} borderColor="$border">
+      <YStack gap="$2">
         <Text fontSize="$4" fontWeight="600" color="$fg">
           {field.pertanyaan}
           {field.isRequired ? " *" : ""}
         </Text>
         <XStack gap="$2">
-          <YStack
-            flex={1}
-            py="$2.5"
-            alignItems="center"
-            borderRadius={12}
-            borderWidth={1.5}
-            borderColor={on ? "$success" : "$border"}
-            backgroundColor={on ? "$successSoft" : "$bg"}
-            onPress={() => onChange("TRUE")}
-            pressStyle={{ opacity: 0.7 }}
-          >
-            <Text fontSize="$4" fontWeight="700" color={on ? "$success" : "$muted"}>
-              Ya
-            </Text>
-          </YStack>
-          <YStack
-            flex={1}
-            py="$2.5"
-            alignItems="center"
-            borderRadius={12}
-            borderWidth={1.5}
-            borderColor={!on && value ? "$danger" : "$border"}
-            backgroundColor={!on && value ? "$dangerSoft" : "$bg"}
-            onPress={() => onChange("FALSE")}
-            pressStyle={{ opacity: 0.7 }}
-          >
-            <Text fontSize="$4" fontWeight="700" color={!on && value ? "$danger" : "$muted"}>
-              Tidak
-            </Text>
-          </YStack>
+          {["Ya", "Tidak"].map((opt) => (
+            <YStack
+              key={opt}
+              flex={1}
+              onPress={() => onChange(value === opt ? "" : opt)}
+              pressStyle={{ opacity: 0.6 }}
+              paddingHorizontal="$4"
+              paddingVertical="$3.5"
+              borderWidth={1}
+              borderRadius={12}
+              borderColor={value === opt ? "$accent" : "$border"}
+              backgroundColor={value === opt ? "$accentSoft" : "$card"}
+              alignItems="center"
+            >
+              <Text fontSize="$4" fontWeight={value === opt ? "700" : "400"} color={value === opt ? "$accent" : "$fg"}>
+                {opt}
+              </Text>
+            </YStack>
+          ))}
         </XStack>
       </YStack>
     );
@@ -73,37 +84,33 @@ export function InspectionField({
       </Text>
 
       {tipe === "OPTIONS" || tipe === "SELECT" ? (
-        <YStack
-          onPress={() => {
-            const opts = field.options
-              ? field.options.startsWith("[")
-                ? JSON.parse(field.options)
-                : field.options.split(",").map((s) => s.trim())
-              : [];
-            if (!opts.length) return;
-            Alert.alert(
-              field.pertanyaan,
-              "Pilih salah satu",
-              opts
-                .map((opt: string) => ({
-                  text: opt,
-                  onPress: () => onChange(opt),
-                }))
-                .concat({ text: "Batal", onPress: () => {}, style: "cancel" }),
-            );
-          }}
-          pressStyle={{ opacity: 0.6 }}
-          paddingHorizontal="$4"
-          paddingVertical="$3.5"
-          borderWidth={1}
-          borderColor={value ? "$accent" : "$border"}
-          borderRadius={12}
-          backgroundColor={value ? "$accentSoft" : "$card"}
-        >
-          <Text fontSize="$4" color={value ? "$accent" : "$muted"}>
-            {value || "Pilih..."}
-          </Text>
-        </YStack>
+        <>
+          <YStack
+            onPress={() => {
+              if (options.length) setOpen(true);
+            }}
+            pressStyle={{ opacity: 0.6 }}
+            paddingHorizontal="$4"
+            paddingVertical="$3.5"
+            borderWidth={1}
+            borderColor={value ? "$accent" : "$border"}
+            borderRadius={12}
+            backgroundColor={value ? "$accentSoft" : "$card"}
+          >
+            <Text fontSize="$4" color={value ? "$accent" : "$muted"}>
+              {value || "Pilih..."}
+            </Text>
+          </YStack>
+          <ActionSheet
+            open={open}
+            onClose={() => setOpen(false)}
+            title={field.pertanyaan}
+            items={options.map((opt) => ({
+              label: opt,
+              onPress: () => onChange(opt),
+            }))}
+          />
+        </>
       ) : (
         <Input
           value={value}
@@ -117,8 +124,7 @@ export function InspectionField({
           borderRadius={12}
           px="$3"
           py="$2.5"
-          fontSize="$3"
-          keyboardType={tipe === "NUMBER" ? "numeric" : "default"}
+          fontSize={14}
         />
       )}
     </YStack>

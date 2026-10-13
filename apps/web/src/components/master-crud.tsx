@@ -104,17 +104,17 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       {/* Toolbar: search + add */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
           <input
             placeholder="Cari nama data..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors"
+            className="w-full h-10 pl-10 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
           />
         </div>
         <button
           onClick={openAdd}
-          className="h-9 px-4 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors h-9 px-4 text-[11px]"
+          className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
         >
           <Plus className="w-3.5 h-3.5" /> Tambah
         </button>
@@ -125,10 +125,10 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
         <div className="flex items-center gap-1 overflow-x-auto">
           <button
             onClick={() => setFilterKategori("")}
-            className={`shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+            className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
               !filterKategori
-                ? "bg-[hsl(var(--foreground))] text-[hsl(var(--background))] border-[hsl(var(--foreground))]"
-                : "text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+                ? "bg-[#0C1B16] text-white"
+                : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
             }`}
           >
             Semua
@@ -137,10 +137,10 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
             <button
               key={o.value}
               onClick={() => setFilterKategori(o.value)}
-              className={`shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
                 filterKategori === o.value
-                  ? "bg-[hsl(var(--foreground))] text-[hsl(var(--background))] border-[hsl(var(--foreground))]"
-                  : "text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+                  ? "bg-[#0C1B16] text-white"
+                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
               }`}
             >
               {o.label}
@@ -150,7 +150,7 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       )}
 
       {/* Table */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-x-auto">
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
@@ -202,7 +202,7 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 bg-[hsl(var(--muted))] border border-[hsl(var(--border))] flex items-center justify-center text-[11px] font-bold text-[hsl(var(--foreground))] shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center text-[11px] font-extrabold shrink-0">
                         {item.nama.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{item.nama}</span>
@@ -249,31 +249,31 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
         open={showModal}
         onClose={() => setShowModal(false)}
         title={editId ? "Ubah Data" : "Tambah Data"}
+        description={editId ? "Perbarui data" : "Tambahkan data baru ke master"}
+        icon={<Building2 className="w-4.5 h-4.5" />}
         size="sm"
+        variant="hero"
         footer={
-          <form
-            id="master-form"
-            onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))}
-            className="flex gap-2 w-full"
-          >
+          <>
             <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="h-9 px-4 bg-transparent border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] transition-colors flex-1"
+              className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
+              form="master-form"
               disabled={saveMutation.isPending}
-              className="h-9 px-4 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors flex-1"
+              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
             >
               {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
             </button>
-          </form>
+          </>
         }
       >
-        <div className="space-y-4">
+        <form id="master-form" onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
           <div>
             <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
               Nama
@@ -307,7 +307,7 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
               </select>
             </div>
           )}
-        </div>
+        </form>
       </Modal>
     </div>
   );

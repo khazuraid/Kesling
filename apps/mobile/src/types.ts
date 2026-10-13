@@ -210,4 +210,6 @@ export type Notifications = {
   notifications: Array<{ id: number; title: string; message: string; isRead: boolean; createdAt: string }>;
   unreadCount: number;
   liburMendatang: LiburInfo[];
+  deadlineRencana: Array<{ id: number; tanggal: string; sasaranNama: string }>;
+  deadlineLaporan: Array<{ categoryId: number; nama: string; bulan: number; tahun: number }>;
 };

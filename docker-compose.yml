@@ -9,6 +9,8 @@ services:
     ports:
       - "3000:3000"
     env_file: .env.docker
+    volumes:
+      - uploads:/app/apps/web/public/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,6 +20,7 @@ services:
       - kes-net
 
   worker:
+    profiles: ["worker"]  # ponytail: disabled by default, enable dengan --profile worker
     build:
       context: .
       dockerfile: Dockerfile
@@ -98,6 +101,7 @@ services:
 
 volumes:
   pgdata:
+  uploads:
 
 networks:
   kes-net:

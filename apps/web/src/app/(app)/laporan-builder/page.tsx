@@ -1,20 +1,163 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Eye, LayoutTemplate, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronLeft,
+  Database,
+  Eye,
+  FunctionSquare,
+  LayoutTemplate,
+  ListChecks,
+  Plus,
+  Rows3,
+  Settings2,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Modal } from "@/components/ui/modal";
+
+type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
+
+// ── Shared styles ──
+const inputCls =
+  "w-full h-9 px-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] transition-all";
+const labelCls =
+  "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mb-1.5";
+const addBtnCls =
+  "inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition";
+
+// ── Emoji icon picker ──
+const ICON_CHOICES = [
+  "🏥",
+  "🍽️",
+  "🥤",
+  "🚰",
+  "🚽",
+  "🏠",
+  "🏫",
+  "🏢",
+  "🏭",
+  "⛺",
+  "🧪",
+  "🧫",
+  "💧",
+  "🛁",
+  "🧼",
+  "🪣",
+  "🧹",
+  "🗑️",
+  "♻️",
+  "🌊",
+  "🦟",
+  "🐀",
+  "🪳",
+  "🐕",
+  "🐄",
+  "🌾",
+  "🥬",
+  "🍗",
+  "🥛",
+  "🍱",
+  "🏪",
+  "🛒",
+  "🏬",
+  "🏨",
+  "⛽",
+  "🚌",
+  "✈️",
+  "⚕️",
+  "💉",
+  "🩺",
+  "📋",
+  "📊",
+  "📈",
+  "📁",
+  "🗂️",
+  "✅",
+  "🔍",
+  "⚙️",
+  "🛡️",
+  "🚨",
+];
+
+function IconPicker({
+  value,
+  onChange,
+  dark = false,
+}: {
+  value: string;
+  onChange: (icon: string) => void;
+  dark?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`w-full h-11 px-3 rounded-xl border flex items-center gap-3 transition-colors ${
+          dark
+            ? "border-white/15 bg-white/[0.06] hover:border-[#00A876]"
+            : "border-[hsl(var(--border))] bg-[hsl(var(--background))] hover:border-[#00A876]"
+        }`}
+      >
+        <span
+          className={`w-8 h-8 rounded-lg flex items-center justify-center text-[18px] shrink-0 ${
+            dark ? "bg-white/10" : "bg-[#0C1B16]"
+          }`}
+        >
+          {value || "❓"}
+        </span>
+        <span className={`text-[11px] font-bold ${dark ? "text-white/60" : "text-[hsl(var(--muted-foreground))]"}`}>
+          {value ? "Ganti ikon" : "Pilih ikon"}
+        </span>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className={`absolute z-50 top-full mt-2 left-0 w-[288px] rounded-2xl border shadow-2xl p-3 ${
+              dark ? "bg-[#0C1B16] border-white/15" : "bg-[hsl(var(--card))] border-[hsl(var(--border))]"
+            }`}
+          >
+            <div className="grid grid-cols-10 gap-1">
+              {ICON_CHOICES.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => {
+                    onChange(emoji);
+                    setOpen(false);
+                  }}
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center text-[15px] transition-colors ${
+                    value === emoji
+                      ? "bg-[#00A876]/25 ring-1 ring-[#00A876]"
+                      : dark
+                        ? "hover:bg-white/10"
+                        : "hover:bg-[#00A876]/10"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function LaporanBuilderPage() {
   const queryClient = useQueryClient();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
 
-  // Tab states
-  type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
   const [activeTab, setActiveTab] = useState<Tab>("umum");
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -52,7 +195,7 @@ export default function LaporanBuilderPage() {
           ? masterJenis.sarana || []
           : [];
 
-  // Mutations
+  // ── Mutations ──
   const createModuleMutation = useMutation({
     mutationFn: async (payload: any) => {
       const res = await fetch("/api/master/dynamic-categories", {
@@ -207,7 +350,7 @@ export default function LaporanBuilderPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["master-categories"] }),
   });
 
-  // State forms
+  // ── State forms ──
   const [modForm, setModForm] = useState<any>({});
   const [paramForm, setParamForm] = useState<Record<number, any>>({});
   const [entityForm, setEntityForm] = useState<Record<number, any>>({});
@@ -327,955 +470,1003 @@ export default function LaporanBuilderPage() {
     });
   };
 
-  // Separate parameter lists based on function
   const reportParams = selectedModule?.parameters?.filter((p: any) => p.type !== "FORMULA" && !p.isBaseline) || [];
   const dataDasarParams = selectedModule?.parameters?.filter((p: any) => p.type !== "FORMULA" && p.isBaseline) || [];
-  const dataParams = reportParams;
   const numericReportParams = reportParams.filter((p: any) => p.type === "NUMBER" || p.type === "DECIMAL");
   const formulaParams = selectedModule?.parameters?.filter((p: any) => p.type === "FORMULA") || [];
 
-  return (
-    <div className="flex h-[calc(100dvh-4rem)] overflow-hidden bg-[hsl(var(--card))] text-[hsl(var(--foreground))] font-sans">
-      {/* LEFT PANE: Module List */}
-      <aside className="w-[280px] shrink-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex flex-col">
-        <div className="h-14 px-6 flex items-center gap-2 border-b border-[hsl(var(--border))]">
-          <LayoutTemplate className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-          <span className="text-[13px] font-bold tracking-tight">Laporan Builder</span>
-        </div>
-        <div className="flex-1 overflow-y-auto py-2">
-          <div className="px-6 py-3 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-              Daftar Modul
-            </span>
+  // ══════════════════ INDEX MODE (no module selected) ══════════════════
+  if (!selectedModule) {
+    return (
+      <div className="w-full mx-auto pb-4 fade-in">
+        {/* Masthead */}
+        <div className="relative overflow-hidden bg-[#0C1B16] text-white">
+          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+          <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
+                Laporan Builder
+              </p>
+              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Format Laporan</h1>
+              <p className="text-[13px] font-medium text-white/50 mt-2">
+                {categories.length} modul terdaftar · rancang struktur input tiap modul
+              </p>
+            </div>
             <button
-              onClick={() => {
-                setIsCreatingModule(true);
-                setSelectedModuleId(null);
-              }}
-              className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              onClick={() => setIsCreatingModule(true)}
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4" /> Modul Baru
             </button>
           </div>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedModuleId(cat.id);
-                setActiveTab("umum");
-              }}
-              className={`w-full flex items-center gap-3 px-6 py-3 text-[12px] font-medium transition-colors border-l-2 ${
-                selectedModuleId === cat.id
-                  ? "border-black bg-[hsl(var(--card))] text-[hsl(var(--foreground))]"
-                  : "border-transparent text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]/40"
-              }`}
-            >
-              <span className="text-[16px] shrink-0">{cat.icon || "📋"}</span>
-              <span className="truncate">{cat.nama}</span>
-            </button>
-          ))}
+        </div>
+
+        {/* Module cards */}
+        <div className="pt-6">
+          {categories.length === 0 ? (
+            <EmptyState
+              icon={LayoutTemplate}
+              title="Belum ada modul"
+              description="Buat modul laporan pertama untuk mulai merancang format input puskesmas."
+              actionLabel="Buat Modul"
+              onAction={() => setIsCreatingModule(true)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {categories.map((cat) => {
+                const pCount = cat.parameters?.filter((p: any) => p.type !== "FORMULA" && !p.isBaseline).length || 0;
+                const ddCount = cat.parameters?.filter((p: any) => p.type !== "FORMULA" && p.isBaseline).length || 0;
+                const fCount = cat.parameters?.filter((p: any) => p.type === "FORMULA").length || 0;
+                const eCount = cat.subCategories?.length || 0;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedModuleId(cat.id);
+                      setActiveTab("umum");
+                    }}
+                    className="group text-left rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/50 p-6 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <span className="w-12 h-12 rounded-2xl bg-[#0C1B16] flex items-center justify-center text-[22px]">
+                        {cat.icon || "📋"}
+                      </span>
+                      <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] px-2 py-1 rounded-full font-mono">
+                        {cat.code}
+                      </span>
+                    </div>
+                    <p className="text-[15px] font-extrabold text-[hsl(var(--foreground))] leading-tight mb-1">
+                      {cat.nama}
+                    </p>
+                    <p className="text-[11px] text-[hsl(var(--muted-foreground))] font-medium">
+                      {cat.isRowBased ? "Formulir matrix" : "Formulir tunggal"}
+                    </p>
+                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[hsl(var(--border))]/60 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+                      <span className="tabular-nums">{pCount} param</span>
+                      {cat.isRowBased && <span className="tabular-nums">{eCount} entitas</span>}
+                      {ddCount > 0 && <span className="tabular-nums">{ddCount} baseline</span>}
+                      {fCount > 0 && <span className="tabular-nums text-[#00A876]">{fCount} formula</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <CreateModuleModal
+          open={isCreatingModule}
+          onClose={() => setIsCreatingModule(false)}
+          mutation={createModuleMutation}
+        />
+        <DeleteModal
+          target={deleteConfirm}
+          onClose={() => setDeleteConfirm(null)}
+          onConfirm={() => {
+            if (!deleteConfirm) return;
+            if (deleteConfirm.type === "MODULE") deleteModuleMutation.mutate(deleteConfirm.id);
+            if (deleteConfirm.type === "PARAM") deleteParamMutation.mutate(deleteConfirm.id);
+            if (deleteConfirm.type === "ENTITY") deleteEntityMutation.mutate(deleteConfirm.id);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ══════════════════ EDITOR MODE ══════════════════
+  const NAV: { key: Tab; label: string; icon: any; count?: number; hidden?: boolean }[] = [
+    { key: "umum", label: "Umum", icon: Settings2 },
+    { key: "parameter", label: "Parameter", icon: ListChecks, count: reportParams.length },
+    {
+      key: "entitas",
+      label: "Entitas",
+      icon: Rows3,
+      count: selectedModule.subCategories?.length,
+      hidden: !selectedModule.isRowBased,
+    },
+    { key: "dataDasar", label: "Data Dasar", icon: Database, count: dataDasarParams.length },
+    { key: "formula", label: "Formula", icon: FunctionSquare, count: formulaParams.length },
+  ];
+
+  return (
+    <div className="flex h-[calc(100dvh-4rem)] overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] fade-in">
+      {/* ── LEFT: structure rail ── */}
+      <aside className="w-[248px] shrink-0 bg-[#0C1B16] flex flex-col">
+        {/* Back + module identity */}
+        <div className="px-4 pt-4 pb-3">
+          <button
+            onClick={() => setSelectedModuleId(null)}
+            className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/40 hover:text-[#7CF5CE] transition-colors mb-3"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" /> Semua Modul
+          </button>
+          <div className="flex items-center gap-3 px-1">
+            <span className="w-11 h-11 rounded-2xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-[20px] shrink-0">
+              {selectedModule.icon || "📋"}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[13px] font-extrabold text-white leading-tight truncate">{selectedModule.nama}</p>
+              <p className="text-[9px] font-bold text-white/40 font-mono mt-1 truncate">{selectedModule.code}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-4 h-px bg-white/[0.07]" />
+
+        {/* Structure nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+          {NAV.filter((t) => !t.hidden).map((t) => {
+            const active = activeTab === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                  active ? "bg-[#00A876]/15 border border-[#00A876]/30" : "border border-transparent hover:bg-white/5"
+                }`}
+              >
+                <t.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-[#7CF5CE]" : "text-white/40"}`} />
+                <span className={`flex-1 text-[12px] font-bold ${active ? "text-[#7CF5CE]" : "text-white/70"}`}>
+                  {t.label}
+                </span>
+                {t.count !== undefined && (
+                  <span
+                    className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
+                      active ? "bg-[#BEF264] text-[#06281E]" : "bg-white/10 text-white/50"
+                    }`}
+                  >
+                    {t.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Preview CTA bottom */}
+        <div className="p-3">
+          <button
+            onClick={() => setIsPreviewOpen(true)}
+            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-xl bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+          >
+            <Eye className="w-3.5 h-3.5" /> Preview Form
+          </button>
         </div>
       </aside>
 
-      {/* RIGHT PANE: Split Workspace */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[hsl(var(--card))]">
-        <header className="h-14 shrink-0 border-b border-[hsl(var(--border))] flex items-center justify-between px-6 bg-[hsl(var(--card))]">
-          {selectedModule ? (
-            <>
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{selectedModule.icon || "📋"}</span>
+      {/* ── CANVAS ── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-8 py-7">
+          {/* Section heading */}
+          <div className="mb-6">
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-[#00A876] mb-1">
+              {selectedModule.nama}
+            </p>
+            <h2 className="text-[22px] font-black tracking-[-0.02em] text-[hsl(var(--foreground))]">
+              {NAV.find((t) => t.key === activeTab)?.label}
+            </h2>
+          </div>
+
+          {/* TAB: UMUM */}
+          {activeTab === "umum" && (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
                 <div>
-                  <h1 className="text-[15px] font-bold tracking-tight leading-none">{selectedModule.nama}</h1>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1 font-mono">
-                    {selectedModule.code}
+                  <label className={labelCls}>Nama Modul</label>
+                  <input
+                    value={modForm.nama || ""}
+                    onChange={(e) => setModForm({ ...modForm, nama: e.target.value })}
+                    onBlur={() => saveModuleSettings()}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Deskripsi Singkat</label>
+                  <textarea
+                    value={modForm.deskripsi || ""}
+                    onChange={(e) => setModForm({ ...modForm, deskripsi: e.target.value })}
+                    onBlur={() => saveModuleSettings()}
+                    rows={3}
+                    className="w-full text-[12px] font-medium px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] resize-none transition-all"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Icon Modul</label>
+                    <IconPicker
+                      value={modForm.icon || ""}
+                      onChange={(emoji) => {
+                        const u = { ...modForm, icon: emoji };
+                        setModForm(u);
+                        saveModuleSettings(u);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Format Input Data</label>
+                    <select
+                      value={modForm.isRowBased ? "true" : "false"}
+                      onChange={(e) => {
+                        const nextVal = e.target.value === "true";
+                        setModForm({ ...modForm, isRowBased: nextVal });
+                        saveModuleSettings({ ...modForm, isRowBased: nextVal });
+                      }}
+                      className={inputCls}
+                    >
+                      <option value="false">Formulir Kolom Tunggal</option>
+                      <option value="true">Formulir Tabel (Matrix)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.03] p-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[12px] font-extrabold text-[hsl(var(--foreground))]">Hapus Modul</p>
+                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    Menghapus modul beserta seluruh parameter dan entitasnya.
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsPreviewOpen(true)}
-                  className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/20"
+                  onClick={() => setDeleteConfirm({ type: "MODULE", id: selectedModule.id, text: selectedModule.nama })}
+                  className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold hover:bg-[#E15A4F]/10 transition-colors"
                 >
-                  <Eye className="w-3.5 h-3.5" /> Preview Form
+                  <Trash2 className="w-3.5 h-3.5" /> Hapus
                 </button>
               </div>
-            </>
-          ) : (
-            <h1 className="text-[14px] font-bold tracking-tight text-[hsl(var(--muted-foreground))]">
-              Pilih atau buat modul baru
-            </h1>
-          )}
-        </header>
-
-        <div className="flex-1 flex overflow-hidden">
-          {!selectedModule ? (
-            <div className="m-auto text-center">
-              <p className="text-[13px] text-[hsl(var(--muted-foreground))]">Workspace Kosong</p>
             </div>
-          ) : (
-            <>
-              {/* Inline Workspace Editor */}
-              <div className="flex-1 flex flex-col overflow-hidden border-r border-[hsl(var(--border))]">
-                <nav className="flex gap-6 border-b border-[hsl(var(--border))] px-6 bg-[hsl(var(--card))] shrink-0">
-                  {(["umum", "parameter", "entitas", "dataDasar", "formula"] as Tab[]).map((tab) => {
-                    if (tab === "entitas" && !selectedModule.isRowBased) return null;
-                    return (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`py-4 text-[11px] font-bold uppercase tracking-wider relative transition-colors ${
-                          activeTab === tab
-                            ? "text-[hsl(var(--foreground))]"
-                            : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--muted-foreground))]"
-                        }`}
-                      >
-                        {tab === "dataDasar" ? "data dasar" : tab}
-                        {activeTab === tab && (
-                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[hsl(var(--foreground))]" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
+          )}
 
-                <div className="flex-1 overflow-y-auto p-6 bg-[hsl(var(--muted))]/30">
-                  {/* TAB: UMUM */}
-                  {activeTab === "umum" && (
-                    <div className="space-y-4 max-w-xl">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1.5">
-                          Nama Modul
-                        </label>
-                        <Input
-                          value={modForm.nama || ""}
-                          onChange={(e) => setModForm({ ...modForm, nama: e.target.value })}
-                          onBlur={() => saveModuleSettings()}
-                          className="w-full text-xs h-9 rounded-none bg-[hsl(var(--card))]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1.5">
-                          Deskripsi Singkat
-                        </label>
-                        <textarea
-                          value={modForm.deskripsi || ""}
-                          onChange={(e) => setModForm({ ...modForm, deskripsi: e.target.value })}
-                          onBlur={() => saveModuleSettings()}
-                          rows={3}
-                          className="w-full text-xs px-3 py-2 border border-[hsl(var(--border))] outline-none focus:border-black resize-none bg-[hsl(var(--card))]"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1.5">
-                            Icon (Emoji)
-                          </label>{" "}
-                          <Input
-                            value={modForm.icon || ""}
-                            onChange={(e) => setModForm({ ...modForm, icon: e.target.value })}
-                            onBlur={() => saveModuleSettings()}
-                            className="w-full text-xs h-9 rounded-none bg-[hsl(var(--card))]"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1.5">
-                            Format Input Data
-                          </label>
-                          <select
-                            value={modForm.isRowBased ? "true" : "false"}
-                            onChange={(e) => {
-                              const nextVal = e.target.value === "true";
-                              setModForm({ ...modForm, isRowBased: nextVal });
-                              saveModuleSettings({ ...modForm, isRowBased: nextVal });
-                            }}
-                            className="w-full text-xs h-9 px-2 border border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none focus:border-black"
-                          >
-                            <option value="false">Formulir Kolom Tunggal (Single)</option>
-                            <option value="true">Formulir Tabel Sasaran (Matrix)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB: PARAMETER */}
-                  {activeTab === "parameter" && (
-                    <div className="space-y-4 max-w-2xl">
-                      <button
-                        onClick={() =>
-                          addParamMutation.mutate({
-                            categoryId: selectedModule.id,
-                            nama: "Parameter Baru",
-                            code: `param_${Date.now()}`,
-                            type: "NUMBER",
-                            isBaseline: false,
-                          })
-                        }
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Input / Baris
-                      </button>
-                      <div className="space-y-3">
-                        {reportParams.map((p: any, idx: number) => {
-                          const localState = paramForm[p.id] || p;
-                          return (
-                            <div
-                              key={p.id}
-                              className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex p-3 gap-4 group"
-                            >
-                              <div className="flex flex-col gap-1 shrink-0">
-                                <button
-                                  onClick={() => moveParam(p.id, -1, "report")}
-                                  disabled={idx === 0}
-                                  className="w-5 h-5 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/40 disabled:opacity-30"
-                                >
-                                  <ArrowUp className="w-3 h-3" />
-                                </button>
-                                <button
-                                  onClick={() => moveParam(p.id, 1, "report")}
-                                  disabled={idx === reportParams.length - 1}
-                                  className="w-5 h-5 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/40 disabled:opacity-30"
-                                >
-                                  <ArrowDown className="w-3 h-3" />
-                                </button>
-                              </div>
-                              <div className="flex-1 grid grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Nama Parameter
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs"
-                                    value={localState.nama || ""}
-                                    onChange={(e) => {
-                                      const u = { ...localState, nama: e.target.value };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                    }}
-                                    onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                  />
-                                </div>
-                                <div className="flex gap-2">
-                                  <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                      Tipe Input
-                                    </label>
-                                    <select
-                                      className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                      value={localState.type}
-                                      onChange={(e) => {
-                                        const u = { ...localState, type: e.target.value };
-                                        setParamForm({ ...paramForm, [p.id]: u });
-                                        saveParamSettings(p.id, u);
-                                      }}
-                                    >
-                                      <option value="NUMBER">Angka Bulat</option>
-                                      <option value="DECIMAL">Angka Desimal</option>
-                                      <option value="TEXT">Teks Singkat</option>
-                                      <option value="TEXTAREA">Teks Panjang</option>
-                                      <option value="SELECT">Pilihan (Dropdown)</option>
-                                      <option value="DATE">Tanggal</option>
-                                    </select>
-                                  </div>
-                                  <button
-                                    onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                                    className="mt-5 w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 shrink-0 border border-[hsl(var(--border))]"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Kode
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-mono"
-                                    value={localState.code || ""}
-                                    onChange={(e) => {
-                                      const u = { ...localState, code: e.target.value };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                    }}
-                                    onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                  />
-                                </div>
-                                <div className="flex items-end gap-4 pb-1">
-                                  <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                                    <input
-                                      type="checkbox"
-                                      checked={!!localState.required}
-                                      onChange={(e) => {
-                                        const u = { ...localState, required: e.target.checked };
-                                        setParamForm({ ...paramForm, [p.id]: u });
-                                        saveParamSettings(p.id, u);
-                                      }}
-                                      className="w-3.5 h-3.5 rounded-none"
-                                    />
-                                    Wajib
-                                  </label>
-                                </div>
-                                {localState.type === "SELECT" && (
-                                  <div className="col-span-2">
-                                    <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                      Opsi Dropdown (pisahkan koma/baris)
-                                    </label>
-                                    <textarea
-                                      rows={2}
-                                      className="w-full px-2 py-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] resize-none"
-                                      value={localState.options || ""}
-                                      onChange={(e) => {
-                                        const u = { ...localState, options: e.target.value };
-                                        setParamForm({ ...paramForm, [p.id]: u });
-                                      }}
-                                      onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                      placeholder="Aktif, Tidak Aktif, Proses"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB: ENTITAS */}
-                  {activeTab === "entitas" && (
-                    <div className="space-y-4 max-w-3xl">
-                      <div className="p-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
-                        Entitas dipakai untuk mengelompokkan data di halaman Data Dasar. Kosongkan kolom Kategori jika
-                        tidak perlu pengelompokan.
-                      </div>
-
-                      {/* Tambah entitas custom */}
-                      <button
-                        onClick={() =>
-                          addEntityMutation.mutate({
-                            categoryId: selectedModule.id,
-                            nama: "Entitas Baru",
-                            grup: null,
-                          })
-                        }
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Entitas Manual
-                      </button>
-
-                      {/* Daftar entitas */}
-                      <div className="space-y-2">
-                        {selectedModule.subCategories?.length === 0 && (
-                          <div className="py-8 text-center text-[12px] text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))]">
-                            Belum ada entitas. Klik dari daftar standar di atas atau &quot;Tambah Entitas Manual&quot;.
-                          </div>
-                        )}
-                        {selectedModule.subCategories?.map((sub: any) => {
-                          const localState = entityForm[sub.id] || { nama: sub.nama, grup: sub.grup || "" };
-                          return (
-                            <div
-                              key={sub.id}
-                              className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] grid grid-cols-1 md:grid-cols-[1fr_220px_auto] items-end px-4 py-3 gap-3"
-                            >
-                              <div>
-                                <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                  Nama Entitas
-                                </label>
-                                <input
-                                  type="text"
-                                  className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-medium outline-none focus:border-black"
-                                  value={localState.nama || ""}
-                                  onChange={(e) =>
-                                    setEntityForm({ ...entityForm, [sub.id]: { ...localState, nama: e.target.value } })
-                                  }
-                                  onBlur={() =>
-                                    updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                  Kategori / Grup
-                                </label>
-                                {availableJenisList.length > 0 ? (
-                                  <select
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] outline-none focus:border-black"
-                                    value={localState.grup || ""}
-                                    onChange={(e) => {
-                                      const u = { ...localState, grup: e.target.value };
-                                      setEntityForm({ ...entityForm, [sub.id]: u });
-                                      updateEntityMutation.mutate({ id: sub.id, ...u });
-                                    }}
-                                  >
-                                    <option value="">— Tanpa Kategori —</option>
-                                    {Array.from(
-                                      new Set<string>(availableJenisList.map((j: any) => j.kategori).filter(Boolean)),
-                                    ).map((kat) => (
-                                      <option key={String(kat)} value={String(kat)}>
-                                        {String(kat)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                ) : (
-                                  <input
-                                    list={`entity-groups-${selectedModule.id}`}
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs outline-none focus:border-black"
-                                    value={localState.grup || ""}
-                                    onChange={(e) =>
-                                      setEntityForm({
-                                        ...entityForm,
-                                        [sub.id]: { ...localState, grup: e.target.value },
-                                      })
-                                    }
-                                    onBlur={() =>
-                                      updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
-                                    }
-                                    placeholder="Tanpa kategori"
-                                  />
-                                )}
-                                <datalist id={`entity-groups-${selectedModule.id}`}>
-                                  {uniqueEntityGroups.map((group) => (
-                                    <option key={group} value={group} />
-                                  ))}
-                                </datalist>
-                              </div>
-                              <button
-                                onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
-                                className="h-8 w-8 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 border border-[hsl(var(--border))]"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB: DATA DASAR */}
-                  {activeTab === "dataDasar" && (
-                    <div className="space-y-4 max-w-3xl">
-                      <div className="p-4 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
-                        Field di tab ini muncul di form Tambah Baru Data Dasar. Opsional: hubungkan ke parameter laporan
-                        agar jumlah data otomatis mengisi laporan bulan berjalan.
-                      </div>
-                      <button
-                        onClick={() =>
-                          addParamMutation.mutate({
-                            categoryId: selectedModule.id,
-                            nama: "Field Data Dasar Baru",
-                            code: `data_dasar_${Date.now()}`,
-                            type: "TEXT",
-                            required: false,
-                            isBaseline: true,
-                          })
-                        }
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-black bg-[hsl(var(--card))] hover:bg-[hsl(var(--foreground))] hover:text-white transition-colors"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Field Data Dasar
-                      </button>
-                      <div className="space-y-3">
-                        {dataDasarParams.map((p: any) => {
-                          const localState = paramForm[p.id] || p;
-                          return (
-                            <div
-                              key={p.id}
-                              className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-3"
-                            >
-                              <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_140px_auto] gap-3 items-end">
-                                <div>
-                                  <div className="flex items-center gap-1.5 mb-1">
-                                    <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-                                      Nama Field
-                                    </label>
-                                    {localState.syncToEntityField && (
-                                      <span className="text-[9px] px-1 bg-[hsl(var(--accent-light))] text-[hsl(var(--accent))] border border-[hsl(var(--accent)/0.25)] font-bold uppercase tracking-wide">
-                                        🔗 {localState.syncToEntityField}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <input
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-medium"
-                                    value={localState.nama || ""}
-                                    onChange={(e) =>
-                                      setParamForm({ ...paramForm, [p.id]: { ...localState, nama: e.target.value } })
-                                    }
-                                    onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Kode
-                                  </label>
-                                  <input
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs font-mono"
-                                    value={localState.code || ""}
-                                    onChange={(e) =>
-                                      setParamForm({ ...paramForm, [p.id]: { ...localState, code: e.target.value } })
-                                    }
-                                    onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                    Tipe
-                                  </label>
-                                  <select
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                    value={localState.type || "TEXT"}
-                                    onChange={(e) => {
-                                      const u = { ...localState, type: e.target.value, isBaseline: true };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                      saveParamSettings(p.id, u);
-                                    }}
-                                  >
-                                    <option value="TEXT">Teks</option>
-                                    <option value="TEXTAREA">Teks Panjang</option>
-                                    <option value="SELECT">Dropdown</option>
-                                    <option value="DATE">Tanggal</option>
-                                    <option value="NUMBER">Angka</option>
-                                    <option value="DECIMAL">Desimal</option>
-                                  </select>
-                                </div>
-                                <button
-                                  onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                                  className="h-8 px-3 text-red-500 hover:bg-red-50 border border-red-200 text-[11px] font-bold"
-                                >
-                                  Hapus
-                                </button>
-                              </div>
-
-                              <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                                  <input
-                                    type="checkbox"
-                                    checked={!!localState.required}
-                                    onChange={(e) => {
-                                      const u = { ...localState, required: e.target.checked, isBaseline: true };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                      saveParamSettings(p.id, u);
-                                    }}
-                                    className="w-3.5 h-3.5 rounded-none"
-                                  />
-                                  Wajib
-                                </label>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
-                                    Sinkron ke Parameter Laporan
-                                  </label>
-                                  <select
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                    value={localState.syncToParamId || ""}
-                                    onChange={(e) => {
-                                      const u = { ...localState, syncToParamId: e.target.value, isBaseline: true };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                      saveParamSettings(p.id, u);
-                                    }}
-                                  >
-                                    <option value="">Tidak dihubungkan — hanya Data Dasar</option>
-                                    {reportParams
-                                      .filter((tp: any) => tp.type === "NUMBER" || tp.type === "DECIMAL")
-                                      .map((tp: any) => (
-                                        <option key={tp.id} value={tp.id}>
-                                          {tp.nama} ({tp.code})
-                                        </option>
-                                      ))}
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
-                                    Sinkron ke Field Entitas
-                                  </label>
-                                  <select
-                                    className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                    value={localState.syncToEntityField || ""}
-                                    onChange={(e) => {
-                                      const u = { ...localState, syncToEntityField: e.target.value, isBaseline: true };
-                                      setParamForm({ ...paramForm, [p.id]: u });
-                                      saveParamSettings(p.id, u);
-                                    }}
-                                  >
-                                    <option value="">Tidak dihubungkan (Field Dinamis)</option>
-                                    <option value="nama">Nama Entitas</option>
-                                    <option value="alamat">Alamat</option>
-                                    <option value="pemilik">Pemilik / Pengelola</option>
-                                    <option value="kontak">Kontak / Telepon</option>
-                                    <option value="lat">Latitude (Koordinat Y)</option>
-                                    <option value="lng">Longitude (Koordinat X)</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  {localState.syncToParamId && (
-                                    <>
-                                      <label className="block text-[10px] font-bold text-[hsl(var(--foreground))] mb-1">
-                                        Metode Hitung
-                                      </label>
-                                      <select
-                                        className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                        value={localState.syncMode || "COUNT"}
-                                        onChange={(e) => {
-                                          const u = { ...localState, syncMode: e.target.value, isBaseline: true };
-                                          setParamForm({ ...paramForm, [p.id]: u });
-                                          saveParamSettings(p.id, u);
-                                        }}
-                                      >
-                                        <option value="COUNT">Hitung jumlah entri</option>
-                                        {(localState.type === "NUMBER" || localState.type === "DECIMAL") && (
-                                          <option value="SUM">Jumlahkan nilai field ini</option>
-                                        )}
-                                      </select>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-
-                              {localState.type === "SELECT" && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                      Sumber Pilihan Dropdown
-                                    </label>
-                                    <select
-                                      className="w-full h-8 px-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))]"
-                                      value={localState.optionsSource || "manual"}
-                                      onChange={(e) => {
-                                        const u = {
-                                          ...localState,
-                                          optionsSource: e.target.value,
-                                          isBaseline: true,
-                                        };
-                                        setParamForm({ ...paramForm, [p.id]: u });
-                                        saveParamSettings(p.id, u);
-                                      }}
-                                    >
-                                      <option value="auto_category">Kategori Sesuai Modul Ini</option>
-                                      <option value="manual">Opsi Manual (Ketik di sebelah kanan)</option>
-                                      <option value="entities">Daftar Entitas dari Builder Ini</option>
-                                      <option value="master_tpp">Master Jenis TPP</option>
-                                      <option value="master_ttu">Master Jenis TTU</option>
-                                      <option value="master_sarana">Master Jenis Sarana</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    {(!localState.optionsSource || localState.optionsSource === "manual") && (
-                                      <>
-                                        <label className="block text-[10px] font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                          Opsi Dropdown (Satu opsi per baris / pisah koma)
-                                        </label>
-                                        <textarea
-                                          rows={2}
-                                          className="w-full px-2 py-2 border border-[hsl(var(--border))] text-xs bg-[hsl(var(--card))] resize-none"
-                                          value={localState.options || ""}
-                                          onChange={(e) =>
-                                            setParamForm({
-                                              ...paramForm,
-                                              [p.id]: { ...localState, options: e.target.value, isBaseline: true },
-                                            })
-                                          }
-                                          onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                          placeholder="Aktif, Tidak Aktif, Proses"
-                                        />
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB: FORMULA KHUSUS */}
-                  {activeTab === "formula" && (
-                    <div className="space-y-4 max-w-2xl">
-                      <button
-                        onClick={() =>
-                          addParamMutation.mutate({
-                            categoryId: selectedModule.id,
-                            nama: "Formula Baru",
-                            code: `formula_${Date.now()}`,
-                            type: "FORMULA",
-                          })
-                        }
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 border-2 border-indigo-500 text-indigo-600 bg-[hsl(var(--card))] hover:bg-indigo-50 transition-colors"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Tambah Formula Penilaian
-                      </button>
-                      <div className="space-y-4">
-                        {formulaParams.map((p: any) => {
-                          const localState = paramForm[p.id] || p;
-                          return (
-                            <div
-                              key={p.id}
-                              className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] relative"
-                            >
-                              <div className="p-3 border-b border-[hsl(var(--border))] flex items-center justify-between bg-[hsl(var(--muted))]/50">
-                                <input
-                                  type="text"
-                                  className="font-bold text-[13px] bg-transparent outline-none w-1/2 focus:border-b focus:border-black"
-                                  value={localState.nama || ""}
-                                  onChange={(e) => {
-                                    const u = { ...localState, nama: e.target.value };
-                                    setParamForm({ ...paramForm, [p.id]: u });
-                                  }}
-                                  onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
-                                  placeholder="Nama Formula (misal: Kepatuhan Sanitasi)"
-                                />
-                                <button
-                                  onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                                  className="text-red-400 hover:text-red-600 text-xs flex items-center gap-1"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" /> Hapus
-                                </button>
-                              </div>
-                              <div className="p-4 flex items-center justify-center gap-4 py-8 bg-slate-50/50">
-                                <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">(</span>
-                                {/* Pembilang (Numerator) */}
-                                <select
-                                  className="h-10 px-3 border-2 border-emerald-400 bg-emerald-50 text-emerald-800 font-bold text-xs"
-                                  value={localState.numeratorCode || ""}
-                                  onChange={(e) => {
-                                    const u = { ...localState, numeratorCode: e.target.value };
-                                    setParamForm({ ...paramForm, [p.id]: u });
-                                    saveParamSettings(p.id, u);
-                                  }}
-                                >
-                                  <option value="">+ Pembilang (Capaian)</option>
-                                  {numericReportParams.map((dp: any) => (
-                                    <option key={dp.code} value={dp.code}>
-                                      {dp.nama}
-                                    </option>
-                                  ))}
-                                </select>
-                                <span className="text-xl font-bold text-[hsl(var(--muted-foreground))]">/</span>
-                                {/* Penyebut (Denominator) */}
-                                <select
-                                  className="h-10 px-3 border-2 border-blue-400 bg-blue-50 text-blue-800 font-bold text-xs"
-                                  value={localState.denominatorCode || ""}
-                                  onChange={(e) => {
-                                    const u = { ...localState, denominatorCode: e.target.value };
-                                    setParamForm({ ...paramForm, [p.id]: u });
-                                    saveParamSettings(p.id, u);
-                                  }}
-                                >
-                                  <option value="">+ Penyebut (Target)</option>
-                                  {numericReportParams.map((dp: any) => (
-                                    <option key={dp.code} value={dp.code}>
-                                      {dp.nama}
-                                    </option>
-                                  ))}
-                                </select>
-                                <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">)</span>
-                                <span className="text-lg font-bold text-neutral-800">× 100%</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {formulaParams.length === 0 && (
-                          <div className="py-12 border border-dashed border-[hsl(var(--border))] text-center">
-                            <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                              Modul ini belum memiliki sistem formula/penilaian otomatis.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+          {/* TAB: PARAMETER */}
+          {activeTab === "parameter" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  {reportParams.length} parameter laporan
+                </p>
+                <button
+                  onClick={() =>
+                    addParamMutation.mutate({
+                      categoryId: selectedModule.id,
+                      nama: "Parameter Baru",
+                      code: `param_${Date.now()}`,
+                      type: "NUMBER",
+                      isBaseline: false,
+                    })
+                  }
+                  className={addBtnCls}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah
+                </button>
               </div>
 
-              {/* RIGHT PANE: Live Layout Preview */}
-              <div className="w-[380px] lg:w-[450px] shrink-0 bg-[hsl(var(--muted))]/20 border-l border-[hsl(var(--border))] flex flex-col">
-                <div className="h-12 flex items-center justify-center border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                    Live Form Preview
-                  </span>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6">
-                  {selectedModule.isRowBased ? (
-                    /* Matrix Layout Preview */
-                    <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse text-[11px]">
-                          <thead>
-                            <tr className="bg-[hsl(var(--muted))]/20 border-b border-[hsl(var(--border))]">
-                              <th className="p-2 font-bold text-[hsl(var(--muted-foreground))] min-w-[120px]">
-                                Sasaran / Entitas
-                              </th>
-                              {dataParams.map((p: any) => (
-                                <th
-                                  key={p.id}
-                                  className="p-2 font-bold text-[hsl(var(--muted-foreground))] min-w-[80px]"
-                                >
-                                  {p.nama}
-                                </th>
-                              ))}
-                              {formulaParams.map((p: any) => (
-                                <th
-                                  key={p.id}
-                                  className="p-2 font-bold text-indigo-600 bg-indigo-50/50 min-w-[80px] border-l border-[hsl(var(--border))]"
-                                >
-                                  {p.nama} (%)
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedModule.subCategories?.length === 0 ? (
-                              <tr>
-                                {" "}
-                                <td
-                                  colSpan={dataParams.length + formulaParams.length + 1}
-                                  className="p-4 text-center text-[hsl(var(--muted-foreground))]"
-                                >
-                                  Tambah entitas di tab Entitas
-                                </td>
-                              </tr>
-                            ) : (
-                              selectedModule.subCategories?.map((sub: any) => (
-                                <tr key={sub.id} className="border-b border-[hsl(var(--border))]">
-                                  <td className="p-2 font-medium bg-[hsl(var(--muted))]/30 border-r border-[hsl(var(--border))]">
-                                    {sub.nama}
-                                  </td>
-                                  {dataParams.map((p: any) => (
-                                    <td key={p.id} className="p-1">
-                                      <input
-                                        type="text"
-                                        className="w-full p-1 border border-[hsl(var(--border))] text-xs"
-                                        placeholder="..."
-                                      />
-                                    </td>
-                                  ))}
-                                  {formulaParams.map((p: any) => (
-                                    <td key={p.id} className="p-1 border-l border-[hsl(var(--border))]">
-                                      <div className="w-full p-1 bg-[hsl(var(--muted))]/40 text-center font-mono font-bold text-[hsl(var(--muted-foreground))]">
-                                        0%
-                                      </div>
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
+              {reportParams.length === 0 && (
+                <EmptyState
+                  icon={ListChecks}
+                  title="Belum ada parameter"
+                  description="Tambahkan parameter pertama — kolom input yang akan diisi puskesmas setiap bulan."
+                />
+              )}
+
+              <div className="space-y-2.5">
+                {reportParams.map((p: any, idx: number) => {
+                  const localState = paramForm[p.id] || p;
+                  return (
+                    <div
+                      key={p.id}
+                      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex gap-3 hover:border-[#00A876]/30 transition-colors"
+                    >
+                      <div className="flex flex-col gap-1 shrink-0 pt-1">
+                        <button
+                          onClick={() => moveParam(p.id, -1, "report")}
+                          disabled={idx === 0}
+                          className="w-6 h-6 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[#00A876] hover:bg-[#00A876]/10 disabled:opacity-25 transition-colors"
+                        >
+                          <ArrowUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => moveParam(p.id, 1, "report")}
+                          disabled={idx === reportParams.length - 1}
+                          className="w-6 h-6 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:text-[#00A876] hover:bg-[#00A876]/10 disabled:opacity-25 transition-colors"
+                        >
+                          <ArrowDown className="w-3 h-3" />
+                        </button>
                       </div>
-                    </div>
-                  ) : (
-                    /* Single Form Preview */
-                    <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 space-y-4 shadow-sm">
-                      <h3 className="text-sm font-bold text-[hsl(var(--foreground))] border-b border-[hsl(var(--border))] pb-2 mb-4">
-                        {selectedModule.nama}
-                      </h3>
-                      {dataParams.map((p: any) => (
-                        <div key={p.id} className="space-y-1.5">
-                          <label className="block text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
-                            {p.nama}
-                          </label>
+                      <div className="flex-1 grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelCls}>Nama Parameter</label>
                           <input
                             type="text"
-                            className="w-full h-9 px-3 border border-[hsl(var(--border))] text-xs"
-                            placeholder="..."
+                            className={inputCls}
+                            value={localState.nama || ""}
+                            onChange={(e) => {
+                              const u = { ...localState, nama: e.target.value };
+                              setParamForm({ ...paramForm, [p.id]: u });
+                            }}
+                            onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
                           />
                         </div>
-                      ))}
-                      {formulaParams.length > 0 && (
-                        <div className="mt-6 p-4 border border-indigo-200 bg-indigo-50/30 space-y-4">
-                          <h4 className="text-[10px] font-bold uppercase text-indigo-500">Hasil Kalkulasi</h4>
-                          {formulaParams.map((p: any) => (
-                            <div key={p.id} className="flex items-center justify-between">
-                              {" "}
-                              <span className="text-xs font-semibold">{p.nama}</span>
-                              <span className="text-sm font-bold text-indigo-700">0%</span>
-                            </div>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className={labelCls}>Tipe Input</label>
+                            <select
+                              className={inputCls}
+                              value={localState.type}
+                              onChange={(e) => {
+                                const u = { ...localState, type: e.target.value };
+                                setParamForm({ ...paramForm, [p.id]: u });
+                                saveParamSettings(p.id, u);
+                              }}
+                            >
+                              <option value="NUMBER">Angka Bulat</option>
+                              <option value="DECIMAL">Angka Desimal</option>
+                              <option value="TEXT">Teks Singkat</option>
+                              <option value="TEXTAREA">Teks Panjang</option>
+                              <option value="SELECT">Pilihan (Dropdown)</option>
+                              <option value="DATE">Tanggal</option>
+                            </select>
+                          </div>
+                          <button
+                            onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
+                            className="mt-5 w-9 h-9 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] shrink-0 border border-[hsl(var(--border))] transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div>
+                          <label className={labelCls}>Kode</label>
+                          <input
+                            type="text"
+                            className={`${inputCls} font-mono`}
+                            value={localState.code || ""}
+                            onChange={(e) => {
+                              const u = { ...localState, code: e.target.value };
+                              setParamForm({ ...paramForm, [p.id]: u });
+                            }}
+                            onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                          />
+                        </div>
+                        <div className="flex items-end pb-1">
+                          <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={!!localState.required}
+                              onChange={(e) => {
+                                const u = { ...localState, required: e.target.checked };
+                                setParamForm({ ...paramForm, [p.id]: u });
+                                saveParamSettings(p.id, u);
+                              }}
+                              className="w-4 h-4 rounded accent-[#00A876]"
+                            />
+                            Wajib diisi
+                          </label>
+                        </div>
+                        {localState.type === "SELECT" && (
+                          <div className="col-span-2">
+                            <label className={labelCls}>Opsi Dropdown (pisahkan koma/baris)</label>
+                            <textarea
+                              rows={2}
+                              className="w-full px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium outline-none focus:border-[#00A876] resize-none transition-all"
+                              value={localState.options || ""}
+                              onChange={(e) => {
+                                const u = { ...localState, options: e.target.value };
+                                setParamForm({ ...paramForm, [p.id]: u });
+                              }}
+                              onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                              placeholder="Aktif, Tidak Aktif, Proses"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: ENTITAS */}
+          {activeTab === "entitas" && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-[#00A876]/20 bg-[#00A876]/[0.04] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                Entitas dipakai untuk mengelompokkan data di halaman Data Dasar. Kosongkan kolom Kategori jika tidak
+                perlu pengelompokan.
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() =>
+                    addEntityMutation.mutate({
+                      categoryId: selectedModule.id,
+                      nama: "Entitas Baru",
+                      grup: null,
+                    })
+                  }
+                  className={addBtnCls}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah Entitas
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {selectedModule.subCategories?.length === 0 && (
+                  <EmptyState
+                    icon={Rows3}
+                    title="Belum ada entitas"
+                    description="Tambah entitas manual untuk mengisi baris sasaran pada form matrix."
+                  />
+                )}
+                {selectedModule.subCategories?.map((sub: any) => {
+                  const localState = entityForm[sub.id] || { nama: sub.nama, grup: sub.grup || "" };
+                  return (
+                    <div
+                      key={sub.id}
+                      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] grid grid-cols-1 md:grid-cols-[1fr_220px_auto] items-end px-4 py-3.5 gap-3 hover:border-[#00A876]/30 transition-colors"
+                    >
+                      <div>
+                        <label className={labelCls}>Nama Entitas</label>
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={localState.nama || ""}
+                          onChange={(e) =>
+                            setEntityForm({ ...entityForm, [sub.id]: { ...localState, nama: e.target.value } })
+                          }
+                          onBlur={() =>
+                            updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Kategori / Grup</label>
+                        {availableJenisList.length > 0 ? (
+                          <select
+                            className={inputCls}
+                            value={localState.grup || ""}
+                            onChange={(e) => {
+                              const u = { ...localState, grup: e.target.value };
+                              setEntityForm({ ...entityForm, [sub.id]: u });
+                              updateEntityMutation.mutate({ id: sub.id, ...u });
+                            }}
+                          >
+                            <option value="">— Tanpa Kategori —</option>
+                            {Array.from(
+                              new Set<string>(availableJenisList.map((j: any) => j.kategori).filter(Boolean)),
+                            ).map((kat) => (
+                              <option key={String(kat)} value={String(kat)}>
+                                {String(kat)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            list={`entity-groups-${selectedModule.id}`}
+                            className={inputCls}
+                            value={localState.grup || ""}
+                            onChange={(e) =>
+                              setEntityForm({
+                                ...entityForm,
+                                [sub.id]: { ...localState, grup: e.target.value },
+                              })
+                            }
+                            onBlur={() =>
+                              updateEntityMutation.mutate({ id: sub.id, ...(entityForm[sub.id] || localState) })
+                            }
+                            placeholder="Tanpa kategori"
+                          />
+                        )}
+                        <datalist id={`entity-groups-${selectedModule.id}`}>
+                          {uniqueEntityGroups.map((group) => (
+                            <option key={group} value={group} />
                           ))}
+                        </datalist>
+                      </div>
+                      <button
+                        onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
+                        className="h-9 w-9 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] border border-[hsl(var(--border))] transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: DATA DASAR */}
+          {activeTab === "dataDasar" && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-[#00A876]/20 bg-[#00A876]/[0.04] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                Field di tab ini muncul di form Data Dasar. Opsional: hubungkan ke parameter laporan agar jumlah data
+                otomatis mengisi laporan bulan berjalan.
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  {dataDasarParams.length} field baseline
+                </p>
+                <button
+                  onClick={() =>
+                    addParamMutation.mutate({
+                      categoryId: selectedModule.id,
+                      nama: "Field Data Dasar Baru",
+                      code: `data_dasar_${Date.now()}`,
+                      type: "TEXT",
+                      required: false,
+                      isBaseline: true,
+                    })
+                  }
+                  className={addBtnCls}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah Field
+                </button>
+              </div>
+
+              {dataDasarParams.length === 0 && (
+                <EmptyState
+                  icon={Database}
+                  title="Belum ada field data dasar"
+                  description="Data dasar adalah field baseline yang diisi sekali per tahun (mis. jumlah sasaran wilayah)."
+                />
+              )}
+
+              <div className="space-y-3">
+                {dataDasarParams.map((p: any) => {
+                  const localState = paramForm[p.id] || p;
+                  return (
+                    <div
+                      key={p.id}
+                      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-3 hover:border-[#00A876]/30 transition-colors"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_140px_auto] gap-3 items-end">
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <label className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))]">
+                              Nama Field
+                            </label>
+                            {localState.syncToEntityField && (
+                              <span className="text-[8px] px-1.5 py-px rounded-full bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25 font-extrabold uppercase tracking-wide">
+                                🔗 {localState.syncToEntityField}
+                              </span>
+                            )}
+                          </div>
+                          <input
+                            className={inputCls}
+                            value={localState.nama || ""}
+                            onChange={(e) =>
+                              setParamForm({ ...paramForm, [p.id]: { ...localState, nama: e.target.value } })
+                            }
+                            onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Kode</label>
+                          <input
+                            className={`${inputCls} font-mono`}
+                            value={localState.code || ""}
+                            onChange={(e) =>
+                              setParamForm({ ...paramForm, [p.id]: { ...localState, code: e.target.value } })
+                            }
+                            onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Tipe</label>
+                          <select
+                            className={inputCls}
+                            value={localState.type || "TEXT"}
+                            onChange={(e) => {
+                              const u = { ...localState, type: e.target.value, isBaseline: true };
+                              setParamForm({ ...paramForm, [p.id]: u });
+                              saveParamSettings(p.id, u);
+                            }}
+                          >
+                            <option value="TEXT">Teks</option>
+                            <option value="TEXTAREA">Teks Panjang</option>
+                            <option value="SELECT">Dropdown</option>
+                            <option value="DATE">Tanggal</option>
+                            <option value="NUMBER">Angka</option>
+                            <option value="DECIMAL">Desimal</option>
+                          </select>
+                        </div>
+                        <button
+                          onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
+                          className="h-9 w-9 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] border border-[hsl(var(--border))] transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!localState.required}
+                          onChange={(e) => {
+                            const u = { ...localState, required: e.target.checked, isBaseline: true };
+                            setParamForm({ ...paramForm, [p.id]: u });
+                            saveParamSettings(p.id, u);
+                          }}
+                          className="w-4 h-4 rounded accent-[#00A876]"
+                        />
+                        Wajib diisi
+                      </label>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xl border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20">
+                        <div>
+                          <label className={labelCls}>Sinkron ke Parameter</label>
+                          <select
+                            className={inputCls}
+                            value={localState.syncToParamId || ""}
+                            onChange={(e) => {
+                              const u = { ...localState, syncToParamId: e.target.value, isBaseline: true };
+                              setParamForm({ ...paramForm, [p.id]: u });
+                              saveParamSettings(p.id, u);
+                            }}
+                          >
+                            <option value="">Tidak dihubungkan</option>
+                            {reportParams
+                              .filter((tp: any) => tp.type === "NUMBER" || tp.type === "DECIMAL")
+                              .map((tp: any) => (
+                                <option key={tp.id} value={tp.id}>
+                                  {tp.nama} ({tp.code})
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelCls}>Sinkron ke Field Entitas</label>
+                          <select
+                            className={inputCls}
+                            value={localState.syncToEntityField || ""}
+                            onChange={(e) => {
+                              const u = { ...localState, syncToEntityField: e.target.value, isBaseline: true };
+                              setParamForm({ ...paramForm, [p.id]: u });
+                              saveParamSettings(p.id, u);
+                            }}
+                          >
+                            <option value="">Tidak dihubungkan</option>
+                            <option value="nama">Nama Entitas</option>
+                            <option value="alamat">Alamat</option>
+                            <option value="pemilik">Pemilik / Pengelola</option>
+                            <option value="kontak">Kontak / Telepon</option>
+                            <option value="lat">Latitude (Y)</option>
+                            <option value="lng">Longitude (X)</option>
+                          </select>
+                        </div>
+                        <div>
+                          {localState.syncToParamId && (
+                            <>
+                              <label className={labelCls}>Metode Hitung</label>
+                              <select
+                                className={inputCls}
+                                value={localState.syncMode || "COUNT"}
+                                onChange={(e) => {
+                                  const u = { ...localState, syncMode: e.target.value, isBaseline: true };
+                                  setParamForm({ ...paramForm, [p.id]: u });
+                                  saveParamSettings(p.id, u);
+                                }}
+                              >
+                                <option value="COUNT">Hitung jumlah entri</option>
+                                {(localState.type === "NUMBER" || localState.type === "DECIMAL") && (
+                                  <option value="SUM">Jumlahkan nilai</option>
+                                )}
+                              </select>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {localState.type === "SELECT" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className={labelCls}>Sumber Pilihan</label>
+                            <select
+                              className={inputCls}
+                              value={localState.optionsSource || "manual"}
+                              onChange={(e) => {
+                                const u = {
+                                  ...localState,
+                                  optionsSource: e.target.value,
+                                  isBaseline: true,
+                                };
+                                setParamForm({ ...paramForm, [p.id]: u });
+                                saveParamSettings(p.id, u);
+                              }}
+                            >
+                              <option value="auto_category">Kategori Sesuai Modul</option>
+                              <option value="manual">Opsi Manual</option>
+                              <option value="entities">Daftar Entitas</option>
+                              <option value="master_tpp">Master Jenis TPP</option>
+                              <option value="master_ttu">Master Jenis TTU</option>
+                              <option value="master_sarana">Master Jenis Sarana</option>
+                            </select>
+                          </div>
+                          <div>
+                            {(!localState.optionsSource || localState.optionsSource === "manual") && (
+                              <>
+                                <label className={labelCls}>Opsi (per baris / koma)</label>
+                                <textarea
+                                  rows={2}
+                                  className="w-full px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium outline-none focus:border-[#00A876] resize-none transition-all"
+                                  value={localState.options || ""}
+                                  onChange={(e) =>
+                                    setParamForm({
+                                      ...paramForm,
+                                      [p.id]: { ...localState, options: e.target.value, isBaseline: true },
+                                    })
+                                  }
+                                  onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                                  placeholder="Aktif, Tidak Aktif, Proses"
+                                />
+                              </>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            </>
+            </div>
+          )}
+
+          {/* TAB: FORMULA */}
+          {activeTab === "formula" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  {formulaParams.length} formula penilaian
+                </p>
+                <button
+                  onClick={() =>
+                    addParamMutation.mutate({
+                      categoryId: selectedModule.id,
+                      nama: "Formula Baru",
+                      code: `formula_${Date.now()}`,
+                      type: "FORMULA",
+                    })
+                  }
+                  className={addBtnCls}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah Formula
+                </button>
+              </div>
+
+              {formulaParams.length === 0 && (
+                <EmptyState
+                  icon={FunctionSquare}
+                  title="Belum ada formula"
+                  description="Formula menghitung persen capaian otomatis dari parameter numerik (pembilang ÷ penyebut × 100%)."
+                />
+              )}
+
+              <div className="space-y-3">
+                {formulaParams.map((p: any) => {
+                  const localState = paramForm[p.id] || p;
+                  return (
+                    <div
+                      key={p.id}
+                      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden"
+                    >
+                      <div className="px-4 py-3 border-b border-[hsl(var(--border))]/70 flex items-center justify-between bg-[hsl(var(--muted))]/20">
+                        <input
+                          type="text"
+                          className="font-extrabold text-[13px] bg-transparent outline-none w-1/2 text-[hsl(var(--foreground))] focus:border-b-2 focus:border-[#00A876]"
+                          value={localState.nama || ""}
+                          onChange={(e) => {
+                            const u = { ...localState, nama: e.target.value };
+                            setParamForm({ ...paramForm, [p.id]: u });
+                          }}
+                          onBlur={() => saveParamSettings(p.id, paramForm[p.id] || localState)}
+                          placeholder="Nama Formula"
+                        />
+                        <button
+                          onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="px-4 py-7 flex items-center justify-center gap-3 bg-[#0C1B16]/[0.03]">
+                        <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">(</span>
+                        <select
+                          className="h-11 px-3.5 rounded-xl border-2 border-[#00A876]/40 bg-[#00A876]/[0.07] text-[#00A876] font-extrabold text-[12px] outline-none focus:border-[#00A876] cursor-pointer"
+                          value={localState.numeratorCode || ""}
+                          onChange={(e) => {
+                            const u = { ...localState, numeratorCode: e.target.value };
+                            setParamForm({ ...paramForm, [p.id]: u });
+                            saveParamSettings(p.id, u);
+                          }}
+                        >
+                          <option value="">+ Pembilang</option>
+                          {numericReportParams.map((dp: any) => (
+                            <option key={dp.code} value={dp.code}>
+                              {dp.nama}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-xl font-black text-[hsl(var(--muted-foreground))]">/</span>
+                        <select
+                          className="h-11 px-3.5 rounded-xl border-2 border-[#E8A33D]/40 bg-[#E8A33D]/[0.07] text-[#C07F1F] font-extrabold text-[12px] outline-none focus:border-[#E8A33D] cursor-pointer"
+                          value={localState.denominatorCode || ""}
+                          onChange={(e) => {
+                            const u = { ...localState, denominatorCode: e.target.value };
+                            setParamForm({ ...paramForm, [p.id]: u });
+                            saveParamSettings(p.id, u);
+                          }}
+                        >
+                          <option value="">+ Penyebut</option>
+                          {numericReportParams.map((dp: any) => (
+                            <option key={dp.code} value={dp.code}>
+                              {dp.nama}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">)</span>
+                        <span className="text-[15px] font-black text-[hsl(var(--foreground))]">× 100%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Delete Dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--foreground))]/40">
-          <div className="bg-[hsl(var(--card))] p-6 max-w-sm w-full space-y-4 border border-[hsl(var(--border))]">
-            <h3 className="text-lg font-bold">Hapus Data?</h3>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              Anda yakin ingin menghapus "{deleteConfirm.text}"? Tindakan ini tidak bisa dibatalkan.
-            </p>
-            <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                Batal
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (deleteConfirm.type === "MODULE") deleteModuleMutation.mutate(deleteConfirm.id);
-                  if (deleteConfirm.type === "PARAM") deleteParamMutation.mutate(deleteConfirm.id);
-                  if (deleteConfirm.type === "ENTITY") deleteEntityMutation.mutate(deleteConfirm.id);
-                }}
-              >
-                {" "}
-                Hapus
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Module Modal */}
-      {isCreatingModule && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--foreground))]/40">
-          <div className="bg-[hsl(var(--card))] p-6 max-w-sm w-full border border-[hsl(var(--border))]">
-            <h3 className="text-lg font-bold mb-4">Buat Modul Laporan</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const fd = new FormData(e.currentTarget);
-                createModuleMutation.mutate({
-                  nama: fd.get("nama"),
-                  code: fd.get("code"),
-                  isRowBased: true,
-                  isActive: true,
-                });
-              }}
-            >
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold">Nama Modul</label>
-                  <Input name="nama" required className="mt-1 rounded-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold">Kode (Unik)</label>
-                  <Input name="code" required className="mt-1 rounded-none" placeholder="cth: laporan_tpp" />
-                </div>
-                <div className="flex justify-end gap-2 mt-6">
-                  <Button type="button" variant="outline" onClick={() => setIsCreatingModule(false)}>
-                    Batal
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-[hsl(var(--foreground))] hover:bg-[hsl(var(--foreground))] text-white rounded-none"
-                  >
-                    Simpan & Lanjutkan
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Full Preview Modal */}
+      {/* ── Modals ── */}
+      <DeleteModal
+        target={deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => {
+          if (!deleteConfirm) return;
+          if (deleteConfirm.type === "MODULE") deleteModuleMutation.mutate(deleteConfirm.id);
+          if (deleteConfirm.type === "PARAM") deleteParamMutation.mutate(deleteConfirm.id);
+          if (deleteConfirm.type === "ENTITY") deleteEntityMutation.mutate(deleteConfirm.id);
+        }}
+      />
       <LaporanBuilderPreview isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} module={selectedModule} />
     </div>
+  );
+}
+
+// ─── Sub-modals ───────────────────────────────────────────────────────────────
+
+function DeleteModal({
+  target,
+  onClose,
+  onConfirm,
+}: {
+  target: { type: string; id: number; text: string } | null;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Modal
+      open={!!target}
+      onClose={onClose}
+      title="Hapus Data?"
+      description={`Anda yakin ingin menghapus "${target?.text}"? Tindakan ini tidak bisa dibatalkan.`}
+      icon={<Trash2 className="w-4.5 h-4.5" />}
+      size="sm"
+      variant="hero"
+      footer={
+        <>
+          <button
+            onClick={onClose}
+            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#E15A4F] text-white text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Hapus
+          </button>
+        </>
+      }
+    >
+      <div className="rounded-2xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.05] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))]">
+        Data yang sudah terhapus tidak dapat dikembalikan. Pastikan tidak ada laporan aktif yang bergantung pada item
+        ini.
+      </div>
+    </Modal>
+  );
+}
+
+function CreateModuleModal({
+  open,
+  onClose,
+  mutation,
+}: {
+  open: boolean;
+  onClose: () => void;
+  mutation: { isPending: boolean; mutate: (payload: any) => void };
+}) {
+  const [icon, setIcon] = useState("📋");
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Buat Modul Laporan"
+      description="Modul baru akan muncul sebagai menu laporan di sidebar"
+      icon={<LayoutTemplate className="w-4.5 h-4.5" />}
+      size="sm"
+      variant="hero"
+      footer={
+        <>
+          <button
+            onClick={onClose}
+            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            form="create-module-form"
+            disabled={mutation.isPending}
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+          >
+            {mutation.isPending ? (
+              <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
+            ) : (
+              <Plus className="w-3.5 h-3.5" />
+            )}
+            Simpan & Lanjutkan
+          </button>
+        </>
+      }
+    >
+      <form
+        id="create-module-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          mutation.mutate({
+            nama: fd.get("nama"),
+            code: fd.get("code"),
+            icon,
+            isRowBased: true,
+            isActive: true,
+          });
+        }}
+        className="space-y-4"
+      >
+        <div>
+          <label className={labelCls}>Icon Modul</label>
+          <IconPicker value={icon} onChange={setIcon} />
+        </div>
+        <div>
+          <label className={labelCls}>Nama Modul</label>
+          <input name="nama" required className={inputCls} placeholder="cth: Tempat Pengolahan Pangan" />
+        </div>
+        <div>
+          <label className={labelCls}>Kode (Unik)</label>
+          <input name="code" required className={`${inputCls} font-mono`} placeholder="cth: tpp" />
+        </div>
+      </form>
+    </Modal>
   );
 }

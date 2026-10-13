@@ -8,11 +8,9 @@ const BULAN_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Se
 // GET rekap — bulanan + triwulan + semester + tahunan, derived from DynamicLaporan
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req);
-  if (!user || !user.puskesmasId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const scopePuskesmasId = resolvePuskesmasId(req, user);
-  if (!scopePuskesmasId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!scopePuskesmasId) return NextResponse.json({ error: "Pilih puskesmas dahulu" }, { status: 400 });
 
   const sp = req.nextUrl.searchParams;
   const tahun = Number(sp.get("tahun")) || new Date().getFullYear();

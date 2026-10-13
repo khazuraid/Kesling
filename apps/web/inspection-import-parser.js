@@ -6,6 +6,7 @@ function normalizeInspectionTemplate(text, fileName) {
   let title = fileName.replace(/\.(pdf|docx?)$/i, "").replace(/[_-]/g, " ");
   for (let i = 0; i < Math.min(12, rawLines.length); i++) {
     const line = rawLines[i];
+    if (/^!\[/.test(line)) continue;
     const upper = line.toUpperCase();
     if (["FORMULIR", "PEMERIKSAAN", "INSPEKSI", "CHECKLIST", "IKL"].some((value) => upper.includes(value))) {
       title = line.replace(/^#+\s*/, "").trim();
@@ -61,17 +62,24 @@ function normalizeInspectionTemplate(text, fileName) {
   }, fileName);
 }
 
+function cleanCell(cell) { return cell.replace(/<br\s*\/?>/gi, " ").replace(/\s+/g, " ").trim(); }
+
 function parseDoclingMarkdownTables(lines) {
   const fields = []; let area = "Umum"; let section = "Umum"; let parent = "";
   for (const line of lines) {
     if (!line.startsWith("|") || /^\|[\s:|-]+\|?$/.test(line)) continue;
-    const cells = line.slice(1, line.endsWith("|") ? -1 : undefined).split("|").map((cell) => cell.trim().replace(/\s+/g, " "));
+    const cells = line.slice(1, line.endsWith("|") ? -1 : undefined).split("|").map(cleanCell);
     if (cells.length < 3) continue;
     const meaningful = cells.filter(Boolean); if (!meaningful.length) continue;
     const joined = meaningful.join(" ").toLowerCase();
-    if (joined.includes("kriteria penilaian") || joined.includes("lingkari pada nilai") || meaningful.every((cell) => /^(?:no|gol(?:\s*[abc])?|variabel|komponen|nilai|bobot|NA|\d+)$/i.test(cell))) continue;
+    if (joined.includes("kriteria penilaian") || joined.includes("lingkari pada angka") || joined.includes("lingkari pada nilai") || meaningful.every((cell) => /^(?:no|gol(?:\s*[abc])?|variabel|komponen|nilai|bobot|NA|\d+)$/i.test(cell))) continue;
     const first = cells[0] || ""; const second = cells[1] || ""; const third = cells[2] || "";
-    const scoreCells = cells.slice(3).filter((cell) => /^(?:NA|\d+)$/i.test(cell)); const hasScore = scoreCells.length > 0;
+    // Score columns start at the first cell after the question that is a score (NA or digit).
+    const isScore = (cell) => /^(?:NA|\d+)$/i.test(cell);
+    const qIdx = cells.findIndex((cell, idx) => idx > 0 && cell && !isScore(cell) && !/^[a-z][.)]?$/i.test(cell));
+    let question = qIdx > 0 ? cells[qIdx] : (third && !isScore(third) ? third : second);
+    const scoreCells = cells.slice((qIdx > 0 ? qIdx : 2) + 1).filter(isScore);
+    const hasScore = scoreCells.length > 0;
     if (!hasScore && meaningful.every((cell) => cell.toLowerCase() === meaningful[0].toLowerCase())) {
       const label = meaningful[0].replace(/^#+\s*/, "").trim();
       if (/^inspeksi\s+area\b/i.test(label)) { area = label; section = "Umum"; }
@@ -79,9 +87,9 @@ function parseDoclingMarkdownTables(lines) {
       parent = ""; continue;
     }
     if (/^[A-Z]$/i.test(first) && !hasScore) { section = (third || second || section).replace(/^#+\s*/, "").trim(); parent = ""; continue; }
-    let question = third || second; if (!question || /^(?:NA|\d+)$/i.test(question)) continue;
+    if (!question || isScore(question)) continue;
     const marker = second.match(/^([a-z])[.)]?\s*(.*)$/i);
-    if (marker && marker[2].length <= 2 && third) question = third; else if (/^[a-z][.)]?$/i.test(second) && third) question = third;
+    if (marker && marker[2].length <= 2 && question !== second && third) question = third; else if (/^[a-z][.)]?$/i.test(second) && third && !isScore(third)) question = third;
     if (!hasScore) { parent = question.replace(/:$/, "").trim(); continue; }
     if (parent && (/^[a-z][.)]?$/i.test(second) || /^[a-z][.)]\s+/i.test(second))) question = `${parent} — ${question}`;
     question = question.replace(/^[a-z][.)]\s*/i, "").trim(); if (question.length < 3) continue;

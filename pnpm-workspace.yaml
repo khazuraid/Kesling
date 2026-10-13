@@ -14,3 +14,6 @@ allowBuilds:
   unrs-resolver: true
   react-native: true
   expo: true
+overrides:
+  '@babel/core': ^7.29.7
+  expo-constants: 57.0.16

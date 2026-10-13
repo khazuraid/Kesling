@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getMobileUser } from "@/lib/mobile-auth";
+import { deletePhotoFiles } from "@/lib/photo-files";
 import { computeResultSkor } from "@/lib/result-skor";
 
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -104,5 +105,6 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   if (!existing) return NextResponse.json({ error: "Pemeriksaan tidak ditemukan." }, { status: 404 });
 
   await prisma.inspectionResult.delete({ where: { id } });
+  await deletePhotoFiles(existing.fotoPaths);
   return NextResponse.json({ success: true });
 }

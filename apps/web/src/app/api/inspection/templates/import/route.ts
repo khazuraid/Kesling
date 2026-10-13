@@ -14,8 +14,12 @@ const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", { max
 
 type AuthenticatedRequest = NextRequest & { user: { id: number | string } };
 
+const MAX_QUEUE = Number(process.env.INSPECTION_IMPORT_MAX_QUEUE || 10);
 export const POST = withAuth(async (request: NextRequest) => {
   const req = request as AuthenticatedRequest;
+  const queued = await redis.llen(QUEUE_KEY);
+  if (queued > MAX_QUEUE)
+    return NextResponse.json({ error: `Antrian import penuh (${queued}). Coba lagi beberapa saat.` }, { status: 429 });
   const formData = await req.formData();
   const file = formData.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "File tidak ditemukan" }, { status: 400 });

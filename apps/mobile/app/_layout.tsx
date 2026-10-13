@@ -3,7 +3,6 @@ import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
 import { useTheme } from "tamagui";
 import { useAuth } from "../src/lib/auth";
 import { getOnboardingDone } from "../src/lib/storage";
@@ -40,8 +39,9 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
   const theme = useTheme();
+  // app theme, not system: manual dark toggle must drive the status bar too
+  const isDark = theme.background.val.toLowerCase() === "#0f0f11";
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -62,7 +62,7 @@ function RootLayoutNav() {
 
   return (
     <>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -80,6 +80,10 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name="inspection/sasaran/[templateId]"
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <Stack.Screen
           name="laporan/[id]"
           options={{
             headerShown: false,
@@ -93,8 +97,11 @@ function RootLayoutNav() {
         <Stack.Screen name="inspection/result/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="drafts" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="sasaran" options={{ headerShown: false, animation: "slide_from_right" }} />
+        <Stack.Screen name="periksa" options={{ headerShown: false, animation: "slide_from_right" }} />
+        <Stack.Screen name="draft/edit/[localId]" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="notifications" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
+        <Stack.Screen name="profil" options={{ headerShown: false, animation: "slide_from_right" }} />
       </Stack>
     </>
   );

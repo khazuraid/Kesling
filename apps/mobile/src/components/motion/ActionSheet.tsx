@@ -2,12 +2,12 @@ import { X } from "@tamagui/lucide-icons-2";
 import { type ReactNode, useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
-
-const AnimatedView = Animated.View;
+import { C } from "../../lib/tokens";
 
 export type SheetItem = {
   icon?: ReactNode;
   label: string;
+  sublabel?: string;
   onPress: () => void;
 };
 
@@ -16,71 +16,86 @@ export function ActionSheet({
   onClose,
   items,
   title,
+  variant = "list",
 }: {
   open: boolean;
   onClose: () => void;
   items: SheetItem[];
   title?: string;
+  variant?: "grid" | "list";
 }) {
   const translateY = useSharedValue(400);
   const backdropOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (open) {
-      translateY.value = withSpring(0, { damping: 18, stiffness: 200 });
-      backdropOpacity.value = withTiming(0.4, { duration: 200 });
+      translateY.value = withSpring(0, { damping: 20, stiffness: 240 });
+      backdropOpacity.value = withTiming(0.5, { duration: 220 });
     } else {
       translateY.value = withTiming(400, { duration: 200, easing: Easing.in(Easing.cubic) });
       backdropOpacity.value = withTiming(0, { duration: 200 });
     }
   }, [open]);
 
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
 
   if (!open) return null;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      {/* Backdrop */}
-      <Animated.View style={[styles.backdrop, backdropStyle]}>
+      <Animated.View style={[s.backdrop, backdropStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
-      {/* Sheet */}
-      <AnimatedView style={[styles.sheet, sheetStyle]}>
-        {/* Grabber */}
-        <View style={styles.grabber} />
+      <Animated.View style={[s.sheet, sheetStyle]}>
+        <View style={s.grabber} />
 
-        {title ? <Text style={styles.title}>{title}</Text> : null}
+        {title ? (
+          <View style={s.titleRow}>
+            <View style={s.titleDot} />
+            <Text style={s.title}>{title}</Text>
+            <Pressable onPress={onClose} hitSlop={10} style={s.closeBtn}>
+              <X size={18} color={C.muted} />
+            </Pressable>
+          </View>
+        ) : null}
 
-        {items.map((item, i) => (
-          <Pressable
-            key={i}
-            style={({ pressed }) => [styles.item, pressed && { backgroundColor: "#F7F5F2" }]}
-            onPress={() => {
-              item.onPress();
-              onClose();
-            }}
-          >
-            {item.icon ? <View style={styles.itemIcon}>{item.icon}</View> : null}
-            <Text style={styles.itemLabel}>{item.label}</Text>
-          </Pressable>
-        ))}
+        <View style={variant === "grid" ? s.grid : s.list}>
+          {items.map((item, i) => (
+            <Pressable
+              key={i}
+              onPress={() => {
+                onClose();
+                setTimeout(item.onPress, 200);
+              }}
+              style={({ pressed }) => [
+                variant === "grid" ? s.gridItem : s.listItem,
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
+              ]}
+            >
+              {item.icon ? <View style={s.itemIcon}>{item.icon}</View> : null}
+              <View style={{ flex: 1 }}>
+                <Text style={s.itemLabel}>{item.label}</Text>
+                {item.sublabel ? <Text style={s.itemSub}>{item.sublabel}</Text> : null}
+              </View>
+            </Pressable>
+          ))}
+        </View>
 
-        <View style={{ height: 8 }} />
-      </AnimatedView>
+        <View style={{ height: 40 }} />
+      </Animated.View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFill,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "#000",
   },
   sheet: {
@@ -88,54 +103,65 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingBottom: 34,
-    paddingHorizontal: 20,
+    backgroundColor: C.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingTop: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
   },
   grabber: {
-    width: 40,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: "#ECE7E1",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: C.hairline,
     alignSelf: "center",
     marginBottom: 16,
   },
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#8A8580",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  item: {
+  titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderRadius: 14,
-    gap: 14,
+    gap: 8,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
-  itemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#E6F6F0",
+  titleDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
+  title: { flex: 1, fontSize: 18, fontWeight: "800", color: C.ink, letterSpacing: -0.3 },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: C.bg,
     alignItems: "center",
     justifyContent: "center",
   },
-  itemLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F1D1B",
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 16,
+    gap: 10,
   },
+  gridItem: {
+    width: "48%",
+    backgroundColor: C.bg,
+    borderRadius: 14,
+    padding: 14,
+  },
+  list: { paddingHorizontal: 20, gap: 8 },
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: C.bg,
+    borderRadius: 14,
+    padding: 14,
+  },
+  itemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: C.accentSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  itemLabel: { fontSize: 15, fontWeight: "700", color: C.ink },
+  itemSub: { fontSize: 12, color: C.muted, marginTop: 2 },
 });

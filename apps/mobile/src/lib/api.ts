@@ -16,7 +16,7 @@ import type {
 } from "../types";
 import { deleteToken, getToken } from "./storage";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:3000";
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "https://kesling.biz.id";
 
 export type { ApiUser };
 
@@ -43,7 +43,7 @@ export async function getActiveToken(): Promise<string | null> {
   return t;
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, hasToken = true): Promise<T> {
   const token = await getActiveToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -56,14 +56,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers,
   });
 
-  if (res.status === 401) {
-    memToken = null;
-    await deleteToken();
-    throw new ApiError("Sesi tidak valid atau telah berakhir.", 401);
-  }
-
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    // 401 with a token = session expired → clear it. 401 without token (login) = wrong credentials.
+    if (res.status === 401 && hasToken && token) {
+      memToken = null;
+      await deleteToken();
+    }
     throw new ApiError((data as { error?: string }).error || `HTTP ${res.status}`, res.status);
   }
   return data as T;
@@ -71,10 +70,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   login: async (email: string, password: string) => {
-    const data = await request<{ success?: boolean; token: string; user: ApiUser }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    const data = await request<{ success?: boolean; token: string; user: ApiUser }>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      },
+      false,
+    );
     // cache token in-memory immediately
     setMemToken(data.token);
     return { token: data.token, user: data.user };

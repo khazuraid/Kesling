@@ -42,16 +42,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
-      // Biometric gate — app lock saat dibuka ulang
+      // Biometric gate — app lock saat dibuka ulang.
+      // Guard hardware/enrolled: authenticateAsync can throw SecurityException
+      // on devices without biometric hardware (older Android) → force close.
       if (await isBiometricEnabled()) {
-        const res = await LocalAuthentication.authenticateAsync({
-          promptMessage: "Buka Kesling",
-          fallbackLabel: "Gunakan sandi",
-        });
-        if (!res.success) {
-          // Lock: jangan restore sesi, user harus login manual
-          setLoading(false);
-          return;
+        const available = await biometricAvailable().catch(() => false);
+        if (available) {
+          const res = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Buka Kesling",
+            fallbackLabel: "Gunakan sandi",
+          }).catch(() => ({ success: false as const }));
+          if (!res.success) {
+            // Lock: jangan restore sesi, user harus login manual
+            setLoading(false);
+            return;
+          }
         }
       }
       setMemToken(token);
@@ -71,8 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMemToken(token);
     await setToken(token);
     setUser(u);
-    // Opt-in biometric utk sesi berikutnya (auto-prompt saat app dibuka)
-    if (await biometricAvailable()) await setBiometricEnabled(true);
   };
 
   /** Biometric path: restore session from stored token (already authenticated). */

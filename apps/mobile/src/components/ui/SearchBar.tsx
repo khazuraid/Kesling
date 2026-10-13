@@ -32,7 +32,7 @@ export function SearchBar({
         color="$fg"
         value={value}
         onChangeText={onChange}
-        fontSize="$4"
+        fontSize={15}
       />
       {value ? (
         <XStack onPress={() => onChange("")} pressStyle={{ opacity: 0.6 }}>

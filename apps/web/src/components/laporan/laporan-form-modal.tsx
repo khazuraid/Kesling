@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, FilePenLine, Send, ShieldCheck, X } from "lucide-react";
+import { Building2, FilePenLine, Send, ShieldCheck } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -81,9 +81,9 @@ export function LaporanFormModal({
   const reportParameters = category.parameters.filter(
     (p) => !p.isBaseline || p.type === "NUMBER" || p.type === "DECIMAL",
   );
-  const activeIdx = 0;
   const scList = category.subCategories;
-  const total = scList.length;
+  const filledCount = Object.values(formValues).filter((v) => v !== "" && v !== "0" && v !== "0.0").length;
+  const totalCells = category.isRowBased ? scList.length * reportParameters.length : reportParameters.length;
 
   const footer =
     !isOperator && existingStatus === "SUBMITTED" ? (
@@ -91,7 +91,7 @@ export function LaporanFormModal({
         <button
           type="button"
           onClick={onClose}
-          className="h-9 px-5 bg-transparent text-[hsl(var(--muted-foreground))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+          className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
         >
           Batal
         </button>
@@ -99,7 +99,7 @@ export function LaporanFormModal({
           type="button"
           onClick={(e) => handleSubmit(e, false, "REJECTED")}
           disabled={submitMutation.isPending}
-          className="h-9 px-4 bg-transparent border border-[hsl(var(--error))] text-[hsl(var(--error))] text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--error))]/10 transition-colors"
+          className="h-10 px-5 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold uppercase tracking-wider hover:bg-[#E15A4F]/10 transition-colors disabled:opacity-50"
         >
           Tolak
         </button>
@@ -107,25 +107,28 @@ export function LaporanFormModal({
           type="button"
           onClick={(e) => handleSubmit(e, false, "APPROVED")}
           disabled={submitMutation.isPending}
-          className="h-9 px-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
         >
           <ShieldCheck className="w-4 h-4" /> Setujui
         </button>
       </>
     ) : (
       <>
+        <div className="mr-auto text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] tabular-nums">
+          {filledCount} / {totalCells} sel terisi
+        </div>
         <button
           type="button"
           onClick={onClose}
-          className="h-9 px-5 bg-transparent text-[hsl(var(--muted-foreground))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+          className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
         >
-          <X className="w-3.5 h-3.5" /> Batal
+          Batal
         </button>
         <button
           type="button"
           onClick={(e) => handleSubmit(e, false, "DRAFT")}
           disabled={submitMutation.isPending}
-          className="h-9 px-5 bg-transparent text-[hsl(var(--muted-foreground))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+          className="inline-flex items-center gap-2 h-10 px-5 rounded-full border border-[hsl(var(--border))] text-[hsl(var(--foreground))] text-[11px] font-extrabold uppercase tracking-wider hover:border-[#00A876] hover:text-[#00A876] transition-colors disabled:opacity-50"
         >
           <FilePenLine className="w-3.5 h-3.5" /> Draft
         </button>
@@ -133,12 +136,12 @@ export function LaporanFormModal({
           type="submit"
           form="laporan-form"
           disabled={submitMutation.isPending}
-          className="h-9 px-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[hsl(var(--accent))] hover:text-white transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
         >
           {submitMutation.isPending ? (
-            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
           ) : (
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           )}
           {submitMutation.isPending ? "Mengirim..." : "Kirim"}
         </button>
@@ -151,94 +154,90 @@ export function LaporanFormModal({
       onClose={onClose}
       title={category.nama}
       description={
-        category.isRowBased ? `${total} sub-kategori • ${activeIdx + 1}/${total}` : category.code.toUpperCase()
+        category.isRowBased
+          ? `${scList.length} sub-kategori × ${reportParameters.length} parameter`
+          : `${reportParameters.length} parameter • ${category.code.toUpperCase()}`
       }
+      icon={<FilePenLine className="w-4.5 h-4.5" />}
       size="xl"
+      variant="hero"
       footer={footer}
     >
       <form id="laporan-form" onSubmit={(e) => handleSubmit(e, false)} className="space-y-5">
-        {/* Puskesmas selector card */}
+        {/* Puskesmas selector */}
         {!isOperator && (
-          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-[hsl(var(--accent))]/5 to-transparent border-l-2 border-[hsl(var(--accent))]">
-            <div className="w-8 h-8 rounded-full bg-[hsl(var(--accent))]/10 flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-[hsl(var(--accent))]" />
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div className="w-9 h-9 rounded-xl bg-[#00A876]/10 flex items-center justify-center shrink-0">
+              <Building2 className="w-4 h-4 text-[#00A876]" />
             </div>
-            <select
-              value={formPuskesmasId}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setFormPuskesmasId(id);
-                const existing = laporanList.find((l) => l.puskesmasId === id);
-                setFormValues(existing ? buildValueMapFromLaporan(existing.values) : {});
-              }}
-              className="flex-1 h-9 bg-transparent border-0 text-[14px] font-bold text-[hsl(var(--foreground))] outline-none appearance-none cursor-pointer"
-            >
-              {puskesmasList.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.nama}
-                </option>
-              ))}
-            </select>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
+                Puskesmas
+              </p>
+              <select
+                value={formPuskesmasId}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setFormPuskesmasId(id);
+                  const existing = laporanList.find((l) => l.puskesmasId === id);
+                  setFormValues(existing ? buildValueMapFromLaporan(existing.values) : {});
+                }}
+                className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-[hsl(var(--foreground))] outline-none appearance-none cursor-pointer"
+              >
+                {puskesmasList.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {existingStatus && (
+              <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-full bg-[#00A876]/10 text-[#00A876] text-[10px] font-extrabold uppercase tracking-wider">
+                {existingStatus}
+              </span>
+            )}
           </div>
         )}
 
         {category.isRowBased ? (
           /* ── Matrix Table ── */
-          <div className="rounded-lg border border-[hsl(var(--border))]/30 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto max-h-[55vh]">
+          <div className="rounded-2xl border border-[hsl(var(--border))] overflow-hidden">
+            <div className="overflow-x-auto max-h-[52vh]">
               <table className="w-full border-collapse">
-                {/* Sticky header */}
                 <thead className="sticky top-0 z-10">
-                  <tr className="bg-[hsl(var(--muted))]/60 backdrop-blur-sm">
-                    <th className="px-5 py-3.5 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] min-w-[220px] border-b border-[hsl(var(--border))]/40">
-                      <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-5 bg-[hsl(var(--accent))] rounded-full"></span>
-                        Sub-Kategori
-                      </div>
+                  <tr className="bg-[hsl(var(--card))]">
+                    <th className="px-5 py-3.5 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] min-w-[220px] border-b border-[hsl(var(--border))]">
+                      Sub-Kategori
                     </th>
-                    {reportParameters.map((p, idx) => (
+                    {reportParameters.map((p) => (
                       <th
                         key={p.id}
-                        className={`px-5 py-3.5 text-center text-[10px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-[0.15em] w-36 border-b border-[hsl(var(--border))]/40 ${
-                          idx === 0 ? "" : ""
-                        }`}
+                        className="px-5 py-3.5 text-center text-[10px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-[0.15em] w-36 border-b border-[hsl(var(--border))]"
                       >
-                        <span className="inline-flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-[hsl(var(--accent))]/40"></span>
-                          {p.nama}
-                        </span>
+                        {p.nama}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {scList.map((sc, rowIdx) => {
+                  {scList.map((sc) => {
                     const hasAnyValue = reportParameters.some((p) => {
                       const key = buildKey(p.id, sc.id);
                       return (formValues[key] ?? "") !== "";
                     });
                     return (
-                      <tr
-                        key={sc.id}
-                        className={`group transition-all duration-150 ${
-                          rowIdx % 2 === 0 ? "bg-[hsl(var(--background))]" : "bg-[hsl(var(--muted))]/10"
-                        } hover:bg-[hsl(var(--accent))]/5`}
-                      >
-                        <td className="px-5 py-3.5 border-b border-[hsl(var(--border))]/20">
+                      <tr key={sc.id} className="group transition-colors hover:bg-[#00A876]/[0.03]">
+                        <td className="px-5 py-3 border-b border-[hsl(var(--border))]/50">
                           <div className="flex items-center gap-2.5">
                             <span
-                              className={`w-2 h-2 rounded-full shrink-0 transition-colors ${
-                                hasAnyValue
-                                  ? "bg-[hsl(var(--accent))]"
-                                  : "bg-[hsl(var(--border))] group-hover:bg-[hsl(var(--accent))]/60"
+                              className={`w-1.5 h-6 rounded-full shrink-0 transition-colors ${
+                                hasAnyValue ? "bg-[#00A876]" : "bg-[hsl(var(--border))]"
                               }`}
-                            ></span>
+                            />
                             <div>
-                              <span className="text-[13px] font-bold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--accent))] transition-colors">
-                                {sc.nama}
-                              </span>
+                              <span className="text-[13px] font-bold text-[hsl(var(--foreground))]">{sc.nama}</span>
                               {sc.grup && (
-                                <span className="ml-2 text-[9px] font-bold text-[hsl(var(--accent))] uppercase bg-[hsl(var(--accent))]/10 px-2 py-0.5 rounded-full">
+                                <span className="ml-2 text-[9px] font-bold text-[#00A876] uppercase bg-[#00A876]/10 px-2 py-0.5 rounded-full">
                                   {sc.grup}
                                 </span>
                               )}
@@ -249,7 +248,7 @@ export function LaporanFormModal({
                           const key = buildKey(p.id, sc.id);
                           const val = formValues[key] ?? "";
                           return (
-                            <td key={p.id} className="px-5 py-2 border-b border-[hsl(var(--border))]/20">
+                            <td key={p.id} className="px-4 py-2 border-b border-[hsl(var(--border))]/50">
                               <input
                                 type={p.type === "NUMBER" ? "number" : "text"}
                                 min={p.type === "NUMBER" ? 0 : undefined}
@@ -259,12 +258,12 @@ export function LaporanFormModal({
                                 }
                                 readOnly={p.isBaseline}
                                 placeholder="—"
-                                className={`w-full h-10 px-3 text-[13px] font-bold text-center tabular-nums rounded-lg outline-none transition-all duration-150 ${
+                                className={`w-full h-10 px-3 text-[13px] font-bold text-center tabular-nums rounded-xl outline-none transition-all ${
                                   p.isBaseline
-                                    ? "bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))]/40 cursor-not-allowed border border-dashed border-[hsl(var(--border))]/20"
+                                    ? "bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))]/40 cursor-not-allowed border border-dashed border-[hsl(var(--border))]/30"
                                     : val !== ""
-                                      ? "bg-[hsl(var(--accent))]/5 border border-[hsl(var(--accent))]/30 text-[hsl(var(--foreground))] focus:bg-[hsl(var(--accent))]/10 focus:border-[hsl(var(--accent))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
-                                      : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))]/40 hover:bg-[hsl(var(--muted))]/10 focus:border-[hsl(var(--accent))] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
+                                      ? "bg-[#00A876]/[0.07] border border-[#00A876]/30 text-[hsl(var(--foreground))] focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)]"
+                                      : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] focus:border-[#00A876] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)]"
                                 }`}
                               />
                             </td>
@@ -276,15 +275,6 @@ export function LaporanFormModal({
                 </tbody>
               </table>
             </div>
-            {/* Footer stat */}
-            <div className="flex items-center justify-between px-5 py-3 bg-[hsl(var(--muted))]/30 border-t border-[hsl(var(--border))]/30">
-              <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
-                {category.subCategories.length} sub-kategori × {reportParameters.length} parameter
-              </span>
-              <span className="text-[11px] font-bold text-[hsl(var(--accent))] tabular-nums">
-                {Object.values(formValues).filter((v) => v !== "" && v !== "0" && v !== "0.0").length} sel terisi
-              </span>
-            </div>
           </div>
         ) : (
           /* ── Card List ── */
@@ -295,21 +285,27 @@ export function LaporanFormModal({
               return (
                 <div
                   key={p.id}
-                  className={`group flex items-center justify-between gap-6 px-4 py-3.5 rounded-lg transition-all duration-150 ${
+                  className={`group flex items-center justify-between gap-6 px-4 py-3.5 rounded-2xl transition-all ${
                     p.isBaseline
-                      ? "bg-[hsl(var(--muted))]/20 border border-dashed border-[hsl(var(--border))]/30"
+                      ? "bg-[hsl(var(--muted))]/20 border border-dashed border-[hsl(var(--border))]/40"
                       : val !== ""
-                        ? "bg-[hsl(var(--accent))]/5 border border-[hsl(var(--accent))]/20 hover:border-[hsl(var(--accent))]/40"
-                        : "bg-[hsl(var(--background))] border border-transparent hover:border-[hsl(var(--border))]/40 hover:bg-[hsl(var(--muted))]/10"
+                        ? "bg-[#00A876]/[0.05] border border-[#00A876]/25"
+                        : "bg-[hsl(var(--card))] border border-[hsl(var(--border))]/70 hover:border-[hsl(var(--border))]"
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span className="w-7 h-7 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--muted-foreground))] shrink-0 group-hover:bg-[hsl(var(--accent))]/10 group-hover:text-[hsl(var(--accent))] transition-colors">
-                      {idx + 1}
+                    <span
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-extrabold shrink-0 transition-colors ${
+                        val !== "" && !p.isBaseline
+                          ? "bg-[#00A876] text-white"
+                          : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                      }`}
+                    >
+                      {String(idx + 1).padStart(2, "0")}
                     </span>
-                    <span className="text-[13px] font-semibold text-[hsl(var(--foreground))] truncate">
+                    <span className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">
                       {p.nama}
-                      {p.required && <span className="text-[hsl(var(--error))] ml-1">*</span>}
+                      {p.required && <span className="text-[#E15A4F] ml-1">*</span>}
                     </span>
                   </div>
                   <input
@@ -320,12 +316,12 @@ export function LaporanFormModal({
                     onChange={(e) => setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))}
                     readOnly={p.isBaseline}
                     placeholder="0"
-                    className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-lg outline-none transition-all duration-150 ${
+                    className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-xl outline-none transition-all ${
                       p.isBaseline
-                        ? "bg-transparent text-[hsl(var(--muted-foreground))]/40 cursor-not-allowed border border-dashed border-[hsl(var(--border))]/20"
+                        ? "bg-transparent text-[hsl(var(--muted-foreground))]/40 cursor-not-allowed border border-dashed border-[hsl(var(--border))]/30"
                         : val !== ""
-                          ? "bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/30 text-[hsl(var(--foreground))] focus:border-[hsl(var(--accent))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.15)]"
-                          : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/20 focus:border-[hsl(var(--accent))] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_hsl(var(--accent)/0.1)]"
+                          ? "bg-[#00A876]/10 border border-[#00A876]/30 text-[hsl(var(--foreground))] focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.15)]"
+                          : "bg-transparent border border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--border))] focus:border-[#00A876] focus:bg-[hsl(var(--background))] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)]"
                     }`}
                   />
                 </div>

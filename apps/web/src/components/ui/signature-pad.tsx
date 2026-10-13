@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
 interface SignaturePadProps {
   value: string | null;
   onChange: (base64: string) => void;
+  label?: string;
 }
 
-export function SignaturePad({ value, onChange }: SignaturePadProps) {
+export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -130,7 +131,7 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
 
         {!value && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="text-[11px] font-medium text-black/20">Tanda tangan di sini</span>
+            <span className="text-[11px] font-medium text-black/20">{label ?? "Tanda tangan di sini"}</span>
           </div>
         )}
 

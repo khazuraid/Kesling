@@ -15,3 +15,13 @@ coba.txt
 # Local sample documents
 *.pdf
 .DS_Store
+
+# Tooling and editor
+.claude/settings.local.json
+.agents/
+.hermes/
+.codebuddy/
+.continue/
+*.webp
+*.png
+Kesling Mobile/
