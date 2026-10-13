@@ -79,7 +79,17 @@ RUN python3 -m venv /opt/odl-hybrid && \
 
 # Pre-download docling models and EasyOCR weights so the first job does not fetch them at runtime.
 RUN mkdir -p /opt/docling-models/EasyOcr && \
-    /opt/odl-hybrid/bin/python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'), progress=True); import easyocr; easyocr.Reader(['en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True)" && \
+    /opt/odl-hybrid/bin/python -c "\
+from pathlib import Path; \
+from docling.utils.model_downloader import download_models; \
+download_models(output_dir=Path('/opt/docling-models'), progress=True); \
+import easyocr; \
+easyocr.Reader(['latin', 'en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True); \
+import os; \
+os.environ['DOCLING_ARTIFACTS_PATH'] = '/opt/docling-models'; \
+from docling.document_converter import DocumentConverter, InputFormat; \
+converter = DocumentConverter(); \
+converter.initialize_pipeline(InputFormat.PDF)" && \
     chown -R nextjs:nodejs /opt/docling-models
 
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
