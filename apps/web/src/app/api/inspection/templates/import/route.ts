@@ -59,6 +59,12 @@ export const POST = withAuth(async (request: NextRequest) => {
   await redis.rpush(`inspection-import:${jobId}:logs`, initialLog);
   await redis.expire(`inspection-import:${jobId}:logs`, JOB_TTL_SECONDS);
 
+  // Track in user job history list (keep up to 20 jobs)
+  const userJobsKey = `inspection-import:user:${req.user.id}:jobs`;
+  await redis.lpush(userJobsKey, jobId);
+  await redis.ltrim(userJobsKey, 0, 19);
+  await redis.expire(userJobsKey, JOB_TTL_SECONDS * 7);
+
   // Push to FIFO Redis queue
   await redis.rpush(
     QUEUE_KEY,
@@ -94,6 +100,62 @@ export const GET = withAuth(async (request: NextRequest) => {
       }
     }
     return NextResponse.json({ totalQueued, activeJob });
+  }
+
+  // Endpoint to get user import job history and current queue
+  if (req.nextUrl.searchParams.get("action") === "history") {
+    const totalQueued = await redis.llen(QUEUE_KEY);
+    const activeJobId = await redis.get(ACTIVE_KEY);
+    const queueItems = await redis.lrange(QUEUE_KEY, 0, -1);
+    const userJobsKey = `inspection-import:user:${req.user.id}:jobs`;
+    const jobIds = await redis.lrange(userJobsKey, 0, 19);
+    const jobs = [];
+    for (const jId of jobIds) {
+      const data = await redis.hgetall(`inspection-import:${jId}`);
+      if (data && data.fileName) {
+        let fieldCount = 0;
+        try {
+          if (data.result) {
+            const parsed = JSON.parse(data.result);
+            fieldCount = (parsed.fields || []).length;
+          }
+        } catch {
+          // ignore json parse error
+        }
+
+        let queuePosition = 0;
+        if (data.status === "queued") {
+          const idx = queueItems.findIndex((item) => {
+            try {
+              return JSON.parse(item).id === jId;
+            } catch {
+              return false;
+            }
+          });
+          queuePosition = idx >= 0 ? idx + 1 : 1;
+        }
+
+        jobs.push({
+          jobId: jId,
+          status: data.status,
+          progress: Number(data.progress || 0),
+          message: data.message || "",
+          fileName: data.fileName,
+          queuePosition,
+          createdAt: data.createdAt,
+          completedAt: data.completedAt,
+          error: data.error || null,
+          fieldCount,
+        });
+      }
+    }
+    return NextResponse.json({
+      jobs,
+      queue: {
+        totalQueued,
+        isWorkerActive: Boolean(activeJobId),
+      },
+    });
   }
 
   const jobId = req.nextUrl.searchParams.get("jobId");

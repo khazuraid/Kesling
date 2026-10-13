@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <SideNav />
       <SidebarOffset>
-        <main className="pb-16 pt-5 mx-auto max-w-[1400px] px-5">
+        <main className="pb-16 pt-5 w-full px-4 sm:px-6 lg:px-8">
           <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
         </main>
       </SidebarOffset>

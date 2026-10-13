@@ -7,6 +7,7 @@ import {
   ChevronRight,
   FileText,
   FolderPlus,
+  History,
   Plus,
   Settings2,
   ShieldAlert,
@@ -15,10 +16,11 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
 import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
+import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
+import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
 
 const FIELD_TYPES = [
   { value: "BOOLEAN", label: "Ceklis" },
@@ -59,6 +61,58 @@ export default function FormPemeriksaanPage() {
   const [activeImportJob, setActiveImportJob] = useState<ImportJobState | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImportWidgetVisible, setIsImportWidgetVisible] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
+  // Resume active import job if available in localStorage
+  useEffect(() => {
+    const lastJobId = typeof window !== "undefined" ? localStorage.getItem("kesling:last-import-job-id") : null;
+    if (lastJobId && !activeImportJob) {
+      fetch(`/api/inspection/templates/import?jobId=${lastJobId}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && (data.status === "processing" || data.status === "queued")) {
+            setActiveImportJob({
+              jobId: data.jobId,
+              fileName: data.fileName,
+              status: data.status,
+              progress: data.progress || 10,
+              message: data.message || "",
+              queuePosition: data.queuePosition,
+              totalQueued: data.totalQueued,
+              logs: data.logs || [],
+              result: data.result,
+              error: data.error,
+            });
+            setIsImportWidgetVisible(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  async function handleOpenTerminalFromHistory(jobId: string) {
+    try {
+      const res = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
+      if (!res.ok) throw new Error("Gagal memuat detail job");
+      const data = await res.json();
+      setActiveImportJob({
+        jobId: data.jobId,
+        fileName: data.fileName,
+        status: data.status,
+        progress: data.progress || 10,
+        message: data.message || "",
+        queuePosition: data.queuePosition,
+        totalQueued: data.totalQueued,
+        logs: data.logs || [],
+        result: data.result,
+        error: data.error,
+      });
+      setIsHistoryModalOpen(false);
+      setIsImportModalOpen(true);
+    } catch (err: any) {
+      toast.error(err?.message || "Gagal membuka terminal log");
+    }
+  }
 
   const [nama, setNama] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
@@ -206,6 +260,9 @@ export default function FormPemeriksaanPage() {
       if (!res.ok) throw new Error(initData?.error || "Gagal memproses file");
 
       const jobId = initData.jobId;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("kesling:last-import-job-id", jobId);
+      }
       setActiveImportJob((prev) =>
         prev
           ? {
@@ -250,9 +307,7 @@ export default function FormPemeriksaanPage() {
 
           if (statusData.status === "complete") {
             clearInterval(interval);
-            toast.success(
-              `Import selesai: ${(statusData.result?.fields || []).length} butir pemeriksaan terdeteksi`,
-            );
+            toast.success(`Import selesai: ${(statusData.result?.fields || []).length} butir pemeriksaan terdeteksi`);
           } else if (statusData.status === "failed") {
             clearInterval(interval);
             toast.error(statusData.error || "Gagal memproses file di worker");
@@ -510,14 +565,32 @@ export default function FormPemeriksaanPage() {
         <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
           <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-          <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+          <div className="relative z-10 px-4 sm:px-8 py-6 sm:py-7 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Builder</p>
-              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Form Pemeriksaan</h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">{templates.length} template tersedia</p>
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-[-0.03em] leading-tight sm:leading-none">
+                Form Pemeriksaan
+              </h1>
+              <p className="text-[12px] sm:text-[13px] font-medium text-white/50 mt-1.5">
+                {templates.length} template tersedia
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 transition cursor-pointer">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setIsHistoryModalOpen(true)}
+                title="Lihat status antrean & riwayat upload"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 hover:text-white transition"
+              >
+                <History className="w-3.5 h-3.5 text-[#7CF5CE]" />
+                <span>Status & Antrean</span>
+                {(activeImportJob?.status === "processing" || activeImportJob?.status === "queued") && (
+                  <span className="flex h-2 w-2 relative ml-0.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                )}
+              </button>
+              <label className="inline-flex items-center gap-2 h-10 px-4 sm:px-5 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 hover:text-white transition cursor-pointer">
                 <Upload className="w-3.5 h-3.5" /> Import
                 <input
                   type="file"
@@ -614,34 +687,36 @@ export default function FormPemeriksaanPage() {
                     className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden text-left"
                   >
                     <div className="w-1 shrink-0 bg-[#00A876]" />
-                    <div className="flex-1 flex items-center gap-4 px-5 py-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5" />
+                    <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-4">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                        <h4 className="text-[12px] sm:text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
                           {tpl.nama}
                         </h4>
-                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
                           {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
                         </p>
                       </div>
-                      <div className="shrink-0 flex items-center gap-5">
+                      <div className="shrink-0 flex items-center gap-3 sm:gap-5">
                         <div className="text-center">
-                          <div className="text-[16px] font-black tabular-nums leading-none">{fieldCount}</div>
+                          <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none">
+                            {fieldCount}
+                          </div>
                           <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
                             Butir
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-[16px] font-black tabular-nums leading-none text-[#00A876]">
+                          <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-[#00A876]">
                             {grupCount}
                           </div>
                           <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
                             Grup
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all" />
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
                   </button>
@@ -658,6 +733,31 @@ export default function FormPemeriksaanPage() {
           onMinimize={() => {
             setIsImportModalOpen(false);
             if (activeImportJob) setIsImportWidgetVisible(true);
+          }}
+          onApplyResult={handleApplyImportResult}
+        />
+
+        <ImportHistoryModal
+          open={isHistoryModalOpen}
+          activeJob={activeImportJob}
+          onClose={() => setIsHistoryModalOpen(false)}
+          onOpenTerminal={(jobId) => {
+            setIsHistoryModalOpen(false);
+            fetch(`/api/inspection/templates/import?jobId=${jobId}`)
+              .then((res) => (res.ok ? res.json() : null))
+              .then((data) => {
+                if (data) {
+                  setActiveImportJob({
+                    jobId: data.jobId,
+                    fileName: data.fileName,
+                    status: data.status,
+                    progress: data.progress || 10,
+                    message: data.message || "",
+                    queuePosition: data.queuePosition,
+                  });
+                  setIsImportModalOpen(true);
+                }
+              });
           }}
           onApplyResult={handleApplyImportResult}
         />
@@ -684,28 +784,30 @@ export default function FormPemeriksaanPage() {
   return (
     <div className="w-full pb-8 fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <button
-          onClick={() => {
-            setSelectedTemplateId(null);
-            setIsCreating(false);
-          }}
-          className="flex items-center gap-2 text-[13px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" /> Kembali
-        </button>
-        <div className="h-6 w-px bg-[hsl(var(--border))]" />
-        <input
-          type="text"
-          value={nama}
-          onChange={(e) => setNama(e.target.value)}
-          placeholder="Nama Template..."
-          className="flex-1 text-[22px] font-black text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent tracking-tight"
-        />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <button
+            onClick={() => {
+              setSelectedTemplateId(null);
+              setIsCreating(false);
+            }}
+            className="flex items-center gap-1.5 sm:gap-2 text-[13px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" /> Kembali
+          </button>
+          <div className="h-6 w-px bg-[hsl(var(--border))] shrink-0" />
+          <input
+            type="text"
+            value={nama}
+            onChange={(e) => setNama(e.target.value)}
+            placeholder="Nama Template..."
+            className="flex-1 text-[18px] sm:text-[22px] font-black text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent tracking-tight min-w-0"
+          />
+        </div>
         <button
           onClick={handleSave}
           disabled={createMutation.isPending}
-          className="flex items-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg"
+          className="flex items-center justify-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg w-full sm:w-auto shrink-0"
         >
           <Check className="w-4 h-4" />
           {createMutation.isPending ? "Menyimpan..." : "Simpan"}

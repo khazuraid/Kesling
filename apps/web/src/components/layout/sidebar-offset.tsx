@@ -14,5 +14,9 @@ export function SidebarOffset({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("kesling:toggle-sidebar", onToggle);
   }, []);
 
-  return <div className={`transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-[232px]"}`}>{children}</div>;
+  return (
+    <div className={`transition-[margin] duration-200 ml-0 ${collapsed ? "md:ml-16" : "md:ml-[232px]"}`}>
+      {children}
+    </div>
+  );
 }
