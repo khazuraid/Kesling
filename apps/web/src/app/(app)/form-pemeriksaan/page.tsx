@@ -271,7 +271,7 @@ export default function FormPemeriksaanPage() {
               progress: 10,
               message: "File masuk antrean worker...",
               logs: [
-                ...prev.logs,
+                ...(prev.logs || []),
                 {
                   timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
                   level: "info",
@@ -299,7 +299,7 @@ export default function FormPemeriksaanPage() {
               message: statusData.message || "",
               queuePosition: statusData.queuePosition,
               totalQueued: statusData.totalQueued,
-              logs: statusData.logs?.length ? statusData.logs : prev.logs,
+              logs: statusData.logs?.length ? statusData.logs : prev.logs || [],
               result: statusData.result,
               error: statusData.error,
             };
@@ -327,7 +327,7 @@ export default function FormPemeriksaanPage() {
               message: "Gagal mengunggah file",
               error: errMsg,
               logs: [
-                ...prev.logs,
+                ...(prev.logs || []),
                 {
                   timestamp: new Date().toLocaleTimeString("id-ID", { hour12: false }),
                   level: "error",
