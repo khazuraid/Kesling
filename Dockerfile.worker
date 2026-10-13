@@ -1,0 +1,60 @@
+# syntax=docker/dockerfile:1
+FROM node:22-bookworm-slim AS base
+RUN corepack enable && corepack prepare pnpm@11.1.0 --activate
+
+# ─── Heavy import worker base (cached permanently) ────────────
+FROM base AS worker-base
+WORKDIR /app
+
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs --create-home --home-dir /home/nextjs nextjs && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl \
+      default-jre-headless libgl1 libglib2.0-0 libxcb1 libxrender1 libxext6 \
+      python3 python3-pip python3-venv && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv /opt/odl-hybrid && \
+    /opt/odl-hybrid/bin/pip install --upgrade pip && \
+    /opt/odl-hybrid/bin/pip install \
+      --extra-index-url https://download.pytorch.org/whl/cpu "opendataloader-pdf[hybrid]"
+
+# Pre-download docling models and EasyOCR weights so the first job does not fetch them at runtime.
+RUN mkdir -p /opt/docling-models/EasyOcr && \
+    /opt/odl-hybrid/bin/python -c "\
+import io, urllib.request, zipfile; \
+from pathlib import Path; \
+from docling.utils.model_downloader import download_models; \
+download_models(output_dir=Path('/opt/docling-models'), progress=False); \
+dest = Path('/opt/docling-models/EasyOcr'); \
+urls = [\
+  'https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip',\
+  'https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip',\
+  'https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/english_g2.zip',\
+]; \
+[zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'})).read())).extractall(dest) for u in urls]" && \
+    chown -R nextjs:nodejs /opt/docling-models
+
+# Pre-install worker node dependencies in the base layer
+RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf
+
+ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
+ENV HF_HOME=/opt/docling-models
+ENV HYBRID_URL=http://127.0.0.1:5002
+ENV HYBRID_SECONDS_PER_PAGE=20
+ENV HYBRID_MAX_TIMEOUT_MS=1800000
+
+# ─── Lightweight worker runner (instant build) ─────────────────
+FROM worker-base AS worker-runner
+WORKDIR /app
+
+COPY apps/web/worker.js ./apps/web/worker.js
+COPY apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
+COPY worker-entrypoint.sh /app/worker-entrypoint.sh
+RUN chmod +x /app/worker-entrypoint.sh && \
+    chown -R nextjs:nodejs /app/apps/web /app/worker-entrypoint.sh
+
+USER nextjs
+ENTRYPOINT ["/app/worker-entrypoint.sh"]
+CMD ["node", "apps/web/worker.js"]

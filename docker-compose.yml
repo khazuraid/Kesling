@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: web-runner
     container_name: kes-app
     restart: unless-stopped
     ports:
@@ -23,8 +22,7 @@ services:
     profiles: ["worker"]  # ponytail: disabled by default, enable dengan --profile worker
     build:
       context: .
-      dockerfile: Dockerfile
-      target: worker-runner
+      dockerfile: Dockerfile.worker
     container_name: kes-worker
     restart: unless-stopped
     env_file: .env.docker
@@ -44,6 +42,8 @@ services:
           memory: 1024M
 
     command: ["node", "apps/web/worker.js"]
+    volumes:
+      - docling-models:/opt/docling-models
     depends_on:
       redis:
         condition: service_healthy
@@ -114,6 +114,7 @@ services:
 volumes:
   pgdata:
   uploads:
+  docling-models:
 
 networks:
   kes-net:

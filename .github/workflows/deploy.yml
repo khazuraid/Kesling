@@ -1,0 +1,37 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script_stop: true
+          script: |
+            echo "🚀 Mulai proses deployment di server..."
+            cd ${{ secrets.SERVER_PATH }}
+
+            echo "📥 Mengambil kode terbaru dari GitHub..."
+            git pull origin main
+
+            echo "🐳 Menjalankan build & update container Docker (menggunakan cache)..."
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            docker compose --profile worker up -d --build
+
+            echo "🧹 Membersihkan image lama yang tidak terpakai..."
+            docker image prune -f
+
+            echo "✅ Deployment selesai!"

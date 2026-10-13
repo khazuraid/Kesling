@@ -4,6 +4,9 @@ dist
 .turbo
 .env
 *.log
+*.log.gz
+runtime-log-*
+decompress.js
 
 # PWA generated
 apps/web/public/sw.js

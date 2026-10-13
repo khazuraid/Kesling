@@ -94,6 +94,14 @@ else
 fi
 
 
+# Ensure server.js resolvable in both paths
+if [ ! -f "/app/apps/web/server.js" ] && [ -f "/app/server.js" ]; then
+  mkdir -p /app/apps/web
+  ln -sf /app/server.js /app/apps/web/server.js
+elif [ -f "/app/apps/web/server.js" ] && [ ! -f "/app/server.js" ]; then
+  ln -sf /app/apps/web/server.js /app/server.js
+fi
+
 # Start app
 echo "🚀 Starting apps-kes..."
 exec "$@"
