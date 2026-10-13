@@ -77,9 +77,9 @@ RUN python3 -m venv /opt/odl-hybrid && \
     /opt/odl-hybrid/bin/pip install --no-cache-dir \
       --extra-index-url https://download.pytorch.org/whl/cpu "opendataloader-pdf[hybrid]"
 
-# Pre-download docling models so the first job does not fetch them at runtime.
-RUN mkdir -p /opt/docling-models && \
-    /opt/odl-hybrid/bin/python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'), progress=True)" && \
+# Pre-download docling models and EasyOCR weights so the first job does not fetch them at runtime.
+RUN mkdir -p /opt/docling-models/EasyOcr && \
+    /opt/odl-hybrid/bin/python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'), progress=True); import easyocr; easyocr.Reader(['en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True)" && \
     chown -R nextjs:nodejs /opt/docling-models
 
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
