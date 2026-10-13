@@ -2,7 +2,7 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js,jsx,json}"
-      run: pnpm biome check --write --staged {staged_files}
+      run: pnpm biome check --write --no-errors-on-unmatched --staged {staged_files}
       stage_fixed: true
 
 commit-msg:

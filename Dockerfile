@@ -83,6 +83,7 @@ RUN mkdir -p /opt/docling-models && \
     chown -R nextjs:nodejs /opt/docling-models
 
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
+ENV HF_HOME=/opt/docling-models
 ENV HYBRID_URL=http://127.0.0.1:5002
 ENV HYBRID_SECONDS_PER_PAGE=20
 ENV HYBRID_MAX_TIMEOUT_MS=1800000
