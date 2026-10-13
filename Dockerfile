@@ -80,11 +80,20 @@ RUN python3 -m venv /opt/odl-hybrid && \
 # Pre-download docling models and EasyOCR weights so the first job does not fetch them at runtime.
 RUN mkdir -p /opt/docling-models/EasyOcr && \
     /opt/odl-hybrid/bin/python -c "\
+import io, urllib.request, zipfile; \
 from pathlib import Path; \
 from docling.utils.model_downloader import download_models; \
 download_models(output_dir=Path('/opt/docling-models'), progress=False); \
-import easyocr; \
-easyocr.Reader(['latin', 'en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True)" && \
+dest = Path('/opt/docling-models/EasyOcr'); \
+urls = [\
+    'https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip',\
+    'https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip',\
+    'https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/english_g2.zip'\
+]; \
+for u in urls: \
+    req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'}); \
+    with urllib.request.urlopen(req) as r, zipfile.ZipFile(io.BytesIO(r.read())) as z: \
+        z.extractall(dest)" && \
     chown -R nextjs:nodejs /opt/docling-models
 
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
