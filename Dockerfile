@@ -82,14 +82,9 @@ RUN mkdir -p /opt/docling-models/EasyOcr && \
     /opt/odl-hybrid/bin/python -c "\
 from pathlib import Path; \
 from docling.utils.model_downloader import download_models; \
-download_models(output_dir=Path('/opt/docling-models'), progress=True); \
+download_models(output_dir=Path('/opt/docling-models'), progress=False); \
 import easyocr; \
-easyocr.Reader(['latin', 'en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True); \
-import os; \
-os.environ['DOCLING_ARTIFACTS_PATH'] = '/opt/docling-models'; \
-from docling.document_converter import DocumentConverter, InputFormat; \
-converter = DocumentConverter(); \
-converter.initialize_pipeline(InputFormat.PDF)" && \
+easyocr.Reader(['latin', 'en'], model_storage_directory='/opt/docling-models/EasyOcr', download_enabled=True)" && \
     chown -R nextjs:nodejs /opt/docling-models
 
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
