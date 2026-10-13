@@ -741,24 +741,7 @@ export default function FormPemeriksaanPage() {
           open={isHistoryModalOpen}
           activeJob={activeImportJob}
           onClose={() => setIsHistoryModalOpen(false)}
-          onOpenTerminal={(jobId) => {
-            setIsHistoryModalOpen(false);
-            fetch(`/api/inspection/templates/import?jobId=${jobId}`)
-              .then((res) => (res.ok ? res.json() : null))
-              .then((data) => {
-                if (data) {
-                  setActiveImportJob({
-                    jobId: data.jobId,
-                    fileName: data.fileName,
-                    status: data.status,
-                    progress: data.progress || 10,
-                    message: data.message || "",
-                    queuePosition: data.queuePosition,
-                  });
-                  setIsImportModalOpen(true);
-                }
-              });
-          }}
+          onOpenTerminal={handleOpenTerminalFromHistory}
           onApplyResult={handleApplyImportResult}
         />
 

@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  AlertCircle,
-  Check,
-  CheckCircle2,
-  Clock,
-  Copy,
-  FileText,
-  Loader2,
-  Minimize2,
-  Terminal,
-  X,
-} from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Clock, Copy, FileText, Loader2, Minimize2, Terminal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,7 +18,7 @@ export interface ImportJobState {
   message: string;
   queuePosition?: number;
   totalQueued?: number;
-  logs: LogEntry[];
+  logs?: LogEntry[];
   result?: any;
   error?: string;
 }
@@ -42,13 +31,7 @@ interface ImportInspectionModalProps {
   onApplyResult: (result: any) => void;
 }
 
-export function ImportInspectionModal({
-  open,
-  job,
-  onClose,
-  onMinimize,
-  onApplyResult,
-}: ImportInspectionModalProps) {
+export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyResult }: ImportInspectionModalProps) {
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -103,13 +86,7 @@ export function ImportInspectionModal({
                           : "bg-sky-500/10 text-sky-500 border border-sky-500/20"
                   }`}
                 >
-                  {isComplete
-                    ? "Selesai"
-                    : isFailed
-                      ? "Gagal"
-                      : isProcessing
-                        ? "Memproses"
-                        : "Dalam Antrean"}
+                  {isComplete ? "Selesai" : isFailed ? "Gagal" : isProcessing ? "Memproses" : "Dalam Antrean"}
                 </span>
               </div>
               <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
@@ -143,9 +120,7 @@ export function ImportInspectionModal({
             {isQueued && <Clock className="w-3.5 h-3.5 text-sky-500" />}
             {isComplete && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
             {isFailed && <AlertCircle className="w-3.5 h-3.5 text-rose-500" />}
-            <span className="font-semibold text-[hsl(var(--foreground))]">
-              {job.message || "Menunggu proses..."}
-            </span>
+            <span className="font-semibold text-[hsl(var(--foreground))]">{job.message || "Menunggu proses..."}</span>
           </div>
 
           {isQueued && (
@@ -156,9 +131,7 @@ export function ImportInspectionModal({
             </div>
           )}
 
-          <div className="text-[11px] text-[hsl(var(--muted-foreground))]">
-            Server 2C 8GB • Concurrency: 1 Worker
-          </div>
+          <div className="text-[11px] text-[hsl(var(--muted-foreground))]">Server 2C 8GB • Concurrency: 1 Worker</div>
         </div>
 
         {/* Progress Bar */}
@@ -189,9 +162,7 @@ export function ImportInspectionModal({
                 <h4 className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" /> Ekstraksi Berhasil
                 </h4>
-                <p className="text-xs text-[hsl(var(--foreground))] font-semibold mt-1">
-                  {job.result.nama}
-                </p>
+                <p className="text-xs text-[hsl(var(--foreground))] font-semibold mt-1">{job.result.nama}</p>
                 <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
                   Terdeteksi {fieldCount} butir pemeriksaan terbagi dalam {grupCount} kelompok area.
                 </p>
