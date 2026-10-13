@@ -1,5 +1,5 @@
 const { spawn } = require("node:child_process");
-const { readFile, rm, writeFile } = require("node:fs/promises");
+const { readdir, readFile, rm, writeFile } = require("node:fs/promises");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
 const Redis = require("ioredis");
@@ -139,7 +139,10 @@ async function extract(job, dir) {
   );
 
   await addLog(job.id, "Ekstraksi dokumen ke Markdown selesai");
-  return readFile(mdPath, "utf8");
+  const dirFiles = await readdir(dir);
+  const foundMd = dirFiles.find((f) => f.endsWith(".md"));
+  const targetMdPath = foundMd ? join(dir, foundMd) : mdPath;
+  return readFile(targetMdPath, "utf8");
 }
 
 // @opendataloader/pdf is optional at runtime: resolve its CLI once, fall back to npx.
