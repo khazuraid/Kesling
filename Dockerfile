@@ -59,17 +59,18 @@ EXPOSE 3000
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "apps/web/server.js"]
 
-# ─── Heavy import worker runtime ──────────────────────────────
-# Built only when worker/parser dependencies change. The web image never
-# contains Python, Torch, Docling, or downloaded document models. The worker
-# image carries Java (opendataloader-pdf CLI) plus a Python/Torch venv for the
-# hybrid docling backend — both bundled inside opendataloader-pdf[hybrid].
-FROM web-runner AS worker-runner
-USER root
+# ─── Heavy import worker base (cached permanently) ────────────
+# Isolated from web-runner/builder so web updates never bust the
+# cache of system packages, PyTorch, Docling, or EasyOCR weights.
+FROM base AS worker-base
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-jre-headless libgl1 libglib2.0-0 libxcb1 libxrender1 libxext6 \
-    python3 python3-pip python3-venv && \
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs --create-home --home-dir /home/nextjs nextjs && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl \
+      default-jre-headless libgl1 libglib2.0-0 libxcb1 libxrender1 libxext6 \
+      python3 python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m venv /opt/odl-hybrid && \
@@ -93,19 +94,24 @@ urls = [\
 [zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'})).read())).extractall(dest) for u in urls]" && \
     chown -R nextjs:nodejs /opt/docling-models
 
+# Pre-install worker node dependencies in the base layer
+RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf
+
 ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
 ENV HF_HOME=/opt/docling-models
 ENV HYBRID_URL=http://127.0.0.1:5002
 ENV HYBRID_SECONDS_PER_PAGE=20
 ENV HYBRID_MAX_TIMEOUT_MS=1800000
 
-COPY --from=builder /app/apps/web/worker.js ./apps/web/worker.js
-COPY --from=builder /app/apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
-RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf && \
-    chown nextjs:nodejs /app/apps/web/worker.js /app/apps/web/inspection-import-parser.js
+# ─── Lightweight worker runner (instant build) ─────────────────
+FROM worker-base AS worker-runner
+WORKDIR /app
 
+COPY apps/web/worker.js ./apps/web/worker.js
+COPY apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
 COPY worker-entrypoint.sh /app/worker-entrypoint.sh
-RUN chmod +x /app/worker-entrypoint.sh && chown nextjs:nodejs /app/worker-entrypoint.sh
+RUN chmod +x /app/worker-entrypoint.sh && \
+    chown -R nextjs:nodejs /app/apps/web /app/worker-entrypoint.sh
 
 USER nextjs
 ENTRYPOINT ["/app/worker-entrypoint.sh"]
