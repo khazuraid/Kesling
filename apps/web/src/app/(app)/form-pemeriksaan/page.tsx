@@ -40,6 +40,22 @@ const RUMUS_OPTIONS = [
   { value: "custom", label: "Kustom", desc: "Rumus manual sesuai kebutuhan" },
 ];
 
+function parseDropdownOptions(raw: any): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((x) => String(x).trim()).filter(Boolean);
+    } catch {}
+    return raw
+      .split(/[,\n;]/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function toRoman(num: number): string {
   const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
   const syms = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
@@ -168,7 +184,7 @@ export default function FormPemeriksaanPage() {
     onError: () => toast.error("Gagal menyimpan template"),
   });
 
-  const _deleteMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const res = await fetch(`/api/inspection/templates/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
@@ -647,6 +663,39 @@ export default function FormPemeriksaanPage() {
     setFields(next);
   }
 
+  function addMetadataField(pertanyaan = "", tipe = "TEXT", opsi = "", autoFill = "") {
+    const newField = {
+      pertanyaan,
+      tipe,
+      isRequired: true,
+      grup: "__META__",
+      skor: 0,
+      skorBenar: 0,
+      skorSalah: 0,
+      opsi,
+      isDisabled: false,
+      dependsOn: null,
+      targetGolongan: "ALL",
+      allowNA: false,
+      autoFill,
+    };
+    let lastMetaIdx = -1;
+    for (let i = fields.length - 1; i >= 0; i--) {
+      if (fields[i].grup === "__META__") {
+        lastMetaIdx = i;
+        break;
+      }
+    }
+    if (lastMetaIdx >= 0) {
+      const next = [...fields];
+      next.splice(lastMetaIdx + 1, 0, newField);
+      setFields(next);
+    } else {
+      setFields([newField, ...fields]);
+    }
+    toast.success(pertanyaan ? `Metadata "${pertanyaan}" ditambahkan` : "Field metadata ditambahkan");
+  }
+
   // Inline add form state: { type: "bagian" } untuk bagian baru di bawah list,
   // { type: "sub", area } untuk subbagian di bawah grup tertentu
   const [addingInline, setAddingInline] = useState<{ type: "bagian" } | { type: "sub"; area: string } | null>(null);
@@ -766,6 +815,27 @@ export default function FormPemeriksaanPage() {
 
   const totalSkor = useMemo(() => fields.reduce((s, f) => s + (f.skor ?? 0), 0), [fields]);
   const rumusLabel = RUMUS_OPTIONS.find((r) => r.value === rumus)?.label || rumus;
+
+  const availableSasaranOptions = useMemo(() => {
+    const metaDropdowns = fields.filter((f) => f.grup === "__META__" && (f.tipe === "DROPDOWN" || f.tipe === "SELECT"));
+    const targetMeta =
+      metaDropdowns.find((f) => {
+        const q = (f.pertanyaan || "").toLowerCase();
+        return (
+          q.includes("golongan") ||
+          q.includes("tipe") ||
+          q.includes("kategori") ||
+          q.includes("jenis") ||
+          q.includes("sasaran")
+        );
+      }) || metaDropdowns[0];
+
+    if (targetMeta) {
+      const parsed = parseDropdownOptions(targetMeta.opsi || targetMeta.options);
+      if (parsed.length > 0) return parsed;
+    }
+    return ["Golongan A1", "Golongan A2"];
+  }, [fields]);
 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -980,7 +1050,7 @@ export default function FormPemeriksaanPage() {
                           {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
                         </p>
                       </div>
-                      <div className="shrink-0 flex items-center gap-3 sm:gap-5">
+                      <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
                         <div className="text-center">
                           <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none">
                             {fieldCount}
@@ -997,6 +1067,24 @@ export default function FormPemeriksaanPage() {
                             Grup
                           </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (
+                              confirm(
+                                `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
+                              )
+                            ) {
+                              deleteMutation.mutate(tpl.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          title="Hapus template"
+                          className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
@@ -1077,6 +1165,29 @@ export default function FormPemeriksaanPage() {
           >
             🍿 Contoh A1 / A2
           </button>
+          {selectedTemplateId && (
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  confirm(`Yakin ingin menghapus template "${nama || "ini"}"? Tindakan ini tidak dapat dibatalkan.`)
+                ) {
+                  deleteMutation.mutate(selectedTemplateId, {
+                    onSuccess: () => {
+                      setSelectedTemplateId(null);
+                      setIsCreating(false);
+                    },
+                  });
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              title="Hapus template ini"
+              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[12px] font-bold border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-lg shrink-0"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Hapus</span>
+            </button>
+          )}
           <button
             onClick={handleSave}
             disabled={createMutation.isPending}
@@ -1371,9 +1482,24 @@ export default function FormPemeriksaanPage() {
             <div className="flex items-center gap-2 px-5 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
               <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
               <span className="text-[12px] font-bold">Daftar Ceklis</span>
-              <span className="ml-auto text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
-                {fields.length} item
-              </span>
+              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{fields.length} item</span>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => addMetadataField("", "TEXT")}
+                  className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition-colors rounded-lg"
+                  title="Tambahkan field metadata form (nama usaha, pemeriksa, golongan, dll)"
+                >
+                  <Plus className="w-3.5 h-3.5" /> + Metadata
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addField()}
+                  className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-85 transition-colors rounded-lg"
+                >
+                  <Plus className="w-3.5 h-3.5" /> + Butir
+                </button>
+              </div>
             </div>
 
             {fields.length === 0 ? (
@@ -1514,29 +1640,25 @@ export default function FormPemeriksaanPage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setFields([
-                                  ...fields,
-                                  {
-                                    pertanyaan: "Tipe Jajanan Keliling",
-                                    tipe: "DROPDOWN",
-                                    isRequired: true,
-                                    grup: "__META__",
-                                    autoFill: "",
-                                    targetGolongan: "ALL",
-                                    isDisabled: false,
-                                    dependsOn: null,
-                                    allowNA: false,
-                                    skor: 0,
-                                    skorBenar: 0,
-                                    skorSalah: 0,
-                                    opsi: "Golongan A1, Golongan A2",
-                                  },
-                                ]);
-                                toast.success("Preset Tipe Jajanan (Golongan A1 / A2) ditambahkan");
+                                addMetadataField(
+                                  "Tipe / Golongan Sasaran",
+                                  "DROPDOWN",
+                                  "Golongan A1, Golongan A2, Golongan A3",
+                                );
                               }}
-                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-amber-500/15 text-amber-700 border border-amber-500/30 hover:bg-amber-500/25 transition-colors rounded-md"
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition-colors rounded-md"
                             >
-                              🍿 + Tipe Jajanan (Golongan A1 / A2)
+                              🎯 + Tipe Sasaran (A1 / A2 / A3)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addMetadataField("", "TEXT");
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors rounded-md"
+                            >
+                              <Plus className="w-3 h-3" /> Tambah Metadata
                             </button>
                           </div>
                         )}
@@ -1560,17 +1682,21 @@ export default function FormPemeriksaanPage() {
                         >
                           <Plus className="w-3 h-3" /> Butir
                         </button>
-                        {group.grup !== "__META__" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (
+                              group.grup !== "__META__" ||
+                              confirm("Hapus seluruh grup metadata? Tindakan ini tidak dapat dibatalkan.")
+                            ) {
                               deleteGrup(group.grup);
-                            }}
-                            className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-md"
-                          >
-                            <Trash2 className="w-3 h-3" /> Hapus
-                          </button>
-                        )}
+                            }
+                          }}
+                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-md"
+                          title={group.grup === "__META__" ? "Hapus seluruh grup metadata" : "Hapus grup ini"}
+                        >
+                          <Trash2 className="w-3 h-3" /> Hapus
+                        </button>
                       </div>
 
                       {/* Inline add subbagian */}
@@ -1750,40 +1876,53 @@ export default function FormPemeriksaanPage() {
                                                 : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
                                             }`}
                                           >
-                                            Semua (A1 & A2)
+                                            Semua
                                           </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => updateField(index, "targetGolongan", "A1")}
-                                            className={`px-2 py-0.5 rounded transition-colors ${
-                                              field.targetGolongan === "A1" || field.targetGolongan === "Golongan A1"
-                                                ? "bg-amber-600 text-white font-bold"
-                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-                                            }`}
-                                          >
-                                            Khusus A1
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => updateField(index, "targetGolongan", "A2")}
-                                            className={`px-2 py-0.5 rounded transition-colors ${
-                                              field.targetGolongan === "A2" || field.targetGolongan === "Golongan A2"
-                                                ? "bg-indigo-600 text-white font-bold"
-                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-                                            }`}
-                                          >
-                                            Khusus A2
-                                          </button>
+                                          {availableSasaranOptions.map((opt, optIdx) => {
+                                            const curVal = field.targetGolongan || "ALL";
+                                            const curClean = curVal.toLowerCase().replace(/[^a-z0-9]/g, "");
+                                            const optClean = opt.toLowerCase().replace(/[^a-z0-9]/g, "");
+                                            const isSelected =
+                                              curVal !== "ALL" &&
+                                              (curClean === optClean ||
+                                                (curClean === "a1" && optClean.includes("a1")) ||
+                                                (curClean === "a2" && optClean.includes("a2")) ||
+                                                curClean === opt.toLowerCase());
+
+                                            const colorClass = [
+                                              "bg-amber-600 text-white font-bold",
+                                              "bg-indigo-600 text-white font-bold",
+                                              "bg-purple-600 text-white font-bold",
+                                              "bg-teal-600 text-white font-bold",
+                                              "bg-rose-600 text-white font-bold",
+                                            ][optIdx % 5];
+
+                                            return (
+                                              <button
+                                                key={opt}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateField(index, "targetGolongan", isSelected ? "ALL" : opt)
+                                                }
+                                                className={`px-2 py-0.5 rounded transition-colors ${
+                                                  isSelected
+                                                    ? colorClass
+                                                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                                }`}
+                                              >
+                                                {opt}
+                                              </button>
+                                            );
+                                          })}
                                         </div>
                                         {field.targetGolongan && field.targetGolongan !== "ALL" && (
-                                          <span
-                                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
-                                              field.targetGolongan === "A1" || field.targetGolongan === "Golongan A1"
-                                                ? "bg-amber-50 text-amber-800 border-amber-200"
-                                                : "bg-indigo-50 text-indigo-800 border-indigo-200"
-                                            }`}
-                                          >
-                                            {field.targetGolongan === "A1" ? "Golongan A1" : "Golongan A2"}
+                                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
+                                            🎯 Khusus{" "}
+                                            {field.targetGolongan === "A1"
+                                              ? "Golongan A1"
+                                              : field.targetGolongan === "A2"
+                                                ? "Golongan A2"
+                                                : field.targetGolongan}
                                           </span>
                                         )}
                                       </div>

@@ -29,9 +29,15 @@ export function isGolonganMatch(targetGolongan?: string | null, selectedGolongan
   if (!selectedGolongan) {
     return true;
   }
-  const cleanTarget = targetGolongan.toLowerCase().replace(/[^a-z0-9]/g, "");
   const cleanSelected = selectedGolongan.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return cleanTarget === cleanSelected || cleanSelected.includes(cleanTarget) || cleanTarget.includes(cleanSelected);
+  const targets = targetGolongan
+    .split(",")
+    .map((t) => t.toLowerCase().replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean);
+  return targets.some(
+    (cleanTarget) =>
+      cleanTarget === cleanSelected || cleanSelected.includes(cleanTarget) || cleanTarget.includes(cleanSelected),
+  );
 }
 
 interface FormViewProps {

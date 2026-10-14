@@ -149,6 +149,7 @@ export const POST = withAuth(async (req: NextRequest) => {
               autoFill: f.autoFill || f.config?.autoFill || undefined,
               isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
               dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+              targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
               allowNA: f.allowNA ?? f.config?.allowNA ?? false,
             },
           })),
