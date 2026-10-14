@@ -1,5 +1,14 @@
 import { prisma } from "@apps-kes/database";
-import { ArrowRight, ArrowUpRight, Download, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Download,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModuleSparkChips } from "@/components/module-spark-chips";
@@ -95,110 +104,185 @@ export default async function DashboardPage() {
   const partial = pkmStats.filter((p) => p.percentage >= 50 && p.percentage < 80).length;
   const low = pkmStats.filter((p) => p.percentage < 50).length;
   const top3 = pkmStats.slice(0, 3);
-  const rest = pkmStats.slice(3);
 
   return (
-    <div className="w-full mx-auto pb-10 fade-in">
+    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in">
       {/* ── HEADER HERO ── */}
-      <div className="relative overflow-hidden rounded-3xl bg-[#0C1B16] text-white px-8 py-7 mb-8">
-        <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.14]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#123527_0%,transparent_60%)]" />
-        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
-              {BULAN[bulan]} {tahun} · Kota Cirebon
-            </p>
-            <h1 className="text-[32px] font-black tracking-[-0.03em] leading-none">Overview</h1>
-            <p className="text-[13px] font-medium text-white/50 mt-2">
-              {pkmCount} puskesmas · {categories.length} kategori · {totalData} laporan masuk
+      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
+        {/* Decorative background glows */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#00A876] opacity-[0.16] blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.08] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#153A2D_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider text-[#7CF5CE]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7CF5CE] animate-pulse" />
+                Dinas Kesehatan · Kota Cirebon
+              </span>
+              <span className="text-[11px] font-bold text-white/50">
+                {BULAN[bulan]} {tahun}
+              </span>
+            </div>
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-tight">
+              Executive Dashboard Kesling
+            </h1>
+            <p className="text-[13px] font-medium text-white/60 flex items-center gap-2 flex-wrap">
+              <span>{pkmCount} Puskesmas</span>
+              <span>·</span>
+              <span>{categories.length} Program Prioritas</span>
+              <span>·</span>
+              <span className="text-[#BEF264] font-bold">{totalData} Laporan Terverifikasi</span>
             </p>
           </div>
-          <div className="flex items-end gap-6">
-            <div className="text-right">
-              <p className="text-[44px] font-black tabular-nums leading-none text-[#BEF264]">{completionRate}%</p>
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mt-1">Capaian bulan ini</p>
+
+          <div className="flex items-center gap-4 sm:gap-6 self-start md:self-auto">
+            <div className="text-right border-r border-white/10 pr-5 sm:pr-6">
+              <div className="flex items-baseline justify-end gap-1">
+                <span className="text-[38px] sm:text-[44px] font-black tabular-nums leading-none text-[#BEF264]">
+                  {completionRate}
+                </span>
+                <span className="text-[18px] font-bold text-[#BEF264]/70">%</span>
+              </div>
+              <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">Capaian Kota</p>
             </div>
-            <a
-              href="/api/export/all"
-              className="h-10 px-4 flex items-center gap-2 rounded-2xl bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
-            >
-              <Download className="w-3.5 h-3.5" /> Export
-            </a>
+
+            <div className="flex flex-col gap-2">
+              <a
+                href="/api/export/all"
+                className="h-10 px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-black hover:brightness-105 active:scale-95 transition shadow-sm"
+              >
+                <Download className="w-4 h-4" /> Export Data
+              </a>
+              <Link
+                href="/laporan"
+                className="h-9 px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 text-white text-[11px] font-bold hover:bg-white/15 transition border border-white/10"
+              >
+                Semua Laporan <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── KPI STRIP ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--border))]">
-        {/* Capaian — highlighted */}
-        <div className="bg-[#0C1B16] text-white p-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]/70">Capaian</p>
+      {/* ── KPI CARDS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Capaian */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm hover:shadow transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Total Capaian
+            </span>
             <span
-              className={`inline-flex items-center gap-1 text-[10px] font-extrabold ${
-                delta >= 0 ? "text-[#7CF5CE]" : "text-red-300"
+              className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
+                delta >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
               }`}
             >
               {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {delta >= 0 ? "+" : ""}
-              {delta}
+              {delta >= 0 ? `+${delta}` : delta}
             </span>
           </div>
-          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em]">
-            {completionRate}
-            <span className="text-[22px] font-bold text-white/40">%</span>
-          </p>
-          <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full rounded-full bg-[#7CF5CE]" style={{ width: `${Math.max(completionRate, 2)}%` }} />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[36px] font-black tabular-nums tracking-tight text-[hsl(var(--foreground))]">
+              {completionRate}%
+            </span>
           </div>
-          <p className="text-[10px] font-semibold text-white/50 mt-2">
-            {totalData} dari {totalTarget} laporan
+          <div className="mt-3 h-2 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#00A876] transition-all duration-500"
+              style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2 font-medium">
+            {totalData} dari {totalTarget} target laporan
           </p>
         </div>
 
-        {/* Tercapai */}
-        <div className="bg-[hsl(var(--card))] p-6">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
-            Tercapai
+        {/* Card 2: Tercapai */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm hover:shadow transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[36px] font-black tabular-nums tracking-tight text-emerald-600">{achieved}</span>
+            <span className="text-[12px] font-bold text-[hsl(var(--muted-foreground))]">/ {pkmCount} PKM</span>
+          </div>
+          <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2 font-medium">
+            Kepatuhan &ge; 80% ({pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}% wilayah)
           </p>
-          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--success))]">
-            {achieved}
-          </p>
-          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">puskesmas ≥ 80%</p>
         </div>
 
-        {/* Parsial */}
-        <div className="bg-[hsl(var(--card))] p-6">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
-            Parsial
+        {/* Card 3: Parsial */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm hover:shadow transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
+            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[36px] font-black tabular-nums tracking-tight text-amber-600">{partial}</span>
+            <span className="text-[12px] font-bold text-[hsl(var(--muted-foreground))]">/ {pkmCount} PKM</span>
+          </div>
+          <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-amber-500 transition-all duration-500"
+              style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2 font-medium">
+            Capaian 50% – 79% ({pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}% wilayah)
           </p>
-          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--warning))]">
-            {partial}
-          </p>
-          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">50–79% target</p>
         </div>
 
-        {/* Rendah */}
-        <div className="bg-[hsl(var(--card))] p-6">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
-            Rendah
+        {/* Card 4: Rendah / Butuh Pembinaan */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm hover:shadow transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[36px] font-black tabular-nums tracking-tight text-rose-600">{low}</span>
+            <span className="text-[12px] font-bold text-[hsl(var(--muted-foreground))]">/ {pkmCount} PKM</span>
+          </div>
+          <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-rose-500 transition-all duration-500"
+              style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2 font-medium">
+            Capaian &lt; 50% target bulanan
           </p>
-          <p className="text-[52px] font-black tabular-nums leading-none tracking-[-0.04em] text-[hsl(var(--error))]">
-            {low}
-          </p>
-          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-4">&lt; 50% target</p>
         </div>
       </div>
 
-      {/* ── MODUL SPARK CHIPS ── */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[14px] font-extrabold tracking-tight text-[hsl(var(--foreground))]">Modul</h2>
+      {/* ── MODUL / PROGRAM PRIORITAS ── */}
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-[15px] font-black text-[hsl(var(--foreground))]">Status Program & Modul</h2>
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))] font-medium mt-0.5">
+              Distribusi input laporan per indikator kesehatan lingkungan
+            </p>
+          </div>
           <Link
             href="/laporan"
-            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00A876] hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#00A876] hover:underline"
           >
-            Semua <ArrowRight className="w-3 h-3" />
+            Buka Semua Modul <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         <ModuleSparkChips
@@ -214,87 +298,121 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* ── LEADERBOARD ── */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top 3 podium */}
-        <div className="rounded-2xl bg-[#0C1B16] text-white p-6">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]/70 mb-5">
-            Teratas Bulan Ini
+      {/* ── LEADERBOARD WILAYAH KERJA ── */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-[16px] font-black text-[hsl(var(--foreground))]">Pemantauan Kinerja Puskesmas</h2>
+          <p className="text-[12px] text-[hsl(var(--muted-foreground))] font-medium mt-0.5">
+            Peringkat kepatuhan pelaporan seluruh puskesmas se-Kota Cirebon
           </p>
-          <div className="space-y-4">
-            {top3.map((pkm, idx) => (
-              <Link key={pkm.id} href={`/laporan/tpp?puskesmasId=${pkm.id}`} className="flex items-center gap-3 group">
-                <span
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black tabular-nums shrink-0 ${
-                    idx === 0
-                      ? "bg-[#BEF264] text-[#06281E]"
-                      : idx === 1
-                        ? "bg-white/20 text-white"
-                        : "bg-white/10 text-white/70"
-                  }`}
-                >
-                  {idx + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-extrabold truncate group-hover:text-[#7CF5CE] transition-colors">
-                    {pkm.nama}
-                  </p>
-                  <p className="text-[10px] font-semibold text-white/40">
-                    {pkm.submitted} / {pkm.target} laporan
-                  </p>
-                </div>
-                <span className="text-[18px] font-black tabular-nums text-[#BEF264]">{pkm.percentage}%</span>
-              </Link>
-            ))}
-          </div>
         </div>
 
-        {/* Sisanya — compact list */}
-        <div className="lg:col-span-2">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] mb-4">
-            Peringkat Lengkap
-          </p>
-          <div className="space-y-1">
-            {rest.map((pkm, idx) => (
-              <Link
-                key={pkm.id}
-                href={`/laporan/tpp?puskesmasId=${pkm.id}`}
-                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-[hsl(var(--muted))]/40 transition-colors group"
-              >
-                <span className="w-6 text-[11px] font-extrabold tabular-nums text-[hsl(var(--muted-foreground))]">
-                  {idx + 4}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
-                    {pkm.nama}
-                  </p>
-                </div>
-                <div className="hidden sm:block w-24 h-1 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${
-                      pkm.percentage >= 80
-                        ? "bg-[hsl(var(--success))]"
-                        : pkm.percentage >= 50
-                          ? "bg-[hsl(var(--warning))]"
-                          : "bg-[hsl(var(--error))]"
-                    }`}
-                    style={{ width: `${pkm.percentage}%` }}
-                  />
-                </div>
-                <span
-                  className={`w-12 text-right text-[12px] font-extrabold tabular-nums ${
-                    pkm.percentage >= 80
-                      ? "text-[hsl(var(--success))]"
-                      : pkm.percentage >= 50
-                        ? "text-[hsl(var(--warning))]"
-                        : "text-[hsl(var(--error))]"
-                  }`}
-                >
-                  {pkm.percentage}%
-                </span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-            ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top 3 Podium Cards */}
+          <div className="space-y-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Top 3 Teratas
+            </span>
+            <div className="space-y-2.5">
+              {top3.map((pkm, idx) => {
+                const medalColors = [
+                  { bg: "bg-amber-400 text-amber-950 border-amber-300", badge: "🥇 Rank 1", color: "text-amber-500" },
+                  { bg: "bg-slate-300 text-slate-900 border-slate-200", badge: "🥈 Rank 2", color: "text-slate-400" },
+                  { bg: "bg-amber-600/80 text-white border-amber-500", badge: "🥉 Rank 3", color: "text-amber-600" },
+                ][idx];
+
+                return (
+                  <Link
+                    key={pkm.id}
+                    href={`/laporan/tpp?puskesmasId=${pkm.id}`}
+                    className="group block p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876] hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${medalColors.bg}`}>
+                        {medalColors.badge}
+                      </span>
+                      <span className="text-[18px] font-black tabular-nums text-[#00A876]">{pkm.percentage}%</span>
+                    </div>
+                    <h3 className="text-[14px] font-extrabold text-[hsl(var(--foreground))] group-hover:text-[#00A876] transition-colors truncate">
+                      {pkm.nama}
+                    </h3>
+                    <p className="text-[11px] font-medium text-[hsl(var(--muted-foreground))] mt-1">
+                      {pkm.submitted} dari {pkm.target} target laporan terpenuhi
+                    </p>
+                    <div className="mt-3 h-1.5 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#00A876]"
+                        style={{ width: `${Math.min(pkm.percentage, 100)}%` }}
+                      />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Full Ranking Table */}
+          <div className="lg:col-span-2 space-y-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Peringkat Keseluruhan ({pkmStats.length} Puskesmas)
+            </span>
+            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] divide-y divide-[hsl(var(--border))] overflow-hidden shadow-sm">
+              <div className="p-3 bg-[hsl(var(--muted))]/25 grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                <span className="col-span-1 text-center">#</span>
+                <span className="col-span-6 sm:col-span-6">Nama Puskesmas</span>
+                <span className="hidden sm:block sm:col-span-3 text-center">Progress Target</span>
+                <span className="col-span-5 sm:col-span-2 text-right">Capaian</span>
+              </div>
+              <div className="max-h-[380px] overflow-y-auto divide-y divide-[hsl(var(--border))]">
+                {pkmStats.map((pkm, idx) => (
+                  <Link
+                    key={pkm.id}
+                    href={`/laporan/tpp?puskesmasId=${pkm.id}`}
+                    className="grid grid-cols-12 items-center p-3 hover:bg-[hsl(var(--muted))]/30 transition-colors group text-[12px]"
+                  >
+                    <span className="col-span-1 text-center font-bold font-mono text-[hsl(var(--muted-foreground))]">
+                      {idx + 1}
+                    </span>
+                    <div className="col-span-6 sm:col-span-6 min-w-0 pr-2">
+                      <p className="font-bold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
+                        {pkm.nama}
+                      </p>
+                      <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                        {pkm.submitted} / {pkm.target} laporan
+                      </p>
+                    </div>
+                    <div className="hidden sm:block sm:col-span-3 px-2">
+                      <div className="h-1.5 w-full bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            pkm.percentage >= 80
+                              ? "bg-emerald-500"
+                              : pkm.percentage >= 50
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
+                          }`}
+                          style={{ width: `${Math.min(pkm.percentage, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-span-5 sm:col-span-2 text-right flex items-center justify-end gap-1.5 font-black tabular-nums">
+                      <span
+                        className={`text-[12px] px-2 py-0.5 rounded-md ${
+                          pkm.percentage >= 80
+                            ? "bg-emerald-500/10 text-emerald-600"
+                            : pkm.percentage >= 50
+                              ? "bg-amber-500/10 text-amber-600"
+                              : "bg-rose-500/10 text-rose-600"
+                        }`}
+                      >
+                        {pkm.percentage}%
+                      </span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

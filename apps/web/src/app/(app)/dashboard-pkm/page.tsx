@@ -182,30 +182,30 @@ export default function DashboardPkmPage() {
   }
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.05]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-        <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#153A2D_0%,transparent_60%)] pointer-events-none" />
+        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
-              {BULAN_NAMES[bulan]} {tahun}
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">
+              {BULAN_NAMES[bulan]} {tahun} · Puskesmas
             </p>
-            <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">
               {data?.puskesmas?.nama || "Puskesmas"}
             </h1>
-            <p className="text-[13px] font-medium text-white/50 mt-2">
+            <p className="text-[13px] font-medium text-white/60 mt-2">
               {achievedCount}/{summary.length} indikator tercapai
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
             <LaporanFilter />
             {data && categories.length > 0 && (
               <button
                 onClick={handleExportPDF}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-black hover:brightness-105 active:scale-95 transition shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" /> Cetak PDF
               </button>

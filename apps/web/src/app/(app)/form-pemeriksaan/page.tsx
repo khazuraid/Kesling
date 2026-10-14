@@ -211,17 +211,26 @@ export default function FormPemeriksaanPage() {
         tipe: f.tipe,
         isRequired: f.isRequired ?? false,
         grup: f.grup || "",
-        opsi: f.opsi || null,
+        options: f.opsi || f.options || null,
         skor: f.skor ?? 0,
         skorBenar: f.skorBenar ?? 1,
         skorSalah: f.skorSalah ?? 0,
         urutan: i,
+        autoFill: f.autoFill || f.config?.autoFill || undefined,
+        isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
+        dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+        allowNA: f.allowNA ?? f.config?.allowNA ?? false,
         config: {
+          ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
           skor: f.skor ?? 0,
           skorBenar: f.skorBenar ?? 1,
           skorSalah: f.skorSalah ?? 0,
           dataDasarCode: f.config?.dataDasarCode,
           syncToEntityField: f.config?.syncToEntityField,
+          autoFill: f.autoFill || f.config?.autoFill || undefined,
+          isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
+          dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+          allowNA: f.allowNA ?? f.config?.allowNA ?? false,
         },
       })),
     });
@@ -377,6 +386,10 @@ export default function FormPemeriksaanPage() {
         skorBenar: 1,
         skorSalah: 0,
         opsi: "",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+        autoFill: "",
       },
     ]);
   }
@@ -391,6 +404,10 @@ export default function FormPemeriksaanPage() {
       skorBenar: 1,
       skorSalah: 0,
       opsi: "",
+      isDisabled: false,
+      dependsOn: null,
+      allowNA: false,
+      autoFill: "",
     };
     const next = [...fields];
     next.splice(afterIndex + 1, 0, newField);
@@ -492,13 +509,13 @@ export default function FormPemeriksaanPage() {
           const countInArea = [...subIndexes.keys()].filter((k) => k.startsWith(`${area}::`)).length;
           subIndexes.set(key, countInArea + 1);
         }
-        subIndex = subIndexes.get(key)!;
+        subIndex = subIndexes.get(key) ?? null;
       }
       groups.push({
         grup,
         area,
         subbagian,
-        areaIndex: areaIndexes.get(area)!,
+        areaIndex: areaIndexes.get(area) ?? 1,
         subIndex,
         fields: items,
       });
@@ -674,12 +691,34 @@ export default function FormPemeriksaanPage() {
                       setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
                       setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
                       setFields(
-                        (tpl.fields || []).map((f: any) => ({
-                          ...f,
-                          skor: f.config?.skor ?? 0,
-                          skorBenar: f.config?.skorBenar ?? 1,
-                          skorSalah: f.config?.skorSalah ?? 0,
-                        })),
+                        (tpl.fields || []).map((f: any) => {
+                          let opsiStr = "";
+                          if (f.options) {
+                            if (typeof f.options === "string") {
+                              try {
+                                const parsed = JSON.parse(f.options);
+                                opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
+                              } catch {
+                                opsiStr = f.options;
+                              }
+                            } else if (Array.isArray(f.options)) {
+                              opsiStr = f.options.join(", ");
+                            }
+                          } else if (f.opsi) {
+                            opsiStr = f.opsi;
+                          }
+                          return {
+                            ...f,
+                            opsi: opsiStr,
+                            autoFill: f.config?.autoFill || f.autoFill || "",
+                            isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
+                            dependsOn: f.config?.dependsOn || f.dependsOn || null,
+                            allowNA: f.config?.allowNA ?? f.allowNA ?? false,
+                            skor: f.config?.skor ?? f.skor ?? 0,
+                            skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
+                            skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
+                          };
+                        }),
                       );
                       setSubCategoryId(tpl.subCategoryId ?? null);
                       setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
@@ -1162,6 +1201,64 @@ export default function FormPemeriksaanPage() {
                         <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
                           {group.fields.length} item
                         </span>
+                        {group.grup === "__META__" && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFields([
+                                  ...fields,
+                                  {
+                                    pertanyaan: "Nama Pemeriksa",
+                                    tipe: "TEXT",
+                                    isRequired: true,
+                                    grup: "__META__",
+                                    autoFill: "USER_NAME",
+                                    isDisabled: false,
+                                    dependsOn: null,
+                                    allowNA: false,
+                                    skor: 0,
+                                    skorBenar: 0,
+                                    skorSalah: 0,
+                                    opsi: "",
+                                  },
+                                ]);
+                                toast.success("Preset Nama Pemeriksa dari Akun ditambahkan");
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-[#00A876]/15 text-[#00A876] border border-[#00A876]/30 hover:bg-[#00A876]/25 transition-colors rounded-md"
+                            >
+                              👤 + Nama Pemeriksa (Akun)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFields([
+                                  ...fields,
+                                  {
+                                    pertanyaan: "Wilayah Kerja Puskesmas",
+                                    tipe: "TEXT",
+                                    isRequired: true,
+                                    grup: "__META__",
+                                    autoFill: "USER_PUSKESMAS",
+                                    isDisabled: false,
+                                    dependsOn: null,
+                                    allowNA: false,
+                                    skor: 0,
+                                    skorBenar: 0,
+                                    skorSalah: 0,
+                                    opsi: "",
+                                  },
+                                ]);
+                                toast.success("Preset Wilayah Kerja dari Akun Puskesmas ditambahkan");
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-blue-500/15 text-blue-600 border border-blue-500/30 hover:bg-blue-500/25 transition-colors rounded-md"
+                            >
+                              🏥 + Wilayah Kerja (Puskesmas)
+                            </button>
+                          </div>
+                        )}
                         {!group.subbagian && group.grup !== "__META__" && (
                           <button
                             onClick={(e) => {
@@ -1232,14 +1329,17 @@ export default function FormPemeriksaanPage() {
                                 <th className="w-12 px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
                                   No
                                 </th>
-                                <th className="px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Pertanyaan
+                                <th className="min-w-[280px] px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Pertanyaan & Kondisi
                                 </th>
-                                <th className="w-20 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                <th className="w-24 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
                                   Tipe
                                 </th>
-                                <th className="px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Opsi
+                                <th className="min-w-[180px] px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Opsi / Pengaturan
+                                </th>
+                                <th className="w-20 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
+                                  Status
                                 </th>
                                 <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
                                   Wajib
@@ -1260,18 +1360,100 @@ export default function FormPemeriksaanPage() {
                             </thead>
                             <tbody className="divide-y divide-[hsl(var(--border))]">
                               {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => (
-                                <tr key={index} className="hover:bg-[hsl(var(--muted))]/20">
+                                <tr
+                                  key={index}
+                                  className={`hover:bg-[hsl(var(--muted))]/20 ${field.isDisabled ? "bg-red-50/30 opacity-75" : ""}`}
+                                >
                                   <td className="px-3 py-3 text-[12px] font-mono text-[hsl(var(--muted-foreground))]">
                                     {localIdx + 1}
                                   </td>
-                                  <td className="px-3 py-3">
+                                  <td className="px-3 py-3 space-y-1.5">
                                     <input
                                       type="text"
                                       value={field.pertanyaan}
                                       onChange={(e) => updateField(index, "pertanyaan", e.target.value)}
                                       placeholder="Tulis pertanyaan..."
-                                      className="w-full text-[12px] font-medium bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1"
+                                      className={`w-full text-[12px] font-medium bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1 ${
+                                        field.isDisabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""
+                                      }`}
                                     />
+                                    {/* AutoFill atau Ketergantungan Kondisional */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {group.grup === "__META__" ? (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <select
+                                            value={field.autoFill || ""}
+                                            onChange={(e) => updateField(index, "autoFill", e.target.value || "")}
+                                            className="text-[10px] bg-[hsl(var(--muted))]/40 border border-[hsl(var(--border))] rounded px-1.5 py-0.5 text-[hsl(var(--foreground))] outline-none font-medium"
+                                          >
+                                            <option value="">Manual (Diisi Saat Input)</option>
+                                            <option value="USER_NAME">👤 Otomatis Nama Akun Petugas</option>
+                                            <option value="USER_PUSKESMAS">
+                                              🏥 Otomatis Wilayah Kerja (Puskesmas)
+                                            </option>
+                                          </select>
+                                          {field.autoFill === "USER_NAME" && (
+                                            <span className="text-[9px] font-bold text-[#00A876] bg-[#00A876]/10 px-1.5 py-0.5 rounded">
+                                              Nama Petugas
+                                            </span>
+                                          )}
+                                          {field.autoFill === "USER_PUSKESMAS" && (
+                                            <span className="text-[9px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                              Puskesmas Petugas
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <select
+                                            value={
+                                              field.dependsOn
+                                                ? `${field.dependsOn.parentIndex ?? ""}:${field.dependsOn.requiredValue ?? "TRUE"}`
+                                                : ""
+                                            }
+                                            onChange={(e) => {
+                                              if (!e.target.value) {
+                                                updateField(index, "dependsOn", null);
+                                              } else {
+                                                const [pIdx, reqVal] = e.target.value.split(":");
+                                                const parentField = fields[Number(pIdx)];
+                                                updateField(index, "dependsOn", {
+                                                  parentIndex: Number(pIdx),
+                                                  parentPertanyaan:
+                                                    parentField?.pertanyaan || `Butir ${Number(pIdx) + 1}`,
+                                                  requiredValue: reqVal || "TRUE",
+                                                });
+                                              }
+                                            }}
+                                            className="text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] rounded px-1.5 py-0.5 text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))] transition-colors"
+                                          >
+                                            <option value="">⚙️ Syarat: Selalu Aktif</option>
+                                            {fields
+                                              .map((f, i) => ({ f, i }))
+                                              .filter(({ i, f }) => i < index && f.grup !== "__META__")
+                                              .map(({ f, i }) => (
+                                                <optgroup
+                                                  key={i}
+                                                  label={`Butir ${i + 1}: ${f.pertanyaan ? `${f.pertanyaan.substring(0, 25)}...` : `Butir ${i + 1}`}`}
+                                                >
+                                                  <option value={`${i}:TRUE`}>
+                                                    Hanya aktif jika Butir {i + 1} = &quot;Ya&quot;
+                                                  </option>
+                                                  <option value={`${i}:FALSE`}>
+                                                    Hanya aktif jika Butir {i + 1} = &quot;Tidak&quot;
+                                                  </option>
+                                                </optgroup>
+                                              ))}
+                                          </select>
+                                          {field.dependsOn && (
+                                            <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                              🔒 Tergantung Butir {field.dependsOn.parentIndex + 1} (
+                                              {field.dependsOn.requiredValue === "TRUE" ? "Ya" : "Tidak"})
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="px-3 py-3 text-center">
                                     <select
@@ -1287,15 +1469,44 @@ export default function FormPemeriksaanPage() {
                                     </select>
                                   </td>
                                   <td className="px-3 py-3">
-                                    {field.tipe === "SELECT" && (
+                                    {(field.tipe === "SELECT" || field.tipe === "DROPDOWN") && (
                                       <input
                                         type="text"
                                         value={field.opsi || ""}
                                         onChange={(e) => updateField(index, "opsi", e.target.value)}
-                                        placeholder="opsi1,opsi2"
+                                        placeholder="Opsi 1, Opsi 2, Opsi 3"
                                         className="w-full text-[11px] bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1"
                                       />
                                     )}
+                                    {field.tipe === "BOOLEAN" && (
+                                      <label className="flex items-center gap-1.5 text-[10px] text-[hsl(var(--muted-foreground))] cursor-pointer select-none">
+                                        <input
+                                          type="checkbox"
+                                          checked={field.allowNA ?? false}
+                                          onChange={(e) => updateField(index, "allowNA", e.target.checked)}
+                                          className="w-3.5 h-3.5 accent-[#00A876]"
+                                        />
+                                        <span>Izinkan &quot;T/A&quot; (Tidak Ada)</span>
+                                      </label>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-3 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => updateField(index, "isDisabled", !field.isDisabled)}
+                                      title={
+                                        field.isDisabled
+                                          ? "Butir dinonaktifkan (Klik untuk aktifkan)"
+                                          : "Butir aktif (Klik untuk nonaktifkan/disable)"
+                                      }
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold transition-all border ${
+                                        field.isDisabled
+                                          ? "bg-red-50 text-red-700 border-red-200"
+                                          : "bg-green-50 text-green-700 border-green-200"
+                                      }`}
+                                    >
+                                      {field.isDisabled ? "🚫 Disable" : "✓ Aktif"}
+                                    </button>
                                   </td>
                                   <td className="px-3 py-3 text-center">
                                     <input

@@ -4,6 +4,24 @@ import { ArrowLeft, MapPin, Upload } from "lucide-react";
 import { SignaturePad } from "@/components/ui/signature-pad";
 import { toRoman } from "./helpers";
 
+export function parseDropdownOptions(raw: any): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((x) => String(x).trim()).filter(Boolean);
+    } catch {
+      // not JSON
+    }
+    return raw
+      .split(/[,\n;]/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 interface FormViewProps {
   activeForm: any;
   editingId: number | null;
@@ -160,15 +178,42 @@ export function FormView({
 
             {/* Group Fields */}
             <div className="p-6 space-y-6">
-              {group.fields.map((f: any) => (
-                <FieldInput
-                  key={f.id}
-                  field={f}
-                  value={formValues[f.id] ?? null}
-                  onChange={(v) => onFieldChange(f.id, v)}
-                  onGPS={() => onGPS(f.id)}
-                />
-              ))}
+              {group.fields.map((f: any) => {
+                const allFields = activeForm.fields || [];
+                const dep = f.config?.dependsOn || f.dependsOn;
+                let isConditionallyDisabled = false;
+                let condReason = "";
+                if (dep) {
+                  const parent = allFields.find(
+                    (p: any, idx: number) =>
+                      p.urutan === dep.parentIndex || idx === dep.parentIndex || p.id === dep.parentId,
+                  );
+                  const parentVal = parent ? formValues[parent.id] : undefined;
+                  const reqVal = dep.requiredValue ?? "TRUE";
+                  if (parentVal !== reqVal) {
+                    isConditionallyDisabled = true;
+                    condReason = `Menunggu butir "${parent?.pertanyaan || "pertanyaan sebelumnya"}" dijawab "${reqVal === "TRUE" ? "Ya" : "Tidak"}"`;
+                  }
+                }
+                const isDisabled = f.isDisabled || f.config?.isDisabled || isConditionallyDisabled;
+                const disabledReason = isConditionallyDisabled
+                  ? condReason
+                  : f.isDisabled || f.config?.isDisabled
+                    ? "Butir ini dinonaktifkan (Tidak ada)"
+                    : "";
+
+                return (
+                  <FieldInput
+                    key={f.id}
+                    field={f}
+                    value={formValues[f.id] ?? null}
+                    onChange={(v) => onFieldChange(f.id, v)}
+                    onGPS={() => onGPS(f.id)}
+                    disabled={isDisabled}
+                    disabledReason={disabledReason}
+                  />
+                );
+              })}
             </div>
           </div>
         ))}
@@ -195,36 +240,68 @@ function FieldInput({
   value,
   onChange,
   onGPS,
+  disabled = false,
+  disabledReason = "",
 }: {
   field: any;
   value: any;
   onChange: (v: any) => void;
   onGPS: () => void;
+  disabled?: boolean;
+  disabledReason?: string;
 }) {
   const hasValue = value !== null && value !== undefined && value !== "";
 
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${disabled ? "opacity-60" : ""}`}>
       {/* Label Row */}
       <div className="flex items-start justify-between gap-3">
-        <label className="text-[13px] font-medium leading-relaxed">
-          {f.pertanyaan}
-          {f.isRequired && <span className="ml-1 text-red-500">*</span>}
-        </label>
-        {(f.config?.skor ?? 0) > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <label
+            className={`text-[13px] font-medium leading-relaxed ${disabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""}`}
+          >
+            {f.pertanyaan}
+            {f.isRequired && !disabled && <span className="ml-1 text-red-500">*</span>}
+          </label>
+          {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] font-semibold">
+              👤 Akun Pemeriksa
+            </span>
+          )}
+          {(f.config?.autoFill === "USER_PUSKESMAS" ||
+            f.pertanyaan?.toLowerCase().includes("wilayah") ||
+            f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-semibold">
+              🏥 Wilayah Kerja
+            </span>
+          )}
+          {disabled && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 font-bold border border-amber-300">
+              🚫 Dinonaktifkan
+            </span>
+          )}
+        </div>
+        {(f.config?.skor ?? 0) > 0 && !disabled && (
           <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))] whitespace-nowrap">
             Bobot: {f.config.skor}
           </span>
         )}
       </div>
 
+      {disabled && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-800">
+          <span className="font-bold">Info:</span> {disabledReason || "Butir ini dinonaktifkan / tidak berlaku"}
+        </div>
+      )}
+
       {/* Input by Type */}
       {f.tipe === "BOOLEAN" && (
         <div className="flex items-center gap-3">
           <button
             type="button"
+            disabled={disabled}
             onClick={() => onChange("TRUE")}
-            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors ${
+            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
               value === "TRUE"
                 ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
                 : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
@@ -234,8 +311,9 @@ function FieldInput({
           </button>
           <button
             type="button"
+            disabled={disabled}
             onClick={() => onChange("FALSE")}
-            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors ${
+            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
               value === "FALSE"
                 ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
                 : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
@@ -243,16 +321,31 @@ function FieldInput({
           >
             Tidak
           </button>
+          {(f.config?.allowNA || f.allowNA) && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange("NA")}
+              className={`h-10 px-4 text-[12px] font-bold border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+                value === "NA"
+                  ? "border-amber-600 bg-amber-500 text-white"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))]"
+              }`}
+            >
+              T/A (Tidak Ada)
+            </button>
+          )}
         </div>
       )}
 
       {f.tipe === "TEXT" && (
         <textarea
           rows={3}
+          disabled={disabled}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Tulis jawaban..."
-          className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[hsl(var(--foreground))] transition-colors resize-y"
+          className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[hsl(var(--foreground))] transition-colors resize-y disabled:bg-[hsl(var(--muted))]/30 disabled:cursor-not-allowed"
         />
       )}
 
@@ -282,7 +375,7 @@ function FieldInput({
           className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
         >
           <option value="">— Pilih —</option>
-          {(f.options ? (typeof f.options === "string" ? JSON.parse(f.options) : f.options) : []).map((opt: string) => (
+          {parseDropdownOptions(f.options || f.opsi || f.config?.options).map((opt: string) => (
             <option key={opt} value={opt}>
               {opt}
             </option>

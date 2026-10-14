@@ -2,6 +2,22 @@ import { Layers } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
+function parseOptions(raw: any): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((x) => String(x).trim()).filter(Boolean);
+    } catch {}
+    return raw
+      .split(/[,\n;]/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 export function LaporanBuilderPreview({
   module,
   isOpen,
@@ -92,9 +108,9 @@ export function LaporanBuilderPreview({
                                       onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                                     >
                                       <option value="">Pilih...</option>
-                                      {p.config.options.split(",").map((opt: string) => (
-                                        <option key={opt.trim()} value={opt.trim()}>
-                                          {opt.trim()}
+                                      {parseOptions(p.config.options).map((opt: string) => (
+                                        <option key={opt} value={opt}>
+                                          {opt}
                                         </option>
                                       ))}
                                     </select>
@@ -136,9 +152,9 @@ export function LaporanBuilderPreview({
                           onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                         >
                           <option value="">Pilih...</option>
-                          {p.config.options.split(",").map((opt: string) => (
-                            <option key={opt.trim()} value={opt.trim()}>
-                              {opt.trim()}
+                          {parseOptions(p.config.options).map((opt: string) => (
+                            <option key={opt} value={opt}>
+                              {opt}
                             </option>
                           ))}
                         </select>

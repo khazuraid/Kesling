@@ -124,15 +124,34 @@ export default function PemeriksaanPage() {
     const dynamicSource = (sasaran?.dataDinamis || {}) as Record<string, unknown>;
     const baselineParams = template.dataDasarCategory?.parameters || [];
     const isDefaultYa = !!template.config?.defaultYa;
+    const accountName = session?.user?.name || "";
+    const accountPuskesmas = (session?.user as any)?.puskesmasNama || "";
+
     template.fields.forEach((f: any) => {
+      const q = (f.pertanyaan || "").toLowerCase();
+      const autoFillSource = f.config?.autoFill || f.autoFill;
+      const isPemeriksa = autoFillSource === "USER_NAME" || q.includes("pemeriksa") || q.includes("petugas");
+      const isWilayah =
+        autoFillSource === "USER_PUSKESMAS" ||
+        q.includes("wilayah") ||
+        q.includes("puskesmas") ||
+        q.includes("unit kerja");
+
+      let accountDefault = "";
+      if (isPemeriksa && accountName) accountDefault = accountName;
+      else if (isWilayah && accountPuskesmas) accountDefault = accountPuskesmas;
+
       if (f.grup === "__META__") {
         const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
         const configuredEntityField = f.config?.syncToEntityField;
         const parameter = baselineParams.find(
           (p: any) => p.code === configuredCode || p.config?.syncToEntityField === configuredEntityField,
         );
-        initMeta[f.id] = (parameter?.code ? dynamicSource[parameter.code] : "") ?? "";
+        const fromDynamic = parameter?.code ? dynamicSource[parameter.code] : "";
+        initMeta[f.id] = (fromDynamic || accountDefault) ?? "";
         initVal[f.id] = null;
+      } else if (f.tipe === "TEXT" && accountDefault) {
+        initVal[f.id] = accountDefault;
       } else if (isDefaultYa && f.tipe === "BOOLEAN") {
         initVal[f.id] = "TRUE";
       } else {
