@@ -277,9 +277,7 @@ export async function aggregateInspectionToLaporan(resultId: number) {
   const tahun = result.tahun;
   const puskesmasId = result.puskesmasId;
   const subCategoryId = result.template.subCategoryId;
-  const categoryId =
-    result.template.categoryId ||
-    (await prisma.dynamicSubCategory.findUnique({ where: { id: subCategoryId } }))?.categoryId;
+  const categoryId = (await prisma.dynamicSubCategory.findUnique({ where: { id: subCategoryId } }))?.categoryId;
 
   if (!categoryId) return;
 

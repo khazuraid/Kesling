@@ -125,7 +125,6 @@ export const PUT = withAuth(async (req: NextRequest, context: any) => {
       try {
         await recalculateLaporanBulanan({
           puskesmasId: existing.puskesmasId,
-          categoryId: existing.template.categoryId,
           subCategoryId: existing.template.subCategoryId,
           bulan: oldBulan,
           tahun: oldTahun,
@@ -168,7 +167,6 @@ export const DELETE = withAuth(async (req: NextRequest, context: any) => {
 
     const { puskesmasId, bulan, tahun, template } = existing;
     const subCategoryId = template?.subCategoryId;
-    const categoryId = template?.categoryId;
 
     await prisma.inspectionResultValue.deleteMany({ where: { resultId } });
     await prisma.inspectionResult.delete({ where: { id: resultId } });
@@ -190,7 +188,6 @@ export const DELETE = withAuth(async (req: NextRequest, context: any) => {
       try {
         await recalculateLaporanBulanan({
           puskesmasId,
-          categoryId,
           subCategoryId,
           bulan,
           tahun,
