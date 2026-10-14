@@ -871,6 +871,68 @@ export default function FormPemeriksaanPage() {
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
   }
 
+  // ---- Drag & Drop ----
+  const [dragState, setDragState] = useState<{ type: "field" | "group"; index?: number; grup?: string } | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const dragArmedRef = useRef<string | null>(null); // handle terakhir yang di-mousedown
+
+  function moveFieldTo(from: number, to: number) {
+    if (from === to) return;
+    const next = [...fields];
+    const [item] = next.splice(from, 1);
+    const adjusted = to > from ? to - 1 : to;
+    const srcGrup = item.grup || "Tanpa Grup";
+    const tgtGrup = next[adjusted]?.grup || "Tanpa Grup";
+    if ((srcGrup === "__META__") !== (tgtGrup === "__META__")) return;
+    next.splice(adjusted, 0, item);
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+  }
+
+  function moveFieldToGroup(from: number, targetGrup: string) {
+    const srcGrup = fields[from]?.grup || "Tanpa Grup";
+    if (srcGrup === targetGrup) return;
+    if ((srcGrup === "__META__") !== (targetGrup === "__META__")) return;
+    const next = fields.filter((_, i) => i !== from);
+    let insertAt = next.length;
+    for (let i = next.length - 1; i >= 0; i--) {
+      if ((next[i].grup || "Tanpa Grup") === targetGrup) {
+        insertAt = i + 1;
+        break;
+      }
+    }
+    next.splice(insertAt, 0, fields[from]);
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success("Butir dipindahkan");
+  }
+
+  function moveGroupTo(fromGrup: string, toGrup: string) {
+    if (fromGrup === toGrup || fromGrup === "__META__" || toGrup === "__META__") return;
+    const groupKeys = groupedFields.map((g) => g.grup);
+    const fromIdx = groupKeys.indexOf(fromGrup);
+    const toIdx = groupKeys.indexOf(toGrup);
+    if (fromIdx < 0 || toIdx < 0) return;
+    const newKeys = groupKeys.filter((k) => k !== fromGrup);
+    const adjustedTo = newKeys.indexOf(toGrup);
+    newKeys.splice(adjustedTo, 0, fromGrup);
+
+    const nextFields: any[] = [];
+    newKeys.forEach((k) => {
+      nextFields.push(...fields.filter((f) => (f.grup || "Tanpa Grup") === k));
+    });
+    const handled = new Set(newKeys);
+    fields.forEach((f) => {
+      const g = f.grup || "Tanpa Grup";
+      if (!handled.has(g)) nextFields.push(f);
+    });
+    setFields(nextFields.map((f, i) => ({ ...f, urutan: i + 1 })));
+  }
+
+  function resetDrag() {
+    setDragState(null);
+    setDropTarget(null);
+    dragArmedRef.current = null;
+  }
+
   function moveGroup(grupName: string, direction: "up" | "down") {
     const groupKeys = groupedFields.map((g) => g.grup);
     const curIdx = groupKeys.indexOf(grupName);
@@ -1958,11 +2020,49 @@ export default function FormPemeriksaanPage() {
                         tabIndex={0}
                         onClick={() => toggleGroup(group.grup)}
                         onKeyDown={(e) => e.key === "Enter" && toggleGroup(group.grup)}
+                        onDragOver={(e) => {
+                          if (
+                            (dragState?.type === "field" && dragState.index != null) ||
+                            (dragState?.type === "group" && dragState.grup && dragState.grup !== group.grup)
+                          ) {
+                            e.preventDefault();
+                            setDropTarget(`group:${group.grup}`);
+                          }
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (dragState?.type === "field" && dragState.index != null) {
+                            moveFieldToGroup(dragState.index, group.grup);
+                          } else if (dragState?.type === "group" && dragState.grup) {
+                            moveGroupTo(dragState.grup, group.grup);
+                          }
+                          resetDrag();
+                        }}
                         className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors hover:bg-[hsl(var(--muted))]/60 ${
                           group.subbagian ? "pl-10 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]/30"
+                        } ${
+                          dragState?.type === "field" && dropTarget === `group:${group.grup}`
+                            ? "ring-2 ring-inset ring-[#00A876] bg-[#00A876]/10"
+                            : ""
                         }`}
                       >
-                        <GripVertical className="w-4 h-4 text-[hsl(var(--muted-foreground))]/40 shrink-0" />
+                        <span
+                          draggable={group.grup !== "__META__"}
+                          onDragStart={(e) => {
+                            setDragState({ type: "group", grup: group.grup });
+                            e.dataTransfer.effectAllowed = "move";
+                            e.dataTransfer.setData("text/plain", group.grup);
+                          }}
+                          onDragEnd={resetDrag}
+                        >
+                          <GripVertical
+                            className={`w-4 h-4 shrink-0 ${
+                              group.grup === "__META__"
+                                ? "text-[hsl(var(--muted-foreground))]/40"
+                                : "text-[hsl(var(--muted-foreground))] cursor-grab active:cursor-grabbing hover:text-[#00A876]"
+                            }`}
+                          />
+                        </span>
                         <ChevronRight
                           className={`w-4 h-4 text-[hsl(var(--muted-foreground))] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
                         />
@@ -2213,15 +2313,45 @@ export default function FormPemeriksaanPage() {
                             return (
                               <div
                                 key={index}
+                                onDragOver={(e) => {
+                                  if (dragState?.type === "field" && dragState.index !== index) {
+                                    e.preventDefault();
+                                    setDropTarget(`field:${index}`);
+                                  }
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (dragState?.type === "field" && dragState.index != null) {
+                                    moveFieldTo(dragState.index, index);
+                                  }
+                                  resetDrag();
+                                }}
                                 className={`rounded-xl border bg-[hsl(var(--card))] p-3 transition-colors ${
                                   field.isDisabled
                                     ? "border-red-200 bg-red-50/40 opacity-75"
                                     : "border-[hsl(var(--border))] hover:border-[#00A876]/40"
-                                }`}
+                                } ${
+                                  dragState?.type === "field" && dropTarget === `field:${index}`
+                                    ? "border-t-2 border-t-[#00A876] ring-1 ring-[#00A876]/40"
+                                    : ""
+                                } ${dragState?.index === index ? "opacity-40" : ""}`}
                               >
                                 {/* Baris utama: nomor + pertanyaan + aksi */}
                                 <div className="flex items-start gap-3">
                                   <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
+                                    <span
+                                      draggable
+                                      onDragStart={(e) => {
+                                        setDragState({ type: "field", index });
+                                        e.dataTransfer.effectAllowed = "move";
+                                        e.dataTransfer.setData("text/plain", String(index));
+                                      }}
+                                      onDragEnd={resetDrag}
+                                      title="Tarik untuk memindahkan butir"
+                                    >
+                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 cursor-grab active:cursor-grabbing hover:text-[#00A876] transition-colors" />
+                                    </span>
                                     <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
                                       {localIdx + 1}
                                     </span>
