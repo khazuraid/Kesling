@@ -866,7 +866,11 @@ export default function FormPemeriksaanPage() {
     const next = [...fields];
     const target = direction === "up" ? index - 1 : index + 1;
     if (target < 0 || target >= next.length) return;
-    if ((next[index].grup === "__META__") !== (next[target].grup === "__META__")) return;
+    const currentItem = next[index];
+    const targetItem = next[target];
+    if (currentItem.grup !== targetItem.grup) {
+      next[index] = { ...currentItem, grup: targetItem.grup };
+    }
     [next[index], next[target]] = [next[target], next[index]];
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
   }
@@ -883,9 +887,8 @@ export default function FormPemeriksaanPage() {
     if (!item || !targetItem) return;
     const srcGrup = item.grup || "Tanpa Grup";
     const tgtGrup = targetItem.grup || "Tanpa Grup";
-    if ((srcGrup === "__META__") !== (tgtGrup === "__META__")) return;
 
-    // Adopsi grup tujuan jika berbeda (otomatis pindah bagian/sub)
+    // Adopsi grup tujuan jika berbeda (otomatis pindah bagian/sub/metadata)
     const updatedItem = { ...item, grup: tgtGrup };
     const next = [...fields];
     next.splice(from, 1);
@@ -893,7 +896,7 @@ export default function FormPemeriksaanPage() {
     next.splice(adjusted, 0, updatedItem);
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
     if (srcGrup !== tgtGrup) {
-      toast.success(`Butir dipindahkan ke "${tgtGrup}"`);
+      toast.success(`Butir dipindahkan ke "${tgtGrup === "__META__" ? "Metadata" : tgtGrup}"`);
     }
   }
 
@@ -902,10 +905,7 @@ export default function FormPemeriksaanPage() {
     if (!item) return;
     const srcGrup = item.grup || "Tanpa Grup";
     if (srcGrup === targetGrup) return;
-    if ((srcGrup === "__META__") !== (targetGrup === "__META__")) {
-      toast.error("Tidak bisa memindahkan butir ke metadata");
-      return;
-    }
+
     const updatedItem = { ...item, grup: targetGrup };
     const remaining = fields.filter((_, i) => i !== from);
     let insertAt = remaining.length;
@@ -917,7 +917,7 @@ export default function FormPemeriksaanPage() {
     }
     remaining.splice(insertAt, 0, updatedItem);
     setFields(remaining.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success(`Butir dipindahkan ke "${targetGrup}"`);
+    toast.success(`Butir dipindahkan ke "${targetGrup === "__META__" ? "Metadata" : targetGrup}"`);
   }
 
   function convertFieldToBagian(fromIndex: number) {
@@ -976,7 +976,7 @@ export default function FormPemeriksaanPage() {
   }
 
   function moveGroupTo(fromGrup: string, toGrup: string) {
-    if (fromGrup === toGrup || fromGrup === "__META__" || toGrup === "__META__") return;
+    if (fromGrup === toGrup) return;
     const groupKeys = groupedFields.map((g) => g.grup);
     const fromIdx = groupKeys.indexOf(fromGrup);
     const toIdx = groupKeys.indexOf(toGrup);
@@ -1010,10 +1010,6 @@ export default function FormPemeriksaanPage() {
     const targetIdx = direction === "up" ? curIdx - 1 : curIdx + 1;
     if (targetIdx < 0 || targetIdx >= groupKeys.length) return;
 
-    if (groupKeys[targetIdx] === "__META__" || grupName === "__META__") {
-      return;
-    }
-
     const newKeys = [...groupKeys];
     [newKeys[curIdx], newKeys[targetIdx]] = [newKeys[targetIdx], newKeys[curIdx]];
 
@@ -1029,7 +1025,7 @@ export default function FormPemeriksaanPage() {
     });
 
     setFields(nextFields.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success(direction === "up" ? "Bagian digeser ke atas" : "Bagian digeser ke bawah");
+    toast.success(direction === "up" ? "Grup digeser ke atas" : "Grup digeser ke bawah");
   }
 
   function handleRenameGroup(oldGrup: string, newGrup: string) {
@@ -1106,7 +1102,7 @@ export default function FormPemeriksaanPage() {
   const allAvailableGroupOptions = useMemo(() => {
     const list: string[] = [];
     groupedFields.forEach((g) => {
-      if (g.grup !== "__META__") list.push(g.grup);
+      list.push(g.grup);
     });
     return list;
   }, [groupedFields]);
@@ -2148,21 +2144,20 @@ export default function FormPemeriksaanPage() {
                         }`}
                       >
                         <span
-                          draggable={group.grup !== "__META__"}
+                          draggable
                           onDragStart={(e) => {
                             setDragState({ type: "group", grup: group.grup });
                             e.dataTransfer.effectAllowed = "move";
                             e.dataTransfer.setData("text/plain", group.grup);
                           }}
                           onDragEnd={resetDrag}
+                          title={
+                            group.grup === "__META__"
+                              ? "Tarik untuk memindahkan grup metadata"
+                              : "Tarik untuk memindahkan bagian"
+                          }
                         >
-                          <GripVertical
-                            className={`w-4 h-4 shrink-0 ${
-                              group.grup === "__META__"
-                                ? "text-[hsl(var(--muted-foreground))]/40"
-                                : "text-[hsl(var(--muted-foreground))] cursor-grab active:cursor-grabbing hover:text-[#00A876]"
-                            }`}
-                          />
+                          <GripVertical className="w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] cursor-grab active:cursor-grabbing hover:text-[#00A876]" />
                         </span>
                         <ChevronRight
                           className={`w-4 h-4 text-[hsl(var(--muted-foreground))] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
@@ -2208,14 +2203,14 @@ export default function FormPemeriksaanPage() {
                         <span className="text-[11px] text-[hsl(var(--muted-foreground))] shrink-0">
                           {group.fields.length} item
                         </span>
-                        {/* Geser atas/bawah bagian */}
-                        {group.grup !== "__META__" && editingGroupKey !== group.grup && (
+                        {/* Geser atas/bawah grup / metadata */}
+                        {editingGroupKey !== group.grup && (
                           <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               onClick={() => moveGroup(group.grup, "up")}
                               disabled={groupedFields.indexOf(group) === 0}
-                              title="Geser bagian ke atas"
+                              title={group.grup === "__META__" ? "Geser metadata ke atas" : "Geser bagian ke atas"}
                               className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -2224,7 +2219,7 @@ export default function FormPemeriksaanPage() {
                               type="button"
                               onClick={() => moveGroup(group.grup, "down")}
                               disabled={groupedFields.indexOf(group) === groupedFields.length - 1}
-                              title="Geser bagian ke bawah"
+                              title={group.grup === "__META__" ? "Geser metadata ke bawah" : "Geser bagian ke bawah"}
                               className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
@@ -2473,8 +2468,6 @@ export default function FormPemeriksaanPage() {
                       {!isCollapsed && (
                         <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/40 p-3 space-y-2.5">
                           {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => {
-                            const isFirstInGroup = localIdx === 0;
-                            const isLastInGroup = localIdx === group.fields.length - 1;
                             return (
                               <div
                                 key={index}
@@ -2523,7 +2516,7 @@ export default function FormPemeriksaanPage() {
                                     <button
                                       type="button"
                                       onClick={() => moveField(index, "up")}
-                                      disabled={isFirstInGroup && index === 0}
+                                      disabled={index === 0}
                                       title="Geser ke atas"
                                       className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
                                     >
@@ -2532,7 +2525,7 @@ export default function FormPemeriksaanPage() {
                                     <button
                                       type="button"
                                       onClick={() => moveField(index, "down")}
-                                      disabled={isLastInGroup && index === fields.length - 1}
+                                      disabled={index === fields.length - 1}
                                       title="Geser ke bawah"
                                       className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
                                     >
@@ -2640,8 +2633,8 @@ export default function FormPemeriksaanPage() {
                                         </select>
                                       )}
 
-                                      {/* Pindah bagian/subbagian */}
-                                      {group.grup !== "__META__" && allAvailableGroupOptions.length > 1 && (
+                                      {/* Pindah bagian/subbagian/metadata */}
+                                      {allAvailableGroupOptions.length > 1 && (
                                         <select
                                           value={field.grup || ""}
                                           onChange={(e) => {
@@ -2650,14 +2643,20 @@ export default function FormPemeriksaanPage() {
                                             setFields(
                                               fields.map((f, i) => (i === index ? { ...f, grup: newGrup } : f)),
                                             );
-                                            toast.success("Butir dipindahkan");
+                                            toast.success(
+                                              newGrup === "__META__"
+                                                ? "Dipindahkan ke Metadata"
+                                                : `Butir dipindahkan ke "${newGrup}"`,
+                                            );
                                           }}
                                           className="text-[10px] max-w-[180px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))]"
-                                          title="Pindahkan butir ke bagian lain"
+                                          title="Pindahkan butir ke bagian/metadata lain"
                                         >
                                           {allAvailableGroupOptions.map((g) => (
                                             <option key={g} value={g}>
-                                              📦 {g.length > 28 ? `${g.substring(0, 28)}...` : g}
+                                              {g === "__META__"
+                                                ? "📋 Metadata"
+                                                : `📦 ${g.length > 28 ? `${g.substring(0, 28)}...` : g}`}
                                             </option>
                                           ))}
                                         </select>
