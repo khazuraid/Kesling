@@ -15,7 +15,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { FormView } from "./FormView";
+import { FormView, isGolonganMatch } from "./FormView";
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
@@ -350,6 +350,20 @@ export default function PemeriksaanPage() {
     [activeForm],
   );
 
+  const selectedGolongan = useMemo(() => {
+    if (!activeForm?.fields) return "";
+    const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
+    for (const mf of metaFields) {
+      const val = String(metaValues[mf.id] ?? "").trim();
+      if (!val) continue;
+      const q = (mf.pertanyaan || "").toLowerCase();
+      if (q.includes("golongan") || q.includes("tipe") || val.toLowerCase().includes("golongan")) {
+        return val;
+      }
+    }
+    return "";
+  }, [activeForm, metaValues]);
+
   const liveSkor = useMemo(() => {
     if (!activeForm) return { gained: 0, max: 0, finalValue: 0, valueText: "0", pass: false, text: "" };
     const config = activeForm.config || {};
@@ -365,6 +379,15 @@ export default function PemeriksaanPage() {
     let countSalah = 0;
     const countTotal = penilaian.length;
     for (const f of penilaian) {
+      const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
+      const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+      const isGolonganMismatch =
+        isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+      const isDisabled = f.isDisabled || f.config?.isDisabled || isGolonganMismatch;
+
+      // Abaikan pertanyaan yang dinonaktifkan atau tidak cocok golongan sasaran
+      if (isDisabled) continue;
+
       const skorBenar = f.config?.skorBenar ?? f.config?.skor ?? 1;
       const skorSalah = f.config?.skorSalah ?? 0;
       max += Math.max(skorBenar, skorSalah);
@@ -409,12 +432,20 @@ export default function PemeriksaanPage() {
     else if (op === "<=") pass = finalValue <= thresh;
     else if (op === "<") pass = finalValue < thresh;
     return { gained: Math.round(gained), max, finalValue, valueText, pass, text: pass ? passText : failText };
-  }, [activeForm, formValues]);
+  }, [activeForm, formValues, selectedGolongan]);
 
   const canSubmit =
     activeForm &&
     fieldsToChecklist
-      .filter((f: any) => f.isRequired !== false)
+      .filter((f: any) => {
+        if (f.isRequired === false) return false;
+        const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
+        const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+        const isGolonganMismatch =
+          isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+        if (f.isDisabled || f.config?.isDisabled || isGolonganMismatch) return false;
+        return true;
+      })
       .every((f: any) => {
         const val = formValues[f.id];
         return val !== null && val !== undefined && val !== "";

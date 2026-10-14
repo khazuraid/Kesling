@@ -219,6 +219,7 @@ export default function FormPemeriksaanPage() {
         autoFill: f.autoFill || f.config?.autoFill || undefined,
         isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
         dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+        targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
         allowNA: f.allowNA ?? f.config?.allowNA ?? false,
         config: {
           ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
@@ -230,6 +231,7 @@ export default function FormPemeriksaanPage() {
           autoFill: f.autoFill || f.config?.autoFill || undefined,
           isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
           dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+          targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
           allowNA: f.allowNA ?? f.config?.allowNA ?? false,
         },
       })),
@@ -374,6 +376,236 @@ export default function FormPemeriksaanPage() {
     toast.success("Draft template berhasil diterapkan ke form builder!");
   }
 
+  function loadContohJajananKeliling() {
+    setIsCreating(true);
+    setSelectedTemplateId(null);
+    setNama("IKL Jajanan Keliling (Golongan A1 & A2)");
+    setDeskripsi(
+      "Inspeksi Kesehatan Lingkungan Jajanan Keliling Tempat Pengelolaan Pangan (TPP). Pertanyaan otomatis terbagi: butir umum (semua), butir khusus Golongan A1 (gerobak/pikulan), dan butir khusus Golongan A2 (kendaraan bermotor).",
+    );
+    setRumus("percentage");
+    setCustomFormula("");
+    setThresholdOperator(">=");
+    setThresholdValue(80);
+    setThresholdPassText("Memenuhi Syarat (MS)");
+    setThresholdFailText("Tidak Memenuhi Syarat (TMS)");
+    setDefaultYa(false);
+    setFields([
+      {
+        pertanyaan: "Nama Tempat / Usaha Jajanan",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Tipe Jajanan Keliling",
+        tipe: "DROPDOWN",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "Golongan A1, Golongan A2",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Nama Pemeriksa",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "USER_NAME",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Wilayah Kerja Puskesmas",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "USER_PUSKESMAS",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Peralatan makan & masak bersih, utuh, dan disimpan di wadah tertutup",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Sarana dan Peralatan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Khusus Golongan A1: Menggunakan gerobak dorong / pikulan bersih, kokoh, dan beratap peneduh",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Sarana dan Peralatan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "A1",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan:
+          "Khusus Golongan A2: Menggunakan kendaraan bermotor (roda 3/4) dengan boks makanan tertutup higienis",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Sarana dan Peralatan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "A2",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Khusus Golongan A2: Tersedia kotak penyimpanan makanan berpengatur suhu / insulasi (panas/dingin)",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Sarana dan Peralatan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "A2",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Tersedia tempat sampah tertutup yang dilapisi kantong plastik pada unit keliling",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Sarana dan Peralatan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Air bersih tersedia dalam jumlah cukup untuk keperluan pengolahan dan pencucian",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Air Bersih dan Sanitasi",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Khusus Golongan A1: Wadah penampungan air tertutup dilengkapi kran bersih dan tidak bocor",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Air Bersih dan Sanitasi",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "A1",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Khusus Golongan A2: Tersedia wastafel / bak cuci portabel dengan kran dan sabun cuci tangan cair",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Air Bersih dan Sanitasi",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "A2",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Penjamah pangan memakai celemek bersih dan penutup rambut/topi saat melayani pembeli",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Higiene Penjamah Makanan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Menggunakan sarung tangan atau penjepit makanan saat mengambil makanan matang siap saji",
+        tipe: "BOOLEAN",
+        isRequired: true,
+        grup: "Higiene Penjamah Makanan",
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+        targetGolongan: "ALL",
+        isDisabled: false,
+        dependsOn: null,
+        allowNA: false,
+      },
+    ]);
+    toast.success("Contoh Template Jajanan Keliling (A1 & A2) berhasil dimuat!");
+  }
+
   function addField(grup?: string) {
     setFields([
       ...fields,
@@ -388,6 +620,7 @@ export default function FormPemeriksaanPage() {
         opsi: "",
         isDisabled: false,
         dependsOn: null,
+        targetGolongan: "ALL",
         allowNA: false,
         autoFill: "",
       },
@@ -645,6 +878,14 @@ export default function FormPemeriksaanPage() {
               >
                 <Plus className="w-3.5 h-3.5" /> Buat Baru
               </button>
+              <button
+                type="button"
+                onClick={loadContohJajananKeliling}
+                title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-amber-500/20 border border-amber-500/35 text-amber-200 text-[12px] font-extrabold hover:bg-amber-500/30 transition"
+              >
+                🍿 Contoh IKL Jajanan (A1 & A2)
+              </button>
             </div>
           </div>
         </div>
@@ -713,6 +954,7 @@ export default function FormPemeriksaanPage() {
                             autoFill: f.config?.autoFill || f.autoFill || "",
                             isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
                             dependsOn: f.config?.dependsOn || f.dependsOn || null,
+                            targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
                             allowNA: f.config?.allowNA ?? f.allowNA ?? false,
                             skor: f.config?.skor ?? f.skor ?? 0,
                             skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
@@ -826,14 +1068,24 @@ export default function FormPemeriksaanPage() {
             className="flex-1 text-[18px] sm:text-[22px] font-black text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent tracking-tight min-w-0"
           />
         </div>
-        <button
-          onClick={handleSave}
-          disabled={createMutation.isPending}
-          className="flex items-center justify-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg w-full sm:w-auto shrink-0"
-        >
-          <Check className="w-4 h-4" />
-          {createMutation.isPending ? "Menyimpan..." : "Simpan"}
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+          <button
+            type="button"
+            onClick={loadContohJajananKeliling}
+            title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
+            className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border-2 border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition-colors rounded-lg flex-1 sm:flex-initial"
+          >
+            🍿 Contoh A1 / A2
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={createMutation.isPending}
+            className="flex items-center justify-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg flex-1 sm:flex-initial"
+          >
+            <Check className="w-4 h-4" />
+            {createMutation.isPending ? "Menyimpan..." : "Simpan"}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
@@ -1242,6 +1494,7 @@ export default function FormPemeriksaanPage() {
                                     isRequired: true,
                                     grup: "__META__",
                                     autoFill: "USER_PUSKESMAS",
+                                    targetGolongan: "ALL",
                                     isDisabled: false,
                                     dependsOn: null,
                                     allowNA: false,
@@ -1256,6 +1509,34 @@ export default function FormPemeriksaanPage() {
                               className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-blue-500/15 text-blue-600 border border-blue-500/30 hover:bg-blue-500/25 transition-colors rounded-md"
                             >
                               🏥 + Wilayah Kerja (Puskesmas)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFields([
+                                  ...fields,
+                                  {
+                                    pertanyaan: "Tipe Jajanan Keliling",
+                                    tipe: "DROPDOWN",
+                                    isRequired: true,
+                                    grup: "__META__",
+                                    autoFill: "",
+                                    targetGolongan: "ALL",
+                                    isDisabled: false,
+                                    dependsOn: null,
+                                    allowNA: false,
+                                    skor: 0,
+                                    skorBenar: 0,
+                                    skorSalah: 0,
+                                    opsi: "Golongan A1, Golongan A2",
+                                  },
+                                ]);
+                                toast.success("Preset Tipe Jajanan (Golongan A1 / A2) ditambahkan");
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-amber-500/15 text-amber-700 border border-amber-500/30 hover:bg-amber-500/25 transition-colors rounded-md"
+                            >
+                              🍿 + Tipe Jajanan (Golongan A1 / A2)
                             </button>
                           </div>
                         )}
@@ -1454,6 +1735,59 @@ export default function FormPemeriksaanPage() {
                                         </div>
                                       )}
                                     </div>
+                                    {group.grup !== "__META__" && (
+                                      <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-[hsl(var(--border))]/50">
+                                        <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+                                          🎯 Sasaran:
+                                        </span>
+                                        <div className="inline-flex rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-0.5 text-[10px]">
+                                          <button
+                                            type="button"
+                                            onClick={() => updateField(index, "targetGolongan", "ALL")}
+                                            className={`px-2 py-0.5 rounded transition-colors ${
+                                              !field.targetGolongan || field.targetGolongan === "ALL"
+                                                ? "bg-[#00A876] text-white font-bold"
+                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                            }`}
+                                          >
+                                            Semua (A1 & A2)
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => updateField(index, "targetGolongan", "A1")}
+                                            className={`px-2 py-0.5 rounded transition-colors ${
+                                              field.targetGolongan === "A1" || field.targetGolongan === "Golongan A1"
+                                                ? "bg-amber-600 text-white font-bold"
+                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                            }`}
+                                          >
+                                            Khusus A1
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => updateField(index, "targetGolongan", "A2")}
+                                            className={`px-2 py-0.5 rounded transition-colors ${
+                                              field.targetGolongan === "A2" || field.targetGolongan === "Golongan A2"
+                                                ? "bg-indigo-600 text-white font-bold"
+                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                            }`}
+                                          >
+                                            Khusus A2
+                                          </button>
+                                        </div>
+                                        {field.targetGolongan && field.targetGolongan !== "ALL" && (
+                                          <span
+                                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                              field.targetGolongan === "A1" || field.targetGolongan === "Golongan A1"
+                                                ? "bg-amber-50 text-amber-800 border-amber-200"
+                                                : "bg-indigo-50 text-indigo-800 border-indigo-200"
+                                            }`}
+                                          >
+                                            {field.targetGolongan === "A1" ? "Golongan A1" : "Golongan A2"}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
                                   </td>
                                   <td className="px-3 py-3 text-center">
                                     <select

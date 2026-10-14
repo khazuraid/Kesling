@@ -22,6 +22,18 @@ export function parseDropdownOptions(raw: any): string[] {
   return [];
 }
 
+export function isGolonganMatch(targetGolongan?: string | null, selectedGolongan?: string | null): boolean {
+  if (!targetGolongan || targetGolongan === "ALL" || targetGolongan === "SEMUA" || targetGolongan === "KEDUANYA") {
+    return true;
+  }
+  if (!selectedGolongan) {
+    return true;
+  }
+  const cleanTarget = targetGolongan.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleanSelected = selectedGolongan.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return cleanTarget === cleanSelected || cleanSelected.includes(cleanTarget) || cleanTarget.includes(cleanSelected);
+}
+
 interface FormViewProps {
   activeForm: any;
   editingId: number | null;
@@ -57,6 +69,18 @@ export function FormView({
 }: FormViewProps) {
   const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
   const penilaianFields = activeForm.fields.filter((f: any) => f.grup !== "__META__");
+
+  const selectedGolongan = (() => {
+    for (const mf of metaFields) {
+      const val = String(metaValues[mf.id] ?? "").trim();
+      if (!val) continue;
+      const q = (mf.pertanyaan || "").toLowerCase();
+      if (q.includes("golongan") || q.includes("tipe") || val.toLowerCase().includes("golongan")) {
+        return val;
+      }
+    }
+    return "";
+  })();
 
   const groups: {
     grup: string;
@@ -181,9 +205,17 @@ export function FormView({
               {group.fields.map((f: any) => {
                 const allFields = activeForm.fields || [];
                 const dep = f.config?.dependsOn || f.dependsOn;
+                const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
+                const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+                const isGolonganMismatch =
+                  isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+
                 let isConditionallyDisabled = false;
                 let condReason = "";
-                if (dep) {
+                if (isGolonganMismatch) {
+                  isConditionallyDisabled = true;
+                  condReason = `Khusus ${targetGol === "A1" ? "Golongan A1" : targetGol === "A2" ? "Golongan A2" : targetGol} (Sasaran: ${selectedGolongan}) — Tidak dinilai`;
+                } else if (dep) {
                   const parent = allFields.find(
                     (p: any, idx: number) =>
                       p.urutan === dep.parentIndex || idx === dep.parentIndex || p.id === dep.parentId,
@@ -196,11 +228,13 @@ export function FormView({
                   }
                 }
                 const isDisabled = f.isDisabled || f.config?.isDisabled || isConditionallyDisabled;
-                const disabledReason = isConditionallyDisabled
+                const disabledReason = isGolonganMismatch
                   ? condReason
-                  : f.isDisabled || f.config?.isDisabled
-                    ? "Butir ini dinonaktifkan (Tidak ada)"
-                    : "";
+                  : isConditionallyDisabled
+                    ? condReason
+                    : f.isDisabled || f.config?.isDisabled
+                      ? "Butir ini dinonaktifkan (Tidak ada)"
+                      : "";
 
                 return (
                   <FieldInput
@@ -273,6 +307,22 @@ function FieldInput({
             f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-semibold">
               🏥 Wilayah Kerja
+            </span>
+          )}
+          {f.config?.targetGolongan && f.config?.targetGolongan !== "ALL" && f.config?.targetGolongan !== "SEMUA" && (
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                f.config.targetGolongan === "A1" || f.config.targetGolongan === "Golongan A1"
+                  ? "bg-amber-500/10 text-amber-800 border-amber-300"
+                  : "bg-indigo-500/10 text-indigo-800 border-indigo-300"
+              }`}
+            >
+              🎯 Khusus{" "}
+              {f.config.targetGolongan === "A1"
+                ? "Golongan A1"
+                : f.config.targetGolongan === "A2"
+                  ? "Golongan A2"
+                  : f.config.targetGolongan}
             </span>
           )}
           {disabled && (
@@ -401,6 +451,7 @@ function FieldInput({
         <div>
           {hasValue ? (
             <div className="relative inline-block border border-[hsl(var(--border))]">
+              {/* biome-ignore lint/performance/noImgElement: dynamic user capture image preview */}
               <img src={value} className="w-32 h-32 object-cover" alt="foto" />
               <button
                 onClick={() => onChange("")}
