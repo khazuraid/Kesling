@@ -2,18 +2,24 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
   ArrowLeft,
+  BarChart3,
   Check,
+  CheckCircle2,
   ChevronRight,
+  ClipboardCheck,
   FileText,
   FolderPlus,
   History,
   Plus,
   Settings2,
   ShieldAlert,
+  Sparkles,
   Trash2,
   Upload,
   X,
+  XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
@@ -861,6 +867,71 @@ export default function FormPemeriksaanPage() {
     });
   }
 
+  const selectedLaporanCategory = useMemo(() => {
+    if (!subCategoryId || !Array.isArray(categories)) return null;
+    return categories.find((c: any) => c.subCategories?.some((sc: any) => sc.id === subCategoryId));
+  }, [categories, subCategoryId]);
+
+  const selectedSubCategory = useMemo(() => {
+    if (!selectedLaporanCategory || !subCategoryId) return null;
+    return selectedLaporanCategory.subCategories?.find((sc: any) => sc.id === subCategoryId);
+  }, [selectedLaporanCategory, subCategoryId]);
+
+  const availableParameters = useMemo(() => {
+    return selectedLaporanCategory?.parameters || [];
+  }, [selectedLaporanCategory]);
+
+  const mappedParamCount = useMemo(() => {
+    return [paramDiperiksaId, paramMsId, paramTmsId].filter(Boolean).length;
+  }, [paramDiperiksaId, paramMsId, paramTmsId]);
+
+  function handleAutoMatchParameters() {
+    if (!availableParameters || availableParameters.length === 0) {
+      toast.error("Tidak ada parameter laporan pada kategori ini");
+      return;
+    }
+    const foundDiperiksa = availableParameters.find(
+      (p: any) =>
+        p.code === "diperiksa" ||
+        p.code === "diperiksaJumlah" ||
+        (p.nama?.toLowerCase().includes("diperiksa") && !p.nama?.toLowerCase().includes("kk")),
+    );
+    const foundMs = availableParameters.find(
+      (p: any) =>
+        p.code === "laikJumlah" ||
+        p.code === "diperiksaMs" ||
+        p.nama?.toLowerCase().includes("ms") ||
+        p.nama?.toLowerCase().includes("laik") ||
+        p.nama?.toLowerCase() === "memenuhi syarat",
+    );
+    const foundTms = availableParameters.find(
+      (p: any) =>
+        p.code === "diperiksaTms" ||
+        p.nama?.toLowerCase().includes("tms") ||
+        p.nama?.toLowerCase().includes("tidak memenuhi"),
+    );
+
+    let matched = 0;
+    if (foundDiperiksa) {
+      setParamDiperiksaId(foundDiperiksa.id);
+      matched++;
+    }
+    if (foundMs) {
+      setParamMsId(foundMs.id);
+      matched++;
+    }
+    if (foundTms) {
+      setParamTmsId(foundTms.id);
+      matched++;
+    }
+
+    if (matched > 0) {
+      toast.success(`Berhasil mencocokkan ${matched} parameter agregasi`);
+    } else {
+      toast.info("Parameter otomatis tidak ditemukan, silakan pilih manual");
+    }
+  }
+
   const demoSkorTerisi = useMemo(() => {
     const filled = fields.filter((f) => f.skor > 0);
     if (filled.length === 0) return 0;
@@ -1401,48 +1472,152 @@ export default function FormPemeriksaanPage() {
             </div>
           </div>
 
-          {/* Agregasi */}
-          {subCategoryId && (
-            <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
-              <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-                <span className="text-[12px] font-bold">Agregasi Laporan Bulanan</span>
+          {/* Agregasi Laporan Bulanan */}
+          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+              <div className="flex items-center gap-2 min-w-0">
+                <BarChart3 className="w-4 h-4 text-[#00A876] shrink-0" />
+                <span className="text-[12px] font-bold truncate">Agregasi Laporan Bulanan</span>
               </div>
-              <div className="p-5 space-y-4">
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed">
-                  Petakan nilai form ke parameter laporan bulanan.
-                </p>
-                {[
-                  { label: "1. Jumlah Diperiksa", value: paramDiperiksaId, setter: setParamDiperiksaId, color: "" },
-                  { label: "2. Memenuhi Syarat", value: paramMsId, setter: setParamMsId, color: "text-green-700" },
-                  { label: "3. Tidak Memenuhi", value: paramTmsId, setter: setParamTmsId, color: "text-red-700" },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center gap-3">
-                    <span className={`text-[12px] font-bold w-[130px] shrink-0 ${item.color}`}>{item.label}</span>
-                    <select
-                      value={item.value || ""}
-                      onChange={(e) => item.setter(e.target.value ? Number(e.target.value) : null)}
-                      className={`flex-1 h-10 px-3 text-[12px] font-bold border-2 outline-none rounded-lg ${
-                        item.color
-                          ? item.color === "text-green-700"
-                            ? "border-green-200 bg-green-50 text-green-800 focus:border-green-400"
-                            : "border-red-200 bg-red-50 text-red-800 focus:border-red-400"
-                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:border-[hsl(var(--accent))]"
-                      }`}
-                    >
-                      <option value="">—</option>
-                      {categories
-                        .find((c: any) => c.subCategories?.some((sc: any) => sc.id === subCategoryId))
-                        ?.parameters?.map((p: any) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nama} ({p.code})
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+              {subCategoryId &&
+                (mappedParamCount === 3 ? (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
+                    ✓ 3/3 Terpetakan
+                  </span>
+                ) : mappedParamCount > 0 ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0">
+                    {mappedParamCount}/3 Terpetakan
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] shrink-0">
+                    Belum Terpetakan
+                  </span>
                 ))}
-              </div>
             </div>
-          )}
+
+            <div className="p-4 sm:p-5 space-y-3.5">
+              {!subCategoryId ? (
+                <div className="py-4 px-3 text-center space-y-2 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+                    <AlertCircle className="w-4 h-4" />
+                  </div>
+                  <p className="text-[12px] font-bold text-[hsl(var(--foreground))]">Sub Kategori Belum Dipilih</p>
+                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed max-w-[280px] mx-auto">
+                    Pilih <strong>Sub Kategori Laporan</strong> pada form di atas terlebih dahulu untuk memetakan
+                    parameter agregasi bulanan.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))] text-[11px]">
+                    <div className="min-w-0">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] block">
+                        Target Laporan
+                      </span>
+                      <span className="font-bold text-[hsl(var(--foreground))] truncate block">
+                        {selectedLaporanCategory?.nama || "Kategori"} → {selectedSubCategory?.nama || "Sub Kategori"}
+                      </span>
+                    </div>
+                    {availableParameters.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleAutoMatchParameters}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[#00A876]/10 text-[#00A876] hover:bg-[#00A876]/20 border border-[#00A876]/30 transition shrink-0"
+                        title="Otomatis cocokkan parameter laporan"
+                      >
+                        <Sparkles className="w-3 h-3" /> Auto
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {[
+                      {
+                        key: "diperiksa",
+                        label: "1. Jumlah Diperiksa (Total)",
+                        desc: "Akumulasi total fasilitas yang diinspeksi",
+                        value: paramDiperiksaId,
+                        setter: setParamDiperiksaId,
+                        badge: "TOTAL",
+                        badgeClass: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+                        accentBorder: "focus-within:border-blue-500/60",
+                        icon: ClipboardCheck,
+                        iconColor: "text-blue-600 dark:text-blue-400",
+                      },
+                      {
+                        key: "ms",
+                        label: "2. Memenuhi Syarat (MS / Laik)",
+                        desc: "Inspeksi yang memenuhi kriteria lulus",
+                        value: paramMsId,
+                        setter: setParamMsId,
+                        badge: "MS",
+                        badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+                        accentBorder: "focus-within:border-emerald-500/60",
+                        icon: CheckCircle2,
+                        iconColor: "text-emerald-600 dark:text-emerald-400",
+                      },
+                      {
+                        key: "tms",
+                        label: "3. Tidak Memenuhi (TMS)",
+                        desc: "Inspeksi di bawah passing grade",
+                        value: paramTmsId,
+                        setter: setParamTmsId,
+                        badge: "TMS",
+                        badgeClass: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+                        accentBorder: "focus-within:border-rose-500/60",
+                        icon: XCircle,
+                        iconColor: "text-rose-600 dark:text-rose-400",
+                      },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <div
+                          key={item.key}
+                          className={`p-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all ${item.accentBorder} ${
+                            item.value ? "ring-1 ring-[hsl(var(--border))] shadow-xs" : ""
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Icon className={`w-3.5 h-3.5 shrink-0 ${item.iconColor}`} />
+                              <span className="text-[11px] font-bold text-[hsl(var(--foreground))] truncate">
+                                {item.label}
+                              </span>
+                            </div>
+                            <span
+                              className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border shrink-0 ${item.badgeClass}`}
+                            >
+                              {item.badge}
+                            </span>
+                          </div>
+                          <select
+                            value={item.value || ""}
+                            onChange={(e) => item.setter(e.target.value ? Number(e.target.value) : null)}
+                            className="w-full h-9 px-2.5 text-[11px] font-bold border border-[hsl(var(--border))] rounded-lg bg-[hsl(var(--muted))]/20 text-[hsl(var(--foreground))] outline-none hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer"
+                          >
+                            <option value="">— Belum Dipetakan —</option>
+                            {availableParameters.map((p: any) => (
+                              <option key={p.id} value={p.id}>
+                                {p.nama} {p.code ? `(${p.code})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1 leading-tight">
+                            {item.desc}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] leading-relaxed pt-1">
+                    💡 Saat inspeksi diverifikasi, hasil penilaian form akan otomatis terakumulasi ke dalam tabel
+                    laporan bulanan.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Panel: Fields */}
