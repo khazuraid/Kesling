@@ -871,38 +871,108 @@ export default function FormPemeriksaanPage() {
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
   }
 
-  // ---- Drag & Drop ----
+  // ---- Drag & Drop Engine ----
   const [dragState, setDragState] = useState<{ type: "field" | "group"; index?: number; grup?: string } | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const dragArmedRef = useRef<string | null>(null); // handle terakhir yang di-mousedown
+  const dragArmedRef = useRef<string | null>(null);
 
   function moveFieldTo(from: number, to: number) {
     if (from === to) return;
-    const next = [...fields];
-    const [item] = next.splice(from, 1);
-    const adjusted = to > from ? to - 1 : to;
+    const item = fields[from];
+    const targetItem = fields[to];
+    if (!item || !targetItem) return;
     const srcGrup = item.grup || "Tanpa Grup";
-    const tgtGrup = next[adjusted]?.grup || "Tanpa Grup";
+    const tgtGrup = targetItem.grup || "Tanpa Grup";
     if ((srcGrup === "__META__") !== (tgtGrup === "__META__")) return;
-    next.splice(adjusted, 0, item);
+
+    // Adopsi grup tujuan jika berbeda (otomatis pindah bagian/sub)
+    const updatedItem = { ...item, grup: tgtGrup };
+    const next = [...fields];
+    next.splice(from, 1);
+    const adjusted = to > from ? to : to;
+    next.splice(adjusted, 0, updatedItem);
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    if (srcGrup !== tgtGrup) {
+      toast.success(`Butir dipindahkan ke "${tgtGrup}"`);
+    }
   }
 
   function moveFieldToGroup(from: number, targetGrup: string) {
-    const srcGrup = fields[from]?.grup || "Tanpa Grup";
+    const item = fields[from];
+    if (!item) return;
+    const srcGrup = item.grup || "Tanpa Grup";
     if (srcGrup === targetGrup) return;
-    if ((srcGrup === "__META__") !== (targetGrup === "__META__")) return;
-    const next = fields.filter((_, i) => i !== from);
-    let insertAt = next.length;
-    for (let i = next.length - 1; i >= 0; i--) {
-      if ((next[i].grup || "Tanpa Grup") === targetGrup) {
+    if ((srcGrup === "__META__") !== (targetGrup === "__META__")) {
+      toast.error("Tidak bisa memindahkan butir ke metadata");
+      return;
+    }
+    const updatedItem = { ...item, grup: targetGrup };
+    const remaining = fields.filter((_, i) => i !== from);
+    let insertAt = remaining.length;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      if ((remaining[i].grup || "Tanpa Grup") === targetGrup) {
         insertAt = i + 1;
         break;
       }
     }
-    next.splice(insertAt, 0, fields[from]);
+    remaining.splice(insertAt, 0, updatedItem);
+    setFields(remaining.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success(`Butir dipindahkan ke "${targetGrup}"`);
+  }
+
+  function convertFieldToBagian(fromIndex: number) {
+    const item = fields[fromIndex];
+    if (!item) return;
+    const groupName = (item.pertanyaan || "BAGIAN BARU").trim().toUpperCase();
+    if (fields.some((f) => f.grup === groupName)) {
+      toast.error(`Bagian "${groupName}" sudah ada`);
+      return;
+    }
+    const next = [...fields];
+    next[fromIndex] = {
+      ...item,
+      grup: groupName,
+      pertanyaan: "",
+      tipe: "BOOLEAN",
+    };
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success("Butir dipindahkan");
+    toast.success(`Butir dijadikan Bagian Utama "${groupName}"`);
+  }
+
+  function convertFieldToSubbagian(fromIndex: number, parentArea: string) {
+    const item = fields[fromIndex];
+    if (!item) return;
+    const subName = (item.pertanyaan || "Subbagian Baru").trim();
+    const newGrup = `${parentArea} — ${subName}`;
+    if (fields.some((f) => f.grup === newGrup)) {
+      toast.error(`Subbagian "${subName}" sudah ada di ${parentArea}`);
+      return;
+    }
+    const next = [...fields];
+    next[fromIndex] = {
+      ...item,
+      grup: newGrup,
+      pertanyaan: "",
+      tipe: "BOOLEAN",
+    };
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success(`Butir dijadikan Subbagian di bawah "${parentArea}"`);
+  }
+
+  function promoteSubToBagian(grup: string) {
+    if (!grup.includes(" — ")) return;
+    const parts = grup.split(" — ");
+    const subName = parts.slice(1).join(" — ").trim().toUpperCase();
+    if (!subName) return;
+    setFields((prev) => prev.map((f) => ((f.grup || "Tanpa Grup") === grup ? { ...f, grup: subName } : f)));
+    toast.success(`Subbagian diubah menjadi Bagian Utama "${subName}"`);
+  }
+
+  function demoteBagianToSub(grup: string, targetParentArea: string) {
+    if (grup === targetParentArea || grup.includes(" — ")) return;
+    const newGrup = `${targetParentArea} — ${grup}`;
+    setFields((prev) => prev.map((f) => ((f.grup || "Tanpa Grup") === grup ? { ...f, grup: newGrup } : f)));
+    toast.success(`Bagian "${grup}" diubah menjadi Subbagian di bawah "${targetParentArea}"`);
   }
 
   function moveGroupTo(fromGrup: string, toGrup: string) {
@@ -1039,6 +1109,14 @@ export default function FormPemeriksaanPage() {
       if (g.grup !== "__META__") list.push(g.grup);
     });
     return list;
+  }, [groupedFields]);
+
+  const mainAreaOptions = useMemo(() => {
+    const areas = new Set<string>();
+    groupedFields.forEach((g) => {
+      if (g.grup !== "__META__" && g.area) areas.add(g.area);
+    });
+    return Array.from(areas);
   }, [groupedFields]);
 
   function toggleAllGroups(collapse: boolean) {
@@ -2010,6 +2088,29 @@ export default function FormPemeriksaanPage() {
               </div>
             ) : (
               <div className="divide-y divide-[hsl(var(--border))]">
+                {/* Dropzone: Jadikan Bagian Utama Baru dari Drag Butir */}
+                {dragState?.type === "field" && dragState.index != null && (
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDropTarget("drop-new-bagian-top");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragState.index != null) convertFieldToBagian(dragState.index);
+                      resetDrag();
+                    }}
+                    className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${
+                      dropTarget === "drop-new-bagian-top"
+                        ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/40 scale-[1.01]"
+                        : "border-[#00A876]/40 bg-[#00A876]/5 text-[#00A876] hover:bg-[#00A876]/10"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    Lepaskan di sini untuk JADIKAN BAGIAN UTAMA BARU
+                  </div>
+                )}
+
                 {groupedFields.map((group) => {
                   const isCollapsed = collapsedGroups.has(group.grup);
                   return (
@@ -2235,20 +2336,54 @@ export default function FormPemeriksaanPage() {
                             >
                               <FolderPlus className="w-3 h-3" /> Subbagian
                             </button>
+                            {mainAreaOptions.filter((a) => a !== group.area).length > 0 && (
+                              <select
+                                value=""
+                                onChange={(e) => {
+                                  if (!e.target.value) return;
+                                  demoteBagianToSub(group.grup, e.target.value);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[9px] font-bold bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-1 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))] hover:border-purple-400"
+                                title="Jadikan Bagian ini sebagai Subbagian di bawah Bagian lain"
+                              >
+                                <option value="">↳ Jadi Subbagian di...</option>
+                                {mainAreaOptions
+                                  .filter((a) => a !== group.area)
+                                  .map((a) => (
+                                    <option key={a} value={a}>
+                                      ↳ Di bawah {a}
+                                    </option>
+                                  ))}
+                              </select>
+                            )}
                           </>
                         )}
                         {group.subbagian && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingGroupKey(group.grup);
-                              setEditingGroupName(group.subbagian || "");
-                            }}
-                            title="Ganti nama subbagian"
-                            className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                promoteSubToBagian(group.grup);
+                              }}
+                              title="Ubah Subbagian ini menjadi Bagian Utama"
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-colors rounded-md"
+                            >
+                              <ArrowUp className="w-3 h-3" /> Jadi Bagian
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingGroupKey(group.grup);
+                                setEditingGroupName(group.subbagian || "");
+                              }}
+                              title="Ganti nama subbagian"
+                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={(e) => {
@@ -2305,6 +2440,36 @@ export default function FormPemeriksaanPage() {
                           </button>
                         </div>
                       )}
+                      {/* Dropzone: Jadikan Subbagian di bawah Bagian ini */}
+                      {dragState?.type === "field" &&
+                        dragState.index != null &&
+                        !group.subbagian &&
+                        group.grup !== "__META__" && (
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDropTarget(`drop-subbagian:${group.area}`);
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (dragState.index != null) {
+                                convertFieldToSubbagian(dragState.index, group.area);
+                              }
+                              resetDrag();
+                            }}
+                            className={`mx-3 my-2 p-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+                              dropTarget === `drop-subbagian:${group.area}`
+                                ? "border-purple-500 bg-purple-500/20 text-purple-700 dark:text-purple-300 ring-2 ring-purple-500/40 scale-[1.01]"
+                                : "border-purple-500/40 bg-purple-500/5 text-purple-700 dark:text-purple-300 hover:bg-purple-500/10"
+                            }`}
+                          >
+                            <FolderPlus className="w-3.5 h-3.5 animate-pulse" />
+                            Lepaskan di sini untuk JADIKAN SUBBAGIAN baru di bawah &quot;{group.area}&quot;
+                          </div>
+                        )}
+
                       {!isCollapsed && (
                         <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/40 p-3 space-y-2.5">
                           {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => {
@@ -2497,6 +2662,38 @@ export default function FormPemeriksaanPage() {
                                           ))}
                                         </select>
                                       )}
+
+                                      {/* Ubah jadi Bagian atau Subbagian */}
+                                      {group.grup !== "__META__" && (
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            type="button"
+                                            onClick={() => convertFieldToBagian(index)}
+                                            title="Jadikan pertanyaan ini sebagai Bagian Utama baru"
+                                            className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-[hsl(var(--muted))]/50 hover:bg-[#00A876]/15 hover:text-[#00A876] text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))] transition-colors"
+                                          >
+                                            <Sparkles className="w-2.5 h-2.5" /> + Bagian
+                                          </button>
+                                          {mainAreaOptions.length > 0 && (
+                                            <select
+                                              value=""
+                                              onChange={(e) => {
+                                                if (!e.target.value) return;
+                                                convertFieldToSubbagian(index, e.target.value);
+                                              }}
+                                              className="text-[9px] font-bold bg-[hsl(var(--muted))]/50 border border-dashed border-[hsl(var(--border))] px-1 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))] hover:border-purple-400"
+                                              title="Jadikan pertanyaan ini sebagai Subbagian baru di bawah Bagian pilihan"
+                                            >
+                                              <option value="">+ Subbagian di...</option>
+                                              {mainAreaOptions.map((area) => (
+                                                <option key={area} value={area}>
+                                                  ↳ Di {area.length > 20 ? `${area.substring(0, 20)}...` : area}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
 
                                     {/* Sasaran untuk non-meta */}
@@ -2663,11 +2860,61 @@ export default function FormPemeriksaanPage() {
                               </div>
                             );
                           })}
+
+                          {/* Dropzone untuk memasukkan butir ke grup ini saat drag */}
+                          {dragState?.type === "field" && dragState.index != null && (
+                            <div
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropTarget(`drop-into-group:${group.grup}`);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (dragState.index != null) {
+                                  moveFieldToGroup(dragState.index, group.grup);
+                                }
+                                resetDrag();
+                              }}
+                              className={`p-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+                                dropTarget === `drop-into-group:${group.grup}`
+                                  ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/30 scale-[1.01]"
+                                  : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] hover:border-[#00A876]/40 hover:text-[#00A876]"
+                              }`}
+                            >
+                              📥 Lepaskan di sini untuk MASUKKAN KE{" "}
+                              {group.subbagian ? `Subbagian "${group.subbagian}"` : `Bagian "${group.area}"`}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
                   );
                 })}
+
+                {/* Dropzone: Jadikan Bagian Utama Baru dari Drag Butir (di bawah) */}
+                {dragState?.type === "field" && dragState.index != null && (
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDropTarget("drop-new-bagian-bottom");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragState.index != null) convertFieldToBagian(dragState.index);
+                      resetDrag();
+                    }}
+                    className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${
+                      dropTarget === "drop-new-bagian-bottom"
+                        ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/40 scale-[1.01]"
+                        : "border-[#00A876]/40 bg-[#00A876]/5 text-[#00A876] hover:bg-[#00A876]/10"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    Lepaskan di sini untuk JADIKAN BAGIAN UTAMA BARU
+                  </div>
+                )}
               </div>
             )}
 
