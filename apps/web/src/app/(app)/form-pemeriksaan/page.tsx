@@ -3,7 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   BarChart3,
   Check,
   CheckCircle2,
@@ -11,18 +13,19 @@ import {
   ClipboardCheck,
   FileText,
   FolderPlus,
+  GripVertical,
   History,
+  Pencil,
   Plus,
   Settings2,
   ShieldAlert,
   Sparkles,
   Trash2,
   Upload,
-  X,
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
 import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
@@ -203,62 +206,152 @@ export default function FormPemeriksaanPage() {
     onError: () => toast.error("Gagal menghapus template"),
   });
 
-  function handleSave() {
-    if (!nama.trim()) {
-      toast.error("Nama template wajib diisi");
-      return;
-    }
-    createMutation.mutate({
-      id: selectedTemplateId,
-      nama,
-      deskripsi,
-      subCategoryId,
-      config: {
-        dataDasarCategoryId,
-        rumus,
-        customFormula,
-        thresholdOperator,
-        thresholdValue,
-        thresholdPassText,
-        thresholdFailText,
-        defaultYa,
-        agregasi: {
-          paramDiperiksaId,
-          paramMsId,
-          paramTmsId,
-        },
+  const [autoSaveState, setAutoSaveState] = useState<"idle" | "dirty" | "saving" | "saved" | "error">("idle");
+
+  const buildSavePayload = () => ({
+    id: selectedTemplateId,
+    nama,
+    deskripsi,
+    subCategoryId,
+    config: {
+      dataDasarCategoryId,
+      rumus,
+      customFormula,
+      thresholdOperator,
+      thresholdValue,
+      thresholdPassText,
+      thresholdFailText,
+      defaultYa,
+      agregasi: {
+        paramDiperiksaId,
+        paramMsId,
+        paramTmsId,
       },
-      fields: fields.map((f, i) => ({
-        pertanyaan: f.pertanyaan,
-        tipe: f.tipe,
-        isRequired: f.isRequired ?? false,
-        grup: f.grup || "",
-        options: f.opsi || f.options || null,
+    },
+    fields: fields.map((f, i) => ({
+      pertanyaan: f.pertanyaan,
+      tipe: f.tipe,
+      isRequired: f.isRequired ?? false,
+      grup: f.grup || "",
+      options: f.opsi || f.options || null,
+      skor: f.skor ?? 0,
+      skorBenar: f.skorBenar ?? 1,
+      skorSalah: f.skorSalah ?? 0,
+      urutan: i,
+      autoFill: f.autoFill || f.config?.autoFill || undefined,
+      isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
+      dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+      targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
+      allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+      config: {
+        ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
         skor: f.skor ?? 0,
         skorBenar: f.skorBenar ?? 1,
         skorSalah: f.skorSalah ?? 0,
-        urutan: i,
+        dataDasarCode: f.config?.dataDasarCode,
+        syncToEntityField: f.config?.syncToEntityField,
         autoFill: f.autoFill || f.config?.autoFill || undefined,
         isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
         dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
         targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
         allowNA: f.allowNA ?? f.config?.allowNA ?? false,
-        config: {
-          ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
-          skor: f.skor ?? 0,
-          skorBenar: f.skorBenar ?? 1,
-          skorSalah: f.skorSalah ?? 0,
-          dataDasarCode: f.config?.dataDasarCode,
-          syncToEntityField: f.config?.syncToEntityField,
-          autoFill: f.autoFill || f.config?.autoFill || undefined,
-          isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
-          dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
-          targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
-          allowNA: f.allowNA ?? f.config?.allowNA ?? false,
-        },
-      })),
-    });
+      },
+    })),
+  });
+
+  function handleSave() {
+    if (!nama.trim()) {
+      toast.error("Nama template wajib diisi");
+      return;
+    }
+    createMutation.mutate(buildSavePayload());
   }
+
+  // Auto-simpan realtime: debounce 2 detik setiap ada perubahan (hanya template yang sudah tersimpan)
+  const skipAutoSaveRef = useRef(true);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveInFlightRef = useRef(false);
+  const autoSavePendingRef = useRef(false);
+
+  const doAutoSave = async () => {
+    if (autoSaveInFlightRef.current) {
+      autoSavePendingRef.current = true;
+      return;
+    }
+    autoSaveInFlightRef.current = true;
+    setAutoSaveState("saving");
+    try {
+      const res = await fetch("/api/inspection/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildSavePayload()),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Gagal menyimpan");
+      }
+      const data = await res.json();
+      queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
+      if (!selectedTemplateId && data?.id) setSelectedTemplateId(data.id);
+      setAutoSaveState("saved");
+    } catch {
+      setAutoSaveState("error");
+    } finally {
+      autoSaveInFlightRef.current = false;
+      if (autoSavePendingRef.current) {
+        autoSavePendingRef.current = false;
+        doAutoSave();
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Skip hingga template aktif selesai dimuat & user benar-benar mengubah
+    if (skipAutoSaveRef.current) {
+      skipAutoSaveRef.current = false;
+      return;
+    }
+    if (!selectedTemplateId || isCreating) {
+      setAutoSaveState("idle");
+      return;
+    }
+    if (!nama.trim()) {
+      setAutoSaveState("dirty");
+      return;
+    }
+    setAutoSaveState("dirty");
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      doAutoSave();
+    }, 2000);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    nama,
+    deskripsi,
+    subCategoryId,
+    dataDasarCategoryId,
+    fields,
+    rumus,
+    customFormula,
+    thresholdOperator,
+    thresholdValue,
+    thresholdPassText,
+    thresholdFailText,
+    defaultYa,
+    paramDiperiksaId,
+    paramMsId,
+    paramTmsId,
+    selectedTemplateId,
+    isCreating,
+  ]);
+
+  // skipAutoSaveRef aktif kembali saat template baru dibuka
+  useEffect(() => {
+    skipAutoSaveRef.current = true;
+  }, [selectedTemplateId]);
 
   async function handleImportFile(file: File) {
     const initialJob: ImportJobState = {
@@ -753,6 +846,9 @@ export default function FormPemeriksaanPage() {
     setInlineName("");
   }
 
+  const [editingGroupKey, setEditingGroupKey] = useState<string | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState("");
+
   function deleteGrup(grup: string) {
     setFields(fields.filter((f) => f.grup !== grup));
     toast.success("Grup dihapus");
@@ -770,26 +866,90 @@ export default function FormPemeriksaanPage() {
     const next = [...fields];
     const target = direction === "up" ? index - 1 : index + 1;
     if (target < 0 || target >= next.length) return;
+    if ((next[index].grup === "__META__") !== (next[target].grup === "__META__")) return;
     [next[index], next[target]] = [next[target], next[index]];
-    setFields(next);
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+  }
+
+  function moveGroup(grupName: string, direction: "up" | "down") {
+    const groupKeys = groupedFields.map((g) => g.grup);
+    const curIdx = groupKeys.indexOf(grupName);
+    if (curIdx < 0) return;
+    const targetIdx = direction === "up" ? curIdx - 1 : curIdx + 1;
+    if (targetIdx < 0 || targetIdx >= groupKeys.length) return;
+
+    if (groupKeys[targetIdx] === "__META__" || grupName === "__META__") {
+      return;
+    }
+
+    const newKeys = [...groupKeys];
+    [newKeys[curIdx], newKeys[targetIdx]] = [newKeys[targetIdx], newKeys[curIdx]];
+
+    const nextFields: any[] = [];
+    newKeys.forEach((k) => {
+      const matching = fields.filter((f) => (f.grup || "Tanpa Grup") === k);
+      nextFields.push(...matching);
+    });
+    const handled = new Set(newKeys);
+    fields.forEach((f) => {
+      const g = f.grup || "Tanpa Grup";
+      if (!handled.has(g)) nextFields.push(f);
+    });
+
+    setFields(nextFields.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success(direction === "up" ? "Bagian digeser ke atas" : "Bagian digeser ke bawah");
+  }
+
+  function handleRenameGroup(oldGrup: string, newGrup: string) {
+    const trimmed = newGrup.trim();
+    if (!trimmed || trimmed === oldGrup) {
+      setEditingGroupKey(null);
+      return;
+    }
+    const isSub = oldGrup.includes(" — ");
+    if (isSub) {
+      setFields((prev) => prev.map((f) => ((f.grup || "Tanpa Grup") === oldGrup ? { ...f, grup: trimmed } : f)));
+      toast.success(`Subbagian diubah menjadi "${trimmed}"`);
+    } else {
+      setFields((prev) =>
+        prev.map((f) => {
+          const g = f.grup || "Tanpa Grup";
+          if (g === oldGrup) return { ...f, grup: trimmed };
+          if (g.startsWith(`${oldGrup} — `)) {
+            return { ...f, grup: `${trimmed} — ${g.slice(oldGrup.length + 3)}` };
+          }
+          return f;
+        }),
+      );
+      toast.success(`Bagian diubah menjadi "${trimmed}"`);
+    }
+    setEditingGroupKey(null);
   }
 
   const groupedFields = useMemo(() => {
+    const groupOrder: string[] = [];
     const groupMap = new Map<string, { field: any; index: number }[]>();
     fields.forEach((f, i) => {
       const g = f.grup || "Tanpa Grup";
-      if (!groupMap.has(g)) groupMap.set(g, []);
+      if (!groupMap.has(g)) {
+        groupMap.set(g, []);
+        groupOrder.push(g);
+      }
       groupMap.get(g)?.push({ field: f, index: i });
     });
 
     const areaIndexes = new Map<string, number>();
-    const subIndexes = new Map<string, number>(); // per-area sub counter
-    const groups: any[] = [];
-    groupMap.forEach((items, grup) => {
+    const subIndexes = new Map<string, number>();
+
+    return groupOrder.map((grup) => {
+      const items = groupMap.get(grup) || [];
       const delimiterIndex = grup.indexOf(" — ");
       const area = delimiterIndex >= 0 ? grup.slice(0, delimiterIndex).trim() : grup;
       const subbagian = delimiterIndex >= 0 ? grup.slice(delimiterIndex + 3).trim() || null : null;
-      if (!areaIndexes.has(area)) areaIndexes.set(area, areaIndexes.size + 1);
+
+      if (grup !== "__META__" && !areaIndexes.has(area)) {
+        areaIndexes.set(area, areaIndexes.size + 1);
+      }
       let subIndex: number | null = null;
       if (subbagian) {
         const key = `${area}::${subbagian}`;
@@ -799,25 +959,33 @@ export default function FormPemeriksaanPage() {
         }
         subIndex = subIndexes.get(key) ?? null;
       }
-      groups.push({
+
+      return {
         grup,
         area,
         subbagian,
         areaIndex: areaIndexes.get(area) ?? 1,
         subIndex,
         fields: items,
-      });
+      };
     });
-    // Sort: bagian (non-sub) dulu, lalu sub-bagiannya, per area
-    groups.sort((a, b) => {
-      if (a.areaIndex !== b.areaIndex) return a.areaIndex - b.areaIndex;
-      if (!a.subbagian && b.subbagian) return -1;
-      if (a.subbagian && !b.subbagian) return 1;
-      if (a.subbagian && b.subbagian) return (a.subIndex ?? 0) - (b.subIndex ?? 0);
-      return 0;
-    });
-    return groups;
   }, [fields]);
+
+  const allAvailableGroupOptions = useMemo(() => {
+    const list: string[] = [];
+    groupedFields.forEach((g) => {
+      if (g.grup !== "__META__") list.push(g.grup);
+    });
+    return list;
+  }, [groupedFields]);
+
+  function toggleAllGroups(collapse: boolean) {
+    if (collapse) {
+      setCollapsedGroups(new Set(groupedFields.map((g) => g.grup)));
+    } else {
+      setCollapsedGroups(new Set());
+    }
+  }
 
   const totalSkor = useMemo(() => fields.reduce((s, f) => s + (f.skor ?? 0), 0), [fields]);
   const rumusLabel = RUMUS_OPTIONS.find((r) => r.value === rumus)?.label || rumus;
@@ -1228,6 +1396,46 @@ export default function FormPemeriksaanPage() {
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+          {/* Auto-save status */}
+          {selectedTemplateId && !isCreating && (
+            <span
+              className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-colors ${
+                autoSaveState === "saved"
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : autoSaveState === "saving"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : autoSaveState === "error"
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : autoSaveState === "dirty"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]"
+              }`}
+              title="Perubahan tersimpan otomatis setelah 2 detik"
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  autoSaveState === "saved"
+                    ? "bg-green-500"
+                    : autoSaveState === "saving"
+                      ? "bg-blue-500 animate-pulse"
+                      : autoSaveState === "error"
+                        ? "bg-red-500"
+                        : autoSaveState === "dirty"
+                          ? "bg-amber-500"
+                          : "bg-[hsl(var(--muted-foreground))]"
+                }`}
+              />
+              {autoSaveState === "saved"
+                ? "Tersimpan"
+                : autoSaveState === "saving"
+                  ? "Menyimpan..."
+                  : autoSaveState === "error"
+                    ? "Gagal — coba Simpan"
+                    : autoSaveState === "dirty"
+                      ? "Perubahan..."
+                      : "Auto-simpan aktif"}
+            </span>
+          )}
           <button
             type="button"
             onClick={loadContohJajananKeliling}
@@ -1658,7 +1866,29 @@ export default function FormPemeriksaanPage() {
               <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
               <span className="text-[12px] font-bold">Daftar Ceklis</span>
               <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{fields.length} item</span>
+              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">· {groupedFields.length} bagian</span>
               <div className="ml-auto flex items-center gap-2">
+                {groupedFields.length > 0 && (
+                  <div className="flex items-center rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleAllGroups(false)}
+                      className="px-2 py-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      title="Buka semua bagian"
+                    >
+                      Buka
+                    </button>
+                    <span className="w-px h-4 bg-[hsl(var(--border))]" />
+                    <button
+                      type="button"
+                      onClick={() => toggleAllGroups(true)}
+                      className="px-2 py-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      title="Tutup semua bagian"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => addMetadataField("", "TEXT")}
@@ -1728,14 +1958,23 @@ export default function FormPemeriksaanPage() {
                         tabIndex={0}
                         onClick={() => toggleGroup(group.grup)}
                         onKeyDown={(e) => e.key === "Enter" && toggleGroup(group.grup)}
-                        className={`flex items-center gap-3 px-5 py-3 cursor-pointer select-none transition-colors hover:bg-[hsl(var(--muted))]/60 ${
+                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors hover:bg-[hsl(var(--muted))]/60 ${
                           group.subbagian ? "pl-10 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]/30"
                         }`}
                       >
+                        <GripVertical className="w-4 h-4 text-[hsl(var(--muted-foreground))]/40 shrink-0" />
                         <ChevronRight
                           className={`w-4 h-4 text-[hsl(var(--muted-foreground))] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
                         />
-                        <div className="w-9 h-7 flex items-center justify-center bg-[hsl(var(--foreground))] text-[hsl(var(--card))] text-[11px] font-black shrink-0 rounded-lg">
+                        <div
+                          className={`w-9 h-7 flex items-center justify-center text-[11px] font-black shrink-0 rounded-lg ${
+                            group.grup === "__META__"
+                              ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"
+                              : group.subbagian
+                                ? "bg-[#00A876]/15 text-[#00A876]"
+                                : "bg-[hsl(var(--foreground))] text-[hsl(var(--card))]"
+                          }`}
+                        >
                           {group.grup === "__META__"
                             ? "M"
                             : group.subbagian
@@ -1746,14 +1985,51 @@ export default function FormPemeriksaanPage() {
                           <span className="flex-1 text-[13px] font-bold text-[hsl(var(--muted-foreground))] tracking-wide">
                             Metadata
                           </span>
+                        ) : editingGroupKey === group.grup ? (
+                          <input
+                            autoFocus
+                            value={editingGroupName}
+                            onChange={(e) => setEditingGroupName(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameGroup(group.grup, editingGroupName);
+                              if (e.key === "Escape") setEditingGroupKey(null);
+                            }}
+                            onBlur={() => handleRenameGroup(group.grup, editingGroupName)}
+                            placeholder={group.subbagian ? "Nama subbagian..." : "Nama bagian..."}
+                            className="flex-1 text-[13px] font-bold border-2 border-[#00A876]/50 rounded-lg px-2 py-1 outline-none bg-white dark:bg-[hsl(var(--muted))]"
+                          />
                         ) : (
-                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--foreground))] tracking-wide">
+                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--foreground))] tracking-wide truncate">
                             {(group.subbagian || group.grup).toUpperCase()}
                           </span>
                         )}
-                        <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                        <span className="text-[11px] text-[hsl(var(--muted-foreground))] shrink-0">
                           {group.fields.length} item
                         </span>
+                        {/* Geser atas/bawah bagian */}
+                        {group.grup !== "__META__" && editingGroupKey !== group.grup && (
+                          <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => moveGroup(group.grup, "up")}
+                              disabled={groupedFields.indexOf(group) === 0}
+                              title="Geser bagian ke atas"
+                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveGroup(group.grup, "down")}
+                              disabled={groupedFields.indexOf(group) === groupedFields.length - 1}
+                              title="Geser bagian ke bawah"
+                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                         {group.grup === "__META__" && (
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <button
@@ -1838,14 +2114,40 @@ export default function FormPemeriksaanPage() {
                           </div>
                         )}
                         {!group.subbagian && group.grup !== "__META__" && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingGroupKey(group.grup);
+                                setEditingGroupName(group.area);
+                              }}
+                              title="Ganti nama bagian (termasuk subbagiannya)"
+                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addSubbagian(group.area);
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                            >
+                              <FolderPlus className="w-3 h-3" /> Subbagian
+                            </button>
+                          </>
+                        )}
+                        {group.subbagian && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              addSubbagian(group.area);
+                              setEditingGroupKey(group.grup);
+                              setEditingGroupName(group.subbagian || "");
                             }}
-                            className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                            title="Ganti nama subbagian"
+                            className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
                           >
-                            <FolderPlus className="w-3 h-3" /> Subbagian
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
                         )}
                         <button
@@ -1904,75 +2206,90 @@ export default function FormPemeriksaanPage() {
                         </div>
                       )}
                       {!isCollapsed && (
-                        <div className="w-full overflow-x-auto border-t border-[hsl(var(--border))]">
-                          <table className="w-full text-left">
-                            <thead>
-                              <tr className="border-b-2 border-[hsl(var(--border))]">
-                                <th className="w-12 px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  No
-                                </th>
-                                <th className="min-w-[280px] px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Pertanyaan & Kondisi
-                                </th>
-                                <th className="w-24 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Tipe
-                                </th>
-                                <th className="min-w-[180px] px-3 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Opsi / Pengaturan
-                                </th>
-                                <th className="w-20 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Status
-                                </th>
-                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Wajib
-                                </th>
-                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Skor
-                                </th>
-                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Benar
-                                </th>
-                                <th className="w-16 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Salah
-                                </th>
-                                <th className="w-24 px-3 py-3 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-[hsl(var(--muted-foreground))]">
-                                  Aksi
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[hsl(var(--border))]">
-                              {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => (
-                                <tr
-                                  key={index}
-                                  className={`hover:bg-[hsl(var(--muted))]/20 ${field.isDisabled ? "bg-red-50/30 opacity-75" : ""}`}
-                                >
-                                  <td className="px-3 py-3 text-[12px] font-mono text-[hsl(var(--muted-foreground))]">
-                                    {localIdx + 1}
-                                  </td>
-                                  <td className="px-3 py-3 space-y-1.5">
+                        <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/40 p-3 space-y-2.5">
+                          {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => {
+                            const isFirstInGroup = localIdx === 0;
+                            const isLastInGroup = localIdx === group.fields.length - 1;
+                            return (
+                              <div
+                                key={index}
+                                className={`rounded-xl border bg-[hsl(var(--card))] p-3 transition-colors ${
+                                  field.isDisabled
+                                    ? "border-red-200 bg-red-50/40 opacity-75"
+                                    : "border-[hsl(var(--border))] hover:border-[#00A876]/40"
+                                }`}
+                              >
+                                {/* Baris utama: nomor + pertanyaan + aksi */}
+                                <div className="flex items-start gap-3">
+                                  <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
+                                    <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                                      {localIdx + 1}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => moveField(index, "up")}
+                                      disabled={isFirstInGroup && index === 0}
+                                      title="Geser ke atas"
+                                      className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
+                                    >
+                                      <ArrowUp className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => moveField(index, "down")}
+                                      disabled={isLastInGroup && index === fields.length - 1}
+                                      title="Geser ke bawah"
+                                      className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
+                                    >
+                                      <ArrowDown className="w-3 h-3" />
+                                    </button>
+                                  </div>
+
+                                  <div className="flex-1 min-w-0 space-y-2">
                                     <input
                                       type="text"
                                       value={field.pertanyaan}
                                       onChange={(e) => updateField(index, "pertanyaan", e.target.value)}
                                       placeholder="Tulis pertanyaan..."
-                                      className={`w-full text-[12px] font-medium bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1 ${
+                                      className={`w-full text-[13px] font-semibold bg-transparent outline-none border-b-2 border-transparent focus:border-[#00A876]/50 px-1 py-0.5 ${
                                         field.isDisabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""
                                       }`}
                                     />
-                                    {/* AutoFill atau Ketergantungan Kondisional */}
-                                    <div className="flex items-center gap-2 flex-wrap">
+
+                                    {/* Baris kontrol: tipe, opsi, kondisional, sasaran */}
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <select
+                                        value={field.tipe}
+                                        onChange={(e) => updateField(index, "tipe", e.target.value)}
+                                        className="text-[10px] font-bold bg-[hsl(var(--muted))]/40 border border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md"
+                                      >
+                                        {FIELD_TYPES.map((t) => (
+                                          <option key={t.value} value={t.value}>
+                                            {t.label}
+                                          </option>
+                                        ))}
+                                      </select>
+
+                                      {(field.tipe === "SELECT" || field.tipe === "DROPDOWN") && (
+                                        <input
+                                          type="text"
+                                          value={field.opsi || ""}
+                                          onChange={(e) => updateField(index, "opsi", e.target.value)}
+                                          placeholder="Opsi 1, Opsi 2, ..."
+                                          className="w-44 text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md focus:border-[#00A876]/50"
+                                        />
+                                      )}
+
                                       {group.grup === "__META__" ? (
-                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                        <>
                                           <select
                                             value={field.autoFill || ""}
                                             onChange={(e) => updateField(index, "autoFill", e.target.value || "")}
-                                            className="text-[10px] bg-[hsl(var(--muted))]/40 border border-[hsl(var(--border))] rounded px-1.5 py-0.5 text-[hsl(var(--foreground))] outline-none font-medium"
+                                            className="text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md"
                                           >
                                             <option value="">Manual (Diisi Saat Input)</option>
-                                            <option value="USER_NAME">👤 Otomatis Nama Akun Petugas</option>
-                                            <option value="USER_PUSKESMAS">
-                                              🏥 Otomatis Wilayah Kerja (Puskesmas)
-                                            </option>
+                                            <option value="USER_NAME">👤 Otomatis Nama Akun</option>
+                                            <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
                                           </select>
                                           {field.autoFill === "USER_NAME" && (
                                             <span className="text-[9px] font-bold text-[#00A876] bg-[#00A876]/10 px-1.5 py-0.5 rounded">
@@ -1981,67 +2298,84 @@ export default function FormPemeriksaanPage() {
                                           )}
                                           {field.autoFill === "USER_PUSKESMAS" && (
                                             <span className="text-[9px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
-                                              Puskesmas Petugas
+                                              Puskesmas
                                             </span>
                                           )}
-                                        </div>
+                                        </>
                                       ) : (
-                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                          <select
-                                            value={
-                                              field.dependsOn
-                                                ? `${field.dependsOn.parentIndex ?? ""}:${field.dependsOn.requiredValue ?? "TRUE"}`
-                                                : ""
+                                        <select
+                                          value={
+                                            field.dependsOn
+                                              ? `${field.dependsOn.parentIndex ?? ""}:${field.dependsOn.requiredValue ?? "TRUE"}`
+                                              : ""
+                                          }
+                                          onChange={(e) => {
+                                            if (!e.target.value) {
+                                              updateField(index, "dependsOn", null);
+                                            } else {
+                                              const [pIdx, reqVal] = e.target.value.split(":");
+                                              const parentField = fields[Number(pIdx)];
+                                              updateField(index, "dependsOn", {
+                                                parentIndex: Number(pIdx),
+                                                parentPertanyaan:
+                                                  parentField?.pertanyaan || `Butir ${Number(pIdx) + 1}`,
+                                                requiredValue: reqVal || "TRUE",
+                                              });
                                             }
-                                            onChange={(e) => {
-                                              if (!e.target.value) {
-                                                updateField(index, "dependsOn", null);
-                                              } else {
-                                                const [pIdx, reqVal] = e.target.value.split(":");
-                                                const parentField = fields[Number(pIdx)];
-                                                updateField(index, "dependsOn", {
-                                                  parentIndex: Number(pIdx),
-                                                  parentPertanyaan:
-                                                    parentField?.pertanyaan || `Butir ${Number(pIdx) + 1}`,
-                                                  requiredValue: reqVal || "TRUE",
-                                                });
-                                              }
-                                            }}
-                                            className="text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] rounded px-1.5 py-0.5 text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))] transition-colors"
-                                          >
-                                            <option value="">⚙️ Syarat: Selalu Aktif</option>
-                                            {fields
-                                              .map((f, i) => ({ f, i }))
-                                              .filter(({ i, f }) => i < index && f.grup !== "__META__")
-                                              .map(({ f, i }) => (
-                                                <optgroup
-                                                  key={i}
-                                                  label={`Butir ${i + 1}: ${f.pertanyaan ? `${f.pertanyaan.substring(0, 25)}...` : `Butir ${i + 1}`}`}
-                                                >
-                                                  <option value={`${i}:TRUE`}>
-                                                    Hanya aktif jika Butir {i + 1} = &quot;Ya&quot;
-                                                  </option>
-                                                  <option value={`${i}:FALSE`}>
-                                                    Hanya aktif jika Butir {i + 1} = &quot;Tidak&quot;
-                                                  </option>
-                                                </optgroup>
-                                              ))}
-                                          </select>
-                                          {field.dependsOn && (
-                                            <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
-                                              🔒 Tergantung Butir {field.dependsOn.parentIndex + 1} (
-                                              {field.dependsOn.requiredValue === "TRUE" ? "Ya" : "Tidak"})
-                                            </span>
-                                          )}
-                                        </div>
+                                          }}
+                                          className="text-[10px] max-w-[220px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))]"
+                                        >
+                                          <option value="">⚙️ Syarat: Selalu Aktif</option>
+                                          {fields
+                                            .map((f, i) => ({ f, i }))
+                                            .filter(({ i, f }) => i < index && f.grup !== "__META__")
+                                            .map(({ f, i }) => (
+                                              <optgroup
+                                                key={i}
+                                                label={`Butir ${i + 1}: ${f.pertanyaan ? `${f.pertanyaan.substring(0, 25)}...` : `Butir ${i + 1}`}`}
+                                              >
+                                                <option value={`${i}:TRUE`}>
+                                                  Aktif jika Butir {i + 1} = &quot;Ya&quot;
+                                                </option>
+                                                <option value={`${i}:FALSE`}>
+                                                  Aktif jika Butir {i + 1} = &quot;Tidak&quot;
+                                                </option>
+                                              </optgroup>
+                                            ))}
+                                        </select>
+                                      )}
+
+                                      {/* Pindah bagian/subbagian */}
+                                      {group.grup !== "__META__" && allAvailableGroupOptions.length > 1 && (
+                                        <select
+                                          value={field.grup || ""}
+                                          onChange={(e) => {
+                                            const newGrup = e.target.value;
+                                            if (!newGrup || newGrup === (field.grup || "")) return;
+                                            setFields(
+                                              fields.map((f, i) => (i === index ? { ...f, grup: newGrup } : f)),
+                                            );
+                                            toast.success("Butir dipindahkan");
+                                          }}
+                                          className="text-[10px] max-w-[180px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))]"
+                                          title="Pindahkan butir ke bagian lain"
+                                        >
+                                          {allAvailableGroupOptions.map((g) => (
+                                            <option key={g} value={g}>
+                                              📦 {g.length > 28 ? `${g.substring(0, 28)}...` : g}
+                                            </option>
+                                          ))}
+                                        </select>
                                       )}
                                     </div>
-                                    {group.grup !== "__META__" && (
+
+                                    {/* Sasaran untuk non-meta */}
+                                    {group.grup !== "__META__" && availableSasaranOptions.length > 0 && (
                                       <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-[hsl(var(--border))]/50">
                                         <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
                                           🎯 Sasaran:
                                         </span>
-                                        <div className="inline-flex rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-0.5 text-[10px]">
+                                        <div className="inline-flex flex-wrap gap-0.5 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-0.5 text-[10px]">
                                           <button
                                             type="button"
                                             onClick={() => updateField(index, "targetGolongan", "ALL")}
@@ -2092,130 +2426,113 @@ export default function FormPemeriksaanPage() {
                                         </div>
                                         {field.targetGolongan && field.targetGolongan !== "ALL" && (
                                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
-                                            🎯 Khusus{" "}
-                                            {field.targetGolongan === "A1"
-                                              ? "Golongan A1"
-                                              : field.targetGolongan === "A2"
-                                                ? "Golongan A2"
-                                                : field.targetGolongan}
+                                            🎯 Khusus {field.targetGolongan}
                                           </span>
                                         )}
                                       </div>
                                     )}
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <select
-                                      value={field.tipe}
-                                      onChange={(e) => updateField(index, "tipe", e.target.value)}
-                                      className="text-[11px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1 outline-none rounded-md"
-                                    >
-                                      {FIELD_TYPES.map((t) => (
-                                        <option key={t.value} value={t.value}>
-                                          {t.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </td>
-                                  <td className="px-3 py-3">
-                                    {(field.tipe === "SELECT" || field.tipe === "DROPDOWN") && (
-                                      <input
-                                        type="text"
-                                        value={field.opsi || ""}
-                                        onChange={(e) => updateField(index, "opsi", e.target.value)}
-                                        placeholder="Opsi 1, Opsi 2, Opsi 3"
-                                        className="w-full text-[11px] bg-transparent outline-none border-b-2 border-transparent focus:border-[hsl(var(--accent))] px-1 py-1"
-                                      />
+
+                                    {field.dependsOn && (
+                                      <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                        🔒 Tergantung Butir {field.dependsOn.parentIndex + 1} (
+                                        {field.dependsOn.requiredValue === "TRUE" ? "Ya" : "Tidak"})
+                                      </span>
                                     )}
-                                    {field.tipe === "BOOLEAN" && (
-                                      <label className="flex items-center gap-1.5 text-[10px] text-[hsl(var(--muted-foreground))] cursor-pointer select-none">
+                                  </div>
+
+                                  {/* Kolom skor + aksi di kanan */}
+                                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <label className="flex flex-col items-center" title="Wajib diisi">
+                                        <span className="text-[8px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
+                                          Wajib
+                                        </span>
                                         <input
                                           type="checkbox"
-                                          checked={field.allowNA ?? false}
-                                          onChange={(e) => updateField(index, "allowNA", e.target.checked)}
+                                          checked={field.isRequired}
+                                          onChange={(e) => updateField(index, "isRequired", e.target.checked)}
                                           className="w-3.5 h-3.5 accent-[#00A876]"
                                         />
-                                        <span>Izinkan &quot;T/A&quot; (Tidak Ada)</span>
                                       </label>
-                                    )}
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <button
-                                      type="button"
-                                      onClick={() => updateField(index, "isDisabled", !field.isDisabled)}
-                                      title={
-                                        field.isDisabled
-                                          ? "Butir dinonaktifkan (Klik untuk aktifkan)"
-                                          : "Butir aktif (Klik untuk nonaktifkan/disable)"
-                                      }
-                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold transition-all border ${
-                                        field.isDisabled
-                                          ? "bg-red-50 text-red-700 border-red-200"
-                                          : "bg-green-50 text-green-700 border-green-200"
-                                      }`}
-                                    >
-                                      {field.isDisabled ? "🚫 Disable" : "✓ Aktif"}
-                                    </button>
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={field.isRequired}
-                                      onChange={(e) => updateField(index, "isRequired", e.target.checked)}
-                                      className="w-4 h-4 accent-[hsl(var(--accent))]"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <input
-                                      type="number"
-                                      value={field.skor ?? 0}
-                                      onChange={(e) => updateField(index, "skor", parseFloat(e.target.value) || 0)}
-                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <input
-                                      type="number"
-                                      value={field.skorBenar ?? 1}
-                                      onChange={(e) => updateField(index, "skorBenar", parseFloat(e.target.value) || 0)}
-                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <input
-                                      type="number"
-                                      value={field.skorSalah ?? 0}
-                                      onChange={(e) => updateField(index, "skorSalah", parseFloat(e.target.value) || 0)}
-                                      className="w-14 text-center text-[11px] border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-1 py-1 outline-none rounded-md"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-3 text-center">
-                                    <div className="flex items-center justify-center gap-1">
+                                      <label className="flex flex-col items-center" title="Skor maksimal">
+                                        <span className="text-[8px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
+                                          Skor
+                                        </span>
+                                        <input
+                                          type="number"
+                                          value={field.skor ?? 0}
+                                          onChange={(e) => updateField(index, "skor", parseFloat(e.target.value) || 0)}
+                                          className="w-12 text-center text-[10px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 px-0.5 py-0.5 outline-none rounded-md focus:border-[#00A876]/50"
+                                        />
+                                      </label>
+                                      {field.tipe === "BOOLEAN" && (
+                                        <>
+                                          <label className="flex flex-col items-center" title="Skor jawaban benar">
+                                            <span className="text-[8px] font-bold uppercase text-green-600">B</span>
+                                            <input
+                                              type="number"
+                                              value={field.skorBenar ?? 1}
+                                              onChange={(e) =>
+                                                updateField(index, "skorBenar", parseFloat(e.target.value) || 0)
+                                              }
+                                              className="w-10 text-center text-[10px] border border-green-200 bg-green-50/50 px-0.5 py-0.5 outline-none rounded-md"
+                                            />
+                                          </label>
+                                          <label className="flex flex-col items-center" title="Skor jawaban salah">
+                                            <span className="text-[8px] font-bold uppercase text-red-500">S</span>
+                                            <input
+                                              type="number"
+                                              value={field.skorSalah ?? 0}
+                                              onChange={(e) =>
+                                                updateField(index, "skorSalah", parseFloat(e.target.value) || 0)
+                                              }
+                                              className="w-10 text-center text-[10px] border border-red-200 bg-red-50/50 px-0.5 py-0.5 outline-none rounded-md"
+                                            />
+                                          </label>
+                                          <label
+                                            className="flex items-center gap-1 text-[9px] text-[hsl(var(--muted-foreground))] cursor-pointer select-none"
+                                            title="Izinkan jawaban T/A (Tidak Ada / tidak applicable)"
+                                          >
+                                            <input
+                                              type="checkbox"
+                                              checked={field.allowNA ?? false}
+                                              onChange={(e) => updateField(index, "allowNA", e.target.checked)}
+                                              className="w-3 h-3 accent-[#00A876]"
+                                            />
+                                            T/A
+                                          </label>
+                                        </>
+                                      )}
                                       <button
-                                        onClick={() => moveField(index, "up")}
-                                        disabled={index === 0}
-                                        className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
+                                        type="button"
+                                        onClick={() => updateField(index, "isDisabled", !field.isDisabled)}
+                                        title={
+                                          field.isDisabled
+                                            ? "Butir dinonaktifkan (klik untuk aktifkan)"
+                                            : "Nonaktifkan butir"
+                                        }
+                                        className={`px-1.5 py-1 rounded text-[9px] font-bold border transition-colors ${
+                                          field.isDisabled
+                                            ? "bg-red-100 text-red-700 border-red-300"
+                                            : "bg-green-50 text-green-700 border-green-200"
+                                        }`}
                                       >
-                                        ↑
+                                        {field.isDisabled ? "🚫" : "✓"}
                                       </button>
                                       <button
-                                        onClick={() => moveField(index, "down")}
-                                        disabled={index === fields.length - 1}
-                                        className="p-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
-                                      >
-                                        ↓
-                                      </button>
-                                      <button
+                                        type="button"
                                         onClick={() => removeField(index)}
-                                        className="p-1.5 text-red-400 hover:text-red-600"
+                                        title="Hapus butir"
+                                        className="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                       >
-                                        <X className="w-4 h-4" />
+                                        <Trash2 className="w-3.5 h-3.5" />
                                       </button>
                                     </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
