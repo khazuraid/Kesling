@@ -6,7 +6,15 @@ import { createAuditLog } from "@/lib/audit";
 import { validateBody } from "@/lib/validations";
 
 const reorderSchema = z.object({
-  table: z.enum(["puskesmas", "jenisTpp", "jenisSarana", "jenisTtu", "dynamicParameter", "dynamicSubCategory"]),
+  table: z.enum([
+    "puskesmas",
+    "jenisTpp",
+    "jenisSarana",
+    "jenisTtu",
+    "dynamicParameter",
+    "dynamicSubCategory",
+    "dynamicCategory",
+  ]),
   items: z.array(z.object({ id: z.number().int().positive(), urutan: z.number().int().min(0) })).min(1),
 });
 
@@ -24,6 +32,7 @@ export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => 
     jenisTtu: prisma.jenisTtu,
     dynamicParameter: prisma.dynamicParameter,
     dynamicSubCategory: prisma.dynamicSubCategory,
+    dynamicCategory: prisma.dynamicCategory,
   }[table];
 
   await prisma.$transaction(
