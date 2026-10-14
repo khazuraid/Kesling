@@ -117,26 +117,34 @@ export default function DataDasarSubCatPage() {
       "w-full h-10 bg-white border border-[hsl(var(--border))] rounded-lg px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
 
     if (p.type === "SELECT") {
-      const source = p.config?.optionsSource || "auto_category";
+      const customOptions = getOptions(p);
       let optionsList: string[] = [];
 
-      const resolvedSource =
-        source === "auto_category"
-          ? categoryCode?.toLowerCase() === "tpp"
-            ? "master_tpp"
-            : categoryCode?.toLowerCase() === "ttu"
-              ? "master_ttu"
-              : "master_sarana"
-          : source;
-
-      if (resolvedSource === "master_tpp") {
-        optionsList = (masterJenis.tpp || []).map((j: any) => j.nama);
-      } else if (resolvedSource === "master_ttu") {
-        optionsList = (masterJenis.ttu || []).map((j: any) => j.nama);
-      } else if (resolvedSource === "master_sarana") {
-        optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
+      if (customOptions.length > 0) {
+        optionsList = customOptions;
       } else {
-        optionsList = getOptions(p).length > 0 ? getOptions(p) : allSubCats.map((sc) => sc.nama);
+        const source = p.config?.optionsSource || "auto_category";
+        const catClean = categoryCode?.toLowerCase() || "";
+        const resolvedSource =
+          source === "auto_category"
+            ? catClean === "tpp"
+              ? "master_tpp"
+              : catClean === "ttu"
+                ? "master_ttu"
+                : catClean === "sab" || catClean === "sam" || catClean === "sarana"
+                  ? "master_sarana"
+                  : "sub_categories"
+            : source;
+
+        if (resolvedSource === "master_tpp") {
+          optionsList = (masterJenis.tpp || []).map((j: any) => j.nama);
+        } else if (resolvedSource === "master_ttu") {
+          optionsList = (masterJenis.ttu || []).map((j: any) => j.nama);
+        } else if (resolvedSource === "master_sarana") {
+          optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
+        } else {
+          optionsList = allSubCats.map((sc) => sc.nama);
+        }
       }
 
       return (
@@ -147,6 +155,16 @@ export default function DataDasarSubCatPage() {
               {opt}
             </option>
           ))}
+        </select>
+      );
+    }
+
+    if (p.type === "BOOLEAN") {
+      return (
+        <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
+          <option value="">Pilih...</option>
+          <option value="TRUE">Ya</option>
+          <option value="FALSE">Tidak</option>
         </select>
       );
     }
@@ -364,7 +382,8 @@ export default function DataDasarSubCatPage() {
       toast.error("Jenis entitas belum dipilih");
       return;
     }
-    if (userRole !== "OPERATOR" && !formData.puskesmasId && !userPkmId) {
+    const targetPkm = formData.puskesmasId || userPkmId || puskesmasList[0]?.id;
+    if (userRole !== "OPERATOR" && userRole !== "ADMIN" && !targetPkm) {
       toast.error("Puskesmas pemilik wajib dipilih");
       return;
     }
@@ -384,12 +403,12 @@ export default function DataDasarSubCatPage() {
       lat: dynamicLat ? parseFloat(dynamicLat) : null,
       lng: dynamicLng ? parseFloat(dynamicLng) : null,
       subCategoryId: formData.subCategoryId || selectedSubCatId,
-      puskesmasId: formData.puskesmasId || userPkmId,
+      puskesmasId: targetPkm,
       dataDinamis: formData.dynamicValues,
     });
   };
 
-  if (session && userRole !== "OPERATOR") {
+  if (session && userRole !== "OPERATOR" && userRole !== "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4">
         <Database className="w-10 h-10 text-[hsl(var(--muted-foreground))] opacity-40" />

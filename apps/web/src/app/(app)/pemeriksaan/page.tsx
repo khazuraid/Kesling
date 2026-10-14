@@ -192,25 +192,34 @@ export default function PemeriksaanPage() {
       "w-full h-10 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
 
     if (p.type === "SELECT") {
-      const source = p.config?.optionsSource || "auto_category";
-      const resolvedSource =
-        source === "auto_category"
-          ? categoryCode === "tpp"
-            ? "master_tpp"
-            : categoryCode === "ttu"
-              ? "master_ttu"
-              : "master_sarana"
-          : source;
-
+      const customOptions = getParamOptions(p);
       let optionsList: string[] = [];
-      if (resolvedSource === "master_tpp") {
-        optionsList = (masterJenis.tpp || []).map((j: any) => j.nama);
-      } else if (resolvedSource === "master_ttu") {
-        optionsList = (masterJenis.ttu || []).map((j: any) => j.nama);
-      } else if (resolvedSource === "master_sarana") {
-        optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
+
+      if (customOptions.length > 0) {
+        optionsList = customOptions;
       } else {
-        optionsList = getParamOptions(p).length > 0 ? getParamOptions(p) : availableSubCats.map((sc: any) => sc.nama);
+        const source = p.config?.optionsSource || "auto_category";
+        const catClean = categoryCode?.toLowerCase() || "";
+        const resolvedSource =
+          source === "auto_category"
+            ? catClean === "tpp"
+              ? "master_tpp"
+              : catClean === "ttu"
+                ? "master_ttu"
+                : catClean === "sab" || catClean === "sam" || catClean === "sarana"
+                  ? "master_sarana"
+                  : "sub_categories"
+            : source;
+
+        if (resolvedSource === "master_tpp") {
+          optionsList = (masterJenis.tpp || []).map((j: any) => j.nama);
+        } else if (resolvedSource === "master_ttu") {
+          optionsList = (masterJenis.ttu || []).map((j: any) => j.nama);
+        } else if (resolvedSource === "master_sarana") {
+          optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
+        } else {
+          optionsList = availableSubCats.map((sc: any) => sc.nama);
+        }
       }
 
       return (
@@ -221,6 +230,16 @@ export default function PemeriksaanPage() {
               {opt}
             </option>
           ))}
+        </select>
+      );
+    }
+
+    if (p.type === "BOOLEAN") {
+      return (
+        <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
+          <option value="">Pilih...</option>
+          <option value="TRUE">Ya</option>
+          <option value="FALSE">Tidak</option>
         </select>
       );
     }
@@ -331,9 +350,13 @@ export default function PemeriksaanPage() {
       if (dynamicKontak) finalDataDinamis.kontak = dynamicKontak;
     }
 
+    const userPkmId = (session?.user as any)?.puskesmasId;
+    const targetPuskesmasId = userPkmId || pendingForm?.puskesmasId || undefined;
+
     createSasaranMut.mutate({
       nama: displayName.trim(),
       subCategoryId: Number(resolvedSubCatId),
+      puskesmasId: targetPuskesmasId ? Number(targetPuskesmasId) : undefined,
       alamat: dynamicAlamat.trim() || null,
       pemilik: dynamicPemilik.trim() || null,
       kontak: dynamicKontak.trim() || null,
