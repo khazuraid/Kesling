@@ -2474,12 +2474,15 @@ export default function FormPemeriksaanPage() {
                                 key={index}
                                 draggable
                                 onDragStart={(e) => {
-                                  // Drag seluruh kartu, kecuali mulai dari kontrol interaktif (tetap bisa edit)
+                                  // Jangan drag kalau mulai dari kontrol interaktif (tetap bisa edit)
                                   const el = e.target as HTMLElement;
-                                  if (el.closest("input, select, textarea, button, label, [draggable=true]")) {
+                                  if (el.closest("input, select, textarea, button, label")) {
                                     e.preventDefault();
                                     return;
                                   }
+                                  // Set dragState di sini untuk SEMUA jalur (grip & badan kartu);
+                                  // handler grip juga set sama — dobel tidak masalah, nilainya identik.
+                                  setDragState({ type: "field", index });
                                   e.dataTransfer.effectAllowed = "move";
                                   e.dataTransfer.setData("text/plain", String(index));
                                 }}
