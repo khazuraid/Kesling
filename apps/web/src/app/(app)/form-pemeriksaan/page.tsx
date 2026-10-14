@@ -2474,13 +2474,12 @@ export default function FormPemeriksaanPage() {
                                 key={index}
                                 draggable
                                 onDragStart={(e) => {
-                                  // Jangan mulai drag dari input/select/button (biar tetap bisa edit & pilih teks)
+                                  // Drag seluruh kartu, kecuali mulai dari kontrol interaktif (tetap bisa edit)
                                   const el = e.target as HTMLElement;
-                                  if (el.closest("input, select, textarea, button, label")) {
+                                  if (el.closest("input, select, textarea, button, label, [draggable=true]")) {
                                     e.preventDefault();
                                     return;
                                   }
-                                  setDragState({ type: "field", index });
                                   e.dataTransfer.effectAllowed = "move";
                                   e.dataTransfer.setData("text/plain", String(index));
                                 }}
@@ -2512,8 +2511,18 @@ export default function FormPemeriksaanPage() {
                                 {/* Baris utama: nomor + pertanyaan + aksi */}
                                 <div className="flex items-start gap-3">
                                   <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
-                                    <span title="Tarik untuk memindahkan butir (atau tarik kartu ini)">
-                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 pointer-events-none" />
+                                    <span
+                                      draggable
+                                      onDragStart={(e) => {
+                                        setDragState({ type: "field", index });
+                                        e.dataTransfer.effectAllowed = "move";
+                                        e.dataTransfer.setData("text/plain", String(index));
+                                      }}
+                                      onDragEnd={resetDrag}
+                                      title="Tarik untuk memindahkan butir (atau tarik kartu ini)"
+                                      className="cursor-grab active:cursor-grabbing"
+                                    >
+                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 hover:text-[#00A876] transition-colors" />
                                     </span>
                                     <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
                                       {localIdx + 1}
