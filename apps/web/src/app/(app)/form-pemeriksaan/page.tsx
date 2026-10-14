@@ -892,8 +892,9 @@ export default function FormPemeriksaanPage() {
     const updatedItem = { ...item, grup: tgtGrup };
     const next = [...fields];
     next.splice(from, 1);
-    const adjusted = to > from ? to : to;
-    next.splice(adjusted, 0, updatedItem);
+    // Setelah item sumber dihapus: saat turun (from < to) target bergeser -1 agar mendarat SEBELUM target
+    const insertAt = from < to ? to - 1 : to;
+    next.splice(insertAt, 0, updatedItem);
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
     if (srcGrup !== tgtGrup) {
       toast.success(`Butir dipindahkan ke "${tgtGrup === "__META__" ? "Metadata" : tgtGrup}"`);
@@ -909,9 +910,9 @@ export default function FormPemeriksaanPage() {
     const updatedItem = { ...item, grup: targetGrup };
     const remaining = fields.filter((_, i) => i !== from);
     let insertAt = remaining.length;
-    for (let i = remaining.length - 1; i >= 0; i--) {
+    for (let i = 0; i < remaining.length; i++) {
       if ((remaining[i].grup || "Tanpa Grup") === targetGrup) {
-        insertAt = i + 1;
+        insertAt = i;
         break;
       }
     }
