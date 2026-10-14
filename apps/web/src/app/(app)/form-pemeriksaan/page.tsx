@@ -2472,6 +2472,19 @@ export default function FormPemeriksaanPage() {
                             return (
                               <div
                                 key={index}
+                                draggable
+                                onDragStart={(e) => {
+                                  // Jangan mulai drag dari input/select/button (biar tetap bisa edit & pilih teks)
+                                  const el = e.target as HTMLElement;
+                                  if (el.closest("input, select, textarea, button, label")) {
+                                    e.preventDefault();
+                                    return;
+                                  }
+                                  setDragState({ type: "field", index });
+                                  e.dataTransfer.effectAllowed = "move";
+                                  e.dataTransfer.setData("text/plain", String(index));
+                                }}
+                                onDragEnd={resetDrag}
                                 onDragOver={(e) => {
                                   if (dragState?.type === "field" && dragState.index !== index) {
                                     e.preventDefault();
@@ -2486,7 +2499,7 @@ export default function FormPemeriksaanPage() {
                                   }
                                   resetDrag();
                                 }}
-                                className={`rounded-xl border bg-[hsl(var(--card))] p-3 transition-colors ${
+                                className={`rounded-xl border bg-[hsl(var(--card))] p-3 transition-colors cursor-grab active:cursor-grabbing ${
                                   field.isDisabled
                                     ? "border-red-200 bg-red-50/40 opacity-75"
                                     : "border-[hsl(var(--border))] hover:border-[#00A876]/40"
@@ -2499,17 +2512,8 @@ export default function FormPemeriksaanPage() {
                                 {/* Baris utama: nomor + pertanyaan + aksi */}
                                 <div className="flex items-start gap-3">
                                   <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
-                                    <span
-                                      draggable
-                                      onDragStart={(e) => {
-                                        setDragState({ type: "field", index });
-                                        e.dataTransfer.effectAllowed = "move";
-                                        e.dataTransfer.setData("text/plain", String(index));
-                                      }}
-                                      onDragEnd={resetDrag}
-                                      title="Tarik untuk memindahkan butir"
-                                    >
-                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 cursor-grab active:cursor-grabbing hover:text-[#00A876] transition-colors" />
+                                    <span title="Tarik untuk memindahkan butir (atau tarik kartu ini)">
+                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 pointer-events-none" />
                                     </span>
                                     <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
                                       {localIdx + 1}
