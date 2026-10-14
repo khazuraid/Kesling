@@ -1,43 +1,63 @@
 import { prisma } from "@apps-kes/database";
 
-export async function aggregateInspectionToLaporan(resultId: number) {
-  const result: any = await prisma.inspectionResult.findUnique({
-    where: { id: resultId },
-    include: { template: true },
-  });
+function isGolonganMatch(targetGolongan?: string | null, selectedGolongan?: string | null): boolean {
+  if (!targetGolongan || targetGolongan === "ALL" || targetGolongan === "SEMUA" || targetGolongan === "KEDUANYA") {
+    return true;
+  }
+  if (!selectedGolongan) {
+    return true;
+  }
+  const cleanSelected = selectedGolongan.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const targets = targetGolongan
+    .split(",")
+    .map((t) => t.toLowerCase().replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean);
+  return targets.some(
+    (cleanTarget) =>
+      cleanTarget === cleanSelected || cleanSelected.includes(cleanTarget) || cleanTarget.includes(cleanSelected),
+  );
+}
 
-  if (result?.status !== "APPROVED" || !result.template.subCategoryId) return;
-
-  const bulan = result.bulan;
-  const tahun = result.tahun;
-  const pkmId = result.puskesmasId;
-  const subCatId = result.template.subCategoryId;
+export async function recalculateLaporanBulanan({
+  puskesmasId,
+  categoryId,
+  subCategoryId,
+  bulan,
+  tahun,
+}: {
+  puskesmasId: number;
+  categoryId?: number | null;
+  subCategoryId: number;
+  bulan: number;
+  tahun: number;
+}) {
   const catId =
-    result.template.categoryId || (await prisma.dynamicSubCategory.findUnique({ where: { id: subCatId } }))?.categoryId;
+    categoryId || (await prisma.dynamicSubCategory.findUnique({ where: { id: subCategoryId } }))?.categoryId;
 
   if (!catId) return;
 
   let laporan = await prisma.dynamicLaporan.findFirst({
-    where: { puskesmasId: pkmId, categoryId: catId, bulan, tahun },
+    where: { puskesmasId, categoryId: catId, bulan, tahun },
   });
 
   if (!laporan) {
     laporan = await prisma.dynamicLaporan.create({
-      data: { categoryId: catId, puskesmasId: pkmId, bulan, tahun, status: "DRAFT" },
+      data: { categoryId: catId, puskesmasId, bulan, tahun, status: "DRAFT" },
     });
   }
 
   // 1. Ambil SEMUA Inspection Result yang APPROVED, pada bulan & tahun & puskesmas & subKategori ini
   const allResults: any[] = await prisma.inspectionResult.findMany({
     where: {
-      puskesmasId: pkmId,
+      puskesmasId,
       bulan,
       tahun,
       status: "APPROVED",
-      template: { subCategoryId: subCatId },
+      template: { subCategoryId },
     },
     include: {
-      template: true,
+      template: { include: { fields: true } },
+      sasaran: true,
       values: { include: { field: true } },
     },
   });
@@ -58,20 +78,75 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     let max = 0;
     let countBenar = 0;
     let countSalah = 0;
+
+    // Deteksi golongan sasaran dari field __META__ hasil inspeksi atau data dasar sasaran
+    const metaValues = r.values.filter((v: any) => v.field.grup === "__META__");
+    let selectedGolongan = "";
+    for (const mv of metaValues) {
+      const val = String(mv.valueString || "").trim();
+      if (!val) continue;
+      const q = (mv.field.pertanyaan || "").toLowerCase();
+      if (q.includes("golongan") || q.includes("tipe") || val.toLowerCase().includes("golongan")) {
+        selectedGolongan = val;
+        break;
+      }
+    }
+    if (!selectedGolongan && r.sasaran?.dataDinamis) {
+      const dyn = r.sasaran.dataDinamis as Record<string, unknown>;
+      for (const [k, v] of Object.entries(dyn)) {
+        if (k.toLowerCase().includes("golongan") && typeof v === "string" && v) {
+          selectedGolongan = v;
+          break;
+        }
+      }
+    }
+
+    const valueMap = new Map<number, string>();
+    for (const v of r.values) {
+      valueMap.set(v.fieldId, String(v.valueString || "").toUpperCase());
+    }
+    const allFields = r.template?.fields || r.values.map((v: any) => v.field);
+
     const penilaian = r.values.filter((v: any) => v.field.grup !== "__META__");
     const countTotal = penilaian.length;
 
     for (const v of penilaian) {
       const fConfig = (v.field.config as any) || {};
+      const targetGol = fConfig.targetGolongan || v.field.targetGolongan || "ALL";
+      const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+      const isGolonganMismatch =
+        isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+
+      // Abaikan butir nonaktif atau tidak cocok golongan sasaran
+      if (v.field.isDisabled || fConfig.isDisabled || isGolonganMismatch) continue;
+
+      // Cek butir bersyarat (dependsOn)
+      const dep = fConfig.dependsOn || v.field.dependsOn;
+      if (dep) {
+        const parent = allFields.find(
+          (p: any, idx: number) => p.id === dep.parentId || p.urutan === dep.parentIndex || idx === dep.parentIndex,
+        );
+        const parentVal = parent ? (valueMap.get(parent.id) ?? "") : "";
+        const reqVal = String(dep.requiredValue ?? "TRUE").toUpperCase();
+        if (parentVal !== reqVal) {
+          // Parent tidak memenuhi syarat, butir ini tidak aktif / tidak dinilai
+          continue;
+        }
+      }
+
+      // Abaikan opsi T/A (Tidak Ada / NA) dari gained dan max
+      const upperVal = String(v.valueString || "").toUpperCase();
+      if (upperVal === "NA") continue;
+
       const skorBenar = fConfig.skorBenar ?? fConfig.skor ?? 1;
       const skorSalah = fConfig.skorSalah ?? 0;
       max += Math.max(skorBenar, skorSalah);
 
       if (v.field.tipe === "BOOLEAN") {
-        if (v.valueString === "TRUE") {
+        if (upperVal === "TRUE") {
           gained += skorBenar;
           countBenar++;
-        } else if (v.valueString === "FALSE") {
+        } else if (upperVal === "FALSE") {
           gained += skorSalah;
           countSalah++;
         }
@@ -116,7 +191,16 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     where: { categoryId: catId },
   });
 
-  const configBuilder = (result.template as any)?.config?.agregasi || {};
+  let configBuilder: any = {};
+  if (allResults.length > 0) {
+    configBuilder = (allResults[0].template as any)?.config?.agregasi || {};
+  } else {
+    const tmpl = await prisma.inspectionTemplate.findFirst({
+      where: { subCategoryId },
+      select: { config: true },
+    });
+    configBuilder = (tmpl?.config as any)?.agregasi || {};
+  }
 
   // Resolve ID Parameter (Pakai mapping builder jika ada, jika tidak fallback ke NAMA/CODE)
   const paramDiperiksaId =
@@ -147,7 +231,8 @@ export async function aggregateInspectionToLaporan(resultId: number) {
   if (paramTmsId) updates.push({ id: paramTmsId, val: sumTms });
 
   console.log("AGREGASI RUNNING:", {
-    resultId,
+    subCategoryId,
+    catId,
     allResultsCount: allResults.length,
     sumDiperiksa,
     sumMs,
@@ -155,13 +240,11 @@ export async function aggregateInspectionToLaporan(resultId: number) {
     paramDiperiksaId,
     paramMsId,
     paramTmsId,
-    subCatId,
-    catId,
   });
 
   for (const up of updates) {
     const existingVal = await prisma.dynamicLaporanValue.findFirst({
-      where: { laporanId: laporan.id, parameterId: up.id, subCategoryId: subCatId },
+      where: { laporanId: laporan.id, parameterId: up.id, subCategoryId },
     });
 
     if (existingVal) {
@@ -174,10 +257,37 @@ export async function aggregateInspectionToLaporan(resultId: number) {
         data: {
           laporanId: laporan.id,
           parameterId: up.id,
-          subCategoryId: subCatId,
+          subCategoryId,
           value: String(up.val),
         },
       });
     }
   }
+}
+
+export async function aggregateInspectionToLaporan(resultId: number) {
+  const result: any = await prisma.inspectionResult.findUnique({
+    where: { id: resultId },
+    include: { template: true },
+  });
+
+  if (result?.status !== "APPROVED" || !result.template?.subCategoryId) return;
+
+  const bulan = result.bulan;
+  const tahun = result.tahun;
+  const puskesmasId = result.puskesmasId;
+  const subCategoryId = result.template.subCategoryId;
+  const categoryId =
+    result.template.categoryId ||
+    (await prisma.dynamicSubCategory.findUnique({ where: { id: subCategoryId } }))?.categoryId;
+
+  if (!categoryId) return;
+
+  await recalculateLaporanBulanan({
+    puskesmasId,
+    categoryId,
+    subCategoryId,
+    bulan,
+    tahun,
+  });
 }

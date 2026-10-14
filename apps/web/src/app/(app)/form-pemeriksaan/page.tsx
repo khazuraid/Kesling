@@ -184,10 +184,18 @@ export default function FormPemeriksaanPage() {
       }
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
       setSelectedTemplateId(data.id);
       setIsCreating(false);
+      if (Array.isArray(data?.fields)) {
+        setFields((prev) =>
+          prev.map((f, i) => {
+            const serverField = data.fields[i];
+            return serverField?.id && !f.id ? { ...f, id: serverField.id } : f;
+          }),
+        );
+      }
       toast.success("Template tersimpan");
     },
     onError: () => toast.error("Gagal menyimpan template"),
@@ -199,9 +207,13 @@ export default function FormPemeriksaanPage() {
       if (!res.ok) throw new Error("Failed to delete");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
-      toast.success("Template dihapus");
+      if (data?.message) {
+        toast.info(data.message);
+      } else {
+        toast.success("Template dihapus");
+      }
     },
     onError: () => toast.error("Gagal menghapus template"),
   });
@@ -229,6 +241,7 @@ export default function FormPemeriksaanPage() {
       },
     },
     fields: fields.map((f, i) => ({
+      id: f.id ? Number(f.id) : undefined,
       pertanyaan: f.pertanyaan,
       tipe: f.tipe,
       isRequired: f.isRequired ?? false,
@@ -293,6 +306,14 @@ export default function FormPemeriksaanPage() {
       const data = await res.json();
       queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
       if (!selectedTemplateId && data?.id) setSelectedTemplateId(data.id);
+      if (Array.isArray(data?.fields)) {
+        setFields((prev) =>
+          prev.map((f, i) => {
+            const serverField = data.fields[i];
+            return serverField?.id && !f.id ? { ...f, id: serverField.id } : f;
+          }),
+        );
+      }
       setAutoSaveState("saved");
     } catch {
       setAutoSaveState("error");

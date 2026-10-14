@@ -12,6 +12,8 @@ interface SignaturePadProps {
 export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const hasDrawn = useRef(false);
+  const lastDrawnValue = useRef<string | null>(null);
 
   // Sync canvas internal resolution to displayed size (fixes cursor offset)
   useEffect(() => {
@@ -31,7 +33,8 @@ export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
   }, []);
 
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current!;
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
     const clientX = "touches" in e ? (e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX) : e.clientX;
     const clientY = "touches" in e ? (e.touches[0]?.clientY ?? e.changedTouches[0]?.clientY) : e.clientY;
@@ -40,13 +43,15 @@ export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
 
   // Draw existing value (base64 image) to canvas on mount or when value changes externally
   useEffect(() => {
+    if (value && value === lastDrawnValue.current) {
+      return;
+    }
     if (value && canvasRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
       if (ctx) {
         const img = new Image();
         img.onload = () => {
-          // Hanya set dpr/ukuran jika belum
           if (canvas.width === 0) {
             const rect = canvas.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
@@ -55,11 +60,18 @@ export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
             ctx.scale(dpr, dpr);
           }
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          // Draw image maintaining scale
           const rect = canvas.getBoundingClientRect();
           ctx.drawImage(img, 0, 0, rect.width, rect.height);
+          hasDrawn.current = true;
         };
         img.src = value;
+      }
+    } else if (!value && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn.current = false;
       }
     }
   }, [value]);
@@ -86,24 +98,23 @@ export function SignaturePad({ value, onChange, label }: SignaturePadProps) {
     const { x, y } = getPos(e);
     ctx.lineTo(x, y);
     ctx.stroke();
+    hasDrawn.current = true;
   };
 
   const endDraw = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
     const canvas = canvasRef.current;
-    if (canvas) {
+    if (canvas && hasDrawn.current) {
       const dataUrl = canvas.toDataURL("image/png");
-      const blank = document.createElement("canvas");
-      blank.width = canvas.width;
-      blank.height = canvas.height;
-      if (canvas.toDataURL() !== blank.toDataURL()) {
-        onChange(dataUrl);
-      }
+      lastDrawnValue.current = dataUrl;
+      onChange(dataUrl);
     }
   };
 
   const clearCanvas = () => {
+    hasDrawn.current = false;
+    lastDrawnValue.current = null;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");

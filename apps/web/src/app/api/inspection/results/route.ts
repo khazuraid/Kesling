@@ -2,6 +2,7 @@ import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { aggregateInspectionToLaporan } from "@/lib/aggregate-inspection";
 import { withAuth } from "@/lib/api-auth";
+import { saveBase64Photo } from "@/lib/photo-files";
 
 // GET List hasil pemeriksaan
 export const GET = withAuth(async (req: NextRequest) => {
@@ -13,7 +14,7 @@ export const GET = withAuth(async (req: NextRequest) => {
   const results = await prisma.inspectionResult.findMany({
     where,
     include: {
-      template: { include: { subCategory: true } },
+      template: { include: { subCategory: true, fields: { orderBy: { urutan: "asc" } } } },
       puskesmas: true,
       user: true,
       sasaran: true,
@@ -35,6 +36,36 @@ export const POST = withAuth(async (req: NextRequest) => {
   }
 
   try {
+    // Simpan foto berformat base64 ke disk /uploads/inspections/
+    const processedFotoPaths: string[] = [];
+    if (Array.isArray(body.fotoPaths)) {
+      for (const fp of body.fotoPaths) {
+        if (typeof fp === "string" && fp.startsWith("data:image/")) {
+          const savedPath = await saveBase64Photo(fp, "inspections");
+          processedFotoPaths.push(savedPath);
+        } else if (fp) {
+          processedFotoPaths.push(String(fp));
+        }
+      }
+    }
+
+    const processedValues = await Promise.all(
+      (body.values || []).map(async (v: any) => {
+        let valStr = v.valueString !== undefined && v.valueString !== null ? String(v.valueString) : null;
+        if (valStr?.startsWith("data:image/") && !valStr.startsWith("data:image/png;base64,iVBORw0KGgo")) {
+          valStr = await saveBase64Photo(valStr, "inspections");
+        }
+        return {
+          fieldId: v.fieldId,
+          valueString: valStr,
+          valueNumber:
+            v.valueNumber !== undefined && v.valueNumber !== null && !Number.isNaN(parseFloat(v.valueNumber))
+              ? parseFloat(v.valueNumber)
+              : null,
+        };
+      }),
+    );
+
     const result = await prisma.$transaction(async (tx) => {
       const res = await tx.inspectionResult.create({
         data: {
@@ -44,23 +75,22 @@ export const POST = withAuth(async (req: NextRequest) => {
           sasaranId: body.sasaranId ? Number(body.sasaranId) : null,
           namaSasaran: body.namaSasaran,
           alamatSasaran: body.alamatSasaran,
-          lat: body.lat ? parseFloat(body.lat) : null,
-          lng: body.lng ? parseFloat(body.lng) : null,
+          lat:
+            body.lat !== undefined && body.lat !== null && !Number.isNaN(parseFloat(body.lat))
+              ? parseFloat(body.lat)
+              : null,
+          lng:
+            body.lng !== undefined && body.lng !== null && !Number.isNaN(parseFloat(body.lng))
+              ? parseFloat(body.lng)
+              : null,
           status: "APPROVED",
           bulan: body.bulan || new Date().getMonth() + 1,
           tahun: body.tahun || new Date().getFullYear(),
-          tanggal: body.tanggalPemeriksaan ? new Date(body.tanggalPemeriksaan) : null,
+          tanggal: body.tanggalPemeriksaan ? new Date(body.tanggalPemeriksaan) : new Date(),
           signatureData: body.signatureData ? body.signatureData : null,
-          fotoPaths: body.fotoPaths ? body.fotoPaths : null,
+          fotoPaths: processedFotoPaths.length > 0 ? processedFotoPaths : body.fotoPaths ? body.fotoPaths : null,
           values: {
-            create: body.values.map((v: any) => ({
-              fieldId: v.fieldId,
-              valueString: v.valueString !== undefined && v.valueString !== null ? String(v.valueString) : null,
-              valueNumber:
-                v.valueNumber !== undefined && v.valueNumber !== null && !Number.isNaN(parseFloat(v.valueNumber))
-                  ? parseFloat(v.valueNumber)
-                  : null,
-            })),
+            create: processedValues,
           },
         },
       });

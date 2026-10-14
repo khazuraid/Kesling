@@ -22,6 +22,42 @@ export function parseDropdownOptions(raw: any): string[] {
   return [];
 }
 
+export function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, quality = 0.75): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve("");
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => resolve(String(reader.result || ""));
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(String(reader.result || ""));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export function isGolonganMatch(targetGolongan?: string | null, selectedGolongan?: string | null): boolean {
   if (!targetGolongan || targetGolongan === "ALL" || targetGolongan === "SEMUA" || targetGolongan === "KEDUANYA") {
     return true;
@@ -38,6 +74,49 @@ export function isGolonganMatch(targetGolongan?: string | null, selectedGolongan
     (cleanTarget) =>
       cleanTarget === cleanSelected || cleanSelected.includes(cleanTarget) || cleanTarget.includes(cleanSelected),
   );
+}
+
+export function isFieldDisabledInfo(
+  f: any,
+  formValues: Record<number, any>,
+  selectedGolongan: string,
+  allFields: any[],
+): { isDisabled: boolean; reason: string } {
+  const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
+  const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+  const isGolonganMismatch =
+    isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+
+  if (isGolonganMismatch) {
+    return {
+      isDisabled: true,
+      reason: `Khusus ${targetGol === "A1" ? "Golongan A1" : targetGol === "A2" ? "Golongan A2" : targetGol} (Sasaran: ${selectedGolongan}) — Tidak dinilai`,
+    };
+  }
+
+  const dep = f.config?.dependsOn || f.dependsOn;
+  if (dep) {
+    const parent = allFields.find(
+      (p: any, idx: number) => p.id === dep.parentId || p.urutan === dep.parentIndex || idx === dep.parentIndex,
+    );
+    const parentVal = parent ? String(formValues[parent.id] ?? "").toUpperCase() : "";
+    const reqVal = String(dep.requiredValue ?? "TRUE").toUpperCase();
+    if (parentVal !== reqVal) {
+      return {
+        isDisabled: true,
+        reason: `Menunggu butir "${parent?.pertanyaan || "pertanyaan sebelumnya"}" dijawab "${reqVal === "TRUE" ? "Ya" : "Tidak"}"`,
+      };
+    }
+  }
+
+  if (f.isDisabled || f.config?.isDisabled) {
+    return {
+      isDisabled: true,
+      reason: "Butir ini dinonaktifkan (Tidak ada)",
+    };
+  }
+
+  return { isDisabled: false, reason: "" };
 }
 
 interface FormViewProps {
@@ -170,15 +249,26 @@ export function FormView({
               className="w-full max-w-[200px] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
             />
           </div>
-          {metaFields.map((f: any) => (
-            <FieldInput
-              key={f.id}
-              field={f}
-              value={metaValues[f.id] ?? ""}
-              onChange={(v) => onMetaChange(f.id, v)}
-              onGPS={() => onGPS(f.id)}
-            />
-          ))}
+          {metaFields.map((f: any) => {
+            const allFields = activeForm.fields || [];
+            const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
+              f,
+              metaValues,
+              selectedGolongan,
+              allFields,
+            );
+            return (
+              <FieldInput
+                key={f.id}
+                field={f}
+                value={metaValues[f.id] ?? ""}
+                onChange={(v) => onMetaChange(f.id, v)}
+                onGPS={() => onGPS(f.id)}
+                disabled={isDisabled}
+                disabledReason={disabledReason}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -210,37 +300,12 @@ export function FormView({
             <div className="p-6 space-y-6">
               {group.fields.map((f: any) => {
                 const allFields = activeForm.fields || [];
-                const dep = f.config?.dependsOn || f.dependsOn;
-                const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
-                const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
-                const isGolonganMismatch =
-                  isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
-
-                let isConditionallyDisabled = false;
-                let condReason = "";
-                if (isGolonganMismatch) {
-                  isConditionallyDisabled = true;
-                  condReason = `Khusus ${targetGol === "A1" ? "Golongan A1" : targetGol === "A2" ? "Golongan A2" : targetGol} (Sasaran: ${selectedGolongan}) — Tidak dinilai`;
-                } else if (dep) {
-                  const parent = allFields.find(
-                    (p: any, idx: number) =>
-                      p.urutan === dep.parentIndex || idx === dep.parentIndex || p.id === dep.parentId,
-                  );
-                  const parentVal = parent ? formValues[parent.id] : undefined;
-                  const reqVal = dep.requiredValue ?? "TRUE";
-                  if (parentVal !== reqVal) {
-                    isConditionallyDisabled = true;
-                    condReason = `Menunggu butir "${parent?.pertanyaan || "pertanyaan sebelumnya"}" dijawab "${reqVal === "TRUE" ? "Ya" : "Tidak"}"`;
-                  }
-                }
-                const isDisabled = f.isDisabled || f.config?.isDisabled || isConditionallyDisabled;
-                const disabledReason = isGolonganMismatch
-                  ? condReason
-                  : isConditionallyDisabled
-                    ? condReason
-                    : f.isDisabled || f.config?.isDisabled
-                      ? "Butir ini dinonaktifkan (Tidak ada)"
-                      : "";
+                const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
+                  f,
+                  formValues,
+                  selectedGolongan,
+                  allFields,
+                );
 
                 return (
                   <FieldInput
@@ -260,7 +325,7 @@ export function FormView({
       </div>
 
       {/* Tombol Simpan di bawah */}
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8 flex flex-col items-end gap-1.5">
         <button
           onClick={onSubmit}
           disabled={!canSubmit || isPending}
@@ -268,6 +333,11 @@ export function FormView({
         >
           {isPending ? "Menyimpan..." : editingId ? "Update" : "Simpan"}
         </button>
+        {!canSubmit && !isPending && (
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+            Lengkapi butir bertanda bintang (*) untuk menyimpan.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -358,7 +428,7 @@ function FieldInput({
             disabled={disabled}
             onClick={() => onChange("TRUE")}
             className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
-              value === "TRUE"
+              String(value ?? "").toUpperCase() === "TRUE"
                 ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
                 : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
             }`}
@@ -370,7 +440,7 @@ function FieldInput({
             disabled={disabled}
             onClick={() => onChange("FALSE")}
             className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
-              value === "FALSE"
+              String(value ?? "").toUpperCase() === "FALSE"
                 ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
                 : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
             }`}
@@ -383,7 +453,7 @@ function FieldInput({
               disabled={disabled}
               onClick={() => onChange("NA")}
               className={`h-10 px-4 text-[12px] font-bold border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
-                value === "NA"
+                String(value ?? "").toUpperCase() === "NA"
                   ? "border-amber-600 bg-amber-500 text-white"
                   : "border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))]"
               }`}
@@ -475,12 +545,11 @@ function FieldInput({
                 accept="image/*"
                 capture="environment"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => onChange(reader.result);
-                    reader.readAsDataURL(file);
+                    const compressed = await compressImage(file);
+                    if (compressed) onChange(compressed);
                   }
                 }}
               />

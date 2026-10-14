@@ -26,7 +26,8 @@ export const GET = withAuth(async (req: NextRequest) => {
   const role = (req as any).user?.role;
   const subCatId = req.nextUrl.searchParams.get("subCategoryId");
 
-  const where: any = {};
+  const includeInactive = req.nextUrl.searchParams.get("includeInactive") === "true";
+  const where: any = includeInactive ? {} : { isActive: true };
   if (subCatId) where.subCategoryId = parseInt(subCatId, 10);
   if (role !== "ADMIN") where.OR = [{ puskesmasId: null }, { puskesmasId: pkmId }];
 
@@ -57,10 +58,11 @@ export const GET = withAuth(async (req: NextRequest) => {
           id: true,
           nama: true,
           code: true,
+          subCategories: { select: { id: true, nama: true, grup: true }, orderBy: { urutan: "asc" } },
           parameters: {
             where: { isBaseline: true },
             orderBy: { urutan: "asc" },
-            select: { id: true, code: true, nama: true, config: true },
+            select: { id: true, code: true, nama: true, type: true, required: true, config: true, urutan: true },
           },
         },
       })
@@ -86,7 +88,75 @@ export const POST = withAuth(async (req: NextRequest) => {
 
     if (id && id !== "undefined" && id !== null) {
       const numericId = parseInt(id, 10);
-      await prisma.inspectionField.deleteMany({ where: { templateId: numericId } });
+
+      // Ambil field yang sudah ada di database beserta jumlah relasi nilai inspeksi
+      const existingFields = await prisma.inspectionField.findMany({
+        where: { templateId: numericId },
+        include: { _count: { select: { values: true } } },
+      });
+      const existingMap = new Map(existingFields.map((ef) => [ef.id, ef]));
+
+      const incomingIds = safeFields
+        .map((f: any) => Number(f.id))
+        .filter((fId: number) => Number.isInteger(fId) && fId > 0);
+      const incomingIdSet = new Set(incomingIds);
+
+      // Hapus hanya field yang sengaja dibuang dan TIDAK memiliki relasi data riwayat
+      const toDeleteFields = existingFields.filter((ef) => !incomingIdSet.has(ef.id));
+      for (const df of toDeleteFields) {
+        if (df._count.values === 0) {
+          await prisma.inspectionField.delete({ where: { id: df.id } });
+        } else {
+          // Jangan hapus baris yang punya riwayat jawaban agar tidak cascade delete ke inspection_result_value
+          const currentConfig = (df.config as any) || {};
+          await prisma.inspectionField.update({
+            where: { id: df.id },
+            data: {
+              config: { ...currentConfig, isDisabled: true, isArchived: true },
+            },
+          });
+        }
+      }
+
+      // Upsert field-field yang dikirim
+      for (let i = 0; i < safeFields.length; i++) {
+        const f = safeFields[i];
+        const fId = Number(f.id);
+        const fieldData = {
+          pertanyaan: f.pertanyaan,
+          tipe: f.tipe,
+          isRequired: f.isRequired ?? false,
+          urutan: f.urutan ?? i,
+          grup: f.grup,
+          options: f.options ? JSON.stringify(normalizeOptions(f.options)) : null,
+          config: {
+            ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
+            skor: f.skor ?? f.config?.skor ?? 0,
+            skorBenar: f.skorBenar ?? f.config?.skorBenar ?? 1,
+            skorSalah: f.skorSalah ?? f.config?.skorSalah ?? 0,
+            autoFill: f.autoFill || f.config?.autoFill || undefined,
+            isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
+            dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
+            targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
+            allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+          },
+        };
+
+        if (Number.isInteger(fId) && fId > 0 && existingMap.has(fId)) {
+          await prisma.inspectionField.update({
+            where: { id: fId },
+            data: fieldData,
+          });
+        } else {
+          await prisma.inspectionField.create({
+            data: {
+              ...fieldData,
+              templateId: numericId,
+            },
+          });
+        }
+      }
+
       const updated = await prisma.inspectionTemplate.update({
         where: { id: numericId },
         data: {
@@ -95,27 +165,9 @@ export const POST = withAuth(async (req: NextRequest) => {
           subCategoryId: subCategoryId ? Number(subCategoryId) : null,
           config: config || undefined,
           puskesmasId: assignPkmId,
-          fields: {
-            create: safeFields.map((f: any) => ({
-              pertanyaan: f.pertanyaan,
-              tipe: f.tipe,
-              isRequired: f.isRequired,
-              urutan: f.urutan,
-              grup: f.grup,
-              options: f.options ? JSON.stringify(normalizeOptions(f.options)) : null,
-              config: {
-                ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
-                skor: f.skor ?? f.config?.skor ?? 0,
-                skorBenar: f.skorBenar ?? f.config?.skorBenar ?? 1,
-                skorSalah: f.skorSalah ?? f.config?.skorSalah ?? 0,
-                autoFill: f.autoFill || f.config?.autoFill || undefined,
-                isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
-                dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
-                targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
-                allowNA: f.allowNA ?? f.config?.allowNA ?? false,
-              },
-            })),
-          },
+        },
+        include: {
+          fields: { orderBy: { urutan: "asc" } },
         },
       });
 
