@@ -108,10 +108,14 @@ export const POST = withAuth(async (req: NextRequest) => {
     const dataDinamis = body.dataDinamis && typeof body.dataDinamis === "object" ? { ...body.dataDinamis } : {};
     for (const p of subCategory.category.parameters) {
       if (p.isBaseline && isEmpty(dataDinamis[p.code])) {
-        if (p.config?.syncToEntityField === "nama" && body.nama) dataDinamis[p.code] = body.nama;
-        else if (p.config?.syncToEntityField === "alamat" && body.alamat) dataDinamis[p.code] = body.alamat;
-        else if (p.config?.syncToEntityField === "pemilik" && body.pemilik) dataDinamis[p.code] = body.pemilik;
-        else if (p.config?.syncToEntityField === "kontak" && body.kontak) dataDinamis[p.code] = body.kontak;
+        const config =
+          p.config && typeof p.config === "object" && !Array.isArray(p.config)
+            ? (p.config as Record<string, any>)
+            : null;
+        if (config?.syncToEntityField === "nama" && body.nama) dataDinamis[p.code] = body.nama;
+        else if (config?.syncToEntityField === "alamat" && body.alamat) dataDinamis[p.code] = body.alamat;
+        else if (config?.syncToEntityField === "pemilik" && body.pemilik) dataDinamis[p.code] = body.pemilik;
+        else if (config?.syncToEntityField === "kontak" && body.kontak) dataDinamis[p.code] = body.kontak;
         else if (["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"].includes(p.code) && body.nama)
           dataDinamis[p.code] = body.nama;
         else if (["alamat", "alamat_lengkap"].includes(p.code) && body.alamat) dataDinamis[p.code] = body.alamat;
