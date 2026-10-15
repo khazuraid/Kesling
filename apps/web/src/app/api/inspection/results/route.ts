@@ -15,7 +15,18 @@ export const GET = withAuth(async (req: NextRequest) => {
   const limit = Math.max(1, Math.min(100, parseInt(sp.get("limit") || "20", 10)));
   const skip = (page - 1) * limit;
 
-  const where = role === "ADMIN" ? {} : { puskesmasId: pkmId };
+  const search = (sp.get("search") || "").trim();
+
+  const where: any = role === "ADMIN" ? {} : { puskesmasId: pkmId };
+  if (search) {
+    where.OR = [
+      { namaSasaran: { contains: search, mode: "insensitive" } },
+      { alamatSasaran: { contains: search, mode: "insensitive" } },
+      { sasaran: { nama: { contains: search, mode: "insensitive" } } },
+      { sasaran: { alamat: { contains: search, mode: "insensitive" } } },
+      { template: { nama: { contains: search, mode: "insensitive" } } },
+    ];
+  }
 
   if (full) {
     const results = await prisma.inspectionResult.findMany({

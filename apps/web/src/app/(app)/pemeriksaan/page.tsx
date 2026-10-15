@@ -133,10 +133,25 @@ export default function PemeriksaanPage() {
     queryFn: () => fetch("/api/inspection/templates").then((r) => r.json()),
   });
 
-  const { data: results = [] } = useQuery<any[]>({
-    queryKey: ["inspection-results"],
-    queryFn: () => fetch("/api/inspection/results").then((r) => r.json()),
+  const { data: riwayatData = { data: [], total: 0, page: 1, totalPages: 1 }, isLoading: isLoadingRiwayat } = useQuery({
+    queryKey: ["inspection-results", riwayatPage, riwayatLimit, riwayatSearch],
+    queryFn: async () => {
+      const sp = new URLSearchParams({
+        paginated: "1",
+        page: String(riwayatPage),
+        limit: String(riwayatLimit),
+        search: riwayatSearch.trim(),
+      });
+      const res = await fetch(`/api/inspection/results?${sp.toString()}`);
+      if (!res.ok) throw new Error("Gagal memuat riwayat");
+      return res.json();
+    },
+    staleTime: 15_000,
   });
+
+  const paginatedResults = riwayatData.data || [];
+  const totalRiwayat = riwayatData.total ?? 0;
+  const totalRiwayatPages = Math.max(1, riwayatData.totalPages || 1);
 
   // Pagination & Filtering
   const filteredTemplates = useMemo(() => {
@@ -155,24 +170,6 @@ export default function PemeriksaanPage() {
     const start = (formulirPage - 1) * formulirLimit;
     return filteredTemplates.slice(start, start + formulirLimit);
   }, [filteredTemplates, formulirPage, formulirLimit]);
-
-  const filteredResults = useMemo(() => {
-    const q = riwayatSearch.toLowerCase().trim();
-    if (!q) return results;
-    return results.filter(
-      (res: any) =>
-        (res.sasaran?.nama || res.namaSasaran || "").toLowerCase().includes(q) ||
-        (res.template?.nama || "").toLowerCase().includes(q) ||
-        (res.puskesmas?.nama || "").toLowerCase().includes(q) ||
-        (res.alamatSasaran || res.sasaran?.alamat || "").toLowerCase().includes(q),
-    );
-  }, [results, riwayatSearch]);
-
-  const totalRiwayatPages = Math.max(1, Math.ceil(filteredResults.length / riwayatLimit));
-  const paginatedResults = useMemo(() => {
-    const start = (riwayatPage - 1) * riwayatLimit;
-    return filteredResults.slice(start, start + riwayatLimit);
-  }, [filteredResults, riwayatPage, riwayatLimit]);
 
   const submitMut = useMutation({
     mutationFn: async (data: any) => {
@@ -1488,7 +1485,7 @@ export default function PemeriksaanPage() {
                 Inspeksi Lapangan
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-white/50 mt-2">
-                {templates.length} formulir · {results.length} riwayat pemeriksaan
+                {templates.length} formulir · {totalRiwayat} riwayat pemeriksaan
               </p>
             </div>
             <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1 w-full sm:w-auto">
@@ -1512,7 +1509,7 @@ export default function PemeriksaanPage() {
                   activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
                 }`}
               >
-                Riwayat ({results.length})
+                Riwayat ({totalRiwayat})
               </button>
             </div>
           </div>
@@ -1638,11 +1635,16 @@ export default function PemeriksaanPage() {
                 />
               </div>
               <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
-                Menampilkan {paginatedResults.length} dari {filteredResults.length} riwayat
+                Menampilkan {paginatedResults.length} dari {totalRiwayat} riwayat
               </span>
             </div>
 
-            {filteredResults.length === 0 ? (
+            {isLoadingRiwayat ? (
+              <div className="py-12 flex flex-col items-center justify-center text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-[#00A876] mb-2" />
+                <p className="text-[12px] font-medium text-[hsl(var(--muted-foreground))]">Memuat data riwayat...</p>
+              </div>
+            ) : paginatedResults.length === 0 ? (
               <div className="border border-dashed border-[hsl(var(--border))] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
                 <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
                 <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
