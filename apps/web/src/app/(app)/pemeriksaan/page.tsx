@@ -21,7 +21,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
-import { FormView, isFieldDisabledInfo } from "./FormView";
+import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
@@ -836,29 +836,34 @@ export default function PemeriksaanPage() {
     const fotoPaths: string[] = [];
     let tanggalFinal = tanggalPemeriksaan || new Date().toISOString().split("T")[0];
 
-    const valuesArray = Object.entries(formValues).map(([fid, val]) => {
-      const field = activeForm.fields.find((f: any) => f.id === Number(fid));
-      if (field?.tipe === "SIGNATURE" && val) {
-        signatures[field.pertanyaan] = String(val);
-      }
-      if (field?.tipe === "PHOTO" && val) {
-        fotoPaths.push(String(val));
-      }
-      if (field?.tipe === "DATE" && val && val !== "") {
-        tanggalFinal = String(val);
-      }
-      return {
-        fieldId: Number(fid),
-        valueString: field?.tipe !== "NUMBER" && val !== null && val !== undefined && val !== "" ? String(val) : null,
-        valueNumber:
-          field?.tipe === "NUMBER" && val !== null && val !== undefined && val !== "" ? parseFloat(val) || 0 : null,
-      };
-    });
+    const valuesArray = Object.entries(formValues)
+      .map(([fid, val]) => {
+        const numId = Number(fid);
+        const field = activeForm.fields.find((f: any) => f.id === numId);
+        if (val && (field?.tipe === "SIGNATURE" || isSignatureField(field) || numId === -1)) {
+          const sigName = field?.pertanyaan || "Tanda Tangan Pemeriksa";
+          signatures[sigName] = String(val);
+        }
+        if (field?.tipe === "PHOTO" && val) {
+          fotoPaths.push(String(val));
+        }
+        if (field?.tipe === "DATE" && val && val !== "") {
+          tanggalFinal = String(val);
+        }
+        return {
+          fieldId: numId,
+          valueString: field?.tipe !== "NUMBER" && val !== null && val !== undefined && val !== "" ? String(val) : null,
+          valueNumber:
+            field?.tipe === "NUMBER" && val !== null && val !== undefined && val !== "" ? parseFloat(val) || 0 : null,
+        };
+      })
+      .filter((v) => v.fieldId > 0);
 
     const metaArray = Object.entries(metaValues).map(([fid, val]) => {
       const field = activeForm.fields.find((f: any) => f.id === Number(fid));
-      if (field?.tipe === "SIGNATURE" && val) {
-        signatures[field.pertanyaan] = String(val);
+      if (val && (field?.tipe === "SIGNATURE" || isSignatureField(field))) {
+        const sigName = field?.pertanyaan || "Tanda Tangan Pengesahan";
+        signatures[sigName] = String(val);
       }
       if (field?.tipe === "PHOTO" && val) {
         fotoPaths.push(String(val));
@@ -940,23 +945,35 @@ export default function PemeriksaanPage() {
   }
 
   const fieldsToChecklist = useMemo(
-    () => activeForm?.fields.filter((f: any) => f.grup !== "__META__") || [],
+    () => activeForm?.fields.filter((f: any) => f.grup !== "__META__" && !isSignatureField(f)) || [],
     [activeForm],
   );
 
   const selectedGolongan = useMemo(() => {
     if (!activeForm?.fields) return "";
-    const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
-    for (const mf of metaFields) {
-      const val = String(metaValues[mf.id] ?? "").trim();
+    for (const f of activeForm.fields) {
+      const val = String((f.grup === "__META__" ? metaValues[f.id] : formValues[f.id]) ?? "").trim();
       if (!val) continue;
-      const q = (mf.pertanyaan || "").toLowerCase();
+      const q = (f.pertanyaan || "").toLowerCase();
       if (q.includes("golongan") || q.includes("tipe") || val.toLowerCase().includes("golongan")) {
         return val;
       }
     }
+    if (sasaranId && sasarans?.length > 0) {
+      const s = sasarans.find((item: any) => item.id === sasaranId);
+      if (s) {
+        if (s.subCategory?.nama) return s.subCategory.nama;
+        if (s.dynamicValues) {
+          for (const [k, v] of Object.entries(s.dynamicValues)) {
+            if (k.toLowerCase().includes("golongan") || k.toLowerCase().includes("tipe")) {
+              return String(v);
+            }
+          }
+        }
+      }
+    }
     return "";
-  }, [activeForm, metaValues]);
+  }, [activeForm, metaValues, formValues, sasaranId, sasarans]);
 
   const liveSkor = useMemo(() => {
     if (!activeForm) return { gained: 0, max: 0, finalValue: 0, valueText: "0", pass: false, text: "" };
@@ -971,31 +988,57 @@ export default function PemeriksaanPage() {
     let max = 0;
     let countBenar = 0;
     let countSalah = 0;
-    const countTotal = penilaian.length;
+    let countActive = 0;
+
     for (const f of penilaian) {
+      // 1. Lewati field yang bukan butir penilaian scoring (TTD, GPS, PHOTO)
+      if (isSignatureField(f) || f.tipe === "GPS" || f.tipe === "PHOTO") continue;
+
+      // 2. Lewati butir yang dinonaktifkan (di template / targetGolongan / dependsOn)
       const disabledInfo = isFieldDisabledInfo(f, formValues, selectedGolongan, activeForm.fields);
       if (disabledInfo.isDisabled) continue;
 
       const val = formValues[f.id];
       const upperVal = String(val ?? "").toUpperCase();
-      // Abaikan opsi T/A (Tidak Ada / NA) dari gained dan max
+
+      // 3. Abaikan opsi T/A (Tidak Ada / NA) dari gained dan total (max)
       if (upperVal === "NA") continue;
 
-      const skorBenar = f.config?.skorBenar ?? f.config?.skor ?? 1;
-      const skorSalah = f.config?.skorSalah ?? 0;
-      max += Math.max(skorBenar, skorSalah);
+      const conf =
+        typeof f.config === "string"
+          ? (() => {
+              try {
+                return JSON.parse(f.config);
+              } catch {
+                return {};
+              }
+            })()
+          : f.config || {};
+
+      const skorBenar = Number(conf.skorBenar ?? conf.skor ?? (f.tipe === "BOOLEAN" ? 1 : 0));
+      const skorSalah = Number(conf.skorSalah ?? 0);
+      const itemMax = Math.max(skorBenar, skorSalah);
+
+      // Hanya masukkan ke total (max) jika butir ini aktif dan memiliki skor
+      if (itemMax <= 0 && f.tipe !== "BOOLEAN") continue;
+
+      countActive++;
+      max += itemMax > 0 ? itemMax : 1;
+
       if (f.tipe === "BOOLEAN") {
         if (upperVal === "TRUE") {
-          gained += skorBenar;
+          gained += skorBenar > 0 ? skorBenar : 1;
           countBenar++;
         } else if (upperVal === "FALSE") {
           gained += skorSalah;
           countSalah++;
         }
       } else if (f.tipe === "NUMBER") {
-        gained += (parseFloat(val) || 0) * (f.config?.skor ?? 0);
+        const numVal = parseFloat(val) || 0;
+        const multiplier = conf.skor ? Number(conf.skor) : 1;
+        gained += numVal * multiplier;
       } else if (val) {
-        gained += f.config?.skor ?? 0;
+        gained += skorBenar;
       }
     }
     const percentValue = max > 0 ? (gained / max) * 100 : 0;
@@ -1008,14 +1051,13 @@ export default function PemeriksaanPage() {
       valueText = `${roundedPercent}%`;
     } else if (rumus === "sum") {
       finalValue = gained;
-      // Pengguna meminta skor tampil persen (%)
       valueText = `${roundedPercent}%`;
     } else if (rumus === "custom" && config.customFormula) {
       try {
         const evalStr = config.customFormula
           .replace(/SUM\(\)/g, String(gained))
-          .replace(/AVG\(\)/g, String(countTotal > 0 ? gained / countTotal : 0))
-          .replace(/COUNT\(\)/g, String(countTotal))
+          .replace(/AVG\(\)/g, String(countActive > 0 ? gained / countActive : 0))
+          .replace(/COUNT\(\)/g, String(countActive))
           .replace(/\u2713/g, String(countBenar))
           .replace(/\u2717/g, String(countSalah));
         const res = new Function(`return ${evalStr}`)();
@@ -1072,6 +1114,12 @@ export default function PemeriksaanPage() {
       .every((f: any) => {
         const val = metaValues[f.id];
         return val !== null && val !== undefined && String(val).trim() !== "";
+      }) &&
+    (activeForm?.fields || [])
+      .filter((f: any) => isSignatureField(f) && f.isRequired)
+      .every((f: any) => {
+        const val = f.grup === "__META__" ? metaValues[f.id] : formValues[f.id];
+        return val !== null && val !== undefined && val !== "";
       });
 
   if ((session?.user as any)?.role === "ADMIN") {

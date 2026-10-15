@@ -91,6 +91,20 @@ export function compressImage(
   });
 }
 
+export function isSignatureField(f: any): boolean {
+  if (!f) return false;
+  if (f.tipe === "SIGNATURE") return true;
+  const p = (f.pertanyaan || "").toLowerCase();
+  const g = (f.grup || "").toLowerCase();
+  return (
+    p.includes("tanda tangan") ||
+    p.includes("ttd") ||
+    g === "pengesahan" ||
+    g === "tanda tangan" ||
+    g.startsWith("pengesahan")
+  );
+}
+
 export function isGolonganMatch(targetGolongan?: string | null, selectedGolongan?: string | null): boolean {
   if (!targetGolongan || targetGolongan === "ALL" || targetGolongan === "SEMUA" || targetGolongan === "KEDUANYA") {
     return true;
@@ -115,19 +129,37 @@ export function isFieldDisabledInfo(
   selectedGolongan: string,
   allFields: any[],
 ): { isDisabled: boolean; reason: string } {
-  const targetGol = f.config?.targetGolongan || f.targetGolongan || "ALL";
-  const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
-  const isGolonganMismatch =
-    isTargetSpecific && Boolean(selectedGolongan) && !isGolonganMatch(targetGol, selectedGolongan);
+  const conf =
+    typeof f.config === "string"
+      ? (() => {
+          try {
+            return JSON.parse(f.config);
+          } catch {
+            return {};
+          }
+        })()
+      : f.config || {};
 
-  if (isGolonganMismatch) {
+  // 1. Cek langsung properti disabled pada field atau config (dinonaktifkan di template)
+  if (f.isDisabled || conf.isDisabled || conf.disabled || f.disabled || f.status === "DISABLED") {
     return {
       isDisabled: true,
-      reason: `Khusus ${targetGol === "A1" ? "Golongan A1" : targetGol === "A2" ? "Golongan A2" : targetGol} (Sasaran: ${selectedGolongan}) — Tidak dinilai`,
+      reason: "Butir ini dinonaktifkan di formulir (Tidak dinilai)",
     };
   }
 
-  const dep = f.config?.dependsOn || f.dependsOn;
+  // 2. Cek targetGolongan sasaran
+  const targetGol = conf.targetGolongan || f.targetGolongan || "ALL";
+  const isTargetSpecific = targetGol && targetGol !== "ALL" && targetGol !== "SEMUA";
+  if (isTargetSpecific && selectedGolongan && !isGolonganMatch(targetGol, selectedGolongan)) {
+    return {
+      isDisabled: true,
+      reason: `Khusus ${targetGol} (Sasaran: ${selectedGolongan}) — Tidak dinilai`,
+    };
+  }
+
+  // 3. Cek dependensi (dependsOn)
+  const dep = conf.dependsOn || f.dependsOn;
   if (dep) {
     const parent = allFields.find(
       (p: any, idx: number) => p.id === dep.parentId || p.urutan === dep.parentIndex || idx === dep.parentIndex,
@@ -140,13 +172,6 @@ export function isFieldDisabledInfo(
         reason: `Menunggu butir "${parent?.pertanyaan || "pertanyaan sebelumnya"}" dijawab "${reqVal === "TRUE" ? "Ya" : "Tidak"}"`,
       };
     }
-  }
-
-  if (f.isDisabled || f.config?.isDisabled) {
-    return {
-      isDisabled: true,
-      reason: "Butir ini dinonaktifkan (Tidak ada)",
-    };
   }
 
   return { isDisabled: false, reason: "" };
@@ -197,21 +222,22 @@ export function FormView({
 
   const metaFields = useMemo(() => activeForm.fields.filter((f: any) => f.grup === "__META__"), [activeForm.fields]);
   const penilaianFields = useMemo(
-    () => activeForm.fields.filter((f: any) => f.grup !== "__META__"),
+    () => activeForm.fields.filter((f: any) => f.grup !== "__META__" && !isSignatureField(f)),
     [activeForm.fields],
   );
 
   const selectedGolongan = useMemo(() => {
-    for (const mf of metaFields) {
-      const val = String(metaValues[mf.id] ?? "").trim();
+    // Cek di metaValues dan formValues
+    for (const f of activeForm.fields) {
+      const val = String((f.grup === "__META__" ? metaValues[f.id] : formValues[f.id]) ?? "").trim();
       if (!val) continue;
-      const q = (mf.pertanyaan || "").toLowerCase();
+      const q = (f.pertanyaan || "").toLowerCase();
       if (q.includes("golongan") || q.includes("tipe") || val.toLowerCase().includes("golongan")) {
         return val;
       }
     }
     return "";
-  }, [metaFields, metaValues]);
+  }, [activeForm.fields, metaValues, formValues]);
 
   // Kelompokkan area kuesioner menjadi langkah-langkah wizard
   const areaSteps = useMemo(() => {
@@ -744,26 +770,39 @@ export function FormView({
                   </p>
                 </div>
 
-                {/* Render any explicit SIGNATURE fields from template, or default signature box */}
+                {/* Render field tanda tangan manual yang ditambahkan di template, atau fallback single signature */}
                 {(() => {
-                  const sigFields = activeForm.fields.filter((f: any) => f.tipe === "SIGNATURE");
-                  if (sigFields.length > 0) {
+                  const manualSigFields = activeForm.fields.filter((f: any) => isSignatureField(f));
+
+                  if (manualSigFields.length > 0) {
                     return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {sigFields.map((sf: any) => {
+                      <div
+                        className={`grid gap-6 ${
+                          manualSigFields.length === 1 ? "grid-cols-1 max-w-xl" : "grid-cols-1 md:grid-cols-2"
+                        }`}
+                      >
+                        {manualSigFields.map((sf: any) => {
                           const isMeta = sf.grup === "__META__";
                           const val = isMeta ? metaValues[sf.id] : formValues[sf.id];
                           const setVal = (v: string) => (isMeta ? onMetaChange(sf.id, v) : onFieldChange(sf.id, v));
                           return (
                             <div key={sf.id} className="space-y-2">
-                              <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
-                                {sf.pertanyaan} {sf.isRequired && <span className="text-[#E15A4F]">*</span>}
-                              </label>
+                              <div className="flex items-center justify-between">
+                                <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
+                                  {sf.pertanyaan}{" "}
+                                  {sf.isRequired && <span className="text-[#E15A4F] font-black">*</span>}
+                                </label>
+                                {sf.grup && sf.grup !== "__META__" && sf.grup !== "Pengesahan" && (
+                                  <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium">
+                                    {sf.grup}
+                                  </span>
+                                )}
+                              </div>
                               <SignaturePad
                                 value={val || null}
                                 onChange={setVal}
                                 label={`Tanda Tangan ${sf.pertanyaan}`}
-                                helperText="Tanda tangan di atas garis"
+                                helperText="Tanda tangan jelas di atas garis"
                               />
                             </div>
                           );
@@ -772,29 +811,16 @@ export function FormView({
                     );
                   }
 
-                  // Default single signature field if none defined in template
-                  const defaultSigField = activeForm.fields.find(
-                    (f: any) =>
-                      f.pertanyaan?.toLowerCase().includes("tanda tangan") ||
-                      f.pertanyaan?.toLowerCase().includes("ttd"),
-                  );
-                  const val = defaultSigField
-                    ? formValues[defaultSigField.id] || metaValues[defaultSigField.id]
-                    : formValues[-1];
-                  const setVal = (v: string) => {
-                    if (defaultSigField) {
-                      if (defaultSigField.grup === "__META__") onMetaChange(defaultSigField.id, v);
-                      else onFieldChange(defaultSigField.id, v);
-                    } else {
-                      onFieldChange(-1, v);
-                    }
-                  };
-
+                  // Default single signature field jika belum ada field TTD khusus di template
+                  const val = formValues[-1];
                   return (
-                    <div className="max-w-xl">
+                    <div className="max-w-xl space-y-2">
+                      <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
+                        Tanda Tangan Petugas / Penanggung Jawab
+                      </label>
                       <SignaturePad
                         value={val || null}
-                        onChange={setVal}
+                        onChange={(v) => onFieldChange(-1, v)}
                         label="Tanda Tangan Petugas / Penanggung Jawab"
                         helperText="Tanda tangan jelas di atas garis"
                       />
