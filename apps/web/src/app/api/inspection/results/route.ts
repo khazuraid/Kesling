@@ -23,7 +23,7 @@ export const GET = withAuth(async (req: NextRequest) => {
       include: {
         template: { include: { subCategory: true, fields: { orderBy: { urutan: "asc" } } } },
         puskesmas: true,
-        user: { select: { id: true, name: true, username: true } },
+        user: { select: { id: true, nama: true, email: true } },
         sasaran: true,
         values: { include: { field: true } },
       },
@@ -75,8 +75,8 @@ export const GET = withAuth(async (req: NextRequest) => {
     user: {
       select: {
         id: true,
-        name: true,
-        username: true,
+        nama: true,
+        email: true,
       },
     },
   };

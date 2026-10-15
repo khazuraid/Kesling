@@ -4,7 +4,6 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
-  Award,
   Check,
   CheckCircle2,
   ChevronLeft,
@@ -13,7 +12,6 @@ import {
   Info,
   Loader2,
   MapPin,
-  PenTool,
   Save,
   Upload,
   X,
@@ -222,7 +220,7 @@ export function FormView({
 
   const metaFields = useMemo(() => activeForm.fields.filter((f: any) => f.grup === "__META__"), [activeForm.fields]);
   const penilaianFields = useMemo(
-    () => activeForm.fields.filter((f: any) => f.grup !== "__META__" && !isSignatureField(f)),
+    () => activeForm.fields.filter((f: any) => f.grup !== "__META__"),
     [activeForm.fields],
   );
 
@@ -278,26 +276,27 @@ export function FormView({
   }, [penilaianFields]);
 
   // Definisi struktur Langkah (Wizard Steps)
-  // Step 0: Informasi Sasaran
-  // Step 1..N: Bagian Area Penilaian
-  // Step Terakhir: Rangkuman & Pengesahan
+  // Step 0: Informasi Sasaran (jika ada field grup __META__)
+  // Step 1..N: Bagian Area Penilaian sesuai format builder
   const steps = useMemo(() => {
     const s: {
       id: string;
       title: string;
       subtitle: string;
       badge: string;
-      type: "meta" | "area" | "summary";
+      type: "meta" | "area";
       areaData?: (typeof areaSteps)[0];
-    }[] = [
-      {
+    }[] = [];
+
+    if (metaFields.length > 0) {
+      s.push({
         id: "step-meta",
         title: "Identitas Sasaran",
         subtitle: "Data entitas & tanggal pemeriksaan",
         badge: "Info",
         type: "meta",
-      },
-    ];
+      });
+    }
 
     areaSteps.forEach((as, idx) => {
       s.push({
@@ -310,16 +309,18 @@ export function FormView({
       });
     });
 
-    s.push({
-      id: "step-summary",
-      title: "Rangkuman & TTD",
-      subtitle: "Evaluasi skor & pengesahan tanda tangan",
-      badge: "Akhir",
-      type: "summary",
-    });
+    if (s.length === 0) {
+      s.push({
+        id: "step-empty",
+        title: "Formulir Pemeriksaan",
+        subtitle: "Instrumen penilaian",
+        badge: "1",
+        type: "area",
+      });
+    }
 
     return s;
-  }, [areaSteps]);
+  }, [metaFields.length, areaSteps]);
 
   const currentStep = steps[currentStepIndex] || steps[0];
 
@@ -653,210 +654,34 @@ export function FormView({
             </div>
           )}
 
-          {/* STEP FINAL: RANGKUMAN PENILAIAN & PENGESAHAN TANDA TANGAN */}
-          {currentStep.type === "summary" && (
-            <div className="space-y-6">
-              {/* Scorecard Hero */}
-              <div className="rounded-3xl border border-[hsl(var(--border))] bg-gradient-to-br from-[#0C1B16] to-[#122820] text-white p-7 sm:p-8 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#00A876] opacity-15 blur-3xl" />
-                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                  <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#BEF264] text-[11px] font-extrabold uppercase tracking-wider mb-2">
-                      <Award className="w-3.5 h-3.5" /> Evaluasi Rumus Penilaian
-                    </div>
-                    <h3 className="text-[22px] sm:text-[26px] font-black tracking-tight text-white">
-                      Rangkuman Hasil Pemeriksaan
-                    </h3>
-                    <p className="text-[13px] text-white/60 mt-1 max-w-lg">
-                      Skor dihitung otomatis berdasarkan konfigurasi formula formulir (
-                      {activeForm.config?.rumus === "percentage"
-                        ? "Persentase"
-                        : activeForm.config?.rumus === "weighted"
-                          ? "Pembobotan"
-                          : activeForm.config?.rumus === "custom"
-                            ? "Rumus Kustom"
-                            : "Total Poin"}
-                      ).
-                    </p>
-                  </div>
-
-                  {/* Highlight Score Pill */}
-                  <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white/[0.08] border border-white/15 min-w-[200px] text-center shadow-lg">
-                    <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">
-                      Persentase Kelulusan
-                    </span>
-                    <span
-                      className={`text-[42px] sm:text-[48px] font-black tracking-tight leading-tight tabular-nums ${
-                        liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
-                      }`}
-                    >
-                      {displayPercentage}
-                    </span>
-                    <span className="text-[12px] font-bold text-white/70 tabular-nums">
-                      {liveSkor.gained} / {liveSkor.max} Poin Maksimal
-                    </span>
-
-                    <div className="mt-3 w-full pt-3 border-t border-white/10 flex items-center justify-center gap-1.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-extrabold ${
-                          liveSkor.pass ? "bg-[#00A876] text-white shadow-sm" : "bg-[#E15A4F] text-white shadow-sm"
-                        }`}
-                      >
-                        {liveSkor.pass ? (
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        ) : (
-                          <AlertCircle className="w-3.5 h-3.5" />
-                        )}
-                        {liveSkor.text}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sub Metrics Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-white/10">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
-                      Ambang Batas
-                    </span>
-                    <span className="text-[14px] font-bold text-white mt-0.5 block">
-                      {activeForm.config?.thresholdOperator || ">="} {activeForm.config?.thresholdValue ?? 80}%
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
-                      Status Kelulusan
-                    </span>
-                    <span
-                      className={`text-[14px] font-bold mt-0.5 block ${
-                        liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
-                      }`}
-                    >
-                      {liveSkor.text}
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
-                      Kelengkapan
-                    </span>
-                    <span className="text-[14px] font-bold text-white mt-0.5 block">
-                      {completionStats.answeredQuestions} / {completionStats.totalQuestions} (
-                      {completionStats.percentAnswered}%)
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
-                      Model Rumus
-                    </span>
-                    <span className="text-[14px] font-bold text-[#BEF264] mt-0.5 block uppercase">
-                      {activeForm.config?.rumus || "Persentase"}
-                    </span>
-                  </div>
-                </div>
+          {/* Submit Final Action Card di Langkah Terakhir */}
+          {currentStepIndex === steps.length - 1 && (
+            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div>
+                <h5 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Siap Menyimpan Pemeriksaan?</h5>
+                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                  {canSubmit
+                    ? "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
+                    : "Masih terdapat butir bertanda bintang (*) yang belum diisi pada formulir."}
+                </p>
               </div>
 
-              {/* Tanda Tangan Digital Pengesahan (Enlarged Canvas) */}
-              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-sm space-y-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] text-[10px] font-extrabold uppercase tracking-wider mb-1">
-                    <PenTool className="w-3 h-3" /> Pengesahan
-                  </div>
-                  <h4 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
-                    Tanda Tangan Digital Pemeriksaan
-                  </h4>
-                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                    Bubuhkan tanda tangan petugas pemeriksa dan penanggung jawab sasaran. Canvas telah diperbesar untuk
-                    kemudahan tanda tangan di HP dan tablet.
-                  </p>
-                </div>
-
-                {/* Render field tanda tangan manual yang ditambahkan di template, atau fallback single signature */}
-                {(() => {
-                  const manualSigFields = activeForm.fields.filter((f: any) => isSignatureField(f));
-
-                  if (manualSigFields.length > 0) {
-                    return (
-                      <div
-                        className={`grid gap-6 ${
-                          manualSigFields.length === 1 ? "grid-cols-1 max-w-xl" : "grid-cols-1 md:grid-cols-2"
-                        }`}
-                      >
-                        {manualSigFields.map((sf: any) => {
-                          const isMeta = sf.grup === "__META__";
-                          const val = isMeta ? metaValues[sf.id] : formValues[sf.id];
-                          const setVal = (v: string) => (isMeta ? onMetaChange(sf.id, v) : onFieldChange(sf.id, v));
-                          return (
-                            <div key={sf.id} className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
-                                  {sf.pertanyaan}{" "}
-                                  {sf.isRequired && <span className="text-[#E15A4F] font-black">*</span>}
-                                </label>
-                                {sf.grup && sf.grup !== "__META__" && sf.grup !== "Pengesahan" && (
-                                  <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium">
-                                    {sf.grup}
-                                  </span>
-                                )}
-                              </div>
-                              <SignaturePad
-                                value={val || null}
-                                onChange={setVal}
-                                label={`Tanda Tangan ${sf.pertanyaan}`}
-                                helperText="Tanda tangan jelas di atas garis"
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  }
-
-                  // Default single signature field jika belum ada field TTD khusus di template
-                  const val = formValues[-1];
-                  return (
-                    <div className="max-w-xl space-y-2">
-                      <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
-                        Tanda Tangan Petugas / Penanggung Jawab
-                      </label>
-                      <SignaturePad
-                        value={val || null}
-                        onChange={(v) => onFieldChange(-1, v)}
-                        label="Tanda Tangan Petugas / Penanggung Jawab"
-                        helperText="Tanda tangan jelas di atas garis"
-                      />
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Submit Final Action Card */}
-              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-                <div>
-                  <h5 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Siap Menyimpan Pemeriksaan?</h5>
-                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                    {canSubmit
-                      ? "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
-                      : "Masih terdapat butir bertanda bintang (*) yang belum diisi pada langkah sebelumnya."}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onSubmit}
-                  disabled={!canSubmit || isPending}
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#00A876] hover:bg-[#008f64] text-white text-[13px] font-black transition-all shadow-md hover:shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
-                    </>
-                  )}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={!canSubmit || isPending}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#00A876] hover:bg-[#008f64] text-white text-[13px] font-black transition-all shadow-md hover:shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
+                  </>
+                )}
+              </button>
             </div>
           )}
         </div>
@@ -1008,7 +833,18 @@ function FieldInput({
       )}
 
       {/* Input by Type */}
-      {f.tipe === "BOOLEAN" && (
+      {(f.tipe === "SIGNATURE" || isSignatureField(f)) && (
+        <div className="space-y-1 pt-1">
+          <SignaturePad
+            value={value}
+            onChange={onChange}
+            label={`Tanda Tangan ${f.pertanyaan}`}
+            helperText="Goreskan tanda tangan jelas di atas garis"
+          />
+        </div>
+      )}
+
+      {f.tipe === "BOOLEAN" && !isSignatureField(f) && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
           {/* Tombol YA (Emerald Modern) */}
           <button
@@ -1056,7 +892,7 @@ function FieldInput({
         </div>
       )}
 
-      {f.tipe === "TEXT" && (
+      {f.tipe === "TEXT" && !isSignatureField(f) && (
         <textarea
           rows={3}
           disabled={disabled}
@@ -1173,17 +1009,6 @@ function FieldInput({
               />
             </label>
           )}
-        </div>
-      )}
-
-      {f.tipe === "SIGNATURE" && (
-        <div className="space-y-1">
-          <SignaturePad
-            value={value}
-            onChange={onChange}
-            label={`Tanda Tangan ${f.pertanyaan}`}
-            helperText="Garis Tanda Tangan"
-          />
         </div>
       )}
     </div>

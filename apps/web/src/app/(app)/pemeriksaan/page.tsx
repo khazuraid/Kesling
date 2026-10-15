@@ -945,7 +945,7 @@ export default function PemeriksaanPage() {
   }
 
   const fieldsToChecklist = useMemo(
-    () => activeForm?.fields.filter((f: any) => f.grup !== "__META__" && !isSignatureField(f)) || [],
+    () => activeForm?.fields.filter((f: any) => f.grup !== "__META__") || [],
     [activeForm],
   );
 
@@ -1114,12 +1114,6 @@ export default function PemeriksaanPage() {
       .every((f: any) => {
         const val = metaValues[f.id];
         return val !== null && val !== undefined && String(val).trim() !== "";
-      }) &&
-    (activeForm?.fields || [])
-      .filter((f: any) => isSignatureField(f) && f.isRequired)
-      .every((f: any) => {
-        const val = f.grup === "__META__" ? metaValues[f.id] : formValues[f.id];
-        return val !== null && val !== undefined && val !== "";
       });
 
   if ((session?.user as any)?.role === "ADMIN") {
