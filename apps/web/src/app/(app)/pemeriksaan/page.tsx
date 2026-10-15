@@ -1662,20 +1662,20 @@ export default function PemeriksaanPage() {
                     className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 hover:shadow-sm transition-all overflow-hidden"
                   >
                     <div className="w-1.5 shrink-0 bg-[#00A876]" />
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4">
+                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
                       <div
                         onClick={() => handleOpenDetail(res)}
-                        className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
+                        className="flex items-center gap-3 sm:gap-3.5 min-w-0 cursor-pointer group/title"
                         title="Klik untuk melihat detail lengkap hasil pemeriksaan"
                       >
-                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover/title:bg-[#00A876] group-hover/title:text-white transition-all">
-                          <FileText className="w-5 h-5" />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover/title:bg-[#00A876] group-hover/title:text-white transition-all">
+                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] group-hover/title:text-[#00A876] transition-colors truncate">
+                          <h4 className="text-[13px] sm:text-[14px] font-extrabold text-[hsl(var(--foreground))] group-hover/title:text-[#00A876] transition-colors truncate">
                             {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
                           </h4>
-                          <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
+                          <p className="text-[10px] sm:text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
                             {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
                             {new Date(res.createdAt).toLocaleDateString("id-ID", {
                               day: "numeric",
@@ -1686,28 +1686,28 @@ export default function PemeriksaanPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
+                      <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
                         <button
                           title="Lihat Detail Pemeriksaan"
                           onClick={() => handleOpenDetail(res)}
                           disabled={isLoadingDetail}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[#0C1B16] dark:text-[#BEF264] bg-[#00A876]/10 hover:bg-[#00A876]/20 rounded-xl transition-colors disabled:opacity-50"
+                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[#0C1B16] dark:text-[#BEF264] bg-[#00A876]/10 hover:bg-[#00A876]/20 rounded-xl transition-colors disabled:opacity-50"
                         >
-                          <Eye className="w-4 h-4 text-[#00A876]" /> Detail
+                          <Eye className="w-3.5 h-3.5 text-[#00A876]" /> Detail
                         </button>
                         <button
                           title="Export PDF"
                           onClick={() => handleExportPDF(res)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
+                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
                         >
-                          <Download className="w-4 h-4" /> PDF
+                          <Download className="w-3.5 h-3.5" /> PDF
                         </button>
                         <button
                           title="Edit Pemeriksaan"
                           onClick={() => handleEditResult(res)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
+                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
                         >
-                          <Edit3 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" /> Edit
+                          <Edit3 className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" /> Edit
                         </button>
                         <button
                           title="Hapus"
@@ -1716,9 +1716,9 @@ export default function PemeriksaanPage() {
                               deleteMut.mutate(res.id);
                             }
                           }}
-                          className="p-2 text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-xl transition-colors"
+                          className="flex items-center justify-center p-2 text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-xl transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>

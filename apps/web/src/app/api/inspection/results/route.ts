@@ -93,16 +93,14 @@ export const GET = withAuth(async (req: NextRequest) => {
   };
 
   if (paginated) {
-    const [total, data] = await prisma.$transaction([
-      prisma.inspectionResult.count({ where }),
-      prisma.inspectionResult.findMany({
-        where,
-        select,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
-      }),
-    ]);
+    const total = await prisma.inspectionResult.count({ where });
+    const data = await prisma.inspectionResult.findMany({
+      where,
+      select,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    });
     return NextResponse.json({
       data,
       total,
