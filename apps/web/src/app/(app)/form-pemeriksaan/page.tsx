@@ -9,6 +9,7 @@ import {
   BarChart3,
   Check,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   ClipboardCheck,
   FileText,
@@ -17,6 +18,7 @@ import {
   History,
   Pencil,
   Plus,
+  Search,
   Settings2,
   ShieldAlert,
   Sparkles,
@@ -154,6 +156,11 @@ export default function FormPemeriksaanPage() {
   const [paramDiperiksaId, setParamDiperiksaId] = useState<number | null>(null);
   const [paramMsId, setParamMsId] = useState<number | null>(null);
   const [paramTmsId, setParamTmsId] = useState<number | null>(null);
+
+  // Pagination & Search state
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templatePage, setTemplatePage] = useState(1);
+  const [templateLimit] = useState(10);
 
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ["dynamic-categories"],
@@ -1265,6 +1272,23 @@ export default function FormPemeriksaanPage() {
   }, [fields]);
   const demoPersentase = totalSkor > 0 ? Math.round((demoSkorTerisi / totalSkor) * 100) : 0;
 
+  const filteredTemplates = useMemo(() => {
+    const q = templateSearch.toLowerCase().trim();
+    if (!q) return templates;
+    return templates.filter(
+      (t: any) =>
+        (t.nama || "").toLowerCase().includes(q) ||
+        (t.deskripsi || "").toLowerCase().includes(q) ||
+        (t.subCategory?.nama || "").toLowerCase().includes(q),
+    );
+  }, [templates, templateSearch]);
+
+  const totalTemplatePages = Math.max(1, Math.ceil(filteredTemplates.length / templateLimit));
+  const paginatedTemplates = useMemo(() => {
+    const start = (templatePage - 1) * templateLimit;
+    return filteredTemplates.slice(start, start + templateLimit);
+  }, [filteredTemplates, templatePage, templateLimit]);
+
   if ((session?.user as any)?.role === "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
@@ -1370,12 +1394,28 @@ export default function FormPemeriksaanPage() {
             <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Import PDF/Word atau buat manual.</p>
           </div>
         ) : (
-          <div className="pt-6">
-            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
-              Daftar Template
-            </h3>
+          <div className="pt-6 space-y-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                <input
+                  type="text"
+                  value={templateSearch}
+                  onChange={(e) => {
+                    setTemplateSearch(e.target.value);
+                    setTemplatePage(1);
+                  }}
+                  placeholder="Cari template pemeriksaan..."
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-medium outline-none focus:border-[#00A876] transition-colors"
+                />
+              </div>
+              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
+                Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} template
+              </span>
+            </div>
+
             <div className="flex flex-col gap-2">
-              {templates.map((tpl: any) => {
+              {paginatedTemplates.map((tpl: any) => {
                 const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
                 const grupCount = new Set(
                   (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
@@ -1489,6 +1529,41 @@ export default function FormPemeriksaanPage() {
                 );
               })}
             </div>
+
+            {/* Pagination Controls Template */}
+            {totalTemplatePages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+                <button
+                  onClick={() => setTemplatePage((p) => Math.max(1, p - 1))}
+                  disabled={templatePage <= 1}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalTemplatePages }).map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setTemplatePage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
+                        templatePage === i + 1
+                          ? "bg-[#0C1B16] text-[#BEF264]"
+                          : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setTemplatePage((p) => Math.min(totalTemplatePages, p + 1))}
+                  disabled={templatePage >= totalTemplatePages}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  Selanjutnya <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -4,23 +4,108 @@ import { aggregateInspectionToLaporan } from "@/lib/aggregate-inspection";
 import { withAuth } from "@/lib/api-auth";
 import { saveBase64Photo } from "@/lib/photo-files";
 
-// GET List hasil pemeriksaan
+// GET List hasil pemeriksaan (ringan & cepat)
 export const GET = withAuth(async (req: NextRequest) => {
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
+  const sp = req.nextUrl.searchParams;
+  const full = sp.get("full") === "1" || sp.get("full") === "true";
+  const paginated = sp.get("paginated") === "1";
+  const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
+  const limit = Math.max(1, Math.min(100, parseInt(sp.get("limit") || "20", 10)));
+  const skip = (page - 1) * limit;
 
   const where = role === "ADMIN" ? {} : { puskesmasId: pkmId };
 
+  if (full) {
+    const results = await prisma.inspectionResult.findMany({
+      where,
+      include: {
+        template: { include: { subCategory: true, fields: { orderBy: { urutan: "asc" } } } },
+        puskesmas: true,
+        user: { select: { id: true, name: true, username: true } },
+        sasaran: true,
+        values: { include: { field: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(results);
+  }
+
+  // Proyeksi ringan agar response cepat (< 100ms) tanpa megabyte base64
+  const select = {
+    id: true,
+    templateId: true,
+    puskesmasId: true,
+    userId: true,
+    sasaranId: true,
+    namaSasaran: true,
+    alamatSasaran: true,
+    lat: true,
+    lng: true,
+    status: true,
+    catatan: true,
+    bulan: true,
+    tahun: true,
+    tanggal: true,
+    createdAt: true,
+    updatedAt: true,
+    template: {
+      select: {
+        id: true,
+        nama: true,
+        deskripsi: true,
+        config: true,
+      },
+    },
+    puskesmas: {
+      select: {
+        id: true,
+        nama: true,
+      },
+    },
+    sasaran: {
+      select: {
+        id: true,
+        nama: true,
+        alamat: true,
+        pemilik: true,
+      },
+    },
+    user: {
+      select: {
+        id: true,
+        name: true,
+        username: true,
+      },
+    },
+  };
+
+  if (paginated) {
+    const [total, data] = await prisma.$transaction([
+      prisma.inspectionResult.count({ where }),
+      prisma.inspectionResult.findMany({
+        where,
+        select,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
+    return NextResponse.json({
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+  }
+
   const results = await prisma.inspectionResult.findMany({
     where,
-    include: {
-      template: { include: { subCategory: true, fields: { orderBy: { urutan: "asc" } } } },
-      puskesmas: true,
-      user: true,
-      sasaran: true,
-      values: { include: { field: true } },
-    },
+    select,
     orderBy: { createdAt: "desc" },
+    take: 100,
   });
   return NextResponse.json(results);
 });
@@ -120,12 +205,10 @@ export const POST = withAuth(async (req: NextRequest) => {
       return res;
     });
 
-    // Jalankan agregasi ke laporan bulanan
-    try {
-      await aggregateInspectionToLaporan(result.id);
-    } catch (aggErr) {
+    // Jalankan agregasi ke laporan bulanan secara background (non-blocking agar submit instan)
+    aggregateInspectionToLaporan(result.id).catch((aggErr) => {
       console.error("Failed to aggregate inspection to laporan:", aggErr);
-    }
+    });
 
     return NextResponse.json(result);
   } catch (err: any) {

@@ -599,6 +599,11 @@ model InspectionResult {
   puskesmas Puskesmas               @relation(fields: [puskesmasId], references: [id])
   user      User                    @relation(fields: [userId], references: [id])
   values    InspectionResultValue[]
+
+  @@index([puskesmasId, createdAt])
+  @@index([puskesmasId, bulan, tahun, status])
+  @@index([sasaranId])
+  @@index([templateId])
 }
 
 model InspectionResultValue {
@@ -611,6 +616,8 @@ model InspectionResultValue {
 
   result InspectionResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
   field  InspectionField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@index([resultId])
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -1,6 +1,24 @@
 "use client";
 
-import { ArrowLeft, MapPin, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Info,
+  Loader2,
+  MapPin,
+  PenTool,
+  Save,
+  Upload,
+  X,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { SignaturePad } from "@/components/ui/signature-pad";
 import { toRoman } from "./helpers";
 
@@ -22,13 +40,25 @@ export function parseDropdownOptions(raw: any): string[] {
   return [];
 }
 
-export function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, quality = 0.75): Promise<string> {
+/**
+ * Kompresi foto sisi client sebelum diupload/disimpan
+ * Mengubah gambar kamera 5-15MB menjadi ~150-250KB JPEG (1280px max, q=0.72)
+ */
+export function compressImage(
+  file: File,
+  maxWidth = 1280,
+  maxHeight = 1280,
+  quality = 0.72,
+): Promise<{ dataUrl: string; sizeKb: number }> {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onerror = () => resolve("");
+    reader.onerror = () => resolve({ dataUrl: "", sizeKb: 0 });
     reader.onload = () => {
       const img = new Image();
-      img.onerror = () => resolve(String(reader.result || ""));
+      img.onerror = () => {
+        const raw = String(reader.result || "");
+        resolve({ dataUrl: raw, sizeKb: Math.round(raw.length / 1024) });
+      };
       img.onload = () => {
         let width = img.width;
         let height = img.height;
@@ -46,11 +76,14 @@ export function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, qua
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          resolve(String(reader.result || ""));
+          const raw = String(reader.result || "");
+          resolve({ dataUrl: raw, sizeKb: Math.round(raw.length / 1024) });
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        const sizeKb = Math.round((dataUrl.length * 3) / 4 / 1024);
+        resolve({ dataUrl, sizeKb });
       };
       img.src = String(reader.result || "");
     };
@@ -124,7 +157,15 @@ interface FormViewProps {
   editingId: number | null;
   formValues: Record<number, any>;
   metaValues: Record<number, any>;
-  liveSkor: { gained: number; max: number; valueText: string; pass: boolean; text: string };
+  liveSkor: {
+    gained: number;
+    max: number;
+    finalValue?: number;
+    percentValue?: number;
+    valueText: string;
+    pass: boolean;
+    text: string;
+  };
   canSubmit: boolean;
   isPending: boolean;
   tanggalPemeriksaan: string;
@@ -152,10 +193,15 @@ export function FormView({
   onTanggalChange,
   onSubmit,
 }: FormViewProps) {
-  const metaFields = activeForm.fields.filter((f: any) => f.grup === "__META__");
-  const penilaianFields = activeForm.fields.filter((f: any) => f.grup !== "__META__");
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  const selectedGolongan = (() => {
+  const metaFields = useMemo(() => activeForm.fields.filter((f: any) => f.grup === "__META__"), [activeForm.fields]);
+  const penilaianFields = useMemo(
+    () => activeForm.fields.filter((f: any) => f.grup !== "__META__"),
+    [activeForm.fields],
+  );
+
+  const selectedGolongan = useMemo(() => {
     for (const mf of metaFields) {
       const val = String(metaValues[mf.id] ?? "").trim();
       if (!val) continue;
@@ -165,179 +211,673 @@ export function FormView({
       }
     }
     return "";
-  })();
+  }, [metaFields, metaValues]);
 
-  const groups: {
-    grup: string;
-    area: string;
-    subbagian: string | null;
-    areaIndex: number;
-    firstInArea: boolean;
-    fields: any[];
-  }[] = [];
-  const groupMap = new Map<string, any[]>();
-  penilaianFields.forEach((f: any) => {
-    const g = f.grup || "Lainnya";
-    if (!groupMap.has(g)) groupMap.set(g, []);
-    groupMap.get(g)?.push(f);
-  });
-  const areaIndexes = new Map<string, number>();
-  groupMap.forEach((fields, grup) => {
-    const delimiterIndex = grup.indexOf(" — ");
-    const area = delimiterIndex >= 0 ? grup.slice(0, delimiterIndex).trim() : grup;
-    const subbagian = delimiterIndex >= 0 ? grup.slice(delimiterIndex + 3).trim() || null : null;
-    if (!areaIndexes.has(area)) areaIndexes.set(area, areaIndexes.size + 1);
-    groups.push({
-      grup,
-      area,
-      subbagian,
-      areaIndex: areaIndexes.get(area) ?? 1,
-      firstInArea: !groups.some((group) => group.area === area),
-      fields,
+  // Kelompokkan area kuesioner menjadi langkah-langkah wizard
+  const areaSteps = useMemo(() => {
+    const areaMap = new Map<
+      string,
+      { area: string; areaIndex: number; groups: { grup: string; subbagian: string | null; fields: any[] }[] }
+    >();
+    const areaOrder: string[] = [];
+
+    penilaianFields.forEach((f: any) => {
+      const g = f.grup || "Instrumen Penilaian";
+      const delimiterIndex = g.indexOf(" — ");
+      const area = delimiterIndex >= 0 ? g.slice(0, delimiterIndex).trim() : g;
+      const subbagian = delimiterIndex >= 0 ? g.slice(delimiterIndex + 3).trim() || null : null;
+
+      let areaEntry = areaMap.get(area);
+      if (!areaEntry) {
+        areaOrder.push(area);
+        areaEntry = {
+          area,
+          areaIndex: areaOrder.length,
+          groups: [],
+        };
+        areaMap.set(area, areaEntry);
+      }
+
+      let groupEntry = areaEntry.groups.find((gr) => gr.grup === g);
+      if (!groupEntry) {
+        groupEntry = { grup: g, subbagian, fields: [] };
+        areaEntry.groups.push(groupEntry);
+      }
+      groupEntry.fields.push(f);
     });
-  });
+
+    return areaOrder
+      .map((areaKey) => areaMap.get(areaKey))
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+  }, [penilaianFields]);
+
+  // Definisi struktur Langkah (Wizard Steps)
+  // Step 0: Informasi Sasaran
+  // Step 1..N: Bagian Area Penilaian
+  // Step Terakhir: Rangkuman & Pengesahan
+  const steps = useMemo(() => {
+    const s: {
+      id: string;
+      title: string;
+      subtitle: string;
+      badge: string;
+      type: "meta" | "area" | "summary";
+      areaData?: (typeof areaSteps)[0];
+    }[] = [
+      {
+        id: "step-meta",
+        title: "Identitas Sasaran",
+        subtitle: "Data entitas & tanggal pemeriksaan",
+        badge: "Info",
+        type: "meta",
+      },
+    ];
+
+    areaSteps.forEach((as, idx) => {
+      s.push({
+        id: `step-area-${idx}`,
+        title: as.area,
+        subtitle: `${as.groups.reduce((acc, g) => acc + g.fields.length, 0)} Pertanyaan`,
+        badge: toRoman(as.areaIndex),
+        type: "area",
+        areaData: as,
+      });
+    });
+
+    s.push({
+      id: "step-summary",
+      title: "Rangkuman & TTD",
+      subtitle: "Evaluasi skor & pengesahan tanda tangan",
+      badge: "Akhir",
+      type: "summary",
+    });
+
+    return s;
+  }, [areaSteps]);
+
+  const currentStep = steps[currentStepIndex] || steps[0];
+
+  // Hitung progres kelengkapan butir
+  const completionStats = useMemo(() => {
+    let totalQuestions = 0;
+    let answeredQuestions = 0;
+
+    penilaianFields.forEach((f: any) => {
+      const disabledInfo = isFieldDisabledInfo(f, formValues, selectedGolongan, activeForm.fields);
+      if (disabledInfo.isDisabled) return;
+      totalQuestions++;
+      const val = formValues[f.id];
+      if (val !== null && val !== undefined && val !== "") {
+        answeredQuestions++;
+      }
+    });
+
+    const percentAnswered = totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 100;
+    return { totalQuestions, answeredQuestions, percentAnswered };
+  }, [penilaianFields, formValues, selectedGolongan, activeForm.fields]);
+
+  // Evaluasi skor persentase tampilan
+  const displayPercentage = useMemo(() => {
+    if (liveSkor.percentValue !== undefined) {
+      return `${Math.round(liveSkor.percentValue * 10) / 10}%`;
+    }
+    if (liveSkor.valueText?.includes("%")) {
+      return liveSkor.valueText;
+    }
+    const pct = liveSkor.max > 0 ? (liveSkor.gained / liveSkor.max) * 100 : 0;
+    return `${Math.round(pct * 10) / 10}%`;
+  }, [liveSkor]);
+
+  const handleNext = () => {
+    if (currentStepIndex < steps.length - 1) {
+      setCurrentStepIndex((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
-    <div className="w-full pb-8">
-      {/* Header */}
-      <div className="mb-6">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-[13px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali
-        </button>
-      </div>
-
-      {/* Title & Score */}
-      <div className="border-b border-[hsl(var(--border))] pb-6 mb-8">
-        <h1 className="text-[24px] font-bold mb-2">{activeForm.nama}</h1>
-        {activeForm.deskripsi && (
-          <p className="text-[13px] text-[hsl(var(--muted-foreground))] mb-4">{activeForm.deskripsi}</p>
-        )}
-
-        {liveSkor.max > 0 && (
-          <div className="flex items-center gap-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-bold tabular-nums">{liveSkor.valueText}</span>
-              <span className="text-[13px] text-[hsl(var(--muted-foreground))]">/ {liveSkor.max}</span>
+    <div className="w-full pb-20 fade-in">
+      {/* ── STICKY TOP SCORE HUD ── */}
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          {/* Back & Form Name */}
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={onBack}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
+              title="Kembali"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#BEF264] px-2 py-0.5 rounded-full bg-[#BEF264]/15">
+                  {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
+                </span>
+                <span className="text-[11px] text-white/50 hidden sm:inline truncate">{activeForm.nama}</span>
+              </div>
+              <h2 className="text-[15px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-white">
+                {String(
+                  Object.entries(metaValues).find(([fid]) => {
+                    const f = activeForm.fields.find((field: any) => field.id === Number(fid));
+                    return f?.pertanyaan?.toLowerCase().includes("nama");
+                  })?.[1] || activeForm.nama,
+                )}
+              </h2>
             </div>
-            {activeForm.config?.thresholdOperator && (
-              <span className={`text-[12px] font-medium ${liveSkor.pass ? "text-green-700" : "text-red-700"}`}>
-                {liveSkor.text}
-              </span>
+          </div>
+
+          {/* Prominent Percentage Score HUD */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl bg-white/[0.08] border border-white/10">
+              <div className="text-right">
+                <div className="flex items-baseline justify-end gap-1.5">
+                  <span
+                    className={`text-[20px] sm:text-[24px] font-black tracking-tight leading-none tabular-nums ${
+                      liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
+                    }`}
+                  >
+                    {displayPercentage}
+                  </span>
+                </div>
+                <div className="text-[10px] text-white/60 font-semibold tabular-nums">
+                  {liveSkor.gained} / {liveSkor.max} Poin
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <div className="hidden xs:flex flex-col items-start pl-2 border-l border-white/15">
+                <span
+                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                    liveSkor.pass ? "bg-[#00A876] text-white shadow-sm" : "bg-[#E15A4F] text-white shadow-sm"
+                  }`}
+                >
+                  {liveSkor.pass ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                  {liveSkor.text}
+                </span>
+                <span className="text-[9px] text-white/50 mt-0.5 pl-0.5">
+                  {completionStats.answeredQuestions}/{completionStats.totalQuestions} Butir (
+                  {completionStats.percentAnswered}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Action button on mobile */}
+            {currentStepIndex === steps.length - 1 ? (
+              <button
+                onClick={onSubmit}
+                disabled={!canSubmit || isPending}
+                className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#BEF264] text-[#06281E] text-[13px] font-black hover:brightness-105 transition-all shadow-md disabled:opacity-40"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> {editingId ? "Update" : "Simpan"}
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleNext}
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold transition-colors"
+              >
+                Lanjut <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Meta Fields */}
-      <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 mb-6">
-        <h2 className="text-[14px] font-semibold mb-4 pb-3 border-b border-[hsl(var(--border))]">Informasi Sasaran</h2>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <label className="text-[13px] font-medium leading-relaxed">
-                Tanggal Pemeriksaan <span className="ml-1 text-red-500">*</span>
-              </label>
-            </div>
-            <input
-              type="date"
-              value={tanggalPemeriksaan}
-              onChange={(e) => onTanggalChange(e.target.value)}
-              className="w-full max-w-[200px] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
-            />
-          </div>
-          {metaFields.map((f: any) => {
-            const allFields = activeForm.fields || [];
-            const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
-              f,
-              metaValues,
-              selectedGolongan,
-              allFields,
-            );
-            return (
-              <FieldInput
-                key={f.id}
-                field={f}
-                value={metaValues[f.id] ?? ""}
-                onChange={(v) => onMetaChange(f.id, v)}
-                onGPS={() => onGPS(f.id)}
-                disabled={isDisabled}
-                disabledReason={disabledReason}
-              />
-            );
-          })}
+        {/* Global Progress Bar */}
+        <div className="w-full bg-white/10 h-1 mt-2.5 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#00A876] to-[#BEF264] transition-all duration-300 rounded-full"
+            style={{ width: `${completionStats.percentAnswered}%` }}
+          />
         </div>
       </div>
 
-      {/* Penilaian Groups */}
-      <div className="space-y-6">
-        {groups.map((group) => (
-          <div key={group.grup} className="border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-            {group.subbagian && group.firstInArea && (
-              <div className="flex items-center gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-6 py-3">
-                <span className="flex h-7 w-7 items-center justify-center bg-[hsl(var(--foreground))] text-[9px] font-black text-[hsl(var(--background))]">
-                  {toRoman(group.areaIndex)}
-                </span>
-                <span className="text-[11px] font-bold uppercase tracking-wide">{group.area}</span>
-              </div>
-            )}
-            {/* Group Header */}
-            <div
-              className={`border-b border-[hsl(var(--border))] px-6 py-3 ${group.subbagian ? "bg-[hsl(var(--muted))]/40 pl-14" : "bg-[hsl(var(--muted))]"}`}
-            >
-              <h2 className="flex items-center gap-2 text-[13px] font-semibold">
-                {!group.subbagian && (
-                  <span className="text-[12px] text-[hsl(var(--muted-foreground))]">{toRoman(group.areaIndex)}.</span>
-                )}
-                {group.subbagian || group.area}
-              </h2>
-            </div>
-
-            {/* Group Fields */}
-            <div className="p-6 space-y-6">
-              {group.fields.map((f: any) => {
-                const allFields = activeForm.fields || [];
-                const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
-                  f,
-                  formValues,
-                  selectedGolongan,
-                  allFields,
-                );
-
-                return (
-                  <FieldInput
-                    key={f.id}
-                    field={f}
-                    value={formValues[f.id] ?? null}
-                    onChange={(v) => onFieldChange(f.id, v)}
-                    onGPS={() => onGPS(f.id)}
-                    disabled={isDisabled}
-                    disabledReason={disabledReason}
-                  />
-                );
-              })}
-            </div>
+      <div className="max-w-5xl mx-auto px-1 sm:px-0 pt-6">
+        {/* ── STEP WIZARD NAVIGATION PILLS ── */}
+        <div className="mb-6 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 min-w-max">
+            {steps.map((step, idx) => {
+              const isActive = idx === currentStepIndex;
+              const isPassed = idx < currentStepIndex;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    setCurrentStepIndex(idx);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[12px] font-bold transition-all border ${
+                    isActive
+                      ? "bg-[#0C1B16] text-white border-[#0C1B16] shadow-sm ring-2 ring-[#00A876]/30"
+                      : isPassed
+                        ? "bg-[#00A876]/10 text-[#00A876] border-[#00A876]/20 hover:bg-[#00A876]/20"
+                        : "bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:border-[hsl(var(--foreground))]/40"
+                  }`}
+                >
+                  <span
+                    className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black ${
+                      isActive
+                        ? "bg-[#BEF264] text-[#06281E]"
+                        : isPassed
+                          ? "bg-[#00A876] text-white"
+                          : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                    }`}
+                  >
+                    {isPassed ? <Check className="w-3 h-3 stroke-[3]" /> : step.badge}
+                  </span>
+                  <span className="truncate max-w-[140px] sm:max-w-[200px]">{step.title}</span>
+                </button>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Tombol Simpan di bawah */}
-      <div className="mt-8 flex flex-col items-end gap-1.5">
-        <button
-          onClick={onSubmit}
-          disabled={!canSubmit || isPending}
-          className="h-10 px-8 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] text-[13px] font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity"
-        >
-          {isPending ? "Menyimpan..." : editingId ? "Update" : "Simpan"}
-        </button>
-        {!canSubmit && !isPending && (
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-            Lengkapi butir bertanda bintang (*) untuk menyimpan.
-          </p>
-        )}
+        {/* ── STEP CONTENT AREA ── */}
+        <div className="space-y-6">
+          {/* STEP 0: INFORMASI SASARAN */}
+          {currentStep.type === "meta" && (
+            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-[hsl(var(--border))] bg-gradient-to-r from-[hsl(var(--muted))]/60 to-transparent flex items-center justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                    <FileText className="w-3 h-3" /> Langkah 1 dari {steps.length}
+                  </div>
+                  <h3 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
+                    Informasi Sasaran & Pelaksanaan
+                  </h3>
+                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    Lengkapi identitas sasaran yang diperiksa dan tanggal pelaksanaan inspeksi kesehatan lingkungan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Tanggal Pemeriksaan */}
+                <div className="rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--background))]/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-bold text-[hsl(var(--foreground))] flex items-center gap-1.5">
+                      Tanggal Pemeriksaan <span className="text-[#E15A4F]">*</span>
+                    </label>
+                    <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Wajib diisi</span>
+                  </div>
+                  <input
+                    type="date"
+                    value={tanggalPemeriksaan}
+                    onChange={(e) => onTanggalChange(e.target.value)}
+                    className="w-full sm:max-w-xs h-11 border border-[hsl(var(--border))] rounded-xl bg-white dark:bg-zinc-900 px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
+                  />
+                </div>
+
+                {/* Metadata Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {metaFields.map((f: any) => {
+                    const allFields = activeForm.fields || [];
+                    const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
+                      f,
+                      metaValues,
+                      selectedGolongan,
+                      allFields,
+                    );
+                    return (
+                      <div
+                        key={f.id}
+                        className={`rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--background))]/50 transition-all ${
+                          f.tipe === "TEXT" || f.tipe === "SIGNATURE" ? "md:col-span-2" : ""
+                        }`}
+                      >
+                        <FieldInput
+                          field={f}
+                          value={metaValues[f.id] ?? ""}
+                          onChange={(v) => onMetaChange(f.id, v)}
+                          onGPS={() => onGPS(f.id)}
+                          disabled={isDisabled}
+                          disabledReason={disabledReason}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 1..N: BAGIAN AREA PENILAIAN */}
+          {currentStep.type === "area" && currentStep.areaData && (
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-[hsl(var(--border))] bg-gradient-to-r from-[#0C1B16]/5 to-transparent flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[13px] font-black shadow-sm">
+                      {toRoman(currentStep.areaData.areaIndex)}
+                    </span>
+                    <div>
+                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-[#00A876]">
+                        Bagian Penilaian
+                      </div>
+                      <h3 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
+                        {currentStep.areaData.area}
+                      </h3>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] px-3 py-1 rounded-full bg-[hsl(var(--muted))]">
+                    {currentStep.areaData.groups.reduce((acc, g) => acc + g.fields.length, 0)} Butir
+                  </span>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {currentStep.areaData.groups.map((group) => (
+                    <div key={group.grup} className="space-y-4">
+                      {group.subbagian && (
+                        <div className="flex items-center gap-2 pt-2 pb-1 border-b border-[hsl(var(--border))]">
+                          <div className="w-1.5 h-4 rounded-full bg-[#00A876]" />
+                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wide">
+                            {group.subbagian}
+                          </h4>
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        {group.fields.map((f: any, idx: number) => {
+                          const allFields = activeForm.fields || [];
+                          const { isDisabled, reason: disabledReason } = isFieldDisabledInfo(
+                            f,
+                            formValues,
+                            selectedGolongan,
+                            allFields,
+                          );
+
+                          return (
+                            <div
+                              key={f.id}
+                              className={`rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors shadow-sm ${
+                                isDisabled ? "opacity-60 bg-[hsl(var(--muted))]/20" : ""
+                              }`}
+                            >
+                              <FieldInput
+                                index={idx + 1}
+                                field={f}
+                                value={formValues[f.id] ?? null}
+                                onChange={(v) => onFieldChange(f.id, v)}
+                                onGPS={() => onGPS(f.id)}
+                                disabled={isDisabled}
+                                disabledReason={disabledReason}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP FINAL: RANGKUMAN PENILAIAN & PENGESAHAN TANDA TANGAN */}
+          {currentStep.type === "summary" && (
+            <div className="space-y-6">
+              {/* Scorecard Hero */}
+              <div className="rounded-3xl border border-[hsl(var(--border))] bg-gradient-to-br from-[#0C1B16] to-[#122820] text-white p-7 sm:p-8 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#00A876] opacity-15 blur-3xl" />
+                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#BEF264] text-[11px] font-extrabold uppercase tracking-wider mb-2">
+                      <Award className="w-3.5 h-3.5" /> Evaluasi Rumus Penilaian
+                    </div>
+                    <h3 className="text-[22px] sm:text-[26px] font-black tracking-tight text-white">
+                      Rangkuman Hasil Pemeriksaan
+                    </h3>
+                    <p className="text-[13px] text-white/60 mt-1 max-w-lg">
+                      Skor dihitung otomatis berdasarkan konfigurasi formula formulir (
+                      {activeForm.config?.rumus === "percentage"
+                        ? "Persentase"
+                        : activeForm.config?.rumus === "weighted"
+                          ? "Pembobotan"
+                          : activeForm.config?.rumus === "custom"
+                            ? "Rumus Kustom"
+                            : "Total Poin"}
+                      ).
+                    </p>
+                  </div>
+
+                  {/* Highlight Score Pill */}
+                  <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white/[0.08] border border-white/15 min-w-[200px] text-center shadow-lg">
+                    <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">
+                      Persentase Kelulusan
+                    </span>
+                    <span
+                      className={`text-[42px] sm:text-[48px] font-black tracking-tight leading-tight tabular-nums ${
+                        liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
+                      }`}
+                    >
+                      {displayPercentage}
+                    </span>
+                    <span className="text-[12px] font-bold text-white/70 tabular-nums">
+                      {liveSkor.gained} / {liveSkor.max} Poin Maksimal
+                    </span>
+
+                    <div className="mt-3 w-full pt-3 border-t border-white/10 flex items-center justify-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-extrabold ${
+                          liveSkor.pass ? "bg-[#00A876] text-white shadow-sm" : "bg-[#E15A4F] text-white shadow-sm"
+                        }`}
+                      >
+                        {liveSkor.pass ? (
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        ) : (
+                          <AlertCircle className="w-3.5 h-3.5" />
+                        )}
+                        {liveSkor.text}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-white/10">
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
+                      Ambang Batas
+                    </span>
+                    <span className="text-[14px] font-bold text-white mt-0.5 block">
+                      {activeForm.config?.thresholdOperator || ">="} {activeForm.config?.thresholdValue ?? 80}%
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
+                      Status Kelulusan
+                    </span>
+                    <span
+                      className={`text-[14px] font-bold mt-0.5 block ${
+                        liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
+                      }`}
+                    >
+                      {liveSkor.text}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
+                      Kelengkapan
+                    </span>
+                    <span className="text-[14px] font-bold text-white mt-0.5 block">
+                      {completionStats.answeredQuestions} / {completionStats.totalQuestions} (
+                      {completionStats.percentAnswered}%)
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-[10px] text-white/50 uppercase tracking-wider block font-semibold">
+                      Model Rumus
+                    </span>
+                    <span className="text-[14px] font-bold text-[#BEF264] mt-0.5 block uppercase">
+                      {activeForm.config?.rumus || "Persentase"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tanda Tangan Digital Pengesahan (Enlarged Canvas) */}
+              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-7 shadow-sm space-y-6">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                    <PenTool className="w-3 h-3" /> Pengesahan
+                  </div>
+                  <h4 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
+                    Tanda Tangan Digital Pemeriksaan
+                  </h4>
+                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    Bubuhkan tanda tangan petugas pemeriksa dan penanggung jawab sasaran. Canvas telah diperbesar untuk
+                    kemudahan tanda tangan di HP dan tablet.
+                  </p>
+                </div>
+
+                {/* Render any explicit SIGNATURE fields from template, or default signature box */}
+                {(() => {
+                  const sigFields = activeForm.fields.filter((f: any) => f.tipe === "SIGNATURE");
+                  if (sigFields.length > 0) {
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {sigFields.map((sf: any) => {
+                          const isMeta = sf.grup === "__META__";
+                          const val = isMeta ? metaValues[sf.id] : formValues[sf.id];
+                          const setVal = (v: string) => (isMeta ? onMetaChange(sf.id, v) : onFieldChange(sf.id, v));
+                          return (
+                            <div key={sf.id} className="space-y-2">
+                              <label className="text-[13px] font-bold text-[hsl(var(--foreground))] block">
+                                {sf.pertanyaan} {sf.isRequired && <span className="text-[#E15A4F]">*</span>}
+                              </label>
+                              <SignaturePad
+                                value={val || null}
+                                onChange={setVal}
+                                label={`Tanda Tangan ${sf.pertanyaan}`}
+                                helperText="Tanda tangan di atas garis"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+
+                  // Default single signature field if none defined in template
+                  const defaultSigField = activeForm.fields.find(
+                    (f: any) =>
+                      f.pertanyaan?.toLowerCase().includes("tanda tangan") ||
+                      f.pertanyaan?.toLowerCase().includes("ttd"),
+                  );
+                  const val = defaultSigField
+                    ? formValues[defaultSigField.id] || metaValues[defaultSigField.id]
+                    : formValues[-1];
+                  const setVal = (v: string) => {
+                    if (defaultSigField) {
+                      if (defaultSigField.grup === "__META__") onMetaChange(defaultSigField.id, v);
+                      else onFieldChange(defaultSigField.id, v);
+                    } else {
+                      onFieldChange(-1, v);
+                    }
+                  };
+
+                  return (
+                    <div className="max-w-xl">
+                      <SignaturePad
+                        value={val || null}
+                        onChange={setVal}
+                        label="Tanda Tangan Petugas / Penanggung Jawab"
+                        helperText="Tanda tangan jelas di atas garis"
+                      />
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Submit Final Action Card */}
+              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div>
+                  <h5 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Siap Menyimpan Pemeriksaan?</h5>
+                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    {canSubmit
+                      ? "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
+                      : "Masih terdapat butir bertanda bintang (*) yang belum diisi pada langkah sebelumnya."}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onSubmit}
+                  disabled={!canSubmit || isPending}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#00A876] hover:bg-[#008f64] text-white text-[13px] font-black transition-all shadow-md hover:shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── BOTTOM STICKY NAVIGATION BAR ── */}
+        <div className="mt-8 pt-5 border-t border-[hsl(var(--border))] flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={currentStepIndex === 0}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+          >
+            <ChevronLeft className="w-4 h-4" /> Sebelumnya
+          </button>
+
+          <div className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hidden sm:block text-center">
+            Langkah {currentStepIndex + 1} dari {steps.length} ·{" "}
+            <span className="text-[hsl(var(--foreground))] font-bold">{currentStep.title}</span>
+          </div>
+
+          {currentStepIndex < steps.length - 1 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-sm"
+            >
+              Selanjutnya <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={!canSubmit || isPending}
+              className="flex items-center gap-2 px-7 py-2.5 rounded-2xl bg-[#00A876] text-white text-[12px] font-black hover:bg-[#008f64] transition-all shadow-sm disabled:opacity-40"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" /> Selesai & Simpan
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -346,6 +886,7 @@ export function FormView({
 // ─── Field Input Component ──────────────────────────────────────────────
 
 function FieldInput({
+  index,
   field: f,
   value,
   onChange,
@@ -353,6 +894,7 @@ function FieldInput({
   disabled = false,
   disabledReason = "",
 }: {
+  index?: number;
   field: any;
   value: any;
   onChange: (v: any) => void;
@@ -360,102 +902,126 @@ function FieldInput({
   disabled?: boolean;
   disabledReason?: string;
 }) {
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(null);
   const hasValue = value !== null && value !== undefined && value !== "";
 
   return (
-    <div className={`space-y-2 ${disabled ? "opacity-60" : ""}`}>
+    <div className={`space-y-3 ${disabled ? "opacity-60" : ""}`}>
       {/* Label Row */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <label
-            className={`text-[13px] font-medium leading-relaxed ${disabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""}`}
-          >
-            {f.pertanyaan}
-            {f.isRequired && !disabled && <span className="ml-1 text-red-500">*</span>}
-          </label>
-          {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] font-semibold">
-              👤 Akun Pemeriksa
+        <div className="flex items-start gap-2.5 flex-1">
+          {index && (
+            <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-[hsl(var(--muted))] text-[11px] font-black text-[hsl(var(--foreground))] shrink-0 mt-0.5">
+              {index}
             </span>
           )}
-          {(f.config?.autoFill === "USER_PUSKESMAS" ||
-            f.pertanyaan?.toLowerCase().includes("wilayah") ||
-            f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-semibold">
-              🏥 Wilayah Kerja
-            </span>
-          )}
-          {f.config?.targetGolongan && f.config?.targetGolongan !== "ALL" && f.config?.targetGolongan !== "SEMUA" && (
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                f.config.targetGolongan === "A1" || f.config.targetGolongan === "Golongan A1"
-                  ? "bg-amber-500/10 text-amber-800 border-amber-300"
-                  : "bg-indigo-500/10 text-indigo-800 border-indigo-300"
+          <div className="space-y-1 flex-1">
+            <label
+              className={`text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug block ${
+                disabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""
               }`}
             >
-              🎯 Khusus{" "}
-              {f.config.targetGolongan === "A1"
-                ? "Golongan A1"
-                : f.config.targetGolongan === "A2"
-                  ? "Golongan A2"
-                  : f.config.targetGolongan}
-            </span>
-          )}
-          {disabled && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 font-bold border border-amber-300">
-              🚫 Dinonaktifkan
-            </span>
-          )}
+              {f.pertanyaan}
+              {f.isRequired && !disabled && <span className="ml-1 text-[#E15A4F] font-black">*</span>}
+            </label>
+
+            {/* Badges / Pill Contexts */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] font-bold">
+                  👤 Akun Pemeriksa
+                </span>
+              )}
+              {(f.config?.autoFill === "USER_PUSKESMAS" ||
+                f.pertanyaan?.toLowerCase().includes("wilayah") ||
+                f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">
+                  🏥 Wilayah Kerja
+                </span>
+              )}
+              {f.config?.targetGolongan &&
+                f.config?.targetGolongan !== "ALL" &&
+                f.config?.targetGolongan !== "SEMUA" && (
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                      f.config.targetGolongan === "A1" || f.config.targetGolongan === "Golongan A1"
+                        ? "bg-amber-500/10 text-amber-800 border-amber-300"
+                        : "bg-indigo-500/10 text-indigo-800 border-indigo-300"
+                    }`}
+                  >
+                    🎯 Khusus{" "}
+                    {f.config.targetGolongan === "A1"
+                      ? "Golongan A1"
+                      : f.config.targetGolongan === "A2"
+                        ? "Golongan A2"
+                        : f.config.targetGolongan}
+                  </span>
+                )}
+              {disabled && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 font-bold border border-amber-300">
+                  🚫 Tidak Dinilai
+                </span>
+              )}
+            </div>
+          </div>
         </div>
+
         {(f.config?.skor ?? 0) > 0 && !disabled && (
-          <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))] whitespace-nowrap">
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#00A876]/10 text-[#00A876] whitespace-nowrap shrink-0">
             Bobot: {f.config.skor}
           </span>
         )}
       </div>
 
       {disabled && (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-800">
-          <span className="font-bold">Info:</span> {disabledReason || "Butir ini dinonaktifkan / tidak berlaku"}
+        <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50/90 border border-amber-200 text-[11px] text-amber-900 font-medium">
+          <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+          <span>{disabledReason || "Butir ini tidak berlaku untuk golongan ini."}</span>
         </div>
       )}
 
       {/* Input by Type */}
       {f.tipe === "BOOLEAN" && (
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+          {/* Tombol YA (Emerald Modern) */}
           <button
             type="button"
             disabled={disabled}
             onClick={() => onChange("TRUE")}
-            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+            className={`h-11 px-4 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-50 ${
               String(value ?? "").toUpperCase() === "TRUE"
-                ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
-                : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
+                ? "bg-[#00A876] text-white border-[#00A876] shadow-sm ring-2 ring-[#00A876]/30"
+                : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-700 dark:text-slate-200 hover:border-[#00A876]/60 hover:bg-[#00A876]/5"
             }`}
           >
-            Ya
+            <Check className="w-4 h-4 stroke-[3]" /> Ya (Memenuhi)
           </button>
+
+          {/* Tombol TIDAK (Soft Coral / Rose) */}
           <button
             type="button"
             disabled={disabled}
             onClick={() => onChange("FALSE")}
-            className={`flex-1 h-10 px-4 text-[13px] font-medium border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+            className={`h-11 px-4 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-50 ${
               String(value ?? "").toUpperCase() === "FALSE"
-                ? "border-[hsl(var(--foreground))] bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
-                : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--foreground))]"
+                ? "bg-[#E15A4F] text-white border-[#E15A4F] shadow-sm ring-2 ring-[#E15A4F]/30"
+                : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-700 dark:text-slate-200 hover:border-[#E15A4F]/60 hover:bg-[#E15A4F]/5"
             }`}
           >
-            Tidak
+            <X className="w-4 h-4 stroke-[3]" /> Tidak
           </button>
+
+          {/* Tombol T/A (Amber Soft) */}
           {(f.config?.allowNA || f.allowNA) && (
             <button
               type="button"
               disabled={disabled}
               onClick={() => onChange("NA")}
-              className={`h-10 px-4 text-[12px] font-bold border transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+              className={`h-11 px-4 rounded-xl text-[12px] font-bold border transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 disabled:pointer-events-none disabled:opacity-50 ${
                 String(value ?? "").toUpperCase() === "NA"
-                  ? "border-amber-600 bg-amber-500 text-white"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))]"
+                  ? "bg-amber-500 text-white border-amber-500 shadow-sm ring-2 ring-amber-500/30"
+                  : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-600 dark:text-slate-300 hover:border-amber-400 hover:bg-amber-50/50"
               }`}
             >
               T/A (Tidak Ada)
@@ -470,8 +1036,8 @@ function FieldInput({
           disabled={disabled}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Tulis jawaban..."
-          className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[hsl(var(--foreground))] transition-colors resize-y disabled:bg-[hsl(var(--muted))]/30 disabled:cursor-not-allowed"
+          placeholder="Tuliskan keterangan / uraian temuan..."
+          className="w-full border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all resize-y disabled:bg-[hsl(var(--muted))]/30 disabled:cursor-not-allowed shadow-sm"
         />
       )}
 
@@ -481,7 +1047,7 @@ function FieldInput({
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="w-full max-w-[200px] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] tabular-nums outline-none focus:border-[hsl(var(--foreground))] transition-colors"
+          className="w-full max-w-[200px] h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium tabular-nums outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
         />
       )}
 
@@ -490,7 +1056,7 @@ function FieldInput({
           type="date"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full max-w-[200px] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
+          className="w-full max-w-[220px] h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
         />
       )}
 
@@ -498,9 +1064,9 @@ function FieldInput({
         <select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-[13px] outline-none focus:border-[hsl(var(--foreground))] transition-colors"
+          className="w-full h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm cursor-pointer"
         >
-          <option value="">— Pilih —</option>
+          <option value="">— Pilih Opsi —</option>
           {parseDropdownOptions(f.options || f.opsi || f.config?.options).map((opt: string) => (
             <option key={opt} value={opt}>
               {opt}
@@ -510,36 +1076,54 @@ function FieldInput({
       )}
 
       {f.tipe === "GPS" && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={onGPS}
-            className="h-9 px-4 border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium hover:border-[hsl(var(--foreground))] transition-colors flex items-center gap-2"
+            className="h-11 px-4 rounded-xl border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 hover:border-[#00A876] text-[12px] font-bold text-[hsl(var(--foreground))] transition-colors flex items-center gap-2 shadow-sm"
           >
-            <MapPin className="w-3.5 h-3.5" />
-            {hasValue ? "Perbarui Lokasi" : "Ambil Lokasi"}
+            <MapPin className="w-4 h-4 text-[#00A876]" />
+            {hasValue ? "Perbarui Koordinat" : "Ambil Lokasi GPS"}
           </button>
-          {hasValue && <span className="text-[11px] font-mono text-[hsl(var(--muted-foreground))]">{value}</span>}
+          {hasValue && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#00A876]/10 text-[#00A876] font-mono text-[11px] font-bold">
+              <Check className="w-3.5 h-3.5" /> {value}
+            </div>
+          )}
         </div>
       )}
 
+      {/* Mandatory Client-Side Compressed Photo */}
       {f.tipe === "PHOTO" && (
-        <div>
-          {hasValue ? (
-            <div className="relative inline-block border border-[hsl(var(--border))]">
-              {/* biome-ignore lint/performance/noImgElement: dynamic user capture image preview */}
-              <img src={value} className="w-32 h-32 object-cover" alt="foto" />
+        <div className="space-y-2">
+          {isCompressing ? (
+            <div className="flex items-center gap-2.5 p-4 rounded-2xl border border-dashed border-[#00A876] bg-[#00A876]/5 text-[#00A876] text-[12px] font-bold animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Mengompresi foto (mengurangi ukuran ke ~200KB)...
+            </div>
+          ) : hasValue ? (
+            <div className="relative inline-block rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-sm group">
+              {/* biome-ignore lint/performance/noImgElement: user inspection photo preview */}
+              <img src={value} className="w-48 h-36 object-cover" alt="Foto Inspeksi" />
               <button
-                onClick={() => onChange("")}
-                className="absolute top-1 right-1 w-5 h-5 bg-[hsl(var(--foreground))] text-[hsl(var(--background))] flex items-center justify-center text-[10px] font-bold hover:opacity-80"
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setPhotoSizeKb(null);
+                }}
+                className="absolute top-2 right-2 p-1.5 bg-black/70 hover:bg-rose-600 text-white rounded-xl transition-colors shadow-md"
+                title="Hapus foto"
               >
-                ✕
+                <X className="w-3.5 h-3.5" />
               </button>
+              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold">
+                {photoSizeKb ? `${photoSizeKb} KB (Terkompresi)` : "Foto Terlampir"}
+              </div>
             </div>
           ) : (
-            <label className="h-9 px-4 border border-dashed border-[hsl(var(--border))] cursor-pointer text-[12px] font-medium text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--foreground))] hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-2">
-              <Upload className="w-3.5 h-3.5" />
-              Upload Foto
+            <label className="inline-flex items-center gap-2.5 h-11 px-5 rounded-2xl border-2 border-dashed border-[hsl(var(--border))] hover:border-[#00A876] bg-white dark:bg-zinc-900 cursor-pointer text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[#00A876] transition-all shadow-sm">
+              <Upload className="w-4 h-4" />
+              Ambil / Pilih Foto (Auto Kompresi)
               <input
                 type="file"
                 accept="image/*"
@@ -548,8 +1132,16 @@ function FieldInput({
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    const compressed = await compressImage(file);
-                    if (compressed) onChange(compressed);
+                    setIsCompressing(true);
+                    try {
+                      const { dataUrl, sizeKb } = await compressImage(file);
+                      if (dataUrl) {
+                        onChange(dataUrl);
+                        setPhotoSizeKb(sizeKb);
+                      }
+                    } finally {
+                      setIsCompressing(false);
+                    }
                   }
                 }}
               />
@@ -559,11 +1151,13 @@ function FieldInput({
       )}
 
       {f.tipe === "SIGNATURE" && (
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3">
-          <div className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-2">
-            Tanda Tangan
-          </div>
-          <SignaturePad value={value} onChange={onChange} />
+        <div className="space-y-1">
+          <SignaturePad
+            value={value}
+            onChange={onChange}
+            label={`Tanda Tangan ${f.pertanyaan}`}
+            helperText="Garis Tanda Tangan"
+          />
         </div>
       )}
     </div>

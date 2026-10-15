@@ -4,6 +4,39 @@ import { aggregateInspectionToLaporan, recalculateLaporanBulanan } from "@/lib/a
 import { withAuth } from "@/lib/api-auth";
 import { deletePhotoFiles, saveBase64Photo } from "@/lib/photo-files";
 
+// GET - Detail hasil pemeriksaan lengkap (untuk edit atau export PDF)
+export const GET = withAuth(async (req: NextRequest, context: any) => {
+  const { id } = await context.params;
+  const resultId = parseInt(id, 10);
+  if (Number.isNaN(resultId)) {
+    return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
+  }
+
+  const pkmId = (req as any).user?.puskesmasId;
+  const role = (req as any).user?.role;
+
+  const result = await prisma.inspectionResult.findUnique({
+    where: { id: resultId },
+    include: {
+      template: { include: { subCategory: true, fields: { orderBy: { urutan: "asc" } } } },
+      puskesmas: true,
+      user: { select: { id: true, name: true, username: true } },
+      sasaran: true,
+      values: { include: { field: true } },
+    },
+  });
+
+  if (!result) {
+    return NextResponse.json({ error: "Data tidak ditemukan" }, { status: 404 });
+  }
+
+  if (role !== "ADMIN" && result.puskesmasId !== pkmId) {
+    return NextResponse.json({ error: "Anda tidak punya akses" }, { status: 403 });
+  }
+
+  return NextResponse.json(result);
+});
+
 // PUT - Edit hasil pemeriksaan
 export const PUT = withAuth(async (req: NextRequest, context: any) => {
   const { id } = await context.params;

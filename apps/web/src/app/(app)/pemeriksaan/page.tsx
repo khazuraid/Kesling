@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  ChevronLeft,
   ChevronRight,
   Database,
   Download,
@@ -37,6 +38,15 @@ export default function PemeriksaanPage() {
   const [tanggalPemeriksaan, setTanggalPemeriksaan] = useState<string>(new Date().toISOString().split("T")[0]);
   const [activeTab, setActiveTab] = useState<"formulir" | "riwayat">("formulir");
   const [sasaranId, setSasaranId] = useState<number | null>(null);
+
+  // Pagination & Search states
+  const [riwayatPage, setRiwayatPage] = useState(1);
+  const [riwayatLimit] = useState(10);
+  const [riwayatSearch, setRiwayatSearch] = useState("");
+
+  const [formulirPage, setFormulirPage] = useState(1);
+  const [formulirLimit] = useState(10);
+  const [formulirSearch, setFormulirSearch] = useState("");
 
   // Modal tambah sasaran baru langsung dari form (format identik Data Dasar)
   const [isNewSasaranModalOpen, setIsNewSasaranModalOpen] = useState(false);
@@ -116,6 +126,42 @@ export default function PemeriksaanPage() {
     queryKey: ["inspection-results"],
     queryFn: () => fetch("/api/inspection/results").then((r) => r.json()),
   });
+
+  // Pagination & Filtering
+  const filteredTemplates = useMemo(() => {
+    const q = formulirSearch.toLowerCase().trim();
+    if (!q) return templates;
+    return templates.filter(
+      (t: any) =>
+        (t.nama || "").toLowerCase().includes(q) ||
+        (t.deskripsi || "").toLowerCase().includes(q) ||
+        (t.subCategory?.nama || "").toLowerCase().includes(q),
+    );
+  }, [templates, formulirSearch]);
+
+  const totalFormulirPages = Math.max(1, Math.ceil(filteredTemplates.length / formulirLimit));
+  const paginatedTemplates = useMemo(() => {
+    const start = (formulirPage - 1) * formulirLimit;
+    return filteredTemplates.slice(start, start + formulirLimit);
+  }, [filteredTemplates, formulirPage, formulirLimit]);
+
+  const filteredResults = useMemo(() => {
+    const q = riwayatSearch.toLowerCase().trim();
+    if (!q) return results;
+    return results.filter(
+      (res: any) =>
+        (res.sasaran?.nama || res.namaSasaran || "").toLowerCase().includes(q) ||
+        (res.template?.nama || "").toLowerCase().includes(q) ||
+        (res.puskesmas?.nama || "").toLowerCase().includes(q) ||
+        (res.alamatSasaran || res.sasaran?.alamat || "").toLowerCase().includes(q),
+    );
+  }, [results, riwayatSearch]);
+
+  const totalRiwayatPages = Math.max(1, Math.ceil(filteredResults.length / riwayatLimit));
+  const paginatedResults = useMemo(() => {
+    const start = (riwayatPage - 1) * riwayatLimit;
+    return filteredResults.slice(start, start + riwayatLimit);
+  }, [filteredResults, riwayatPage, riwayatLimit]);
 
   const submitMut = useMutation({
     mutationFn: async (data: any) => {
@@ -609,14 +655,27 @@ export default function PemeriksaanPage() {
     setActiveForm(template);
   }
 
-  function handleEditResult(result: any) {
-    const template = templates.find((t) => t.id === result.templateId) || result.template;
+  async function handleEditResult(result: any) {
+    let fullResult = result;
+    // Lazy load detail lengkap jika values belum ada (karena list endpoint menggunakan proyeksi ringan)
+    if (!result.values || result.values.length === 0) {
+      try {
+        const res = await fetch(`/api/inspection/results/${result.id}`);
+        if (res.ok) {
+          fullResult = await res.json();
+        }
+      } catch (err) {
+        console.error("Gagal memuat detail hasil pemeriksaan:", err);
+      }
+    }
+
+    const template = templates.find((t) => t.id === fullResult.templateId) || fullResult.template;
     if (!template) {
       toast.error("Template form tidak ditemukan");
       return;
     }
-    setEditingId(result.id);
-    const rawDate = result.tanggal || result.createdAt;
+    setEditingId(fullResult.id);
+    const rawDate = fullResult.tanggal || fullResult.createdAt;
     if (rawDate) {
       try {
         setTanggalPemeriksaan(new Date(rawDate).toISOString().split("T")[0]);
@@ -635,7 +694,7 @@ export default function PemeriksaanPage() {
       }
       initVal[f.id] = null;
     });
-    result.values?.forEach((v: any) => {
+    fullResult.values?.forEach((v: any) => {
       const field = template.fields.find((f: any) => f.id === v.fieldId);
       if (field) {
         let val =
@@ -655,10 +714,10 @@ export default function PemeriksaanPage() {
 
     // Pulihkan tanda tangan dan foto dari signatureData & fotoPaths jika belum terisi dari values
     const sigMap =
-      result.signatureData && typeof result.signatureData === "object"
-        ? (result.signatureData as Record<string, string>)
+      fullResult.signatureData && typeof fullResult.signatureData === "object"
+        ? (fullResult.signatureData as Record<string, string>)
         : {};
-    const fotoList = Array.isArray(result.fotoPaths) ? result.fotoPaths : [];
+    const fotoList = Array.isArray(fullResult.fotoPaths) ? fullResult.fotoPaths : [];
     let fotoIdx = 0;
     template.fields.forEach((f: any) => {
       if (f.tipe === "SIGNATURE" && !initVal[f.id] && sigMap[f.pertanyaan]) {
@@ -673,7 +732,7 @@ export default function PemeriksaanPage() {
 
     setFormValues(initVal);
     setMetaValues(initMeta);
-    setSasaranId(result.sasaranId ?? null);
+    setSasaranId(fullResult.sasaranId ?? null);
     setPendingForm(null);
     setActiveForm(template);
   }
@@ -686,17 +745,29 @@ export default function PemeriksaanPage() {
   }
 
   async function handleExportPDF(res: any) {
+    let fullRes = res;
+    if (!res.values || res.values.length === 0) {
+      try {
+        const detailRes = await fetch(`/api/inspection/results/${res.id}`);
+        if (detailRes.ok) {
+          fullRes = await detailRes.json();
+        }
+      } catch (err) {
+        console.error("Gagal memuat detail PDF:", err);
+      }
+    }
+
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
       import("jspdf"),
       import("jspdf-autotable"),
     ]);
     const doc = new jsPDF();
-    const template = templates.find((t) => t.id === res.templateId) || res.template;
-    const namaSasaran = res.sasaran?.nama || res.namaSasaran || "-";
-    const alamatSasaran = res.sasaran?.alamat || res.alamatSasaran || "-";
-    const tanggal = res.tanggal
-      ? new Date(res.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-      : new Date(res.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    const template = templates.find((t) => t.id === fullRes.templateId) || fullRes.template;
+    const namaSasaran = fullRes.sasaran?.nama || fullRes.namaSasaran || "-";
+    const alamatSasaran = fullRes.sasaran?.alamat || fullRes.alamatSasaran || "-";
+    const tanggal = fullRes.tanggal
+      ? new Date(fullRes.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+      : new Date(fullRes.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
     doc.setFontSize(14);
     doc.setTextColor(0, 122, 255);
@@ -714,8 +785,8 @@ export default function PemeriksaanPage() {
         ["Sasaran / Nama", namaSasaran],
         ["Alamat", alamatSasaran],
         ["Tanggal Pemeriksaan", tanggal],
-        ["Unit Puskesmas", res.puskesmas?.nama || "-"],
-        ["Status", res.status || "DRAFT"],
+        ["Unit Puskesmas", fullRes.puskesmas?.nama || "-"],
+        ["Status", fullRes.status || "DRAFT"],
       ],
       styles: { fontSize: 9, cellPadding: 2, textColor: [9, 9, 11] },
       columnStyles: { 0: { fontStyle: "bold", fillColor: [244, 244, 245], cellWidth: 45 } },
@@ -726,7 +797,7 @@ export default function PemeriksaanPage() {
     (template?.fields || [])
       .filter((f: any) => f.grup !== "__META__")
       .forEach((f: any) => {
-        const v = (res.values || []).find((rv: any) => rv.fieldId === f.id);
+        const v = (fullRes.values || []).find((rv: any) => rv.fieldId === f.id);
         let answer = "-";
         if (f.tipe === "BOOLEAN") {
           const u = String(v?.valueString || "").toUpperCase();
@@ -743,8 +814,8 @@ export default function PemeriksaanPage() {
         rows.push([f.pertanyaan, answer]);
       });
 
-    if (res.skor !== undefined && res.skor !== null) {
-      rows.push(["SKOR AKHIR", String(res.skor)]);
+    if (fullRes.skor !== undefined && fullRes.skor !== null) {
+      rows.push(["SKOR AKHIR", String(fullRes.skor)]);
     }
 
     autoTable(doc, {
@@ -927,11 +998,18 @@ export default function PemeriksaanPage() {
         gained += f.config?.skor ?? 0;
       }
     }
-    let finalValue = gained;
-    let valueText = String(Math.round(gained));
+    const percentValue = max > 0 ? (gained / max) * 100 : 0;
+    const roundedPercent = Math.round(percentValue * 10) / 10;
+    let finalValue = percentValue;
+    let valueText = `${roundedPercent}%`;
+
     if (rumus === "percentage" || rumus === "weighted") {
-      finalValue = max > 0 ? (gained / max) * 100 : 0;
-      valueText = `${Math.round(finalValue)}%`;
+      finalValue = percentValue;
+      valueText = `${roundedPercent}%`;
+    } else if (rumus === "sum") {
+      finalValue = gained;
+      // Pengguna meminta skor tampil persen (%)
+      valueText = `${roundedPercent}%`;
     } else if (rumus === "custom" && config.customFormula) {
       try {
         const evalStr = config.customFormula
@@ -943,16 +1021,33 @@ export default function PemeriksaanPage() {
         const res = new Function(`return ${evalStr}`)();
         if (!Number.isNaN(res)) {
           finalValue = res;
-          valueText = String(Math.round(finalValue * 10) / 10);
+          valueText = `${Math.round(finalValue * 10) / 10}%`;
         }
       } catch {}
     }
+
     let pass = false;
-    if (op === ">=") pass = finalValue >= thresh;
-    else if (op === ">") pass = finalValue > thresh;
-    else if (op === "<=") pass = finalValue <= thresh;
-    else if (op === "<") pass = finalValue < thresh;
-    return { gained: Math.round(gained), max, finalValue, valueText, pass, text: pass ? passText : failText };
+    const compareValue =
+      rumus === "percentage" || rumus === "weighted" || thresh <= 100
+        ? rumus === "sum" && thresh > 100
+          ? finalValue
+          : percentValue
+        : finalValue;
+
+    if (op === ">=") pass = compareValue >= thresh;
+    else if (op === ">") pass = compareValue > thresh;
+    else if (op === "<=") pass = compareValue <= thresh;
+    else if (op === "<") pass = compareValue < thresh;
+
+    return {
+      gained: Math.round(gained * 10) / 10,
+      max: Math.round(max * 10) / 10,
+      finalValue,
+      percentValue: roundedPercent,
+      valueText,
+      pass,
+      text: pass ? passText : failText,
+    };
   }, [activeForm, formValues, selectedGolongan]);
 
   const canSubmit =
@@ -1269,68 +1364,95 @@ export default function PemeriksaanPage() {
         <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
           <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-          <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+          <div className="relative z-10 px-6 sm:px-8 py-7 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Lapangan</p>
-              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Pemeriksaan</h1>
+              <h1 className="text-[28px] sm:text-[30px] font-black tracking-[-0.03em] leading-none">Pemeriksaan</h1>
               <p className="text-[13px] font-medium text-white/50 mt-2">
-                {templates.length} formulir · {results.length} riwayat
+                {templates.length} formulir · {results.length} riwayat pemeriksaan
               </p>
             </div>
             <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1">
               <button
-                onClick={() => setActiveTab("formulir")}
-                className={`px-4 py-2 text-[12px] font-bold rounded-full transition-all ${
-                  activeTab === "formulir" ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                onClick={() => {
+                  setActiveTab("formulir");
+                  setFormulirPage(1);
+                }}
+                className={`px-5 py-2 text-[12px] font-bold rounded-full transition-all ${
+                  activeTab === "formulir" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
                 }`}
               >
-                Formulir
+                Formulir ({templates.length})
               </button>
               <button
-                onClick={() => setActiveTab("riwayat")}
-                className={`px-4 py-2 text-[12px] font-bold rounded-full transition-all ${
-                  activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                onClick={() => {
+                  setActiveTab("riwayat");
+                  setRiwayatPage(1);
+                }}
+                className={`px-5 py-2 text-[12px] font-bold rounded-full transition-all ${
+                  activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
                 }`}
               >
-                Riwayat
+                Riwayat ({results.length})
               </button>
             </div>
           </div>
         </div>
 
+        {/* ── TAB FORMULIR ── */}
         {activeTab === "formulir" && (
-          <div className="pt-6">
-            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
-              Template Pemeriksaan
-            </h3>
-            {templates.length === 0 ? (
-              <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
+          <div className="pt-6 space-y-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                <input
+                  type="text"
+                  value={formulirSearch}
+                  onChange={(e) => {
+                    setFormulirSearch(e.target.value);
+                    setFormulirPage(1);
+                  }}
+                  placeholder="Cari nama formulir atau jenis..."
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-medium outline-none focus:border-[#00A876] transition-colors"
+                />
+              </div>
+              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
+                Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} formulir
+              </span>
+            </div>
+
+            {filteredTemplates.length === 0 ? (
+              <div className="border border-dashed border-[hsl(var(--border))] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
                 <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
-                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Template</p>
+                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
+                  {formulirSearch ? "Formulir Tidak Ditemukan" : "Belum Ada Template"}
+                </p>
                 <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                  Import template lewat halaman Form Pemeriksaan.
+                  {formulirSearch
+                    ? "Coba kata kunci pencarian lain."
+                    : "Import template lewat halaman Form Pemeriksaan."}
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {templates.map((tpl: any) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {paginatedTemplates.map((tpl: any) => {
                   const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
                   return (
                     <button
                       key={tpl.id}
                       onClick={() => handleOpenForm(tpl)}
-                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden text-left"
+                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/50 hover:shadow-sm transition-all overflow-hidden text-left"
                     >
-                      <div className="w-1 shrink-0 bg-[#00A876]" />
-                      <div className="flex-1 flex items-center gap-4 px-5 py-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                      <div className="w-1.5 shrink-0 bg-[#00A876]" />
+                      <div className="flex-1 flex items-center gap-3.5 px-5 py-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
                             {tpl.nama}
                           </h4>
-                          <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
+                          <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
                             {fieldCount} variabel{tpl.subCategory ? ` · ${tpl.subCategory.nama}` : ""}
                           </p>
                         </div>
@@ -1341,61 +1463,118 @@ export default function PemeriksaanPage() {
                 })}
               </div>
             )}
+
+            {/* Pagination Controls Formulir */}
+            {totalFormulirPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+                <button
+                  onClick={() => setFormulirPage((p) => Math.max(1, p - 1))}
+                  disabled={formulirPage <= 1}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalFormulirPages }).map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setFormulirPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
+                        formulirPage === i + 1
+                          ? "bg-[#0C1B16] text-[#BEF264]"
+                          : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setFormulirPage((p) => Math.min(totalFormulirPages, p + 1))}
+                  disabled={formulirPage >= totalFormulirPages}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  Selanjutnya <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 
+        {/* ── TAB RIWAYAT ── */}
         {activeTab === "riwayat" && (
-          <div className="pt-6">
-            <h3 className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.22em] px-1 pb-2">
-              Riwayat Pemeriksaan
-            </h3>
-            {results.length === 0 ? (
-              <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
+          <div className="pt-6 space-y-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                <input
+                  type="text"
+                  value={riwayatSearch}
+                  onChange={(e) => {
+                    setRiwayatSearch(e.target.value);
+                    setRiwayatPage(1);
+                  }}
+                  placeholder="Cari nama sasaran, puskesmas, formulir..."
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-medium outline-none focus:border-[#00A876] transition-colors"
+                />
+              </div>
+              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
+                Menampilkan {paginatedResults.length} dari {filteredResults.length} riwayat
+              </span>
+            </div>
+
+            {filteredResults.length === 0 ? (
+              <div className="border border-dashed border-[hsl(var(--border))] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
                 <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
-                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Riwayat</p>
+                <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
+                  {riwayatSearch ? "Data Tidak Ditemukan" : "Belum Ada Riwayat"}
+                </p>
                 <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
-                  Hasil pemeriksaan akan tampil di sini.
+                  {riwayatSearch ? "Gunakan kata kunci pencarian lain." : "Hasil pemeriksaan akan tampil di sini."}
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {results.map((res: any) => (
+              <div className="flex flex-col gap-2.5">
+                {paginatedResults.map((res: any) => (
                   <div
                     key={res.id}
-                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden"
+                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 hover:shadow-sm transition-all overflow-hidden"
                   >
-                    <div className="w-1 shrink-0 bg-[#00A876]" />
-                    <div className="flex-1 flex items-center gap-4 px-5 py-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5" />
+                    <div className="w-1.5 shrink-0 bg-[#00A876]" />
+                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                            {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
+                          </h4>
+                          <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
+                            {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
+                            {new Date(res.createdAt).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
-                          {res.sasaran?.nama || res.namaSasaran}
-                        </h4>
-                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5">
-                          {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
-                          {new Date(res.createdAt).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+
+                      <div className="flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
                         <button
-                          title="PDF"
+                          title="Export PDF"
                           onClick={() => handleExportPDF(res)}
-                          className="p-2 text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
                         >
-                          <Download className="w-4 h-4" />
+                          <Download className="w-4 h-4" /> PDF
                         </button>
                         <button
-                          title="Edit"
+                          title="Edit Pemeriksaan"
                           onClick={() => handleEditResult(res)}
-                          className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          <Edit3 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" /> Edit
                         </button>
                         <button
                           title="Hapus"
@@ -1412,6 +1591,41 @@ export default function PemeriksaanPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls Riwayat */}
+            {totalRiwayatPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+                <button
+                  onClick={() => setRiwayatPage((p) => Math.max(1, p - 1))}
+                  disabled={riwayatPage <= 1}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalRiwayatPages }).map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setRiwayatPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
+                        riwayatPage === i + 1
+                          ? "bg-[#0C1B16] text-[#BEF264]"
+                          : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setRiwayatPage((p) => Math.min(totalRiwayatPages, p + 1))}
+                  disabled={riwayatPage >= totalRiwayatPages}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                >
+                  Selanjutnya <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
