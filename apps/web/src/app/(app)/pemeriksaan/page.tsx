@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Compass,
@@ -10,7 +11,9 @@ import {
   Download,
   Edit3,
   Eye,
+  FileCheck,
   FileText,
+  Layers,
   Loader2,
   MapPin,
   Phone,
@@ -170,6 +173,13 @@ export default function PemeriksaanPage() {
     const start = (formulirPage - 1) * formulirLimit;
     return filteredTemplates.slice(start, start + formulirLimit);
   }, [filteredTemplates, formulirPage, formulirLimit]);
+
+  const totalVariabel = useMemo(() => {
+    return templates.reduce((acc, t: any) => {
+      const cnt = (t.fields || []).filter((f: any) => f.grup !== "__META__").length;
+      return acc + cnt;
+    }, 0);
+  }, [templates]);
 
   const submitMut = useMutation({
     mutationFn: async (data: any) => {
@@ -1515,6 +1525,36 @@ export default function PemeriksaanPage() {
           </div>
         </div>
 
+        {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">{templates.length}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">
+              Formulir
+            </span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#E8A33D]/10 border border-[#E8A33D]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#C07F1F] leading-none">{totalRiwayat}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#C07F1F]/70 mt-1">
+              Riwayat
+            </span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
+            <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">{totalVariabel}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">
+              Variabel
+            </span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]">
+            <span className="text-[18px] font-black tabular-nums text-[hsl(var(--foreground))] leading-none">
+              {categories.length}
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mt-1">
+              Kategori
+            </span>
+          </span>
+        </div>
+
         {/* ── TAB FORMULIR ── */}
         {activeTab === "formulir" && (
           <div className="pt-6 space-y-4">
@@ -1550,31 +1590,51 @@ export default function PemeriksaanPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2.5">
                 {paginatedTemplates.map((tpl: any) => {
                   const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
                   return (
-                    <button
+                    <div
                       key={tpl.id}
                       onClick={() => handleOpenForm(tpl)}
-                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/50 hover:shadow-sm transition-all overflow-hidden text-left"
+                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 hover:shadow-sm transition-all overflow-hidden cursor-pointer"
                     >
-                      <div className="w-1.5 shrink-0 bg-[#00A876]" />
-                      <div className="flex-1 flex items-center gap-3.5 px-5 py-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <FileText className="w-5 h-5" />
+                      <div className="w-1 shrink-0 bg-[#00A876]" />
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-[#00A876] group-hover:text-white transition-all">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-[13px] sm:text-[14px] font-extrabold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
+                              {tpl.nama}
+                            </h4>
+                            <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
+                              {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
+                              {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
-                            {tpl.nama}
-                          </h4>
-                          <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                            {fieldCount} variabel{tpl.subCategory ? ` · ${tpl.subCategory.nama}` : ""}
-                          </p>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
+                          <div className="text-left sm:text-center">
+                            <div className="text-[15px] font-black tabular-nums text-[#00A876] leading-none">
+                              {fieldCount}
+                            </div>
+                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
+                              Variabel
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-[#00A876] text-white text-[11px] font-bold group-hover:brightness-95 transition-all shadow-sm"
+                          >
+                            <span>Mulai</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -1656,74 +1716,87 @@ export default function PemeriksaanPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-2.5">
-                {paginatedResults.map((res: any) => (
-                  <div
-                    key={res.id}
-                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 hover:shadow-sm transition-all overflow-hidden"
-                  >
-                    <div className="w-1.5 shrink-0 bg-[#00A876]" />
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                      <div
-                        onClick={() => handleOpenDetail(res)}
-                        className="flex items-center gap-3 sm:gap-3.5 min-w-0 cursor-pointer group/title"
-                        title="Klik untuk melihat detail lengkap hasil pemeriksaan"
-                      >
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover/title:bg-[#00A876] group-hover/title:text-white transition-all">
-                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-[13px] sm:text-[14px] font-extrabold text-[hsl(var(--foreground))] group-hover/title:text-[#00A876] transition-colors truncate">
-                            {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
-                          </h4>
-                          <p className="text-[10px] sm:text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                            {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
-                            {new Date(res.createdAt).toLocaleDateString("id-ID", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
-                        <button
-                          title="Lihat Detail Pemeriksaan"
+                {paginatedResults.map((res: any) => {
+                  const isApproved = res.status === "APPROVED";
+                  return (
+                    <div
+                      key={res.id}
+                      className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 hover:shadow-sm transition-all overflow-hidden"
+                    >
+                      <div className="w-1 shrink-0" style={{ background: isApproved ? "#00A876" : "#E8A33D" }} />
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                        <div
                           onClick={() => handleOpenDetail(res)}
-                          disabled={isLoadingDetail}
-                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[#0C1B16] dark:text-[#BEF264] bg-[#00A876]/10 hover:bg-[#00A876]/20 rounded-xl transition-colors disabled:opacity-50"
+                          className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
+                          title="Klik untuk melihat detail lengkap hasil pemeriksaan"
                         >
-                          <Eye className="w-3.5 h-3.5 text-[#00A876]" /> Detail
-                        </button>
-                        <button
-                          title="Export PDF"
-                          onClick={() => handleExportPDF(res)}
-                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[#00A876] hover:bg-[#00A876]/10 rounded-xl transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5" /> PDF
-                        </button>
-                        <button
-                          title="Edit Pemeriksaan"
-                          onClick={() => handleEditResult(res)}
-                          className="flex items-center justify-center gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 text-[11px] sm:text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" /> Edit
-                        </button>
-                        <button
-                          title="Hapus"
-                          onClick={() => {
-                            if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
-                              deleteMut.mutate(res.id);
-                            }
-                          }}
-                          className="flex items-center justify-center p-2 text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-xl transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover/title:bg-[#00A876] group-hover/title:text-white transition-all">
+                            <FileCheck className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-[13px] sm:text-[14px] font-extrabold text-[hsl(var(--foreground))] group-hover/title:text-[#00A876] transition-colors truncate">
+                                {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
+                              </h4>
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                  isApproved ? "bg-[#00A876]/10 text-[#00A876]" : "bg-[#E8A33D]/10 text-[#C07F1F]"
+                                }`}
+                              >
+                                <CheckCircle2 className="w-2.5 h-2.5" />
+                                {isApproved ? "Disetujui" : res.status || "Selesai"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
+                              {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
+                              {new Date(res.createdAt).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
+                          <button
+                            title="Lihat Detail Pemeriksaan"
+                            onClick={() => handleOpenDetail(res)}
+                            disabled={isLoadingDetail}
+                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-[#0C1B16] dark:text-[#BEF264] bg-[#00A876]/10 hover:bg-[#00A876]/20 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#00A876]" /> <span>Detail</span>
+                          </button>
+                          <button
+                            title="Export PDF"
+                            onClick={() => handleExportPDF(res)}
+                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-[#00A876] bg-[#00A876]/5 hover:bg-[#00A876]/15 rounded-lg transition-colors"
+                          >
+                            <Download className="w-3.5 h-3.5" /> <span>PDF</span>
+                          </button>
+                          <button
+                            title="Edit Pemeriksaan"
+                            onClick={() => handleEditResult(res)}
+                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" /> <span>Edit</span>
+                          </button>
+                          <button
+                            title="Hapus"
+                            onClick={() => {
+                              if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
+                                deleteMut.mutate(res.id);
+                              }
+                            }}
+                            className="inline-flex items-center justify-center h-8 w-8 text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
