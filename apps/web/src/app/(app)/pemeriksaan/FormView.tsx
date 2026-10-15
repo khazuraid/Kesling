@@ -370,12 +370,12 @@ export function FormView({
   };
 
   return (
-    <div className="w-full pb-20 fade-in">
+    <div className="w-full pb-28 sm:pb-20 fade-in">
       {/* ── STICKY TOP SCORE HUD ── */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2.5 sm:gap-3">
           {/* Back & Form Name */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={onBack}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
@@ -384,13 +384,13 @@ export function FormView({
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#BEF264] px-2 py-0.5 rounded-full bg-[#BEF264]/15">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-[#BEF264] px-2 py-0.5 rounded-full bg-[#BEF264]/15">
                   {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
                 </span>
-                <span className="text-[11px] text-white/50 hidden sm:inline truncate">{activeForm.nama}</span>
+                <span className="text-[11px] text-white/50 hidden md:inline truncate">{activeForm.nama}</span>
               </div>
-              <h2 className="text-[15px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-white">
+              <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-white max-w-[160px] sm:max-w-sm">
                 {String(
                   Object.entries(metaValues).find(([fid]) => {
                     const f = activeForm.fields.find((field: any) => field.id === Number(fid));
@@ -402,41 +402,45 @@ export function FormView({
           </div>
 
           {/* Prominent Percentage Score HUD */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl bg-white/[0.08] border border-white/10">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl bg-white/[0.08] border border-white/10">
               <div className="text-right">
-                <div className="flex items-baseline justify-end gap-1.5">
+                <div className="flex items-baseline justify-end gap-1">
                   <span
-                    className={`text-[20px] sm:text-[24px] font-black tracking-tight leading-none tabular-nums ${
+                    className={`text-[18px] sm:text-[24px] font-black tracking-tight leading-none tabular-nums ${
                       liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
                     }`}
                   >
                     {displayPercentage}
                   </span>
                 </div>
-                <div className="text-[10px] text-white/60 font-semibold tabular-nums">
+                <div className="text-[9px] sm:text-[10px] text-white/60 font-semibold tabular-nums">
                   {liveSkor.gained} / {liveSkor.max} Poin
                 </div>
               </div>
 
               {/* Status Badge */}
-              <div className="hidden xs:flex flex-col items-start pl-2 border-l border-white/15">
+              <div className="flex flex-col items-start pl-2 border-l border-white/15">
                 <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                  className={`inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     liveSkor.pass ? "bg-[#00A876] text-white shadow-sm" : "bg-[#E15A4F] text-white shadow-sm"
                   }`}
                 >
-                  {liveSkor.pass ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                  {liveSkor.text}
+                  {liveSkor.pass ? (
+                    <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  ) : (
+                    <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  )}
+                  <span className="truncate max-w-[85px] sm:max-w-none">{liveSkor.text}</span>
                 </span>
-                <span className="text-[9px] text-white/50 mt-0.5 pl-0.5">
-                  {completionStats.answeredQuestions}/{completionStats.totalQuestions} Butir (
+                <span className="text-[8px] sm:text-[9px] text-white/50 mt-0.5 pl-0.5">
+                  {completionStats.answeredQuestions}/{completionStats.totalQuestions} (
                   {completionStats.percentAnswered}%)
                 </span>
               </div>
             </div>
 
-            {/* Quick Action button on mobile */}
+            {/* Quick Action button on desktop */}
             {currentStepIndex === steps.length - 1 ? (
               <button
                 onClick={onSubmit}
@@ -465,7 +469,7 @@ export function FormView({
         </div>
 
         {/* Global Progress Bar */}
-        <div className="w-full bg-white/10 h-1 mt-2.5 rounded-full overflow-hidden">
+        <div className="w-full bg-white/10 h-1 mt-2 sm:mt-2.5 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-[#00A876] to-[#BEF264] transition-all duration-300 rounded-full"
             style={{ width: `${completionStats.percentAnswered}%` }}
@@ -687,17 +691,17 @@ export function FormView({
         </div>
 
         {/* ── BOTTOM STICKY NAVIGATION BAR ── */}
-        <div className="mt-8 pt-5 border-t border-[hsl(var(--border))] flex items-center justify-between gap-4">
+        <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-[hsl(var(--background))]/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-[hsl(var(--border))] p-3 sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentStepIndex === 0}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-2.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-sm"
           >
             <ChevronLeft className="w-4 h-4" /> Sebelumnya
           </button>
 
-          <div className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hidden sm:block text-center">
+          <div className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hidden md:block text-center truncate max-w-xs">
             Langkah {currentStepIndex + 1} dari {steps.length} ·{" "}
             <span className="text-[hsl(var(--foreground))] font-bold">{currentStep.title}</span>
           </div>
@@ -706,7 +710,7 @@ export function FormView({
             <button
               type="button"
               onClick={handleNext}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-sm"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-sm"
             >
               Selanjutnya <ChevronRight className="w-4 h-4" />
             </button>
@@ -715,7 +719,7 @@ export function FormView({
               type="button"
               onClick={onSubmit}
               disabled={!canSubmit || isPending}
-              className="flex items-center gap-2 px-7 py-2.5 rounded-2xl bg-[#00A876] text-white text-[12px] font-black hover:bg-[#008f64] transition-all shadow-sm disabled:opacity-40"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-2.5 rounded-2xl bg-[#00A876] text-white text-[12px] font-black hover:bg-[#008f64] transition-all shadow-sm disabled:opacity-40"
             >
               {isPending ? (
                 <>

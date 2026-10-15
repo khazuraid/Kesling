@@ -5,15 +5,21 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  Compass,
   Database,
   Download,
   Edit3,
   FileText,
   Loader2,
+  MapPin,
+  Phone,
   Plus,
   Search,
   ShieldAlert,
+  Sparkles,
+  Store,
   Trash2,
+  UserCheck,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -1140,95 +1146,197 @@ export default function PemeriksaanPage() {
 
   if (pendingForm) {
     return (
-      <div className="w-full pb-6 fade-in">
-        <button
-          onClick={() => setPendingForm(null)}
-          className="mb-5 flex items-center gap-2 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-        >
-          <ArrowLeft className="h-4 w-4" /> Kembali ke formulir
-        </button>
-        <div className="border-b border-[hsl(var(--border))] pb-5 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">
-              <FileText className="h-3.5 w-3.5" /> {pendingForm.nama} <ChevronRight className="h-3 w-3" /> Data Dasar
-            </div>
-            <h1 className="text-[22px] font-bold tracking-tight">Pilih Sasaran Pemeriksaan</h1>
-            <p className="mt-1 text-[12px] text-[hsl(var(--muted-foreground))]">
-              Menampilkan Data Dasar modul {pendingForm.dataDasarCategory?.nama || pendingForm.nama} untuk seluruh jenis
-              entitas. Pilih satu sasaran untuk membuka formulir.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => openFormWithoutSasaran(pendingForm)}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/50 text-[12px] font-bold rounded-xl transition-all"
-            >
-              Lewati (Tanpa Sasaran)
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsNewSasaranModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-bold rounded-xl transition-all shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Tambah Sasaran Baru
-            </button>
+      <div className="w-full pb-8 fade-in space-y-5">
+        {/* Navigation & Breadcrumb */}
+        <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={() => setPendingForm(null)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/50 transition-all shadow-sm"
+          >
+            <ArrowLeft className="h-4 w-4" /> Kembali ke Formulir
+          </button>
+          <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+            <span>Formulir</span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="font-bold text-[hsl(var(--foreground))] truncate max-w-[200px]">{pendingForm.nama}</span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-[#00A876] font-bold">Pilih Sasaran</span>
           </div>
         </div>
-        <div className="flex items-center border-x border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3">
-          <Search className="mr-2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-          <input
-            value={sasaranSearch}
-            onChange={(event) => setSasaranSearch(event.target.value)}
-            placeholder="Cari nama, alamat, atau pemilik..."
-            className="w-full bg-transparent text-[12px] outline-none"
-          />
-          <span className="whitespace-nowrap text-[10px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
-            {filteredSasarans.length} data
-          </span>
-        </div>
-        <div className="border-x border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-          {filteredSasarans.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <Database className="mx-auto mb-3 h-6 w-6 text-[hsl(var(--muted-foreground))]" />
-              <p className="text-[12px] font-bold">Data Dasar tidak ditemukan</p>
-              <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">
-                {sasaranSearch
-                  ? "Tidak ada sasaran yang cocok dengan kata kunci pencarian."
-                  : "Belum ada sasaran pada modul ini."}
+
+        {/* Hero Card */}
+        <div className="relative overflow-hidden rounded-3xl bg-[#0C1B16] text-white p-6 sm:p-8 shadow-md">
+          <div className="absolute -top-24 -right-16 w-80 h-80 rounded-full bg-[#00A876] opacity-[0.14] blur-2xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,#123527_0%,transparent_60%)]" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] border border-white/10 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]">
+                <Sparkles className="w-3 h-3 text-[#BEF264]" />
+                {pendingForm.dataDasarCategory?.nama || pendingForm.nama}
+              </div>
+              <h1 className="text-[24px] sm:text-[28px] font-black tracking-[-0.03em] leading-tight">
+                Pilih Sasaran Pemeriksaan
+              </h1>
+              <p className="text-[12px] sm:text-[13px] font-medium text-white/60 leading-relaxed">
+                Pilih sasaran yang akan diinspeksi. Data profil (alamat, pengelola, kontak, koordinat) otomatis terisi
+                ke form penilaian.
               </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => openFormWithoutSasaran(pendingForm)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white text-[12px] font-bold transition-all"
+              >
+                Lewati (Tanpa Sasaran)
+              </button>
               <button
                 type="button"
                 onClick={() => setIsNewSasaranModalOpen(true)}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-bold shadow-sm transition-all"
               >
-                <Plus className="w-4 h-4" /> Tambah Sasaran Baru Sekarang
+                <Plus className="w-4 h-4" /> Tambah Sasaran Baru
               </button>
             </div>
-          ) : (
-            filteredSasarans.map((sasaran: any, index: number) => (
-              <button
-                key={sasaran.id}
-                onClick={() => openFormWithSasaran(pendingForm, sasaran)}
-                className="group flex w-full items-center gap-4 border-b border-[hsl(var(--border))] px-4 py-3 text-left last:border-b-0 hover:bg-[hsl(var(--muted))]/40"
-              >
-                <span className="w-8 text-center text-[10px] font-bold tabular-nums text-[hsl(var(--muted-foreground))]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-bold">{sasaran.nama}</span>
-                  <span className="mt-0.5 block truncate text-[11px] text-[hsl(var(--muted-foreground))]">
-                    {sasaran.alamat || "Alamat belum diisi"}
-                  </span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--foreground))]">
-                  Pilih
-                </span>
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            ))
-          )}
+          </div>
         </div>
+
+        {/* Search & Info Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+            <input
+              value={sasaranSearch}
+              onChange={(e) => setSasaranSearch(e.target.value)}
+              placeholder="Cari nama sasaran, alamat, atau pemilik..."
+              className="w-full h-11 pl-10 pr-10 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-medium outline-none focus:border-[#00A876] shadow-sm transition-colors"
+            />
+            {sasaranSearch && (
+              <button
+                onClick={() => setSasaranSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] shrink-0 self-end sm:self-center">
+            {filteredSasarans.length} sasaran tersedia
+          </span>
+        </div>
+
+        {/* Sasaran Cards Grid */}
+        {filteredSasarans.length === 0 ? (
+          <div className="border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 rounded-3xl p-10 sm:p-14 text-center flex flex-col items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center mb-3.5">
+              <Database className="w-7 h-7" />
+            </div>
+            <h3 className="text-[15px] font-extrabold text-[hsl(var(--foreground))]">Data Dasar Tidak Ditemukan</h3>
+            <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-sm mt-1">
+              {sasaranSearch
+                ? `Tidak ada sasaran yang cocok dengan kata kunci "${sasaranSearch}".`
+                : "Belum ada data sasaran pada kategori ini. Anda dapat menambahkannya sekarang atau melanjutkan tanpa sasaran."}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5">
+              <button
+                type="button"
+                onClick={() => setIsNewSasaranModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-bold transition-all shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Tambah Sasaran Baru
+              </button>
+              <button
+                type="button"
+                onClick={() => openFormWithoutSasaran(pendingForm)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold hover:bg-[hsl(var(--muted))] transition-colors"
+              >
+                Lanjut Tanpa Sasaran
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {filteredSasarans.map((sasaran: any) => {
+              const subCatNama = sasaran.subCategory?.nama;
+              return (
+                <div
+                  key={sasaran.id}
+                  onClick={() => openFormWithSasaran(pendingForm, sasaran)}
+                  className="group relative flex flex-col justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876] hover:shadow-md transition-all duration-200 p-4 sm:p-5 text-left cursor-pointer active:scale-[0.99]"
+                >
+                  <div className="space-y-3">
+                    {/* Top Row: Icon + SubCategory Tag */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover:bg-[#00A876] group-hover:text-white transition-colors">
+                        <Store className="w-5 h-5" />
+                      </div>
+                      {subCatNama && (
+                        <span className="inline-block px-2.5 py-1 rounded-full bg-[hsl(var(--muted))] text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] truncate max-w-[150px]">
+                          {subCatNama}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <h3 className="text-[14px] sm:text-[15px] font-extrabold text-[hsl(var(--foreground))] group-hover:text-[#00A876] transition-colors line-clamp-1">
+                        {sasaran.nama}
+                      </h3>
+                      {sasaran.alamat ? (
+                        <p className="text-[11px] sm:text-[12px] text-[hsl(var(--muted-foreground))] flex items-start gap-1.5 mt-1.5 line-clamp-2">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#00A876]" />
+                          <span>{sasaran.alamat}</span>
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-[hsl(var(--muted-foreground))]/60 italic mt-1.5 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--muted-foreground))]/40" />
+                          Alamat belum diisi
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Metadata details */}
+                    <div className="pt-2 border-t border-[hsl(var(--border))]/60 space-y-1 text-[11px] text-[hsl(var(--muted-foreground))]">
+                      {sasaran.pemilik && (
+                        <div className="flex items-center gap-1.5 truncate">
+                          <UserCheck className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--muted-foreground))]/70" />
+                          <span className="truncate">
+                            Pengelola:{" "}
+                            <strong className="text-[hsl(var(--foreground))] font-semibold">{sasaran.pemilik}</strong>
+                          </span>
+                        </div>
+                      )}
+                      {sasaran.kontak && (
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Phone className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--muted-foreground))]/70" />
+                          <span className="truncate">{sasaran.kontak}</span>
+                        </div>
+                      )}
+                      {sasaran.lat && sasaran.lng && (
+                        <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#00A876] truncate">
+                          <Compass className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            {Number(sasaran.lat).toFixed(4)}, {Number(sasaran.lng).toFixed(4)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom Action */}
+                  <div className="mt-4 pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#00A876] group-hover:underline">
+                      Pilih & Mulai Inspeksi
+                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] flex items-center justify-center group-hover:bg-[#00A876] group-hover:text-white transition-all">
+                      <ChevronRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* ── MODAL: TAMBAH DATA DASAR (FORMAT SESUAI DATA-DASAR) ── */}
         {isNewSasaranModalOpen && (
@@ -1406,21 +1514,25 @@ export default function PemeriksaanPage() {
         <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
           <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-          <div className="relative z-10 px-6 sm:px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+          <div className="relative z-10 px-5 sm:px-8 py-6 sm:py-7 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Lapangan</p>
-              <h1 className="text-[28px] sm:text-[30px] font-black tracking-[-0.03em] leading-none">Pemeriksaan</h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-1.5 sm:mb-2">
+                Pemeriksaan
+              </p>
+              <h1 className="text-[24px] sm:text-[30px] font-black tracking-[-0.03em] leading-none">
+                Inspeksi Lapangan
+              </h1>
+              <p className="text-[12px] sm:text-[13px] font-medium text-white/50 mt-2">
                 {templates.length} formulir · {results.length} riwayat pemeriksaan
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1">
+            <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1 w-full sm:w-auto">
               <button
                 onClick={() => {
                   setActiveTab("formulir");
                   setFormulirPage(1);
                 }}
-                className={`px-5 py-2 text-[12px] font-bold rounded-full transition-all ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
                   activeTab === "formulir" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -1431,7 +1543,7 @@ export default function PemeriksaanPage() {
                   setActiveTab("riwayat");
                   setRiwayatPage(1);
                 }}
-                className={`px-5 py-2 text-[12px] font-bold rounded-full transition-all ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
                   activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -1508,20 +1620,20 @@ export default function PemeriksaanPage() {
 
             {/* Pagination Controls Formulir */}
             {totalFormulirPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))]">
                 <button
                   onClick={() => setFormulirPage((p) => Math.max(1, p - 1))}
                   disabled={formulirPage <= 1}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                  <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
                   {Array.from({ length: totalFormulirPages }).map((_, i) => (
                     <button
                       key={i + 1}
                       onClick={() => setFormulirPage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
                         formulirPage === i + 1
                           ? "bg-[#0C1B16] text-[#BEF264]"
                           : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
@@ -1534,9 +1646,9 @@ export default function PemeriksaanPage() {
                 <button
                   onClick={() => setFormulirPage((p) => Math.min(totalFormulirPages, p + 1))}
                   disabled={formulirPage >= totalFormulirPages}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
                 >
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -1638,20 +1750,20 @@ export default function PemeriksaanPage() {
 
             {/* Pagination Controls Riwayat */}
             {totalRiwayatPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))]">
                 <button
                   onClick={() => setRiwayatPage((p) => Math.max(1, p - 1))}
                   disabled={riwayatPage <= 1}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                  <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
                   {Array.from({ length: totalRiwayatPages }).map((_, i) => (
                     <button
                       key={i + 1}
                       onClick={() => setRiwayatPage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
                         riwayatPage === i + 1
                           ? "bg-[#0C1B16] text-[#BEF264]"
                           : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
@@ -1664,9 +1776,9 @@ export default function PemeriksaanPage() {
                 <button
                   onClick={() => setRiwayatPage((p) => Math.min(totalRiwayatPages, p + 1))}
                   disabled={riwayatPage >= totalRiwayatPages}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
                 >
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}

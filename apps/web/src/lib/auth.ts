@@ -62,8 +62,9 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        token.name = user.name;
         token.role = user.role;
         token.puskesmasId = user.puskesmasId;
         token.puskesmasNama = user.puskesmasNama;
@@ -84,11 +85,30 @@ export const authOptions: NextAuthOptions = {
           console.error("Gagal mencatat log login sukses:", err);
         }
       }
+
+      if (trigger === "update") {
+        if (session?.name) {
+          token.name = session.name;
+        } else if (token.sub) {
+          const freshUser = await prisma.user.findUnique({
+            where: { id: Number(token.sub) },
+            select: { nama: true, role: true, puskesmasId: true, puskesmas: { select: { nama: true } } },
+          });
+          if (freshUser) {
+            token.name = freshUser.nama;
+            token.role = freshUser.role;
+            token.puskesmasId = freshUser.puskesmasId;
+            token.puskesmasNama = freshUser.puskesmas?.nama;
+          }
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
+        if (token.name) session.user.name = token.name;
         session.user.role = token.role;
         session.user.puskesmasId = token.puskesmasId;
         session.user.puskesmasNama = token.puskesmasNama;

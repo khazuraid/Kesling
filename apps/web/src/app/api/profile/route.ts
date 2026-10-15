@@ -3,6 +3,33 @@ import { compare, hash } from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 
+export async function GET() {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: {
+      id: true,
+      nama: true,
+      email: true,
+      role: true,
+      puskesmasId: true,
+      puskesmas: {
+        select: {
+          id: true,
+          nama: true,
+        },
+      },
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!dbUser) return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
+  return NextResponse.json(dbUser);
+}
+
 export async function PUT(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -10,7 +37,13 @@ export async function PUT(req: NextRequest) {
   const { nama, currentPassword, newPassword } = await req.json();
 
   const data: any = {};
-  if (nama) data.nama = nama;
+  if (nama !== undefined && nama !== null) {
+    const trimmed = String(nama).trim();
+    if (!trimmed) {
+      return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 });
+    }
+    data.nama = trimmed;
+  }
 
   if (currentPassword && newPassword) {
     const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
@@ -28,6 +61,17 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Tidak ada data yang diubah" }, { status: 400 });
   }
 
-  await prisma.user.update({ where: { id: user.id }, data });
-  return NextResponse.json({ ok: true });
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data,
+    select: {
+      id: true,
+      nama: true,
+      email: true,
+      role: true,
+      puskesmasId: true,
+    },
+  });
+
+  return NextResponse.json({ ok: true, user: updated });
 }

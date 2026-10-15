@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, Check, Lock, QrCode, RefreshCw, ShieldCheck, Smartphone, User } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
@@ -16,6 +16,30 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { data: profileData, refetch: refetchProfile } = useQuery<{
+    id: number;
+    nama: string;
+    email: string;
+    role: string;
+    puskesmas?: { nama: string };
+  }>({
+    queryKey: ["profile-me"],
+    queryFn: async () => {
+      const res = await fetch("/api/profile");
+      if (!res.ok) throw new Error("Gagal mengambil profil");
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    if (profileData?.nama) {
+      setNama(profileData.nama);
+    } else if (user?.name) {
+      setNama(user.name);
+    }
+  }, [profileData?.nama, user?.name]);
 
   const { data: activity = [], isLoading: activityLoading } = useQuery<any[]>({
     queryKey: ["audit-log-me"],
@@ -45,19 +69,28 @@ export default function ProfilePage() {
 
   async function handleUpdateProfile(e: React.FormEvent) {
     e.preventDefault();
+    const cleanNama = nama.trim();
+    if (!cleanNama) {
+      toast.error("Nama lengkap tidak boleh kosong");
+      return;
+    }
     setLoading(true);
-    const res = await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama }),
-    });
-    setLoading(false);
-    if (res.ok) {
-      toast.success("Profil berhasil diupdate");
-      await update();
-    } else {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama: cleanNama }),
+      });
       const d = await res.json();
-      toast.error(d.error);
+      if (!res.ok) throw new Error(d.error || "Gagal memperbarui profil");
+
+      toast.success("Profil berhasil diupdate");
+      await update({ name: cleanNama });
+      await refetchProfile();
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -95,6 +128,11 @@ export default function ProfilePage() {
     { id: "mobile" as const, label: "Akses Mobile", icon: <Smartphone className="w-4 h-4" /> },
   ];
 
+  const displayName = profileData?.nama || user?.name || "Profil";
+  const displayEmail = profileData?.email || user?.email || "";
+  const displayRole = profileData?.role || user?.role || "-";
+  const displayPuskesmas = profileData?.puskesmas?.nama || user?.puskesmasNama;
+
   return (
     <div className="w-full mx-auto pb-4 space-y-6 fade-in">
       {/* HERO */}
@@ -103,14 +141,14 @@ export default function ProfilePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#123527_0%,transparent_60%)]" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-[#00A876] flex items-center justify-center text-[22px] font-black text-[#06281E] shrink-0">
-            {user?.name?.charAt(0) || "U"}
+            {displayName.charAt(0) || "U"}
           </div>
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-1">
-              {user?.role} {user?.puskesmasNama ? `· ${user.puskesmasNama}` : ""}
+              {displayRole} {displayPuskesmas ? `· ${displayPuskesmas}` : ""}
             </p>
-            <h1 className="text-[26px] font-black tracking-[-0.03em] leading-none">{user?.name || "Profil"}</h1>
-            <p className="text-[12px] font-medium text-white/50 mt-1.5">{user?.email}</p>
+            <h1 className="text-[26px] font-black tracking-[-0.03em] leading-none">{displayName}</h1>
+            <p className="text-[12px] font-medium text-white/50 mt-1.5">{displayEmail}</p>
           </div>
         </div>
       </div>
@@ -121,11 +159,11 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 text-center">
             <div className="w-20 h-20 bg-[hsl(var(--foreground))] flex items-center justify-center text-2xl font-bold text-[hsl(var(--background))] mx-auto mb-3">
-              {user?.name?.charAt(0) || "U"}
+              {displayName.charAt(0) || "U"}
             </div>
-            <h2 className="text-[15px] font-bold tracking-tight text-[hsl(var(--foreground))]">{user?.name}</h2>
+            <h2 className="text-[15px] font-bold tracking-tight text-[hsl(var(--foreground))]">{displayName}</h2>
             <span className="inline-block mt-2 text-[9px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] border border-[hsl(var(--border))] px-2 py-0.5">
-              {user?.role}
+              {displayRole}
             </span>
           </div>
 
@@ -139,26 +177,26 @@ export default function ProfilePage() {
                 <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
                   Nama
                 </span>
-                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{user?.name}</span>
+                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{displayName}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
                   Email
                 </span>
-                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{user?.email}</span>
+                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{displayEmail}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
                   Role
                 </span>
-                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{user?.role}</span>
+                <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{displayRole}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em]">
                   Puskesmas
                 </span>
                 <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">
-                  {user?.puskesmasNama || "Semua (Admin)"}
+                  {displayPuskesmas || "Semua (Admin)"}
                 </span>
               </div>
               <div className="flex flex-col gap-0.5">
