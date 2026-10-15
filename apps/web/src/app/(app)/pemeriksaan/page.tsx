@@ -9,6 +9,7 @@ import {
   Database,
   Download,
   Edit3,
+  Eye,
   FileText,
   Loader2,
   MapPin,
@@ -27,7 +28,9 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
+import { DetailResultModal } from "./DetailResultModal";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
+import { generateInspectionPDF } from "./pdf-generator";
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
@@ -39,6 +42,8 @@ export default function PemeriksaanPage() {
   const [pendingForm, setPendingForm] = useState<any>(null);
   const [sasaranSearch, setSasaranSearch] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [detailModalResult, setDetailModalResult] = useState<any | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [formValues, setFormValues] = useState<Record<number, any>>({});
   const [metaValues, setMetaValues] = useState<Record<number, any>>({});
   const [tanggalPemeriksaan, setTanggalPemeriksaan] = useState<string>(new Date().toISOString().split("T")[0]);
@@ -750,6 +755,29 @@ export default function PemeriksaanPage() {
     });
   }
 
+  async function handleOpenDetail(res: any) {
+    let fullRes = res;
+    if (!res.values || res.values.length === 0) {
+      setIsLoadingDetail(true);
+      try {
+        const detailRes = await fetch(`/api/inspection/results/${res.id}`);
+        if (detailRes.ok) {
+          fullRes = await detailRes.json();
+        } else {
+          toast.error("Gagal memuat detail hasil pemeriksaan");
+          return;
+        }
+      } catch (err) {
+        console.error("Gagal memuat detail pemeriksaan:", err);
+        toast.error("Terjadi kesalahan memuat detail pemeriksaan");
+        return;
+      } finally {
+        setIsLoadingDetail(false);
+      }
+    }
+    setDetailModalResult(fullRes);
+  }
+
   async function handleExportPDF(res: any) {
     let fullRes = res;
     if (!res.values || res.values.length === 0) {
@@ -763,78 +791,15 @@ export default function PemeriksaanPage() {
       }
     }
 
-    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
-      import("jspdf"),
-      import("jspdf-autotable"),
-    ]);
-    const doc = new jsPDF();
     const template = templates.find((t) => t.id === fullRes.templateId) || fullRes.template;
-    const namaSasaran = fullRes.sasaran?.nama || fullRes.namaSasaran || "-";
-    const alamatSasaran = fullRes.sasaran?.alamat || fullRes.alamatSasaran || "-";
-    const tanggal = fullRes.tanggal
-      ? new Date(fullRes.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-      : new Date(fullRes.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-
-    doc.setFontSize(14);
-    doc.setTextColor(0, 122, 255);
-    doc.text("HASIL PEMERIKSAAN KESEHATAN LINGKUNGAN", 14, 15);
-    doc.setTextColor(9, 9, 11);
-    doc.setFontSize(12);
-    doc.text(template?.nama || "Pemeriksaan", 14, 23);
-    doc.setFontSize(9);
-    doc.setTextColor(113, 113, 122);
-    doc.text(`Dicetak: ${new Date().toLocaleString("id-ID")}`, 14, 28);
-
-    autoTable(doc, {
-      startY: 33,
-      body: [
-        ["Sasaran / Nama", namaSasaran],
-        ["Alamat", alamatSasaran],
-        ["Tanggal Pemeriksaan", tanggal],
-        ["Unit Puskesmas", fullRes.puskesmas?.nama || "-"],
-        ["Status", fullRes.status || "DRAFT"],
-      ],
-      styles: { fontSize: 9, cellPadding: 2, textColor: [9, 9, 11] },
-      columnStyles: { 0: { fontStyle: "bold", fillColor: [244, 244, 245], cellWidth: 45 } },
-      theme: "plain",
-    });
-
-    const rows: (string | number)[][] = [];
-    (template?.fields || [])
-      .filter((f: any) => f.grup !== "__META__")
-      .forEach((f: any) => {
-        const v = (fullRes.values || []).find((rv: any) => rv.fieldId === f.id);
-        let answer = "-";
-        if (f.tipe === "BOOLEAN") {
-          const u = String(v?.valueString || "").toUpperCase();
-          answer = u === "TRUE" ? "Ya" : u === "FALSE" ? "Tidak" : u === "NA" ? "T/A" : "-";
-        } else if (f.tipe === "PHOTO") {
-          answer = v?.valueString ? "[Foto Terlampir]" : "-";
-        } else if (f.tipe === "SIGNATURE") {
-          answer = v?.valueString ? "[Tanda Tangan Digital]" : "-";
-        } else if (v?.valueNumber !== null && v?.valueNumber !== undefined) {
-          answer = String(v.valueNumber);
-        } else if (v?.valueString) {
-          answer = v.valueString;
-        }
-        rows.push([f.pertanyaan, answer]);
-      });
-
-    if (fullRes.skor !== undefined && fullRes.skor !== null) {
-      rows.push(["SKOR AKHIR", String(fullRes.skor)]);
+    try {
+      toast.info("Menyiapkan dokumen PDF Berita Acara & Foto...");
+      await generateInspectionPDF(fullRes, template);
+      toast.success("Berita Acara & Hasil Inspeksi PDF berhasil diunduh");
+    } catch (err) {
+      console.error("Gagal generate PDF:", err);
+      toast.error("Gagal mengunduh file PDF");
     }
-
-    autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 6,
-      head: [["Pertanyaan", "Jawaban"]],
-      body: rows,
-      styles: { fontSize: 9, cellPadding: 3, textColor: [9, 9, 11] },
-      headStyles: { fillColor: [0, 122, 255], textColor: [255, 255, 255] },
-      alternateRowStyles: { fillColor: [244, 244, 245] },
-      columnStyles: { 1: { cellWidth: 60 } },
-    });
-
-    doc.save(`pemeriksaan-${namaSasaran.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
 
   function handleSubmit() {
@@ -1696,12 +1661,16 @@ export default function PemeriksaanPage() {
                   >
                     <div className="w-1.5 shrink-0 bg-[#00A876]" />
                     <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4">
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
+                      <div
+                        onClick={() => handleOpenDetail(res)}
+                        className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
+                        title="Klik untuk melihat detail lengkap hasil pemeriksaan"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0 group-hover/title:bg-[#00A876] group-hover/title:text-white transition-all">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
+                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] group-hover/title:text-[#00A876] transition-colors truncate">
                             {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
                           </h4>
                           <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
@@ -1716,6 +1685,14 @@ export default function PemeriksaanPage() {
                       </div>
 
                       <div className="flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[hsl(var(--border))]">
+                        <button
+                          title="Lihat Detail Pemeriksaan"
+                          onClick={() => handleOpenDetail(res)}
+                          disabled={isLoadingDetail}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold text-[#0C1B16] dark:text-[#BEF264] bg-[#00A876]/10 hover:bg-[#00A876]/20 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                          <Eye className="w-4 h-4 text-[#00A876]" /> Detail
+                        </button>
                         <button
                           title="Export PDF"
                           onClick={() => handleExportPDF(res)}
@@ -1784,6 +1761,19 @@ export default function PemeriksaanPage() {
             )}
           </div>
         )}
+
+        {/* Modal Detail Hasil Pemeriksaan Lengkap */}
+        <DetailResultModal
+          isOpen={Boolean(detailModalResult)}
+          onClose={() => setDetailModalResult(null)}
+          result={detailModalResult}
+          template={
+            detailModalResult
+              ? templates.find((t) => t.id === detailModalResult.templateId) || detailModalResult.template
+              : null
+          }
+          onEdit={handleEditResult}
+        />
       </div>
     );
   }
