@@ -47,7 +47,13 @@ export const GET = withAuth(async (req: NextRequest) => {
   const categoryIds = [
     ...new Set(
       templates
-        .map((template: any) => Number(template.config?.dataDasarCategoryId))
+        .map((template: any) =>
+          Number(
+            template.config?.dataDasarCategoryId ||
+              template.subCategory?.categoryId ||
+              template.subCategory?.category?.id,
+          ),
+        )
         .filter((id: number) => Number.isInteger(id) && id > 0),
     ),
   ];
@@ -69,10 +75,15 @@ export const GET = withAuth(async (req: NextRequest) => {
     : [];
   const categoryById = new Map(dataDasarCategories.map((category) => [category.id, category]));
   return NextResponse.json(
-    templates.map((template: any) => ({
-      ...template,
-      dataDasarCategory: categoryById.get(Number(template.config?.dataDasarCategoryId)) ?? null,
-    })),
+    templates.map((template: any) => {
+      const resolvedCategoryId = Number(
+        template.config?.dataDasarCategoryId || template.subCategory?.categoryId || template.subCategory?.category?.id,
+      );
+      return {
+        ...template,
+        dataDasarCategory: categoryById.get(resolvedCategoryId) ?? null,
+      };
+    }),
   );
 });
 

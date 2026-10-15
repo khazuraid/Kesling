@@ -9,20 +9,24 @@ import {
   Edit3,
   FileText,
   Loader2,
-  MapPin,
   Plus,
   Search,
   ShieldAlert,
   Trash2,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { FormView, isFieldDisabledInfo } from "./FormView";
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role;
+  const userPkmId = (session?.user as any)?.puskesmasId;
+  const { data: puskesmasList = [] } = usePuskesmasList();
   const queryClient = useQueryClient();
   const [activeForm, setActiveForm] = useState<any>(null);
   const [pendingForm, setPendingForm] = useState<any>(null);
@@ -34,12 +38,12 @@ export default function PemeriksaanPage() {
   const [activeTab, setActiveTab] = useState<"formulir" | "riwayat">("formulir");
   const [sasaranId, setSasaranId] = useState<number | null>(null);
 
-  // Modal tambah sasaran baru langsung dari form
+  // Modal tambah sasaran baru langsung dari form (format identik Data Dasar)
   const [isNewSasaranModalOpen, setIsNewSasaranModalOpen] = useState(false);
-  const [isLocatingSasaran, setIsLocatingSasaran] = useState(false);
   const [newSasaranForm, setNewSasaranForm] = useState({
     nama: "",
     subCategoryId: null as number | null,
+    puskesmasId: "" as number | string,
     alamat: "",
     pemilik: "",
     kontak: "",
@@ -48,17 +52,57 @@ export default function PemeriksaanPage() {
   });
   const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
 
-  const { data: sasaranResult = { data: [], total: 0, page: 1, totalPages: 1 } } = useQuery<any>({
-    queryKey: ["sasarans-data-dasar", pendingForm?.config?.dataDasarCategoryId],
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ["laporan-categories-all"],
     queryFn: async () => {
-      const categoryId = pendingForm?.config?.dataDasarCategoryId;
+      const res = await fetch("/api/laporan/categories?includeSub=true");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+
+  const targetCategory = useMemo(() => {
+    if (!pendingForm) return null;
+    const catId = Number(
+      pendingForm.config?.dataDasarCategoryId ??
+        pendingForm.dataDasarCategory?.id ??
+        pendingForm.subCategory?.category?.id ??
+        pendingForm.subCategory?.categoryId,
+    );
+    if (catId && categories.length > 0) {
+      const byId = categories.find((c: any) => c.id === catId);
+      if (byId) return byId;
+    }
+    const code = (
+      pendingForm.dataDasarCategory?.code ||
+      pendingForm.subCategory?.category?.code ||
+      pendingForm.config?.categoryCode ||
+      ""
+    ).toLowerCase();
+    if (code && categories.length > 0) {
+      const byCode = categories.find((c: any) => c.code.toLowerCase() === code);
+      if (byCode) return byCode;
+    }
+    if (pendingForm.subCategoryId && categories.length > 0) {
+      const bySub = categories.find((c: any) =>
+        (c.subCategories || []).some((sc: any) => sc.id === pendingForm.subCategoryId),
+      );
+      if (bySub) return bySub;
+    }
+    return pendingForm.dataDasarCategory || pendingForm.subCategory?.category || null;
+  }, [pendingForm, categories]);
+
+  const { data: sasaranResult = { data: [], total: 0, page: 1, totalPages: 1 } } = useQuery<any>({
+    queryKey: ["sasarans-data-dasar", targetCategory?.id || pendingForm?.config?.dataDasarCategoryId],
+    queryFn: async () => {
+      const categoryId = targetCategory?.id || pendingForm?.config?.dataDasarCategoryId;
       if (!categoryId) return { data: [], total: 0, page: 1, totalPages: 1 };
       const params = new URLSearchParams({ categoryId: String(categoryId), paginated: "1", page: "1", limit: "100" });
       const res = await fetch(`/api/sasaran?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat Data Dasar");
       return res.json();
     },
-    enabled: !!pendingForm?.config?.dataDasarCategoryId,
+    enabled: Boolean(targetCategory?.id || pendingForm?.config?.dataDasarCategoryId),
     staleTime: 30_000,
   });
   const sasarans = sasaranResult.data || [];
@@ -128,15 +172,33 @@ export default function PemeriksaanPage() {
     },
     onSuccess: (newSasaran) => {
       queryClient.invalidateQueries({
-        queryKey: ["sasarans-data-dasar", pendingForm?.config?.dataDasarCategoryId],
+        queryKey: ["sasarans-data-dasar"],
       });
-      toast.success(`Sasaran "${newSasaran.nama}" berhasil dibuat`);
+      toast.success(`Data Dasar "${newSasaran.nama}" berhasil disimpan`);
       setIsNewSasaranModalOpen(false);
       if (pendingForm) {
         openFormWithSasaran(pendingForm, newSasaran);
       }
     },
     onError: (err: any) => toast.error(err.message || "Gagal membuat sasaran baru"),
+  });
+
+  const seedDefaultMutation = useMutation({
+    mutationFn: async () => {
+      const catId = targetCategory?.id;
+      if (!catId) throw new Error("Kategori tidak valid");
+      const res = await fetch(`/api/master/dynamic-categories/${catId}/seed-baseline`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Gagal membuat field default");
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["laporan-categories-all"] });
+      queryClient.invalidateQueries({ queryKey: ["inspection-templates"] });
+      if (data.created > 0) toast.success(`${data.created} field default dibuat: ${data.codes.join(", ")}`);
+      else toast.info("Semua field default sudah ada");
+    },
+    onError: (err: any) => toast.error(err.message || "Gagal membuat field default"),
   });
 
   const { data: masterJenis = {} } = useQuery<any>({
@@ -149,26 +211,44 @@ export default function PemeriksaanPage() {
     staleTime: 60_000,
   });
 
+  const allSubCats = useMemo(() => {
+    return (targetCategory?.subCategories || []).map((sc: any) => ({
+      ...sc,
+      categoryNama: targetCategory?.nama ?? "",
+    }));
+  }, [targetCategory]);
+
   const baselineParams = useMemo(() => {
-    if (!pendingForm) return [];
-    const params = pendingForm.dataDasarCategory?.parameters || pendingForm.subCategory?.category?.parameters || [];
-    return [...params].filter((p: any) => p.isBaseline).sort((a: any, b: any) => (a.urutan ?? 0) - (b.urutan ?? 0));
-  }, [pendingForm]);
+    return [...(targetCategory?.parameters || [])]
+      .filter((p: any) => p.isBaseline)
+      .sort((a: any, b: any) => (a.urutan ?? 0) - (b.urutan ?? 0));
+  }, [targetCategory]);
+
+  const syncedParams = useMemo(() => {
+    return baselineParams.filter((p: any) => p.config?.syncToParamId);
+  }, [baselineParams]);
 
   const categoryCode = useMemo(() => {
-    return (pendingForm?.dataDasarCategory?.code || pendingForm?.subCategory?.category?.code || "").toLowerCase();
-  }, [pendingForm]);
+    return (targetCategory?.code || "").toLowerCase();
+  }, [targetCategory]);
 
-  const availableSubCats = useMemo(() => {
-    if (!pendingForm) return [];
-    if (pendingForm.dataDasarCategory?.subCategories?.length) {
-      return pendingForm.dataDasarCategory.subCategories;
+  useEffect(() => {
+    if (isNewSasaranModalOpen && allSubCats.length > 0 && !newSasaranForm.subCategoryId) {
+      setNewSasaranForm((prev) => ({
+        ...prev,
+        subCategoryId: allSubCats[0].id,
+      }));
     }
-    if (pendingForm.subCategory) {
-      return [pendingForm.subCategory];
+  }, [isNewSasaranModalOpen, allSubCats, newSasaranForm.subCategoryId]);
+
+  useEffect(() => {
+    if (isNewSasaranModalOpen && userRole !== "OPERATOR" && !newSasaranForm.puskesmasId && puskesmasList.length > 0) {
+      setNewSasaranForm((prev) => ({
+        ...prev,
+        puskesmasId: userPkmId || puskesmasList[0].id,
+      }));
     }
-    return [];
-  }, [pendingForm]);
+  }, [isNewSasaranModalOpen, userRole, newSasaranForm.puskesmasId, puskesmasList, userPkmId]);
 
   const getParamOptions = (p: any): string[] => {
     const raw = p.config?.options;
@@ -189,7 +269,7 @@ export default function PemeriksaanPage() {
         [p.code]: next,
       }));
     const baseClass =
-      "w-full h-10 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
+      "w-full h-10 bg-white border border-[hsl(var(--border))] rounded-lg px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
 
     if (p.type === "SELECT") {
       const customOptions = getParamOptions(p);
@@ -199,7 +279,7 @@ export default function PemeriksaanPage() {
         optionsList = customOptions;
       } else {
         const source = p.config?.optionsSource || "auto_category";
-        const catClean = categoryCode?.toLowerCase() || "";
+        const catClean = categoryCode || "";
         const resolvedSource =
           source === "auto_category"
             ? catClean === "tpp"
@@ -218,14 +298,14 @@ export default function PemeriksaanPage() {
         } else if (resolvedSource === "master_sarana") {
           optionsList = (masterJenis.sarana || []).map((j: any) => j.nama);
         } else {
-          optionsList = availableSubCats.map((sc: any) => sc.nama);
+          optionsList = allSubCats.map((sc: any) => sc.nama);
         }
       }
 
       return (
         <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
           <option value="">Pilih...</option>
-          {optionsList.map((opt) => (
+          {optionsList.map((opt: string) => (
             <option key={opt} value={opt}>
               {opt}
             </option>
@@ -271,13 +351,15 @@ export default function PemeriksaanPage() {
   function handleCreateSasaranSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const resolvedSubCatId =
-      newSasaranForm.subCategoryId ||
-      pendingForm?.subCategoryId ||
-      pendingForm?.dataDasarCategory?.subCategories?.[0]?.id;
-
+    const resolvedSubCatId = Number(newSasaranForm.subCategoryId);
     if (!resolvedSubCatId) {
-      toast.error("Subkategori sasaran wajib dipilih");
+      toast.error("Jenis / Tipe Entitas wajib dipilih");
+      return;
+    }
+
+    const targetPkm = userRole === "OPERATOR" ? userPkmId : Number(newSasaranForm.puskesmasId);
+    if (!targetPkm) {
+      toast.error("Puskesmas wajib dipilih");
       return;
     }
 
@@ -317,7 +399,7 @@ export default function PemeriksaanPage() {
       "Data Dasar";
 
     if (!displayName.trim()) {
-      toast.error("Nama sasaran wajib diisi");
+      toast.error("Nama wajib diisi (minimal satu field terisi)");
       return;
     }
 
@@ -342,65 +424,17 @@ export default function PemeriksaanPage() {
     const lat = dynamicLatStr ? parseFloat(dynamicLatStr) : newSasaranForm.lat;
     const lng = dynamicLngStr ? parseFloat(dynamicLngStr) : newSasaranForm.lng;
 
-    const finalDataDinamis: Record<string, any> = { ...dynamicValues };
-    if (baselineParams.length === 0) {
-      if (displayName) finalDataDinamis.nama = displayName;
-      if (dynamicAlamat) finalDataDinamis.alamat = dynamicAlamat;
-      if (dynamicPemilik) finalDataDinamis.pemilik = dynamicPemilik;
-      if (dynamicKontak) finalDataDinamis.kontak = dynamicKontak;
-    }
-
-    const userPkmId = (session?.user as any)?.puskesmasId;
-    const targetPuskesmasId = userPkmId || pendingForm?.puskesmasId || undefined;
-
     createSasaranMut.mutate({
       nama: displayName.trim(),
-      subCategoryId: Number(resolvedSubCatId),
-      puskesmasId: targetPuskesmasId ? Number(targetPuskesmasId) : undefined,
+      subCategoryId: resolvedSubCatId,
+      puskesmasId: targetPkm,
       alamat: dynamicAlamat.trim() || null,
       pemilik: dynamicPemilik.trim() || null,
       kontak: dynamicKontak.trim() || null,
       lat: Number.isFinite(lat) ? lat : null,
       lng: Number.isFinite(lng) ? lng : null,
-      dataDinamis: finalDataDinamis,
+      dataDinamis: { ...dynamicValues },
     });
-  }
-
-  function handleGetSasaranGPS() {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation tidak didukung browser");
-      return;
-    }
-    setIsLocatingSasaran(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const latVal = parseFloat(pos.coords.latitude.toFixed(6));
-        const lngVal = parseFloat(pos.coords.longitude.toFixed(6));
-        setNewSasaranForm((prev) => ({
-          ...prev,
-          lat: latVal,
-          lng: lngVal,
-        }));
-        setDynamicValues((prev) => {
-          const next = { ...prev };
-          for (const p of baselineParams) {
-            if (p.config?.syncToEntityField === "lat" || p.code === "lat" || p.code === "latitude") {
-              next[p.code] = String(latVal);
-            }
-            if (p.config?.syncToEntityField === "lng" || p.code === "lng" || p.code === "longitude") {
-              next[p.code] = String(lngVal);
-            }
-          }
-          return next;
-        });
-        setIsLocatingSasaran(false);
-        toast.success("Titik koordinat berhasil diambil");
-      },
-      () => {
-        setIsLocatingSasaran(false);
-        toast.error("Gagal mendapatkan lokasi GPS");
-      },
-    );
   }
 
   const handleFieldChange = useCallback((fieldId: number, value: any) => {
@@ -456,17 +490,36 @@ export default function PemeriksaanPage() {
     setEditingId(null);
     setSasaranId(null);
     setSasaranSearch("");
+    const resolvedCat =
+      categories.find(
+        (c: any) =>
+          c.id ===
+            Number(
+              template.config?.dataDasarCategoryId ||
+                template.dataDasarCategory?.id ||
+                template.subCategory?.categoryId ||
+                template.subCategory?.category?.id,
+            ) ||
+          (template.subCategoryId && (c.subCategories || []).some((sc: any) => sc.id === template.subCategoryId)),
+      ) ||
+      template.dataDasarCategory ||
+      template.subCategory?.category;
+
     const dataDasarCategoryId = Number(
-      template.config?.dataDasarCategoryId ?? template.dataDasarCategory?.id ?? template.subCategory?.category?.id,
+      template.config?.dataDasarCategoryId ?? resolvedCat?.id ?? template.subCategory?.category?.id,
     );
     if (!Number.isInteger(dataDasarCategoryId) || dataDasarCategoryId <= 0) {
       openFormWithoutSasaran(template);
       return;
     }
-    const defaultSubCat = template.subCategoryId || template.dataDasarCategory?.subCategories?.[0]?.id || null;
+    const defaultSubCat = template.subCategoryId || resolvedCat?.subCategories?.[0]?.id || null;
+
+    const defaultPkm = userRole === "OPERATOR" ? userPkmId : template.puskesmasId || userPkmId || "";
+
     setNewSasaranForm({
       nama: "",
       subCategoryId: defaultSubCat ? Number(defaultSubCat) : null,
+      puskesmasId: defaultPkm,
       alamat: "",
       pemilik: "",
       kontak: "",
@@ -474,13 +527,14 @@ export default function PemeriksaanPage() {
       lng: null,
     });
     const initialDyn: Record<string, string> = {};
-    const params = template.dataDasarCategory?.parameters || template.subCategory?.category?.parameters || [];
+    const params = (resolvedCat?.parameters || []).filter((p: any) => p.isBaseline);
     params.forEach((p: any) => {
       initialDyn[p.code] = "";
     });
     setDynamicValues(initialDyn);
     setPendingForm({
       ...template,
+      dataDasarCategory: resolvedCat,
       config: { ...template.config, dataDasarCategoryId },
     });
   }
@@ -491,7 +545,11 @@ export default function PemeriksaanPage() {
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
     const dynamicSource = (sasaran?.dataDinamis || {}) as Record<string, unknown>;
-    const baselineParams = template.dataDasarCategory?.parameters || [];
+    const bParams =
+      targetCategory?.parameters ||
+      template.dataDasarCategory?.parameters ||
+      template.subCategory?.category?.parameters ||
+      [];
     const isDefaultYa = !!template.config?.defaultYa;
     const accountName = session?.user?.name || "";
     const accountPuskesmas = (session?.user as any)?.puskesmasNama || "";
@@ -513,7 +571,7 @@ export default function PemeriksaanPage() {
       if (f.grup === "__META__") {
         const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
         const configuredEntityField = f.config?.syncToEntityField;
-        const parameter = baselineParams.find(
+        const parameter = bParams.find(
           (p: any) => p.code === configuredCode || p.config?.syncToEntityField === configuredEntityField,
         );
         const fromDynamic = parameter?.code ? dynamicSource[parameter.code] : "";
@@ -1035,220 +1093,157 @@ export default function PemeriksaanPage() {
           )}
         </div>
 
-        {/* ── MODAL: TAMBAH SASARAN BARU (SESUAI FORM DATA DASAR) ── */}
+        {/* ── MODAL: TAMBAH DATA DASAR (FORMAT SESUAI DATA-DASAR) ── */}
         {isNewSasaranModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 md:p-6 fade-in">
-            <div className="w-full max-w-2xl max-h-[88vh] flex flex-col bg-[hsl(var(--card))] rounded-2xl overflow-hidden shadow-2xl border border-[hsl(var(--border))]">
-              {/* Modal Header */}
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 fade-in">
+            <div className="w-full max-w-3xl h-[86vh] flex flex-col bg-[hsl(var(--background))] rounded-2xl overflow-hidden shadow-2xl">
+              {/* Header */}
               <div className="shrink-0 px-6 py-4 border-b border-[hsl(var(--border))] flex items-center justify-between bg-[hsl(var(--card))]">
                 <div>
-                  <h2 className="text-[16px] font-extrabold text-[hsl(var(--foreground))]">Tambah Sasaran Baru</h2>
+                  <h2 className="text-[15px] font-extrabold">Tambah Data Dasar</h2>
                   <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                    Modul Data Dasar:{" "}
-                    <span className="font-semibold text-[#00A876]">
-                      {pendingForm.dataDasarCategory?.nama ||
-                        pendingForm.subCategory?.category?.nama ||
-                        pendingForm.nama}
-                    </span>
-                    {baselineParams.length > 0 ? ` · ${baselineParams.length} parameter skema` : ""}
+                    {baselineParams.length} field dari builder · {syncedParams.length} tersinkron
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsNewSasaranModalOpen(false)}
-                  className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
+                  className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
                   title="Tutup"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Modal Body / Form */}
-              <form
-                id="new-sasaran-form"
-                onSubmit={handleCreateSasaranSubmit}
-                className="flex-1 overflow-y-auto p-6 space-y-4"
-              >
-                {/* Jenis / Tipe Entitas (Sub Category) */}
-                <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                      Jenis / Tipe Entitas <span className="text-[#E15A4F]">*</span>
-                    </label>
-                    <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Subkategori sasaran</p>
-                  </div>
-                  <select
-                    value={newSasaranForm.subCategoryId || ""}
-                    onChange={(e) =>
-                      setNewSasaranForm((prev) => ({
-                        ...prev,
-                        subCategoryId: e.target.value ? Number(e.target.value) : null,
-                      }))
-                    }
-                    required
-                    className="w-full h-10 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
-                  >
-                    <option value="">Pilih Jenis / Subkategori</option>
-                    {availableSubCats.map((sc: any) => (
-                      <option key={sc.id} value={sc.id}>
-                        {sc.grup ? `[${sc.grup}] ` : ""}
-                        {sc.nama}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {baselineParams.length === 0 ? (
-                  <>
-                    <div className="rounded-xl bg-[#00A876]/10 border border-[#00A876]/20 px-4 py-3 text-[11px] text-[#00A876] font-medium">
-                      Modul ini menggunakan formulir Data Dasar standar. Isi identitas sasaran di bawah ini.
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                          Nama Tempat / Usaha <span className="text-[#E15A4F]">*</span>
-                        </label>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Nama sasaran</p>
+              {/* Form */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <form
+                  id="new-sasaran-form"
+                  onSubmit={handleCreateSasaranSubmit}
+                  className="max-w-2xl mx-auto space-y-4"
+                >
+                  {baselineParams.length === 0 ? (
+                    <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center space-y-3">
+                      <p className="text-[13px] font-bold">Belum ada schema Data Dasar</p>
+                      <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-md mx-auto">
+                        Form mengikuti Laporan Builder → tab Data Dasar. Tambahkan field di builder, atau buat 3 field
+                        default (Nama, Alamat, No HP).
+                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => seedDefaultMutation.mutate()}
+                          disabled={seedDefaultMutation.isPending}
+                          className="inline-flex h-10 px-5 items-center rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+                        >
+                          {seedDefaultMutation.isPending ? "Membuat..." : "Buat Field Default"}
+                        </button>
+                        <Link
+                          href="/laporan-builder"
+                          className="inline-flex h-10 px-5 items-center rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+                        >
+                          Buka Builder
+                        </Link>
                       </div>
-                      <input
-                        type="text"
-                        required
-                        value={newSasaranForm.nama}
-                        onChange={(e) => setNewSasaranForm((prev) => ({ ...prev, nama: e.target.value }))}
-                        placeholder="Contoh: Depot Air Sehat, Warung Barokah..."
-                        className="w-full h-10 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors"
-                      />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                          Alamat Lengkap
-                        </label>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Lokasi sarana</p>
-                      </div>
-                      <textarea
-                        rows={2}
-                        value={newSasaranForm.alamat}
-                        onChange={(e) => setNewSasaranForm((prev) => ({ ...prev, alamat: e.target.value }))}
-                        placeholder="Jalan, RT/RW, Kelurahan/Desa..."
-                        className="w-full py-2 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors resize-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                          Nama Pemilik / Pengelola
-                        </label>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Penanggung jawab</p>
-                      </div>
-                      <input
-                        type="text"
-                        value={newSasaranForm.pemilik}
-                        onChange={(e) => setNewSasaranForm((prev) => ({ ...prev, pemilik: e.target.value }))}
-                        placeholder="Nama penanggung jawab sarana..."
-                        className="w-full h-10 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                          Kontak / No. Telepon
-                        </label>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Nomor HP/WA</p>
-                      </div>
-                      <input
-                        type="text"
-                        value={newSasaranForm.kontak}
-                        onChange={(e) => setNewSasaranForm((prev) => ({ ...prev, kontak: e.target.value }))}
-                        placeholder="08xxxxxxxxxx"
-                        className="w-full h-10 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Baseline Parameters dari Data Dasar */}
-                    {baselineParams.map((p: any) => (
-                      <div
-                        key={p.code}
-                        className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
-                      >
+                  ) : (
+                    <>
+                      {/* Jenis entitas */}
+                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
                         <div>
                           <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                            {p.nama} {p.required ? <span className="text-[#E15A4F]">*</span> : ""}
+                            Jenis / Tipe Entitas *
                           </label>
-                          <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] mt-0.5">
-                            {p.code} · {p.type}
+                          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                            Skema form & kategori
                           </p>
                         </div>
-                        <div>{renderSasaranDynamicInput(p)}</div>
+                        <select
+                          value={newSasaranForm.subCategoryId || ""}
+                          onChange={(e) =>
+                            setNewSasaranForm((prev) => ({ ...prev, subCategoryId: Number(e.target.value) }))
+                          }
+                          required
+                          className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                        >
+                          <option value="">Pilih Jenis</option>
+                          {allSubCats.map((sc: any) => (
+                            <option key={sc.id} value={sc.id}>
+                              {sc.grup ? `[${sc.grup}] ` : ""}
+                              {sc.nama}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
-                  </>
-                )}
 
-                {/* GPS Coordinates Helper */}
-                <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                      Titik Lokasi (GPS)
-                    </label>
-                    <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Koordinat lintang & bujur</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      placeholder="Latitude, Longitude"
-                      value={
-                        newSasaranForm.lat !== null && newSasaranForm.lng !== null
-                          ? `${newSasaranForm.lat}, ${newSasaranForm.lng}`
-                          : ""
-                      }
-                      className="flex-1 h-10 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl text-[12px] font-mono outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleGetSasaranGPS}
-                      disabled={isLocatingSasaran}
-                      className="h-10 px-3.5 bg-[hsl(var(--muted))] hover:bg-[hsl(var(--muted))]/80 text-[hsl(var(--foreground))] text-[12px] font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 shrink-0"
-                    >
-                      {isLocatingSasaran ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00A876]" /> Mencari...
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="w-3.5 h-3.5 text-[#00A876]" /> Ambil GPS
-                        </>
+                      {userRole !== "OPERATOR" && (
+                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
+                          <div>
+                            <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
+                              Puskesmas Pemilik *
+                            </label>
+                            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                              Entitas milik PKM mana
+                            </p>
+                          </div>
+                          <select
+                            value={newSasaranForm.puskesmasId || ""}
+                            onChange={(e) =>
+                              setNewSasaranForm((prev) => ({ ...prev, puskesmasId: Number(e.target.value) }))
+                            }
+                            required
+                            className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                          >
+                            <option value="">Pilih Puskesmas</option>
+                            {puskesmasList.map((p: any) => (
+                              <option key={p.id} value={p.id}>
+                                {p.nama}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       )}
-                    </button>
-                  </div>
-                </div>
-              </form>
 
-              {/* Modal Footer */}
+                      {baselineParams.map((p: any) => (
+                        <div
+                          key={p.code}
+                          className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+                        >
+                          <div>
+                            <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
+                              {p.nama} {p.required ? <span className="text-[#E15A4F]">*</span> : ""}
+                            </label>
+                            <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] mt-0.5">
+                              {p.code} · {p.type}
+                              {p.config?.syncToParamId ? " · sync" : ""}
+                            </p>
+                          </div>
+                          <div>{renderSasaranDynamicInput(p)}</div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </form>
+              </div>
+
+              {/* Footer */}
               <div className="shrink-0 border-t border-[hsl(var(--border))] px-6 py-4 flex items-center justify-between bg-[hsl(var(--card))]">
                 <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                  Sasaran akan otomatis terpilih setelah disimpan.
+                  Lengkapi data wajib (*) · Sasaran akan otomatis terpilih setelah disimpan.
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setIsNewSasaranModalOpen(false)}
-                    className="h-10 px-4 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
+                    className="h-10 px-4 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     form="new-sasaran-form"
-                    disabled={createSasaranMut.isPending}
-                    className="h-10 px-5 rounded-xl bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-extrabold transition-all shadow-sm disabled:opacity-50 inline-flex items-center gap-2"
+                    disabled={createSasaranMut.isPending || baselineParams.length === 0}
+                    className="h-10 px-6 rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     {createSasaranMut.isPending ? (
                       <>
