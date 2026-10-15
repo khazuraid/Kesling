@@ -315,7 +315,7 @@ export default function DataDasarSubCatPage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sasaran", selectedSubCatId] });
+      queryClient.invalidateQueries({ queryKey: ["sasaran"] });
       toast.success(selectedId === "new" ? "Data berhasil ditambahkan" : "Data berhasil diperbarui");
       closeEdit();
     },
@@ -325,11 +325,12 @@ export default function DataDasarSubCatPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const res = await fetch(`/api/sasaran/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Gagal menghapus data");
-      return res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Gagal menghapus data");
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sasaran", selectedSubCatId] });
+      queryClient.invalidateQueries({ queryKey: ["sasaran"] });
       toast.success("Data berhasil dihapus");
       closeEdit();
     },
@@ -570,13 +571,28 @@ export default function DataDasarSubCatPage() {
                         {s.puskesmas.nama}
                       </span>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => handleSelect(s)}
-                      className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-bold text-[#00A876] hover:bg-[#00A876]/10 transition-colors"
-                    >
-                      <Pencil className="w-3.5 h-3.5" /> Edit
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleSelect(s)}
+                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-bold text-[#00A876] hover:bg-[#00A876]/10 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Hapus permanen "${s.nama}"? Data IKL terkait dapat terdampak.`)) {
+                            deleteMutation.mutate(s.id);
+                          }
+                        }}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[#E15A4F] hover:bg-[#E15A4F]/10 transition-colors"
+                        title="Hapus Data Dasar"
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -755,9 +771,22 @@ export default function DataDasarSubCatPage() {
 
             {/* Footer */}
             <div className="shrink-0 border-t border-[hsl(var(--border))] px-6 py-4 flex items-center justify-between bg-[hsl(var(--card))]">
-              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                {selectedId === "new" ? "Lengkapi data wajib (*)" : "Perubahan akan tersimpan"}
-              </span>
+              {selectedId !== "new" ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    confirm("Hapus permanen data dasar ini? Data IKL terkait dapat terdampak.") &&
+                    deleteMutation.mutate(selectedId as number)
+                  }
+                  disabled={deleteMutation.isPending}
+                  className="inline-flex items-center gap-1.5 h-10 px-3.5 text-[12px] font-bold text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-lg transition-colors"
+                >
+                  <Trash className="w-4 h-4" />
+                  {deleteMutation.isPending ? "Menghapus..." : "Hapus Data"}
+                </button>
+              ) : (
+                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Lengkapi data wajib (*)</span>
+              )}
               <div className="flex items-center gap-3">
                 <button
                   type="button"
