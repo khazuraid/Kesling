@@ -114,7 +114,7 @@ export default function DataDasarSubCatPage() {
         },
       });
     const baseClass =
-      "w-full h-10 bg-white border border-[hsl(var(--border))] rounded-lg px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
+      "w-full h-10 rounded-button border border-border bg-surface text-text-main px-3 text-[13px] font-medium focus:outline-none focus:border-primary transition-colors";
 
     if (p.type === "SELECT") {
       const customOptions = getOptions(p);
@@ -421,7 +421,7 @@ export default function DataDasarSubCatPage() {
         </div>
         <Link
           href="/dashboard-pkm"
-          className="h-10 px-5 inline-flex items-center rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+          className="h-10 px-5 inline-flex items-center rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition shadow-sm"
         >
           Kembali ke Dashboard
         </Link>
@@ -431,9 +431,9 @@ export default function DataDasarSubCatPage() {
 
   if (!category && !loadingCats) {
     return (
-      <div className="p-10 text-center">
+      <div className="p-10 text-center text-foreground">
         Kategori tidak ditemukan.{" "}
-        <Link href="/data-dasar" className="underline text-[#00A876]">
+        <Link href="/data-dasar" className="underline text-primary">
           Kembali
         </Link>
       </div>
@@ -441,41 +441,46 @@ export default function DataDasarSubCatPage() {
   }
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in bg-canvas min-h-screen">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-        <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#153A2D_0%,transparent_60%)] pointer-events-none" />
+        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
-              <Link href="/data-dasar" className="hover:text-[#7CF5CE] transition-colors">
-                Data Dasar
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">
+              <Link href="/data-dasar" className="hover:text-white transition-colors">
+                ← Data Dasar
               </Link>
             </p>
-            <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">{category?.nama || "Memuat..."}</h1>
-            <p className="text-[13px] font-medium text-white/50 mt-2">
-              {sasaranPage.total} entitas · {baselineParams.length} field · {syncedParams.length} sync
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">
+              {category?.nama || "Memuat..."}
+            </h1>
+            <p className="text-[13px] font-medium text-white/60 mt-2">
+              <span className="tabular-nums font-semibold">{sasaranPage.total}</span> entitas ·{" "}
+              <span className="tabular-nums font-semibold">{baselineParams.length}</span> field ·{" "}
+              <span className="tabular-nums font-semibold">{syncedParams.length}</span> sync
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link
               href="/laporan-builder"
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 transition"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 transition shadow-sm"
             >
               <Settings2 className="w-3.5 h-3.5" /> Builder
             </Link>
             <button
               onClick={handleNew}
               disabled={!selectedSubCatId}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-black hover:brightness-105 active:scale-95 transition shadow-sm disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" /> Tambah Data
             </button>
           </div>
         </div>
         {/* Sub-category pills */}
-        <div className="relative z-10 px-8 pb-5 flex items-center gap-1.5 overflow-x-auto">
+        <div className="relative z-10 px-6 sm:px-8 pb-5 flex items-center gap-2 overflow-x-auto">
           {allSubCats.map((sc) => (
             <button
               key={sc.id}
@@ -484,36 +489,44 @@ export default function DataDasarSubCatPage() {
                 setSearchTerm("");
                 closeEdit();
               }}
-              className={`shrink-0 inline-flex items-center gap-2 h-8 px-4 rounded-full text-[11px] font-bold transition-colors ${
+              className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
                 sc.id === selectedSubCatId
-                  ? "bg-[#BEF264] text-[#06281E]"
-                  : "bg-white/[0.08] text-white/60 border border-white/15 hover:text-white hover:bg-white/15"
+                  ? "bg-[#BEF264] text-[#06281E] shadow-sm"
+                  : "bg-white/[0.08] text-white/70 border border-white/15 hover:text-white hover:bg-white/15"
               }`}
             >
               {sc.grup && <span className="text-[9px] font-extrabold opacity-60 uppercase">{sc.grup}</span>}
-              {sc.nama}
+              <span>{sc.nama}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* ── SEARCH + FILTER ── */}
-      <div className="mt-6 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Cari nama, pemilik, atau alamat..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-10 pr-3 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl text-[13px] font-medium focus:outline-none focus:border-[#00A876] transition-colors"
+            className="w-full h-10 pl-10 pr-10 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary shadow-subtle transition-colors"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
         {userRole !== "OPERATOR" && (
           <select
             value={selectedPkmFilter || ""}
             onChange={(e) => setSelectedPkmFilter(e.target.value ? Number(e.target.value) : null)}
-            className="h-10 px-3 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl text-[12px] font-medium outline-none cursor-pointer shrink-0 max-w-[200px]"
+            className="h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[12px] font-medium outline-none focus:border-primary cursor-pointer shrink-0 max-w-[220px] shadow-subtle"
           >
             <option value="">Semua Puskesmas</option>
             {puskesmasList.map((p: any) => (
@@ -525,105 +538,145 @@ export default function DataDasarSubCatPage() {
         )}
       </div>
 
-      {/* ── LIST ── */}
-      <div className="pt-4">
+      {/* ── TABLE CONTAINER ── */}
+      <div className="space-y-3 pt-1">
         {loadingSasaran ? (
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-[72px] rounded-2xl bg-[hsl(var(--muted))]/20 animate-pulse" />
-            ))}
+          <div className="rounded-card bg-surface border border-border shadow-subtle p-8 flex flex-col items-center justify-center space-y-3">
+            <div className="w-8 h-8 border-2 border-border border-t-primary rounded-full animate-spin" />
+            <p className="text-[12px] font-medium text-muted-foreground">Memuat data sasaran...</p>
           </div>
         ) : filteredSasarans.length === 0 ? (
-          <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
-            <Database className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
-            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Data</p>
-            <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">
+          <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-10 flex flex-col items-center justify-center text-center">
+            <Database className="w-8 h-8 text-muted-foreground/40 mb-3" />
+            <p className="text-[13px] font-bold text-foreground">Belum Ada Data</p>
+            <p className="text-[12px] text-muted-foreground mt-1">
               Tambah entitas pertama untuk modul {activeSubCat?.nama || "ini"}.
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
-            {filteredSasarans.map((s) => {
-              const dyn = (s.dataDinamis as Record<string, string>) || {};
-              const preview = baselineParams
-                .slice(0, 3)
-                .map((p) => dyn[p.code])
-                .filter(Boolean)
-                .join(" · ");
-              return (
-                <div
-                  key={s.id}
-                  className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden"
-                >
-                  <div className="w-1 shrink-0 bg-[#00A876]" />
-                  <div className="flex-1 flex items-center gap-4 px-5 py-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
-                      <Database className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">{s.nama}</h4>
-                      <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                        {[s.alamat, s.pemilik].filter(Boolean).join(" · ") || preview || `#${s.id}`}
-                      </p>
-                    </div>
-                    {userRole !== "OPERATOR" && s.puskesmas?.nama && (
-                      <span className="hidden md:inline-flex shrink-0 text-[10px] font-bold text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]/40 px-2.5 py-1 rounded-full">
-                        {s.puskesmas.nama}
-                      </span>
-                    )}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleSelect(s)}
-                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-bold text-[#00A876] hover:bg-[#00A876]/10 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Hapus permanen "${s.nama}"? Data IKL terkait dapat terdampak.`)) {
-                            deleteMutation.mutate(s.id);
-                          }
-                        }}
-                        className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[#E15A4F] hover:bg-[#E15A4F]/10 transition-colors"
-                        title="Hapus Data Dasar"
-                      >
-                        <Trash className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="overflow-x-auto max-h-[calc(100vh-340px)]">
+              <table className="w-full border-collapse text-left">
+                <thead className="sticky top-0 bg-surface z-10 border-b border-border text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3.5">Nama Entitas</th>
+                    <th className="px-4 py-3.5">Alamat & Pengelola</th>
+                    {userRole !== "OPERATOR" && <th className="px-4 py-3.5">Puskesmas</th>}
+                    <th className="px-4 py-3.5 hidden md:table-cell">Parameter Data Dasar</th>
+                    <th className="px-5 py-3.5 text-right w-28">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {filteredSasarans.map((s) => {
+                    const dyn = (s.dataDinamis as Record<string, string>) || {};
+                    const preview = baselineParams
+                      .slice(0, 3)
+                      .map((p) => {
+                        const v = dyn[p.code];
+                        return v ? `${p.nama}: ${v}` : null;
+                      })
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      <tr key={s.id} className="hover:bg-surface-subtle/70 transition-colors group">
+                        <td className="px-5 py-3.5 align-middle">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-primary-subtle text-primary flex items-center justify-center shrink-0">
+                              <Database className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-[13px] font-extrabold text-foreground block truncate group-hover:text-primary transition-colors">
+                                {s.nama}
+                              </span>
+                              <span className="text-[10px] font-semibold text-muted-foreground block truncate tabular-nums">
+                                ID #{s.id}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 align-middle">
+                          <div className="text-[12px] font-medium text-foreground truncate max-w-xs">
+                            {s.alamat || <span className="text-muted-foreground/50 italic">Alamat belum diisi</span>}
+                          </div>
+                          {(s.pemilik || s.kontak) && (
+                            <div className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-xs">
+                              {[s.pemilik, s.kontak].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
+                        </td>
+                        {userRole !== "OPERATOR" && (
+                          <td className="px-4 py-3.5 align-middle">
+                            {s.puskesmas?.nama ? (
+                              <span className="inline-flex text-[10px] font-bold text-muted-foreground bg-surface-subtle px-2.5 py-1 rounded-full border border-border">
+                                {s.puskesmas.nama}
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground/40">—</span>
+                            )}
+                          </td>
+                        )}
+                        <td className="px-4 py-3.5 align-middle hidden md:table-cell">
+                          <span className="text-[11px] text-muted-foreground block truncate max-w-md">
+                            {preview || <span className="text-muted-foreground/40 italic">—</span>}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 align-middle text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSelect(s)}
+                              className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-button text-[11px] font-bold text-primary hover:bg-primary-subtle transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5" /> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm(`Hapus permanen "${s.nama}"? Data IKL terkait dapat terdampak.`)) {
+                                  deleteMutation.mutate(s.id);
+                                }
+                              }}
+                              className="inline-flex items-center justify-center h-8 w-8 rounded-button text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                              title="Hapus Data Dasar"
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Pagination */}
-        {filteredSasarans.length > 0 && (
-          <div className="mt-4 flex items-center justify-between text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
-            <span>
-              {sasaranPage.total} entitas · halaman {sasaranPage.page}/{Math.max(1, sasaranPage.totalPages)}
-              {fetchingSasaran ? " · sinkronisasi..." : ""}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="h-8 px-3 rounded-lg border border-[hsl(var(--border))] disabled:opacity-40 hover:border-[#00A876] hover:text-[#00A876] transition-colors"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                disabled={page >= sasaranPage.totalPages}
-                onClick={() => setPage((p) => Math.min(sasaranPage.totalPages, p + 1))}
-                className="h-8 px-3 rounded-lg border border-[hsl(var(--border))] disabled:opacity-40 hover:border-[#00A876] hover:text-[#00A876] transition-colors"
-              >
-                Next
-              </button>
+            {/* Pagination Controls */}
+            <div className="px-5 py-3.5 border-t border-border bg-surface flex flex-wrap items-center justify-between gap-3 text-[11px] font-bold text-muted-foreground">
+              <span>
+                <span className="tabular-nums font-semibold">{sasaranPage.total}</span> entitas · halaman{" "}
+                <span className="tabular-nums font-semibold">{sasaranPage.page}</span>/
+                <span className="tabular-nums font-semibold">{Math.max(1, sasaranPage.totalPages)}</span>
+                {fetchingSasaran ? " · sinkronisasi..." : ""}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="h-8 px-3 rounded-button border border-border bg-surface text-text-main text-[11px] font-bold disabled:opacity-40 hover:border-primary hover:text-primary transition-colors shadow-subtle"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  disabled={page >= sasaranPage.totalPages}
+                  onClick={() => setPage((p) => Math.min(sasaranPage.totalPages, p + 1))}
+                  className="h-8 px-3 rounded-button border border-border bg-surface text-text-main text-[11px] font-bold disabled:opacity-40 hover:border-primary hover:text-primary transition-colors shadow-subtle"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -631,16 +684,17 @@ export default function DataDasarSubCatPage() {
 
       {/* ── MODAL: ADD / EDIT ── */}
       {selectedId && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 fade-in">
-          <div className="w-full max-w-3xl h-[86vh] flex flex-col bg-[hsl(var(--background))] rounded-2xl overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 fade-in">
+          <div className="w-full max-w-3xl h-[86vh] flex flex-col rounded-card bg-surface border border-border shadow-float overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 px-6 py-4 border-b border-[hsl(var(--border))] flex items-center justify-between bg-[hsl(var(--card))]">
+            <div className="shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-surface">
               <div>
-                <h2 className="text-[15px] font-extrabold">
+                <h2 className="text-[15px] font-extrabold text-foreground">
                   {selectedId === "new" ? "Tambah Data Dasar" : "Detail Data Dasar"}
                 </h2>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                  {baselineParams.length} field dari builder · {syncedParams.length} tersinkron
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <span className="tabular-nums font-semibold">{baselineParams.length}</span> field dari builder ·{" "}
+                  <span className="tabular-nums font-semibold">{syncedParams.length}</span> tersinkron
                 </p>
               </div>
               <div className="flex items-center gap-1">
@@ -650,7 +704,7 @@ export default function DataDasarSubCatPage() {
                       confirm("Hapus permanen data dasar ini? Data IKL terkait dapat terdampak.") &&
                       deleteMutation.mutate(selectedId as number)
                     }
-                    className="p-2 text-[hsl(var(--muted-foreground))] hover:text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-lg transition-colors"
+                    className="p-2 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-button transition-colors"
                     title="Hapus Data"
                   >
                     <Trash className="w-4 h-4" />
@@ -658,7 +712,7 @@ export default function DataDasarSubCatPage() {
                 )}
                 <button
                   onClick={closeEdit}
-                  className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:bg-surface-subtle rounded-button transition-colors"
                   title="Tutup"
                 >
                   <X className="w-4 h-4" />
@@ -667,12 +721,12 @@ export default function DataDasarSubCatPage() {
             </div>
 
             {/* Form */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 bg-canvas">
               <form id="editor-form" onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4">
                 {baselineParams.length === 0 ? (
-                  <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center space-y-3">
-                    <p className="text-[13px] font-bold">Belum ada schema Data Dasar</p>
-                    <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-md mx-auto">
+                  <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-8 text-center space-y-3">
+                    <p className="text-[13px] font-bold text-foreground">Belum ada schema Data Dasar</p>
+                    <p className="text-[12px] text-muted-foreground max-w-md mx-auto">
                       Form mengikuti Laporan Builder → tab Data Dasar. Tambahkan field di builder, atau buat 3 field
                       default (Nama, Alamat, No HP).
                     </p>
@@ -681,13 +735,13 @@ export default function DataDasarSubCatPage() {
                         type="button"
                         onClick={() => seedDefaultMutation.mutate()}
                         disabled={seedDefaultMutation.isPending}
-                        className="inline-flex h-10 px-5 items-center rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+                        className="inline-flex h-10 px-5 items-center rounded-button bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover transition shadow-subtle disabled:opacity-50"
                       >
                         {seedDefaultMutation.isPending ? "Membuat..." : "Buat Field Default"}
                       </button>
                       <Link
                         href="/laporan-builder"
-                        className="inline-flex h-10 px-5 items-center rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+                        className="inline-flex h-10 px-5 items-center rounded-button bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition shadow-subtle"
                       >
                         Buka Builder
                       </Link>
@@ -696,12 +750,10 @@ export default function DataDasarSubCatPage() {
                 ) : (
                   <>
                     {/* Jenis entitas */}
-                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card border border-border bg-surface shadow-subtle">
                       <div>
-                        <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                          Jenis / Tipe Entitas *
-                        </label>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">Skema form & kategori</p>
+                        <label className="block text-[11px] font-bold text-foreground">Jenis / Tipe Entitas *</label>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Skema form & kategori</p>
                       </div>
                       <select
                         value={formData.subCategoryId || ""}
@@ -709,7 +761,7 @@ export default function DataDasarSubCatPage() {
                           setFormData((prev: any) => ({ ...prev, subCategoryId: Number(e.target.value) }))
                         }
                         required
-                        className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                        className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
                       >
                         <option value="">Pilih Jenis</option>
                         {allSubCats.map((sc: any) => (
@@ -722,20 +774,16 @@ export default function DataDasarSubCatPage() {
                     </div>
 
                     {userRole !== "OPERATOR" && (
-                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
+                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card border border-border bg-surface shadow-subtle">
                         <div>
-                          <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                            Puskesmas Pemilik *
-                          </label>
-                          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                            Entitas milik PKM mana
-                          </p>
+                          <label className="block text-[11px] font-bold text-foreground">Puskesmas Pemilik *</label>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Entitas milik PKM mana</p>
                         </div>
                         <select
                           value={formData.puskesmasId || ""}
                           onChange={(e) => setFormData({ ...formData, puskesmasId: Number(e.target.value) })}
                           required
-                          className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                          className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
                         >
                           <option value="">Pilih Puskesmas</option>
                           {puskesmasList.map((p: any) => (
@@ -750,13 +798,13 @@ export default function DataDasarSubCatPage() {
                     {baselineParams.map((p) => (
                       <div
                         key={p.code}
-                        className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+                        className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card border border-border bg-surface shadow-subtle"
                       >
                         <div>
-                          <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                            {p.nama} {p.required ? <span className="text-[#E15A4F]">*</span> : ""}
+                          <label className="block text-[11px] font-bold text-foreground">
+                            {p.nama} {p.required ? <span className="text-rose-500">*</span> : ""}
                           </label>
-                          <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] mt-0.5">
+                          <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
                             {p.code} · {p.type}
                             {p.config?.syncToParamId ? " · sync" : ""}
                           </p>
@@ -770,7 +818,7 @@ export default function DataDasarSubCatPage() {
             </div>
 
             {/* Footer */}
-            <div className="shrink-0 border-t border-[hsl(var(--border))] px-6 py-4 flex items-center justify-between bg-[hsl(var(--card))]">
+            <div className="shrink-0 border-t border-border px-6 py-4 flex items-center justify-between bg-surface">
               {selectedId !== "new" ? (
                 <button
                   type="button"
@@ -779,19 +827,19 @@ export default function DataDasarSubCatPage() {
                     deleteMutation.mutate(selectedId as number)
                   }
                   disabled={deleteMutation.isPending}
-                  className="inline-flex items-center gap-1.5 h-10 px-3.5 text-[12px] font-bold text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-1.5 h-10 px-3.5 text-[12px] font-bold text-rose-600 hover:bg-rose-500/10 rounded-button transition-colors"
                 >
                   <Trash className="w-4 h-4" />
                   {deleteMutation.isPending ? "Menghapus..." : "Hapus Data"}
                 </button>
               ) : (
-                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Lengkapi data wajib (*)</span>
+                <span className="text-[11px] text-muted-foreground">Lengkapi data wajib (*)</span>
               )}
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={closeEdit}
-                  className="h-10 px-4 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
+                  className="h-10 px-4 text-[12px] font-bold text-muted-foreground hover:bg-surface-subtle rounded-button transition-colors"
                 >
                   Batal
                 </button>
@@ -799,7 +847,7 @@ export default function DataDasarSubCatPage() {
                   type="submit"
                   form="editor-form"
                   disabled={saveMutation.isPending || baselineParams.length === 0}
-                  className="h-10 px-6 rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+                  className="h-10 px-6 rounded-button bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition disabled:opacity-50"
                 >
                   {saveMutation.isPending ? "Menyimpan..." : "Simpan Data"}
                 </button>

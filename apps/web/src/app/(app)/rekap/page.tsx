@@ -19,7 +19,7 @@ function pctTier(pct: number | null): CellColor {
 }
 
 const TIER = {
-  good: { bg: "#00A876", soft: "rgba(0,168,118,0.12)", text: "#00A876" },
+  good: { bg: "#059669", soft: "rgba(5,150,105,0.12)", text: "#059669" },
   warn: { bg: "#E8A33D", soft: "rgba(232,163,61,0.14)", text: "#C07F1F" },
   low: { bg: "#E15A4F", soft: "rgba(225,90,79,0.12)", text: "#E15A4F" },
   empty: { bg: "transparent", soft: "transparent", text: "hsl(var(--muted-foreground))" },
@@ -128,14 +128,14 @@ export default function RekapPage() {
   const worst = sorted[sorted.length - 1];
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
       {/* ── HERO: score ring + filters ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.05]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
 
-        <div className="relative z-10 px-8 py-7">
+        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7">
           <div className="flex flex-wrap items-center gap-8">
             <ScoreRing pct={overallPct} />
 
@@ -143,7 +143,7 @@ export default function RekapPage() {
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
                 Rekapitulasi Tahunan
               </p>
-              <h1 className="text-[28px] font-black tracking-[-0.03em] leading-tight">
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-tight">
                 {data?.selectedPkm ? data.selectedPkm.nama : "Semua Puskesmas"}
               </h1>
               <p className="text-[12px] font-medium text-white/50 mt-1.5">
@@ -152,8 +152,8 @@ export default function RekapPage() {
 
               {/* Tier chips */}
               <div className="flex items-center gap-2 mt-4">
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#00A876]/15 border border-[#00A876]/25 text-[#7CF5CE] text-[11px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00A876]" /> {goodCount} Baik
+                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary/15 border border-primary/30 text-[#7CF5CE] text-[11px] font-extrabold tabular-nums">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {goodCount} Baik
                 </span>
                 <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#E8A33D]/15 border border-[#E8A33D]/25 text-[#F5C97C] text-[11px] font-extrabold tabular-nums">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E8A33D]" /> {warnCount} Cukup
@@ -193,7 +193,7 @@ export default function RekapPage() {
                   <select
                     value={puskesmasId}
                     onChange={(e) => setPuskesmasId(e.target.value)}
-                    className="h-10 pl-9 pr-8 rounded-full bg-white/[0.08] border border-white/15 text-[12px] font-bold text-white outline-none focus:border-[#00A876] transition-colors appearance-none cursor-pointer [&>option]:text-black"
+                    className="h-10 pl-9 pr-8 rounded-full bg-white/[0.08] border border-white/15 text-[12px] font-bold text-white outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-black"
                   >
                     <option value="">Semua Puskesmas</option>
                     {data.puskesmasList.map((p) => (
@@ -218,10 +218,10 @@ export default function RekapPage() {
       </div>
 
       {/* ── BODY ── */}
-      <div className="pt-6">
+      <div className="pt-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[#00A876] animate-spin rounded-full" />
+            <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
           </div>
         ) : cats.length === 0 ? (
           <EmptyState
@@ -231,24 +231,58 @@ export default function RekapPage() {
           />
         ) : (
           <div className="space-y-6">
+            {/* ── BEST / WORST SPOTLIGHT (Bento-style summary cards) ── */}
+            {cats.length >= 2 && best && worst && best.id !== worst.id && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-card bg-surface border border-border shadow-subtle p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-primary-subtle text-primary flex items-center justify-center text-2xl shrink-0">
+                    {best.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary mb-1">
+                      Kategori Tertinggi
+                    </p>
+                    <p className="text-[15px] font-bold text-foreground truncate">{best.nama}</p>
+                  </div>
+                  <span className="text-[26px] font-black tabular-nums text-primary">
+                    {(best.pctTotalYear || 0).toFixed(0)}%
+                  </span>
+                </div>
+                <div className="rounded-card bg-surface border border-border shadow-subtle p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-error-light text-error flex items-center justify-center text-2xl shrink-0">
+                    {worst.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-error mb-1">
+                      Perlu Perhatian
+                    </p>
+                    <p className="text-[15px] font-bold text-foreground truncate">{worst.nama}</p>
+                  </div>
+                  <span className="text-[26px] font-black tabular-nums text-error">
+                    {(worst.pctTotalYear || 0).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* ── HEATMAP MATRIX ── */}
-            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
+            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse min-w-[860px]">
                   <thead>
-                    <tr className="border-b border-[hsl(var(--border))]">
-                      <th className="sticky left-0 z-10 bg-[hsl(var(--card))] px-5 py-4 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] min-w-[200px]">
+                    <tr className="border-b border-border bg-surface sticky top-0 z-20">
+                      <th className="sticky left-0 z-30 bg-surface px-5 py-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] min-w-[200px]">
                         Kategori
                       </th>
                       {BULAN.map((b) => (
                         <th
                           key={b}
-                          className="px-1 py-4 text-center text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider w-[62px]"
+                          className="px-1 py-4 text-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-[62px]"
                         >
                           {b}
                         </th>
                       ))}
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold text-[#00A876] uppercase tracking-[0.15em] w-[90px]">
+                      <th className="px-4 py-4 text-right text-[10px] font-extrabold text-primary uppercase tracking-[0.15em] w-[90px]">
                         Tahun
                       </th>
                     </tr>
@@ -260,14 +294,12 @@ export default function RekapPage() {
                       return (
                         <tr
                           key={cat.id}
-                          className="border-b border-[hsl(var(--border))]/50 last:border-0 hover:bg-[hsl(var(--muted))]/30 transition-colors"
+                          className="border-b border-border/50 last:border-0 hover:bg-surface-subtle transition-colors"
                         >
-                          <td className="sticky left-0 z-10 bg-[hsl(var(--card))] px-5 py-2.5">
+                          <td className="sticky left-0 z-10 bg-surface px-5 py-2.5">
                             <div className="flex items-center gap-2.5">
                               <span className="text-base shrink-0">{cat.icon}</span>
-                              <span className="text-[12px] font-bold text-[hsl(var(--foreground))] leading-tight">
-                                {cat.nama}
-                              </span>
+                              <span className="text-[12px] font-bold text-foreground leading-tight">{cat.nama}</span>
                             </div>
                           </td>
                           {Array.from({ length: 12 }, (_, i) => {
@@ -279,7 +311,7 @@ export default function RekapPage() {
                                   className="h-9 rounded-lg flex items-center justify-center text-[10px] font-extrabold tabular-nums transition-transform hover:scale-105"
                                   style={{
                                     background: m > 0 ? TIER[t].soft : "transparent",
-                                    color: m > 0 ? TIER[t].text : "hsl(var(--muted-foreground))",
+                                    color: m > 0 ? TIER[t].text : "var(--color-muted-foreground)",
                                     opacity: m > 0 ? 1 : 0.3,
                                   }}
                                   title={`${BULAN[i]}: ${m > 0 ? m.toFixed(1) : 0}%`}
@@ -293,8 +325,8 @@ export default function RekapPage() {
                             <span
                               className="inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-extrabold tabular-nums"
                               style={{
-                                background: yearPct > 0 ? TIER[yTier].soft : "hsl(var(--muted))",
-                                color: yearPct > 0 ? TIER[yTier].text : "hsl(var(--muted-foreground))",
+                                background: yearPct > 0 ? TIER[yTier].soft : "var(--color-surface-subtle)",
+                                color: yearPct > 0 ? TIER[yTier].text : "var(--color-muted-foreground)",
                               }}
                             >
                               {yearPct.toFixed(1)}%
@@ -308,8 +340,8 @@ export default function RekapPage() {
               </div>
 
               {/* Legend footer */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-[hsl(var(--border))]/60 bg-[hsl(var(--muted))]/20">
-                <div className="flex items-center gap-4 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+              <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-surface-subtle">
+                <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <span
                       className="w-2.5 h-2.5 rounded-md"
@@ -332,41 +364,11 @@ export default function RekapPage() {
                     &lt; 60%
                   </span>
                 </div>
-                <span className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
+                <span className="text-[10px] font-semibold text-muted-foreground">
                   {cats.length} kategori × 12 bulan
                 </span>
               </div>
             </div>
-
-            {/* ── BEST / WORST SPOTLIGHT ── */}
-            {cats.length >= 2 && best && worst && best.id !== worst.id && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-3xl border border-[#00A876]/25 bg-[#00A876]/[0.04] px-6 py-5 flex items-center gap-4">
-                  <span className="text-3xl">{best.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#00A876] mb-1">
-                      Tertinggi
-                    </p>
-                    <p className="text-[14px] font-bold text-[hsl(var(--foreground))] truncate">{best.nama}</p>
-                  </div>
-                  <span className="text-[26px] font-black tabular-nums text-[#00A876]">
-                    {(best.pctTotalYear || 0).toFixed(0)}%
-                  </span>
-                </div>
-                <div className="rounded-3xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.04] px-6 py-5 flex items-center gap-4">
-                  <span className="text-3xl">{worst.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#E15A4F] mb-1">
-                      Perlu Perhatian
-                    </p>
-                    <p className="text-[14px] font-bold text-[hsl(var(--foreground))] truncate">{worst.nama}</p>
-                  </div>
-                  <span className="text-[26px] font-black tabular-nums text-[#E15A4F]">
-                    {(worst.pctTotalYear || 0).toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>

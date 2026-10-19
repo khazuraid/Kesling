@@ -15,7 +15,7 @@ const DialogOverlay = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof
     <DialogPrimitive.Overlay
       ref={ref}
       className={cn(
-        "fixed inset-0 z-50 bg-black/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200",
         className,
       )}
       {...props}
@@ -30,15 +30,19 @@ const DialogContent = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
-        aria-describedby={undefined}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-[hsl(var(--card))] border border-[hsl(var(--border))] p-6 ",
+          "fixed left-[50%] top-[50%] z-50 w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-card border border-border bg-surface p-6 shadow-float duration-200",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "data-[state=closed]:slide-out-to-bottom-2 data-[state=open]:slide-in-from-bottom-2",
           className,
         )}
         {...props}
       >
+        <DialogPrimitive.Description className="sr-only">Dialog modal window</DialogPrimitive.Description>
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4  p-1 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors">
+        <DialogPrimitive.Close className="absolute right-4 top-4 w-7 h-7 rounded-button flex items-center justify-center text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer">
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
@@ -53,9 +57,21 @@ const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 
 const DialogTitle = forwardRef<HTMLHeadingElement, ComponentPropsWithoutRef<typeof DialogPrimitive.Title>>(
   ({ className, ...props }, ref) => (
-    <DialogPrimitive.Title ref={ref} className={cn("text-lg font-semibold leading-none", className)} {...props} />
+    <DialogPrimitive.Title
+      ref={ref}
+      className={cn("text-lg font-bold leading-none tracking-tight text-foreground", className)}
+      {...props}
+    />
   ),
 );
 DialogTitle.displayName = "DialogTitle";
 
-export { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger };
+const DialogDescription = forwardRef<
+  HTMLParagraphElement,
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn("text-xs text-muted-foreground", className)} {...props} />
+));
+DialogDescription.displayName = "DialogDescription";
+
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger };

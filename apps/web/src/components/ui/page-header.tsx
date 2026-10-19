@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-/* ── PageHeader — hero gelap warm-industrial ───────────────────── */
+/* ── PageHeader — Tamagui Architecture ─────────────────────────── */
 
 interface PageHeaderProps {
   title: string;
@@ -15,21 +15,32 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, eyebrow, icon, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn("relative overflow-hidden rounded-3xl bg-[#0C1B16] text-white px-8 py-7", className)}>
-      <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.14]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#123527_0%,transparent_60%)]" />
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle p-6 sm:p-7",
+        className,
+      )}
+    >
       <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           {eyebrow && (
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2 flex items-center gap-1.5">
-              {icon && <span className="inline-flex align-middle">{icon}</span>}
+            <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
+              {icon && <span className="inline-flex align-middle text-primary">{icon}</span>}
               {eyebrow}
             </p>
           )}
-          <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">{title}</h1>
-          {description && <p className="text-[13px] font-medium text-white/50 mt-2">{description}</p>}
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-main leading-tight">{title}</h1>
+          {description && (
+            <p className="text-xs sm:text-sm font-medium text-text-muted mt-2 max-w-2xl leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && (
+          <div className="flex items-center gap-2 shrink-0 [&_button]:active:scale-[0.98] [&_button]:transition-transform [&_a]:active:scale-[0.98] [&_a]:transition-transform">
+            {actions}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -44,20 +44,16 @@ export function ModuleSparkChips({ stats }: { stats: CategoryStat[] }) {
           <Link
             key={c.code}
             href={`/laporan/${c.code.toLowerCase()}`}
-            className="group rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 hover:border-[#00A876]/40 hover:bg-[#00A876]/[0.03] transition-all"
+            className="group rounded-card border border-border bg-surface p-4 hover:border-primary/40 hover:bg-primary/[0.03] transition-all shadow-subtle"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-base shrink-0">{c.icon || "▦"}</span>
-                <p className="text-[12px] font-extrabold text-[hsl(var(--foreground))] truncate leading-tight">
-                  {c.nama}
-                </p>
+                <p className="text-[12px] font-extrabold text-foreground truncate leading-tight">{c.nama}</p>
               </div>
               {diff !== 0 && (
                 <span
-                  className={`shrink-0 text-[9px] font-extrabold ${
-                    diff > 0 ? "text-[hsl(var(--success))]" : "text-[hsl(var(--error))]"
-                  }`}
+                  className={`shrink-0 text-[9px] font-extrabold ${diff > 0 ? "text-emerald-600" : "text-rose-600"}`}
                 >
                   {diff > 0 ? "+" : ""}
                   {diff}
@@ -67,11 +63,10 @@ export function ModuleSparkChips({ stats }: { stats: CategoryStat[] }) {
 
             <div className="flex items-end justify-between gap-3">
               <div>
-                <p className="text-[26px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
-                  {c.count}
-                </p>
-                <p className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] mt-1.5 uppercase tracking-[0.12em]">
-                  {pct}% dari {c.pkmCount} PKM
+                <p className="text-[26px] font-black tabular-nums leading-none text-foreground">{c.count}</p>
+                <p className="text-[9px] font-bold text-muted-foreground mt-1.5 uppercase tracking-[0.12em]">
+                  <span className="tabular-nums">{pct}%</span> dari <span className="tabular-nums">{c.pkmCount}</span>{" "}
+                  PKM
                 </p>
               </div>
               <div className="w-[96px] h-[36px] shrink-0 -mb-1">

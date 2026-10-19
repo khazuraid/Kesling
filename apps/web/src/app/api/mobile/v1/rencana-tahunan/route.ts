@@ -21,7 +21,7 @@ const BULAN_NAMES = [
 // GET rencana tahunan — 12 bulan overview, derived from rencanaBulanan + actual inspections
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req);
-  if (!user || !user.puskesmasId) {
+  if (!user?.puskesmasId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -46,15 +46,14 @@ export async function GET(req: NextRequest) {
   // Build 12-month overview
   const months = BULAN_NAMES.map((nama, i) => {
     const bulan = i + 1;
-    const rencanaCount = rencanas.filter((r) => r.bulan === bulan).length;
-    const selesaiCount = inspections.filter((r) => r.bulan === bulan).length;
     const terjadwalCount = rencanas.filter((r) => r.bulan === bulan && r.status === "TERJADWAL").length;
+    const selesaiCount = inspections.filter((r) => r.bulan === bulan).length;
     const dilewatiCount = rencanas.filter((r) => r.bulan === bulan && r.status === "DILEWATI").length;
     return {
       bulan,
       nama,
       totalSasaran,
-      terjadwal: rencanaCount,
+      terjadwal: terjadwalCount,
       selesai: selesaiCount,
       dilewati: dilewatiCount,
       belum: Math.max(0, totalSasaran - selesaiCount),

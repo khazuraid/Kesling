@@ -140,7 +140,7 @@ export function LaporanSaranaPage({ title, jenis, apiUrl, kategori }: Props) {
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-[hsl(var(--border))]">
                       <td colSpan={2 + jenisList.length * 7} className="px-4 py-3">
-                        <div className="h-4 bg-[hsl(var(--muted))]animate-pulse" />
+                        <div className="h-4 bg-[hsl(var(--muted))] animate-pulse" />
                       </td>
                     </tr>
                   ))

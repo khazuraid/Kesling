@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, ExternalLink, HardDrive, Image as ImageIcon, RefreshCw, Search, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
@@ -265,9 +266,12 @@ export default function FileManagerPage() {
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-lg bg-[hsl(var(--muted))]/60 border border-[hsl(var(--border))] flex items-center justify-center shrink-0 overflow-hidden">
                               {isImg ? (
-                                <img
+                                <Image
                                   src={item.path}
-                                  alt=""
+                                  alt={item.path.split("/").pop() || "Thumbnail"}
+                                  width={36}
+                                  height={36}
+                                  unoptimized
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
                                     (e.target as HTMLElement).style.display = "none";

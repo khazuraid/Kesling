@@ -62,17 +62,17 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
   const grupCount = new Set((job.result?.fields || []).map((f: any) => f.grup || "Umum")).size;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-surface border border-border rounded-card shadow-float overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/50 flex items-start justify-between gap-4">
+        <div className="p-4 sm:p-5 border-b border-border bg-surface-subtle/50 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-[#00A876]/10 border border-[#00A876]/20 flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5 text-[#00A876]" />
+            <div className="h-10 w-10 rounded-button bg-primary-subtle border border-primary/20 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-primary" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-bold text-[hsl(var(--foreground))] truncate">
+                <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                   Import Template: {job.fileName}
                 </h3>
                 <span
@@ -89,7 +89,7 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
                   {isComplete ? "Selesai" : isFailed ? "Gagal" : isProcessing ? "Memproses" : "Dalam Antrean"}
                 </span>
               </div>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 ID Job: <span className="font-mono text-[11px]">{job.jobId.slice(0, 8)}</span>
               </p>
             </div>
@@ -99,14 +99,14 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
             <button
               onClick={onMinimize}
               title="Jalankan di latar belakang"
-              className="p-1.5 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
             >
               <Minimize2 className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
               title="Tutup dialog"
-              className="p-1.5 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -114,13 +114,13 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
         </div>
 
         {/* Status & Queue Info Banner */}
-        <div className="px-5 py-3.5 bg-[hsl(var(--muted))]/20 border-b border-[hsl(var(--border))] flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-5 py-3.5 bg-muted/30 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
             {isProcessing && <Loader2 className="w-3.5 h-3.5 text-amber-500 animate-spin" />}
             {isQueued && <Clock className="w-3.5 h-3.5 text-sky-500" />}
             {isComplete && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
             {isFailed && <AlertCircle className="w-3.5 h-3.5 text-rose-500" />}
-            <span className="font-semibold text-[hsl(var(--foreground))]">{job.message || "Menunggu proses..."}</span>
+            <span className="font-semibold text-foreground">{job.message || "Menunggu proses..."}</span>
           </div>
 
           {isQueued && (
@@ -131,16 +131,16 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
             </div>
           )}
 
-          <div className="text-[11px] text-[hsl(var(--muted-foreground))]">Server 2C 8GB • Concurrency: 1 Worker</div>
+          <div className="text-[11px] text-muted-foreground">Server 2C 8GB • Concurrency: 1 Worker</div>
         </div>
 
         {/* Progress Bar */}
         <div className="px-5 pt-3">
-          <div className="flex items-center justify-between text-xs font-semibold mb-1 text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center justify-between text-xs font-semibold mb-1 text-muted-foreground">
             <span>Progres Ekstraksi</span>
-            <span className="font-mono text-[hsl(var(--foreground))]">{job.progress}%</span>
+            <span className="font-mono text-foreground">{job.progress}%</span>
           </div>
-          <div className="w-full h-2 rounded-full bg-[hsl(var(--muted))] overflow-hidden">
+          <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full transition-all duration-300 rounded-full ${
                 isComplete
@@ -162,14 +162,14 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
                 <h4 className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" /> Ekstraksi Berhasil
                 </h4>
-                <p className="text-xs text-[hsl(var(--foreground))] font-semibold mt-1">{job.result.nama}</p>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                <p className="text-xs text-foreground font-semibold mt-1">{job.result.nama}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
                   Terdeteksi {fieldCount} butir pemeriksaan terbagi dalam {grupCount} kelompok area.
                 </p>
               </div>
               <button
                 onClick={() => onApplyResult(job.result)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#BEF264] text-[#06281E] text-xs font-black uppercase tracking-wider hover:brightness-105 transition shadow-lg shadow-lime-500/20 shrink-0"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-wider hover:brightness-105 transition shadow-subtle shrink-0"
               >
                 <Check className="w-3.5 h-3.5" /> Terapkan ke Form
               </button>
@@ -183,7 +183,7 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
             <h4 className="font-bold text-rose-400 flex items-center gap-1.5 mb-1">
               <AlertCircle className="w-4 h-4" /> Proses Gagal
             </h4>
-            <p className="text-[hsl(var(--muted-foreground))] leading-relaxed font-mono text-[11px]">
+            <p className="text-muted-foreground leading-relaxed font-mono text-[11px]">
               {job.error || "Gagal memproses file pada worker. Silakan periksa log di bawah."}
             </p>
           </div>
@@ -193,8 +193,8 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
         <div className="p-5 flex-1 flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
                 Live Terminal Log
               </span>
               {(isProcessing || isQueued) && (
@@ -206,7 +206,7 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
             </div>
             <button
               onClick={handleCopyLogs}
-              className="inline-flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition"
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground hover:text-foreground transition"
             >
               <Copy className="w-3 h-3" />
               {copied ? "Tersalin!" : "Salin Log"}
@@ -262,8 +262,8 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/50 flex items-center justify-between gap-3 text-xs">
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+        <div className="p-4 border-t border-border bg-surface-subtle/50 flex items-center justify-between gap-3 text-xs">
+          <p className="text-[11px] text-muted-foreground">
             {(isProcessing || isQueued) && "Bisa diminimize untuk lanjut menggunakan fitur lain."}
           </p>
 
@@ -271,14 +271,14 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
             {(isProcessing || isQueued) && (
               <button
                 onClick={onMinimize}
-                className="px-3.5 py-1.5 rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition font-semibold"
+                className="px-3.5 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted transition font-semibold"
               >
                 Jalankan di Latar Belakang
               </button>
             )}
             <button
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/80 transition font-semibold"
+              className="px-3.5 py-1.5 rounded-lg bg-muted text-foreground hover:bg-muted/80 transition font-semibold"
             >
               Tutup
             </button>

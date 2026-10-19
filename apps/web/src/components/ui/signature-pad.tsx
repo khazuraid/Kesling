@@ -150,7 +150,7 @@ export function SignaturePad({ value, onChange, label, helperText }: SignaturePa
     <div className="space-y-2.5">
       <div
         ref={containerRef}
-        className="relative w-full h-52 sm:h-60 rounded-2xl border-2 border-dashed border-[hsl(var(--border))] bg-white dark:bg-zinc-950 overflow-hidden shadow-sm group touch-none cursor-crosshair transition-all hover:border-[#00A876]/50 focus-within:border-[#00A876]"
+        className="relative w-full h-52 sm:h-60 rounded-card border-2 border-dashed border-border bg-white dark:bg-zinc-950 overflow-hidden shadow-sm group touch-none cursor-crosshair transition-all hover:border-primary/50 focus-within:border-primary"
       >
         <canvas
           ref={canvasRef}
@@ -167,7 +167,7 @@ export function SignaturePad({ value, onChange, label, helperText }: SignaturePa
         {/* Watermark Guidelines */}
         <div className="absolute inset-x-6 bottom-10 flex items-center gap-2 pointer-events-none opacity-30">
           <span className="text-[14px] font-bold text-slate-400">✕</span>
-          <div className="flex-1 border-b-2 border-dashed border-slate-300" />
+          <div className="flex-1 border-b-2 border-dashed border-border" />
           <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
             {helperText || "Garis Tanda Tangan"}
           </span>
@@ -186,7 +186,7 @@ export function SignaturePad({ value, onChange, label, helperText }: SignaturePa
             <button
               type="button"
               onClick={clearCanvas}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-bold border border-slate-200 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-bold border border-slate-200 transition-colors shadow-sm"
               title="Hapus dan tanda tangani ulang"
             >
               <RotateCcw className="w-3.5 h-3.5" /> Ulangi
@@ -196,7 +196,7 @@ export function SignaturePad({ value, onChange, label, helperText }: SignaturePa
             <button
               type="button"
               onClick={clearCanvas}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] transition-colors"
+              className="p-2 rounded-button bg-surface-subtle hover:bg-surface-subtle/80 text-text-muted text-[11px] transition-colors"
               title="Hapus"
             >
               <Eraser className="w-3.5 h-3.5" />

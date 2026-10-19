@@ -12,7 +12,11 @@ const SheetPortal = DialogPrimitive.Portal;
 
 const SheetOverlay = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>>(
   ({ className, ...props }, ref) => (
-    <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/50", className)} {...props} />
+    <DialogPrimitive.Overlay
+      ref={ref}
+      className={cn("fixed inset-0 z-50 bg-black/50 backdrop-blur-xs", className)}
+      {...props}
+    />
   ),
 );
 SheetOverlay.displayName = "SheetOverlay";
@@ -26,14 +30,16 @@ const SheetContent = forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 h-full bg-slate-900 text-slate-200 shadow-lg transition-transform",
-        side === "left" ? "left-0 top-0 w-64" : "right-0 top-0 w-64",
+        "fixed z-50 h-full bg-surface border-border text-foreground shadow-float transition-transform",
+        side === "left" ? "left-0 top-0 w-64 border-r" : "right-0 top-0 w-64 border-l",
         className,
       )}
       {...props}
     >
+      <DialogPrimitive.Title className="sr-only">Navigasi Panel</DialogPrimitive.Title>
+      <DialogPrimitive.Description className="sr-only">Menu panel samping</DialogPrimitive.Description>
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 text-slate-400 hover:text-white">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-button p-1 text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-colors">
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

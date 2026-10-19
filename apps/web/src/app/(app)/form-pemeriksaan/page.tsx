@@ -89,6 +89,15 @@ export default function FormPemeriksaanPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImportWidgetVisible, setIsImportWidgetVisible] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, []);
 
   // Resume active import job if available in localStorage
   useEffect(() => {
@@ -436,6 +445,7 @@ export default function FormPemeriksaanPage() {
           : null,
       );
 
+      if (pollingRef.current) clearInterval(pollingRef.current);
       const interval = setInterval(async () => {
         try {
           const checkRes = await fetch(`/api/inspection/templates/import?jobId=${jobId}`);
@@ -461,15 +471,18 @@ export default function FormPemeriksaanPage() {
 
           if (statusData.status === "complete") {
             clearInterval(interval);
+            pollingRef.current = null;
             toast.success(`Import selesai: ${(statusData.result?.fields || []).length} butir pemeriksaan terdeteksi`);
           } else if (statusData.status === "failed") {
             clearInterval(interval);
+            pollingRef.current = null;
             toast.error(statusData.error || "Gagal memproses file di worker");
           }
         } catch (err) {
           console.error("Polling import error:", err);
         }
       }, 2000);
+      pollingRef.current = interval;
     } catch (error: any) {
       const errMsg = error?.message || "Gagal import file";
       setActiveImportJob((prev) =>
@@ -1291,24 +1304,24 @@ export default function FormPemeriksaanPage() {
 
   if ((session?.user as any)?.role === "ADMIN") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
-        <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
-        <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Akses Ditolak</p>
-        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Operator / Puskesmas</p>
+      <div className="w-full min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center space-y-3">
+        <ShieldAlert className="w-8 h-8 text-muted-foreground" />
+        <p className="text-[13px] font-bold text-foreground">Akses Ditolak</p>
+        <p className="text-[11px] text-muted-foreground">Halaman ini hanya untuk Operator / Puskesmas</p>
       </div>
     );
   }
 
   if (!selectedTemplateId && !isCreating) {
     return (
-      <div className="w-full mx-auto pb-4 fade-in">
+      <div className="w-full min-h-screen bg-canvas mx-auto pb-8 fade-in">
         {/* ── HERO ── */}
-        <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
-          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+        <div className="relative overflow-hidden bg-dock text-white rounded-b-3xl border-b border-dock-border shadow-subtle mb-6">
+          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
           <div className="relative z-10 px-4 sm:px-8 py-6 sm:py-7 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Builder</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/70 mb-2">Builder</p>
               <h1 className="text-[26px] sm:text-[30px] font-black tracking-[-0.03em] leading-tight sm:leading-none">
                 Form Pemeriksaan
               </h1>
@@ -1322,7 +1335,7 @@ export default function FormPemeriksaanPage() {
                 title="Lihat status antrean & riwayat upload"
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 hover:text-white transition"
               >
-                <History className="w-3.5 h-3.5 text-[#7CF5CE]" />
+                <History className="w-3.5 h-3.5 text-emerald-300" />
                 <span>Status & Antrean</span>
                 {(activeImportJob?.status === "processing" || activeImportJob?.status === "queued") && (
                   <span className="flex h-2 w-2 relative ml-0.5">
@@ -1365,7 +1378,7 @@ export default function FormPemeriksaanPage() {
                   setParamMsId(null);
                   setParamTmsId(null);
                 }}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
               >
                 <Plus className="w-3.5 h-3.5" /> Buat Baru
               </button>
@@ -1381,191 +1394,196 @@ export default function FormPemeriksaanPage() {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="pt-6 flex flex-col gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-[72px] rounded-2xl bg-[hsl(var(--muted))]/20 animate-pulse" />
-            ))}
-          </div>
-        ) : templates.length === 0 ? (
-          <div className="mt-6 border border-dashed border-[hsl(var(--border))] rounded-xl p-10 flex flex-col items-center justify-center text-center">
-            <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-3" />
-            <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Belum Ada Template</p>
-            <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Import PDF/Word atau buat manual.</p>
-          </div>
-        ) : (
-          <div className="pt-6 space-y-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-                <input
-                  type="text"
-                  value={templateSearch}
-                  onChange={(e) => {
-                    setTemplateSearch(e.target.value);
-                    setTemplatePage(1);
-                  }}
-                  placeholder="Cari template pemeriksaan..."
-                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-medium outline-none focus:border-[#00A876] transition-colors"
-                />
-              </div>
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">
-                Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} template
-              </span>
-            </div>
-
+        <div className="px-4 sm:px-8 space-y-4">
+          {isLoading ? (
             <div className="flex flex-col gap-2">
-              {paginatedTemplates.map((tpl: any) => {
-                const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
-                const grupCount = new Set(
-                  (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
-                ).size;
-                return (
-                  <button
-                    key={tpl.id}
-                    onClick={() => {
-                      setSelectedTemplateId(tpl.id);
-                      setIsCreating(false);
-                      setNama(tpl.nama);
-                      setDeskripsi(tpl.deskripsi || "");
-                      setRumus(tpl.config?.rumus || "sum");
-                      setCustomFormula(tpl.config?.customFormula || "");
-                      setThresholdOperator(tpl.config?.thresholdOperator || ">=");
-                      setThresholdValue(tpl.config?.thresholdValue ?? 80);
-                      setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
-                      setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
-                      setDefaultYa(tpl.config?.defaultYa ?? false);
-                      setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
-                      setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
-                      setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
-                      setFields(
-                        (tpl.fields || []).map((f: any) => {
-                          let opsiStr = "";
-                          if (f.options) {
-                            if (typeof f.options === "string") {
-                              try {
-                                const parsed = JSON.parse(f.options);
-                                opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
-                              } catch {
-                                opsiStr = f.options;
-                              }
-                            } else if (Array.isArray(f.options)) {
-                              opsiStr = f.options.join(", ");
-                            }
-                          } else if (f.opsi) {
-                            opsiStr = f.opsi;
-                          }
-                          return {
-                            ...f,
-                            opsi: opsiStr,
-                            autoFill: f.config?.autoFill || f.autoFill || "",
-                            isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
-                            dependsOn: f.config?.dependsOn || f.dependsOn || null,
-                            targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
-                            allowNA: f.config?.allowNA ?? f.allowNA ?? false,
-                            skor: f.config?.skor ?? f.skor ?? 0,
-                            skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
-                            skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
-                          };
-                        }),
-                      );
-                      setSubCategoryId(tpl.subCategoryId ?? null);
-                      setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
-                    }}
-                    className="group flex items-stretch rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors overflow-hidden text-left"
-                  >
-                    <div className="w-1 shrink-0 bg-[#00A876]" />
-                    <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-4">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-[12px] sm:text-[13px] font-extrabold text-[hsl(var(--foreground))] truncate">
-                          {tpl.nama}
-                        </h4>
-                        <p className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
-                          {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
-                        </p>
-                      </div>
-                      <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
-                        <div className="text-center">
-                          <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none">
-                            {fieldCount}
-                          </div>
-                          <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
-                            Butir
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-[#00A876]">
-                            {grupCount}
-                          </div>
-                          <div className="text-[8px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5">
-                            Grup
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (
-                              confirm(
-                                `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
-                              )
-                            ) {
-                              deleteMutation.mutate(tpl.id);
-                            }
-                          }}
-                          disabled={deleteMutation.isPending}
-                          title="Hapus template"
-                          className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--muted-foreground))] group-hover:text-[#00A876] group-hover:translate-x-0.5 transition-all" />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[72px] rounded-card bg-surface border border-border shadow-subtle animate-pulse"
+                />
+              ))}
             </div>
-
-            {/* Pagination Controls Template */}
-            {totalTemplatePages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
-                <button
-                  onClick={() => setTemplatePage((p) => Math.max(1, p - 1))}
-                  disabled={templatePage <= 1}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalTemplatePages }).map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setTemplatePage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-colors ${
-                        templatePage === i + 1
-                          ? "bg-[#0C1B16] text-[#BEF264]"
-                          : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+          ) : templates.length === 0 ? (
+            <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-10 flex flex-col items-center justify-center text-center">
+              <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
+              <p className="text-[13px] font-bold text-foreground">Belum Ada Template</p>
+              <p className="text-[12px] text-muted-foreground mt-1">Import PDF/Word atau buat manual.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={templateSearch}
+                    onChange={(e) => {
+                      setTemplateSearch(e.target.value);
+                      setTemplatePage(1);
+                    }}
+                    placeholder="Cari template pemeriksaan..."
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground/40 transition-all"
+                  />
                 </div>
-                <button
-                  onClick={() => setTemplatePage((p) => Math.min(totalTemplatePages, p + 1))}
-                  disabled={templatePage >= totalTemplatePages}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-[hsl(var(--muted))] transition-colors"
-                >
-                  Selanjutnya <ChevronRight className="w-4 h-4" />
-                </button>
+                <span className="text-[11px] font-bold text-muted-foreground">
+                  Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} template
+                </span>
               </div>
-            )}
-          </div>
-        )}
+
+              <div className="flex flex-col gap-2.5">
+                {paginatedTemplates.map((tpl: any) => {
+                  const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                  const grupCount = new Set(
+                    (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
+                  ).size;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => {
+                        setSelectedTemplateId(tpl.id);
+                        setIsCreating(false);
+                        setNama(tpl.nama);
+                        setDeskripsi(tpl.deskripsi || "");
+                        setRumus(tpl.config?.rumus || "sum");
+                        setCustomFormula(tpl.config?.customFormula || "");
+                        setThresholdOperator(tpl.config?.thresholdOperator || ">=");
+                        setThresholdValue(tpl.config?.thresholdValue ?? 80);
+                        setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
+                        setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
+                        setDefaultYa(tpl.config?.defaultYa ?? false);
+                        setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
+                        setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
+                        setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
+                        setFields(
+                          (tpl.fields || []).map((f: any) => {
+                            let opsiStr = "";
+                            if (f.options) {
+                              if (typeof f.options === "string") {
+                                try {
+                                  const parsed = JSON.parse(f.options);
+                                  opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
+                                } catch {
+                                  opsiStr = f.options;
+                                }
+                              } else if (Array.isArray(f.options)) {
+                                opsiStr = f.options.join(", ");
+                              }
+                            } else if (f.opsi) {
+                              opsiStr = f.opsi;
+                            }
+                            return {
+                              ...f,
+                              opsi: opsiStr,
+                              autoFill: f.config?.autoFill || f.autoFill || "",
+                              isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
+                              dependsOn: f.config?.dependsOn || f.dependsOn || null,
+                              targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
+                              allowNA: f.config?.allowNA ?? f.allowNA ?? false,
+                              skor: f.config?.skor ?? f.skor ?? 0,
+                              skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
+                              skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
+                            };
+                          }),
+                        );
+                        setSubCategoryId(tpl.subCategoryId ?? null);
+                        setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                      }}
+                      className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden text-left shadow-subtle"
+                    >
+                      <div className="w-1.5 shrink-0 bg-primary" />
+                      <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-4">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                            {tpl.nama}
+                          </h4>
+                          <p className="text-[10px] font-semibold text-muted-foreground mt-0.5 truncate">
+                            {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
+                          </p>
+                        </div>
+                        <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
+                          <div className="text-center">
+                            <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-foreground">
+                              {fieldCount}
+                            </div>
+                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                              Butir
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-primary">
+                              {grupCount}
+                            </div>
+                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                              Grup
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                confirm(
+                                  `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
+                                )
+                              ) {
+                                deleteMutation.mutate(tpl.id);
+                              }
+                            }}
+                            disabled={deleteMutation.isPending}
+                            title="Hapus template"
+                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls Template */}
+              {totalTemplatePages > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <button
+                    onClick={() => setTemplatePage((p) => Math.max(1, p - 1))}
+                    disabled={templatePage <= 1}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle shadow-subtle transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalTemplatePages }).map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setTemplatePage(i + 1)}
+                        className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-all ${
+                          templatePage === i + 1
+                            ? "bg-primary text-white shadow-subtle"
+                            : "text-muted-foreground hover:bg-surface-subtle"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setTemplatePage((p) => Math.min(totalTemplatePages, p + 1))}
+                    disabled={templatePage >= totalTemplatePages}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle shadow-subtle transition-colors"
+                  >
+                    Selanjutnya <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <ImportInspectionModal
           open={isImportModalOpen}
@@ -1606,7 +1624,7 @@ export default function FormPemeriksaanPage() {
   }
 
   return (
-    <div className="w-full pb-8 fade-in">
+    <div className="w-full min-h-screen bg-canvas px-4 sm:px-8 py-6 pb-12 fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -1615,17 +1633,17 @@ export default function FormPemeriksaanPage() {
               setSelectedTemplateId(null);
               setIsCreating(false);
             }}
-            className="flex items-center gap-1.5 sm:gap-2 text-[13px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2 text-[13px] font-bold text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
             <ArrowLeft className="h-5 w-5" /> Kembali
           </button>
-          <div className="h-6 w-px bg-[hsl(var(--border))] shrink-0" />
+          <div className="h-6 w-px bg-border shrink-0" />
           <input
             type="text"
             value={nama}
             onChange={(e) => setNama(e.target.value)}
             placeholder="Nama Template..."
-            className="flex-1 text-[18px] sm:text-[22px] font-black text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 outline-none bg-transparent tracking-tight min-w-0"
+            className="flex-1 text-[18px] sm:text-[22px] font-black text-foreground placeholder:text-muted-foreground/40 outline-none bg-transparent tracking-tight min-w-0"
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
@@ -1634,28 +1652,28 @@ export default function FormPemeriksaanPage() {
             <span
               className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-colors ${
                 autoSaveState === "saved"
-                  ? "bg-green-50 text-green-700 border-green-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                   : autoSaveState === "saving"
                     ? "bg-blue-50 text-blue-700 border-blue-200"
                     : autoSaveState === "error"
-                      ? "bg-red-50 text-red-700 border-red-200"
+                      ? "bg-rose-50 text-rose-700 border-rose-200"
                       : autoSaveState === "dirty"
                         ? "bg-amber-50 text-amber-700 border-amber-200"
-                        : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]"
+                        : "bg-muted text-muted-foreground border-border"
               }`}
               title="Perubahan tersimpan otomatis setelah 2 detik"
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   autoSaveState === "saved"
-                    ? "bg-green-500"
+                    ? "bg-emerald-500"
                     : autoSaveState === "saving"
                       ? "bg-blue-500 animate-pulse"
                       : autoSaveState === "error"
-                        ? "bg-red-500"
+                        ? "bg-rose-500"
                         : autoSaveState === "dirty"
                           ? "bg-amber-500"
-                          : "bg-[hsl(var(--muted-foreground))]"
+                          : "bg-muted-foreground"
                 }`}
               />
               {autoSaveState === "saved"
@@ -1673,7 +1691,7 @@ export default function FormPemeriksaanPage() {
             type="button"
             onClick={loadContohJajananKeliling}
             title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
-            className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border-2 border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition-colors rounded-lg flex-1 sm:flex-initial"
+            className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition-colors rounded-xl flex-1 sm:flex-initial"
           >
             🍿 Contoh A1 / A2
           </button>
@@ -1694,7 +1712,7 @@ export default function FormPemeriksaanPage() {
               }}
               disabled={deleteMutation.isPending}
               title="Hapus template ini"
-              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[12px] font-bold border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-lg shrink-0"
+              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[12px] font-bold border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-xl shrink-0"
             >
               <Trash2 className="w-4 h-4" />
               <span className="hidden sm:inline">Hapus</span>
@@ -1703,7 +1721,7 @@ export default function FormPemeriksaanPage() {
           <button
             onClick={handleSave}
             disabled={createMutation.isPending}
-            className="flex items-center justify-center gap-2 h-11 px-5 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 disabled:opacity-40 transition-colors rounded-lg flex-1 sm:flex-initial"
+            className="flex items-center justify-center gap-2 h-11 px-5 text-[12px] font-bold bg-primary text-white hover:bg-primary-hover disabled:opacity-40 transition-all rounded-xl shadow-subtle flex-1 sm:flex-initial"
           >
             <Check className="w-4 h-4" />
             {createMutation.isPending ? "Menyimpan..." : "Simpan"}
@@ -1715,30 +1733,30 @@ export default function FormPemeriksaanPage() {
         {/* Left Panel: Config */}
         <div className="space-y-4">
           {/* Deskripsi */}
-          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-              <span className="text-[12px] font-bold">Deskripsi Laporan</span>
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="px-5 py-3 border-b border-border bg-surface-subtle/50">
+              <span className="text-[12px] font-bold text-foreground">Deskripsi Laporan</span>
             </div>
             <div className="p-5 space-y-4">
               <div>
-                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                   Deskripsi
                 </label>
                 <textarea
                   value={deskripsi}
                   onChange={(e) => setDeskripsi(e.target.value)}
                   rows={2}
-                  className="w-full text-[13px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border-2 border-[hsl(var(--border))] px-3 py-2.5 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none rounded-lg"
+                  className="w-full text-[13px] text-foreground placeholder:text-muted-foreground/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-surface resize-none transition-all"
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                   Kategori Data Dasar
                 </label>
                 <select
                   value={dataDasarCategoryId || ""}
                   onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                  className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
                 >
                   <option value="">— Pilih Kategori —</option>
                   {categories
@@ -1749,18 +1767,16 @@ export default function FormPemeriksaanPage() {
                       </option>
                     ))}
                 </select>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2">
-                  Sumber data sasaran untuk form ini
-                </p>
+                <p className="text-[11px] text-muted-foreground mt-2">Sumber data sasaran untuk form ini</p>
               </div>
               <div>
-                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                   Sub Kategori Laporan
                 </label>
                 <select
                   value={subCategoryId || ""}
                   onChange={(e) => setSubCategoryId(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                  className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
                 >
                   <option value="">— Pilih Sub Kategori —</option>
                   {categories.map((cat: any) =>
@@ -1771,28 +1787,26 @@ export default function FormPemeriksaanPage() {
                     )),
                   )}
                 </select>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-2">
-                  Referensi input untuk agregasi laporan
-                </p>
+                <p className="text-[11px] text-muted-foreground mt-2">Referensi input untuk agregasi laporan</p>
               </div>
             </div>
           </div>
 
           {/* Rumus Penilaian */}
-          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2 px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-              <span className="text-[12px] font-bold">Rumus Penilaian</span>
-              <span className="ml-auto text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{rumusLabel}</span>
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-surface-subtle/50">
+              <span className="text-[12px] font-bold text-foreground">Rumus Penilaian</span>
+              <span className="ml-auto text-[11px] font-bold text-muted-foreground">{rumusLabel}</span>
             </div>
             <div className="p-5 space-y-4">
               <div>
-                <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                   Metode
                 </label>
                 <select
                   value={rumus}
                   onChange={(e) => setRumus(e.target.value)}
-                  className="w-full h-10 px-3 text-[13px] font-medium border-2 border-[hsl(var(--border))] outline-none bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer appearance-none rounded-lg"
+                  className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
                 >
                   {RUMUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1803,7 +1817,7 @@ export default function FormPemeriksaanPage() {
               </div>
               {rumus === "custom" && (
                 <div>
-                  <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.1em] mb-2 block">
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                     Rumus Kustom
                   </label>
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -1811,7 +1825,7 @@ export default function FormPemeriksaanPage() {
                       <button
                         key={fn}
                         onClick={() => setCustomFormula((prev) => `${prev}${fn}`)}
-                        className="text-[10px] font-bold px-2.5 py-1 border-2 border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                        className="text-[10px] font-bold px-2.5 py-1 border border-border hover:bg-surface-subtle transition-colors rounded-md"
                       >
                         {fn === "✓" ? "✓ (Benar)" : fn === "✗" ? "✗ (Salah)" : fn}
                       </button>
@@ -1822,35 +1836,33 @@ export default function FormPemeriksaanPage() {
                     onChange={(e) => setCustomFormula(e.target.value)}
                     placeholder="(SUM(✓) * 2) / (COUNT() + 1)"
                     rows={2}
-                    className="w-full text-[13px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]/40 border-2 border-[hsl(var(--border))] px-3 py-2.5 outline-none focus:border-[hsl(var(--accent))] bg-[hsl(var(--card))] resize-none font-mono rounded-lg"
+                    className="w-full text-[13px] text-foreground placeholder:text-muted-foreground/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-surface resize-none font-mono transition-all"
                   />
                 </div>
               )}
               <div className="flex items-baseline gap-2 pt-2">
-                <span className="text-[32px] font-black text-[hsl(var(--foreground))] tabular-nums leading-none">
+                <span className="text-[32px] font-black text-foreground tabular-nums leading-none">
                   {demoSkorTerisi}
                 </span>
-                <span className="text-[13px] text-[hsl(var(--muted-foreground))]">/ {totalSkor}</span>
-                <span className="text-[13px] font-bold text-[hsl(var(--accent))]">{demoPersentase}%</span>
+                <span className="text-[13px] text-muted-foreground">/ {totalSkor}</span>
+                <span className="text-[13px] font-bold text-primary">{demoPersentase}%</span>
               </div>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                {RUMUS_OPTIONS.find((r) => r.value === rumus)?.desc}
-              </p>
+              <p className="text-[11px] text-muted-foreground">{RUMUS_OPTIONS.find((r) => r.value === rumus)?.desc}</p>
             </div>
           </div>
 
           {/* Ambang Batas */}
-          <div className="border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-3 border-b-2 border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-              <span className="text-[12px] font-bold">Ambang Batas Kelulusan</span>
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="px-5 py-3 border-b border-border bg-surface-subtle/50">
+              <span className="text-[12px] font-bold text-foreground">Ambang Batas Kelulusan</span>
             </div>
             <div className="p-5 space-y-4">
               <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Jika Akhir</span>
+                <span className="text-[11px] font-bold text-muted-foreground">Jika Akhir</span>
                 <select
                   value={thresholdOperator}
                   onChange={(e) => setThresholdOperator(e.target.value)}
-                  className="h-9 px-3 text-[12px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none rounded-lg"
+                  className="h-9 px-3 text-[12px] font-bold border border-border bg-surface rounded-xl outline-none focus:border-primary text-foreground"
                 >
                   <option value=">=">&ge;</option>
                   <option value=">">&gt;</option>
@@ -1861,7 +1873,7 @@ export default function FormPemeriksaanPage() {
                   type="number"
                   value={thresholdValue}
                   onChange={(e) => setThresholdValue(parseInt(e.target.value, 10) || 0)}
-                  className="w-20 h-9 px-3 text-[12px] font-bold border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] outline-none rounded-lg"
+                  className="w-20 h-9 px-3 text-[12px] font-bold border border-border bg-surface rounded-xl outline-none focus:border-primary text-foreground"
                 />
               </div>
               <div>
@@ -1870,7 +1882,7 @@ export default function FormPemeriksaanPage() {
                   value={thresholdPassText}
                   onChange={(e) => setThresholdPassText(e.target.value)}
                   placeholder="Teks lulus"
-                  className="w-full h-10 px-3 text-[12px] text-green-700 font-bold bg-green-50 border-2 border-green-200 outline-none focus:border-green-400 rounded-lg"
+                  className="w-full h-10 px-3 text-[12px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 outline-none focus:border-emerald-500 rounded-xl"
                 />
               </div>
               <div>
@@ -1879,33 +1891,31 @@ export default function FormPemeriksaanPage() {
                   value={thresholdFailText}
                   onChange={(e) => setThresholdFailText(e.target.value)}
                   placeholder="Teks tidak lulus"
-                  className="w-full h-10 px-3 text-[12px] text-red-700 font-bold bg-red-50 border-2 border-red-200 outline-none focus:border-red-400 rounded-lg"
+                  className="w-full h-10 px-3 text-[12px] text-rose-700 dark:text-rose-300 font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 outline-none focus:border-rose-500 rounded-xl"
                 />
               </div>
               {/* Mode penilaian cepat */}
               <button
                 type="button"
                 onClick={() => setDefaultYa(!defaultYa)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 text-left transition-colors ${
-                  defaultYa
-                    ? "border-[#00A876]/40 bg-[#00A876]/[0.06]"
-                    : "border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]/40"
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                  defaultYa ? "border-primary/40 bg-primary-subtle" : "border-border hover:bg-surface-subtle"
                 }`}
               >
                 <span
                   className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
-                    defaultYa ? "bg-[#00A876]" : "bg-[hsl(var(--muted))]"
+                    defaultYa ? "bg-primary" : "bg-muted"
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
+                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-subtle transition-all ${
                       defaultYa ? "left-[18px]" : "left-0.5"
                     }`}
                   />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[12px] font-bold">Mode Penilaian Cepat</span>
-                  <span className="block text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                  <span className="block text-[12px] font-bold text-foreground">Mode Penilaian Cepat</span>
+                  <span className="block text-[10px] text-muted-foreground mt-0.5">
                     Semua butir default Ya — operator cukup tandai yang negatif
                   </span>
                 </span>
@@ -1914,11 +1924,11 @@ export default function FormPemeriksaanPage() {
           </div>
 
           {/* Agregasi Laporan Bulanan */}
-          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b border-border bg-surface-subtle/50">
               <div className="flex items-center gap-2 min-w-0">
-                <BarChart3 className="w-4 h-4 text-[#00A876] shrink-0" />
-                <span className="text-[12px] font-bold truncate">Agregasi Laporan Bulanan</span>
+                <BarChart3 className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-[12px] font-bold truncate text-foreground">Agregasi Laporan Bulanan</span>
               </div>
               {subCategoryId &&
                 (mappedParamCount === 3 ? (
@@ -1930,7 +1940,7 @@ export default function FormPemeriksaanPage() {
                     {mappedParamCount}/3 Terpetakan
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] shrink-0">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
                     Belum Terpetakan
                   </span>
                 ))}
@@ -1938,24 +1948,24 @@ export default function FormPemeriksaanPage() {
 
             <div className="p-4 sm:p-5 space-y-3.5">
               {!subCategoryId ? (
-                <div className="py-4 px-3 text-center space-y-2 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
+                <div className="py-4 px-3 text-center space-y-2 rounded-xl border border-dashed border-border bg-surface-subtle/50">
                   <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
                     <AlertCircle className="w-4 h-4" />
                   </div>
-                  <p className="text-[12px] font-bold text-[hsl(var(--foreground))]">Sub Kategori Belum Dipilih</p>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-relaxed max-w-[280px] mx-auto">
+                  <p className="text-[12px] font-bold text-foreground">Sub Kategori Belum Dipilih</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[280px] mx-auto">
                     Pilih <strong>Sub Kategori Laporan</strong> pada form di atas terlebih dahulu untuk memetakan
                     parameter agregasi bulanan.
                   </p>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))] text-[11px]">
+                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-surface-subtle border border-border text-[11px]">
                     <div className="min-w-0">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] block">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground block">
                         Target Laporan
                       </span>
-                      <span className="font-bold text-[hsl(var(--foreground))] truncate block">
+                      <span className="font-bold text-foreground truncate block">
                         {selectedLaporanCategory?.nama || "Kategori"} → {selectedSubCategory?.nama || "Sub Kategori"}
                       </span>
                     </div>
@@ -1963,7 +1973,7 @@ export default function FormPemeriksaanPage() {
                       <button
                         type="button"
                         onClick={handleAutoMatchParameters}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[#00A876]/10 text-[#00A876] hover:bg-[#00A876]/20 border border-[#00A876]/30 transition shrink-0"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-lg bg-primary-subtle text-primary hover:bg-primary/20 border border-primary/30 transition shrink-0"
                         title="Otomatis cocokkan parameter laporan"
                       >
                         <Sparkles className="w-3 h-3" /> Auto
@@ -2014,16 +2024,14 @@ export default function FormPemeriksaanPage() {
                       return (
                         <div
                           key={item.key}
-                          className={`p-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all ${item.accentBorder} ${
-                            item.value ? "ring-1 ring-[hsl(var(--border))] shadow-xs" : ""
+                          className={`p-3 rounded-xl border border-border bg-surface transition-all ${item.accentBorder} ${
+                            item.value ? "ring-1 ring-border shadow-subtle" : ""
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2 mb-1.5">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <Icon className={`w-3.5 h-3.5 shrink-0 ${item.iconColor}`} />
-                              <span className="text-[11px] font-bold text-[hsl(var(--foreground))] truncate">
-                                {item.label}
-                              </span>
+                              <span className="text-[11px] font-bold text-foreground truncate">{item.label}</span>
                             </div>
                             <span
                               className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border shrink-0 ${item.badgeClass}`}
@@ -2034,7 +2042,7 @@ export default function FormPemeriksaanPage() {
                           <select
                             value={item.value || ""}
                             onChange={(e) => item.setter(e.target.value ? Number(e.target.value) : null)}
-                            className="w-full h-9 px-2.5 text-[11px] font-bold border border-[hsl(var(--border))] rounded-lg bg-[hsl(var(--muted))]/20 text-[hsl(var(--foreground))] outline-none hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer"
+                            className="w-full h-9 px-2.5 text-[11px] font-bold border border-border rounded-lg bg-surface text-foreground outline-none hover:bg-surface-subtle transition-colors cursor-pointer"
                           >
                             <option value="">— Belum Dipetakan —</option>
                             {availableParameters.map((p: any) => (
@@ -2043,15 +2051,13 @@ export default function FormPemeriksaanPage() {
                               </option>
                             ))}
                           </select>
-                          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1 leading-tight">
-                            {item.desc}
-                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-1 leading-tight">{item.desc}</p>
                         </div>
                       );
                     })}
                   </div>
 
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] leading-relaxed pt-1">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed pt-1">
                     💡 Saat inspeksi diverifikasi, hasil penilaian form akan otomatis terakumulasi ke dalam tabel
                     laporan bulanan.
                   </p>
@@ -2065,7 +2071,7 @@ export default function FormPemeriksaanPage() {
         <div className="min-w-0">
           {/* Sticky mini-nav */}
           {groupedFields.length > 1 && (
-            <div className="sticky top-0 z-20 -mx-1 px-1 py-2 mb-3 bg-[hsl(var(--background))]/95 backdrop-blur border-b border-[hsl(var(--border))]">
+            <div className="sticky top-0 z-20 -mx-1 px-1 py-2 mb-3 bg-canvas/95 backdrop-blur border-b border-border">
               <div className="flex items-center gap-1.5 overflow-x-auto">
                 {groupedFields.map((g) => (
                   <button
@@ -2073,8 +2079,8 @@ export default function FormPemeriksaanPage() {
                     onClick={() => scrollToGroup(g.grup)}
                     className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-bold transition-colors ${
                       activeGroup === g.grup
-                        ? "bg-[#00A876] text-white"
-                        : "bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                        ? "bg-primary text-white shadow-subtle"
+                        : "bg-surface text-muted-foreground hover:bg-surface-subtle hover:text-foreground border border-border"
                     }`}
                   >
                     <span className="font-black">
@@ -2094,28 +2100,28 @@ export default function FormPemeriksaanPage() {
             </div>
           )}
 
-          <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-2xl overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20">
-              <Settings2 className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
-              <span className="text-[12px] font-bold">Daftar Ceklis</span>
-              <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">{fields.length} item</span>
-              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">· {groupedFields.length} bagian</span>
+          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-surface-subtle/50">
+              <Settings2 className="w-4 h-4 text-muted-foreground" />
+              <span className="text-[12px] font-bold text-foreground">Daftar Ceklis</span>
+              <span className="text-[11px] font-bold text-muted-foreground">{fields.length} item</span>
+              <span className="text-[11px] text-muted-foreground">· {groupedFields.length} bagian</span>
               <div className="ml-auto flex items-center gap-2">
                 {groupedFields.length > 0 && (
-                  <div className="flex items-center rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+                  <div className="flex items-center rounded-lg border border-border overflow-hidden">
                     <button
                       type="button"
                       onClick={() => toggleAllGroups(false)}
-                      className="px-2 py-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      className="px-2 py-1 text-[10px] font-bold text-muted-foreground hover:bg-surface-subtle transition-colors"
                       title="Buka semua bagian"
                     >
                       Buka
                     </button>
-                    <span className="w-px h-4 bg-[hsl(var(--border))]" />
+                    <span className="w-px h-4 bg-border" />
                     <button
                       type="button"
                       onClick={() => toggleAllGroups(true)}
-                      className="px-2 py-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      className="px-2 py-1 text-[10px] font-bold text-muted-foreground hover:bg-surface-subtle transition-colors"
                       title="Tutup semua bagian"
                     >
                       Tutup
@@ -2133,7 +2139,7 @@ export default function FormPemeriksaanPage() {
                 <button
                   type="button"
                   onClick={() => addField()}
-                  className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-85 transition-colors rounded-lg"
+                  className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 bg-primary text-white hover:bg-primary-hover transition-colors rounded-lg shadow-subtle"
                 >
                   <Plus className="w-3.5 h-3.5" /> + Butir
                 </button>
@@ -2142,11 +2148,11 @@ export default function FormPemeriksaanPage() {
 
             {fields.length === 0 ? (
               <div className="p-12 text-center space-y-4">
-                <p className="text-[14px] text-[hsl(var(--muted-foreground))]">Belum ada butir pemeriksaan</p>
+                <p className="text-[14px] text-muted-foreground">Belum ada butir pemeriksaan</p>
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button
                     onClick={() => addField("__META__")}
-                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 transition-colors rounded-lg"
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border border-indigo-500 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors rounded-xl"
                   >
                     <Plus className="w-4 h-4" /> Metadata
                   </button>
@@ -2167,20 +2173,20 @@ export default function FormPemeriksaanPage() {
                       setAddingInline({ type: "bagian" });
                       setInlineName("");
                     }}
-                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border-2 border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors rounded-lg"
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold border border-border hover:bg-surface-subtle transition-colors rounded-xl"
                   >
                     <FolderPlus className="w-4 h-4" /> Tambah Grup
                   </button>
                   <button
                     onClick={() => addField()}
-                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold bg-[hsl(var(--foreground))] text-[hsl(var(--card))] hover:opacity-80 transition-colors rounded-lg"
+                    className="flex items-center gap-2 h-10 px-4 text-[12px] font-bold bg-primary text-white hover:bg-primary-hover transition-colors rounded-xl shadow-subtle"
                   >
                     <Plus className="w-4 h-4" /> Tambah Butir
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-[hsl(var(--border))]">
+              <div className="divide-y divide-border">
                 {/* Dropzone: Jadikan Bagian Utama Baru dari Drag Butir */}
                 {dragState?.type === "field" && dragState.index != null && (
                   <div
@@ -2195,8 +2201,8 @@ export default function FormPemeriksaanPage() {
                     }}
                     className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${
                       dropTarget === "drop-new-bagian-top"
-                        ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/40 scale-[1.01]"
-                        : "border-[#00A876]/40 bg-[#00A876]/5 text-[#00A876] hover:bg-[#00A876]/10"
+                        ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/40 scale-[1.01]"
+                        : "border-primary/40 bg-primary-subtle/50 text-primary hover:bg-primary-subtle"
                     }`}
                   >
                     <Sparkles className="w-4 h-4 animate-pulse" />
@@ -2232,11 +2238,11 @@ export default function FormPemeriksaanPage() {
                           }
                           resetDrag();
                         }}
-                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors hover:bg-[hsl(var(--muted))]/60 ${
-                          group.subbagian ? "pl-10 bg-[hsl(var(--muted))]/40" : "bg-[hsl(var(--muted))]/30"
+                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors hover:bg-surface-subtle ${
+                          group.subbagian ? "pl-10 bg-surface-subtle/70" : "bg-surface-subtle/40"
                         } ${
                           dragState?.type === "field" && dropTarget === `group:${group.grup}`
-                            ? "ring-2 ring-inset ring-[#00A876] bg-[#00A876]/10"
+                            ? "ring-2 ring-inset ring-primary bg-primary-subtle"
                             : ""
                         }`}
                       >
@@ -2254,18 +2260,18 @@ export default function FormPemeriksaanPage() {
                               : "Tarik untuk memindahkan bagian"
                           }
                         >
-                          <GripVertical className="w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] cursor-grab active:cursor-grabbing hover:text-[#00A876]" />
+                          <GripVertical className="w-4 h-4 shrink-0 text-muted-foreground cursor-grab active:cursor-grabbing hover:text-primary" />
                         </span>
                         <ChevronRight
-                          className={`w-4 h-4 text-[hsl(var(--muted-foreground))] transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+                          className={`w-4 h-4 text-muted-foreground transition-transform ${isCollapsed ? "" : "rotate-90"}`}
                         />
                         <div
                           className={`w-9 h-7 flex items-center justify-center text-[11px] font-black shrink-0 rounded-lg ${
                             group.grup === "__META__"
                               ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"
                               : group.subbagian
-                                ? "bg-[#00A876]/15 text-[#00A876]"
-                                : "bg-[hsl(var(--foreground))] text-[hsl(var(--card))]"
+                                ? "bg-primary-subtle text-primary border border-primary/20"
+                                : "bg-primary text-white"
                           }`}
                         >
                           {group.grup === "__META__"
@@ -2275,7 +2281,7 @@ export default function FormPemeriksaanPage() {
                               : toRoman(group.areaIndex)}
                         </div>
                         {group.grup === "__META__" ? (
-                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--muted-foreground))] tracking-wide">
+                          <span className="flex-1 text-[13px] font-bold text-muted-foreground tracking-wide">
                             Metadata
                           </span>
                         ) : editingGroupKey === group.grup ? (
@@ -2290,16 +2296,14 @@ export default function FormPemeriksaanPage() {
                             }}
                             onBlur={() => handleRenameGroup(group.grup, editingGroupName)}
                             placeholder={group.subbagian ? "Nama subbagian..." : "Nama bagian..."}
-                            className="flex-1 text-[13px] font-bold border-2 border-[#00A876]/50 rounded-lg px-2 py-1 outline-none bg-white dark:bg-[hsl(var(--muted))]"
+                            className="flex-1 text-[13px] font-bold border border-primary/50 rounded-lg px-2 py-1 outline-none bg-surface text-foreground"
                           />
                         ) : (
-                          <span className="flex-1 text-[13px] font-bold text-[hsl(var(--foreground))] tracking-wide truncate">
+                          <span className="flex-1 text-[13px] font-bold text-foreground tracking-wide truncate">
                             {(group.subbagian || group.grup).toUpperCase()}
                           </span>
                         )}
-                        <span className="text-[11px] text-[hsl(var(--muted-foreground))] shrink-0">
-                          {group.fields.length} item
-                        </span>
+                        <span className="text-[11px] text-muted-foreground shrink-0">{group.fields.length} item</span>
                         {/* Geser atas/bawah grup / metadata */}
                         {editingGroupKey !== group.grup && (
                           <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -2308,7 +2312,7 @@ export default function FormPemeriksaanPage() {
                               onClick={() => moveGroup(group.grup, "up")}
                               disabled={groupedFields.indexOf(group) === 0}
                               title={group.grup === "__META__" ? "Geser metadata ke atas" : "Geser bagian ke atas"}
-                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:bg-surface-subtle hover:text-foreground disabled:opacity-25 transition-colors"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
                             </button>
@@ -2317,7 +2321,7 @@ export default function FormPemeriksaanPage() {
                               onClick={() => moveGroup(group.grup, "down")}
                               disabled={groupedFields.indexOf(group) === groupedFields.length - 1}
                               title={group.grup === "__META__" ? "Geser metadata ke bawah" : "Geser bagian ke bawah"}
-                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] disabled:opacity-25 transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:bg-surface-subtle hover:text-foreground disabled:opacity-25 transition-colors"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
                             </button>
@@ -2348,7 +2352,7 @@ export default function FormPemeriksaanPage() {
                                 ]);
                                 toast.success("Preset Nama Pemeriksa dari Akun ditambahkan");
                               }}
-                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-[#00A876]/15 text-[#00A876] border border-[#00A876]/30 hover:bg-[#00A876]/25 transition-colors rounded-md"
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-primary-subtle text-primary border border-primary/20 hover:bg-primary/20 transition-colors rounded-md"
                             >
                               👤 + Nama Pemeriksa (Akun)
                             </button>
@@ -2415,7 +2419,7 @@ export default function FormPemeriksaanPage() {
                                 setEditingGroupName(group.area);
                               }}
                               title="Ganti nama bagian (termasuk subbagiannya)"
-                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -2424,7 +2428,7 @@ export default function FormPemeriksaanPage() {
                                 e.stopPropagation();
                                 addSubbagian(group.area);
                               }}
-                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-border bg-surface hover:bg-surface-subtle transition-colors rounded-md"
                             >
                               <FolderPlus className="w-3 h-3" /> Subbagian
                             </button>
@@ -2436,7 +2440,7 @@ export default function FormPemeriksaanPage() {
                                   demoteBagianToSub(group.grup, e.target.value);
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-[9px] font-bold bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-1 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))] hover:border-purple-400"
+                                className="text-[9px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
                                 title="Jadikan Bagian ini sebagai Subbagian di bawah Bagian lain"
                               >
                                 <option value="">↳ Jadi Subbagian di...</option>
@@ -2471,7 +2475,7 @@ export default function FormPemeriksaanPage() {
                                 setEditingGroupName(group.subbagian || "");
                               }}
                               title="Ganti nama subbagian"
-                              className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -2482,7 +2486,7 @@ export default function FormPemeriksaanPage() {
                             e.stopPropagation();
                             addField(group.grup);
                           }}
-                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] transition-colors rounded-md"
+                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-border bg-surface hover:bg-surface-subtle transition-colors rounded-md"
                         >
                           <Plus className="w-3 h-3" /> Butir
                         </button>
@@ -2496,7 +2500,7 @@ export default function FormPemeriksaanPage() {
                               deleteGrup(group.grup);
                             }
                           }}
-                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-md"
+                          className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 border border-rose-200 dark:border-rose-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-md"
                           title={group.grup === "__META__" ? "Hapus seluruh grup metadata" : "Hapus grup ini"}
                         >
                           <Trash2 className="w-3 h-3" /> Hapus
@@ -2505,8 +2509,8 @@ export default function FormPemeriksaanPage() {
 
                       {/* Inline add subbagian */}
                       {addingInline?.type === "sub" && addingInline.area === group.area && !group.subbagian && (
-                        <div className="flex items-center gap-2 px-5 py-3 bg-[#00A876]/[0.04] border-t border-[#00A876]/20">
-                          <span className="text-[11px] font-bold text-[#00A876] shrink-0">Subbagian {group.area}:</span>
+                        <div className="flex items-center gap-2 px-5 py-3 bg-primary-subtle/50 border-t border-primary/20">
+                          <span className="text-[11px] font-bold text-primary shrink-0">Subbagian {group.area}:</span>
                           <input
                             autoFocus
                             value={inlineName}
@@ -2516,17 +2520,17 @@ export default function FormPemeriksaanPage() {
                               if (e.key === "Escape") setAddingInline(null);
                             }}
                             placeholder="Nama subbagian..."
-                            className="flex-1 h-8 px-3 text-[12px] border border-[#00A876]/30 rounded-lg outline-none focus:border-[#00A876] bg-white"
+                            className="flex-1 h-8 px-3 text-[12px] border border-primary/30 rounded-lg outline-none focus:border-primary bg-surface text-foreground"
                           />
                           <button
                             onClick={submitInline}
-                            className="h-8 px-3 text-[11px] font-bold bg-[#00A876] text-white rounded-lg hover:opacity-90"
+                            className="h-8 px-3 text-[11px] font-bold bg-primary text-white rounded-lg hover:bg-primary-hover shadow-subtle"
                           >
                             Tambah
                           </button>
                           <button
                             onClick={() => setAddingInline(null)}
-                            className="h-8 px-3 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg"
+                            className="h-8 px-3 text-[11px] font-bold text-muted-foreground hover:bg-surface-subtle rounded-lg"
                           >
                             Batal
                           </button>
@@ -2563,7 +2567,7 @@ export default function FormPemeriksaanPage() {
                         )}
 
                       {!isCollapsed && (
-                        <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/40 p-3 space-y-2.5">
+                        <div className="border-t border-border bg-surface-subtle/30 p-3 space-y-2.5">
                           {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => {
                             return (
                               <div
@@ -2597,13 +2601,13 @@ export default function FormPemeriksaanPage() {
                                   }
                                   resetDrag();
                                 }}
-                                className={`rounded-xl border bg-[hsl(var(--card))] p-3 transition-colors cursor-grab active:cursor-grabbing ${
+                                className={`rounded-xl border bg-surface p-3 transition-all cursor-grab active:cursor-grabbing ${
                                   field.isDisabled
-                                    ? "border-red-200 bg-red-50/40 opacity-75"
-                                    : "border-[hsl(var(--border))] hover:border-[#00A876]/40"
+                                    ? "border-rose-200 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/20 opacity-75"
+                                    : "border-border hover:border-primary/40 shadow-subtle"
                                 } ${
                                   dragState?.type === "field" && dropTarget === `field:${index}`
-                                    ? "border-t-2 border-t-[#00A876] ring-1 ring-[#00A876]/40"
+                                    ? "border-t-2 border-t-primary ring-1 ring-primary/40"
                                     : ""
                                 } ${dragState?.index === index ? "opacity-40" : ""}`}
                               >
@@ -2621,9 +2625,9 @@ export default function FormPemeriksaanPage() {
                                       title="Tarik untuk memindahkan butir (atau tarik kartu ini)"
                                       className="cursor-grab active:cursor-grabbing"
                                     >
-                                      <GripVertical className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]/50 hover:text-[#00A876] transition-colors" />
+                                      <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-primary transition-colors" />
                                     </span>
-                                    <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                                    <span className="w-6 h-6 flex items-center justify-center text-[10px] font-black rounded-md bg-surface-subtle text-muted-foreground border border-border">
                                       {localIdx + 1}
                                     </span>
                                     <button
@@ -2631,7 +2635,7 @@ export default function FormPemeriksaanPage() {
                                       onClick={() => moveField(index, "up")}
                                       disabled={index === 0}
                                       title="Geser ke atas"
-                                      className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
+                                      className="p-0.5 rounded text-muted-foreground hover:bg-surface-subtle hover:text-primary disabled:opacity-20 transition-colors"
                                     >
                                       <ArrowUp className="w-3 h-3" />
                                     </button>
@@ -2640,7 +2644,7 @@ export default function FormPemeriksaanPage() {
                                       onClick={() => moveField(index, "down")}
                                       disabled={index === fields.length - 1}
                                       title="Geser ke bawah"
-                                      className="p-0.5 rounded text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[#00A876] disabled:opacity-20 transition-colors"
+                                      className="p-0.5 rounded text-muted-foreground hover:bg-surface-subtle hover:text-primary disabled:opacity-20 transition-colors"
                                     >
                                       <ArrowDown className="w-3 h-3" />
                                     </button>
@@ -2652,8 +2656,8 @@ export default function FormPemeriksaanPage() {
                                       value={field.pertanyaan}
                                       onChange={(e) => updateField(index, "pertanyaan", e.target.value)}
                                       placeholder="Tulis pertanyaan..."
-                                      className={`w-full text-[13px] font-semibold bg-transparent outline-none border-b-2 border-transparent focus:border-[#00A876]/50 px-1 py-0.5 ${
-                                        field.isDisabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""
+                                      className={`w-full text-[13px] font-semibold bg-transparent outline-none border-b-2 border-transparent focus:border-primary/50 px-1 py-0.5 text-foreground ${
+                                        field.isDisabled ? "line-through text-muted-foreground" : ""
                                       }`}
                                     />
 
@@ -2662,7 +2666,7 @@ export default function FormPemeriksaanPage() {
                                       <select
                                         value={field.tipe}
                                         onChange={(e) => updateField(index, "tipe", e.target.value)}
-                                        className="text-[10px] font-bold bg-[hsl(var(--muted))]/40 border border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md"
+                                        className="text-[10px] font-bold bg-surface-subtle border border-border px-1.5 py-1 outline-none rounded-md text-foreground"
                                       >
                                         {FIELD_TYPES.map((t) => (
                                           <option key={t.value} value={t.value}>
@@ -2677,7 +2681,7 @@ export default function FormPemeriksaanPage() {
                                           value={field.opsi || ""}
                                           onChange={(e) => updateField(index, "opsi", e.target.value)}
                                           placeholder="Opsi 1, Opsi 2, ..."
-                                          className="w-44 text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md focus:border-[#00A876]/50"
+                                          className="w-44 text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md focus:border-primary/50 text-foreground"
                                         />
                                       )}
 
@@ -2686,14 +2690,14 @@ export default function FormPemeriksaanPage() {
                                           <select
                                             value={field.autoFill || ""}
                                             onChange={(e) => updateField(index, "autoFill", e.target.value || "")}
-                                            className="text-[10px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md"
+                                            className="text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-foreground"
                                           >
                                             <option value="">Manual (Diisi Saat Input)</option>
                                             <option value="USER_NAME">👤 Otomatis Nama Akun</option>
                                             <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
                                           </select>
                                           {field.autoFill === "USER_NAME" && (
-                                            <span className="text-[9px] font-bold text-[#00A876] bg-[#00A876]/10 px-1.5 py-0.5 rounded">
+                                            <span className="text-[9px] font-bold text-primary bg-primary-subtle border border-primary/20 px-1.5 py-0.5 rounded">
                                               Nama Petugas
                                             </span>
                                           )}
@@ -2724,7 +2728,7 @@ export default function FormPemeriksaanPage() {
                                               });
                                             }
                                           }}
-                                          className="text-[10px] max-w-[220px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))]"
+                                          className="text-[10px] max-w-[220px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-muted-foreground"
                                         >
                                           <option value="">⚙️ Syarat: Selalu Aktif</option>
                                           {fields
@@ -2762,7 +2766,7 @@ export default function FormPemeriksaanPage() {
                                                 : `Butir dipindahkan ke "${newGrup}"`,
                                             );
                                           }}
-                                          className="text-[10px] max-w-[180px] bg-[hsl(var(--muted))]/30 border border-dashed border-[hsl(var(--border))] px-1.5 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))]"
+                                          className="text-[10px] max-w-[180px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-muted-foreground"
                                           title="Pindahkan butir ke bagian/metadata lain"
                                         >
                                           {allAvailableGroupOptions.map((g) => (
@@ -2782,7 +2786,7 @@ export default function FormPemeriksaanPage() {
                                             type="button"
                                             onClick={() => convertFieldToBagian(index)}
                                             title="Jadikan pertanyaan ini sebagai Bagian Utama baru"
-                                            className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-[hsl(var(--muted))]/50 hover:bg-[#00A876]/15 hover:text-[#00A876] text-[hsl(var(--muted-foreground))] border border-dashed border-[hsl(var(--border))] transition-colors"
+                                            className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-surface-subtle hover:bg-primary-subtle hover:text-primary text-muted-foreground border border-dashed border-border transition-colors"
                                           >
                                             <Sparkles className="w-2.5 h-2.5" /> + Bagian
                                           </button>
@@ -2793,7 +2797,7 @@ export default function FormPemeriksaanPage() {
                                                 if (!e.target.value) return;
                                                 convertFieldToSubbagian(index, e.target.value);
                                               }}
-                                              className="text-[9px] font-bold bg-[hsl(var(--muted))]/50 border border-dashed border-[hsl(var(--border))] px-1 py-1 outline-none rounded-md text-[hsl(var(--muted-foreground))] hover:border-purple-400"
+                                              className="text-[9px] font-bold bg-surface-subtle border border-dashed border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
                                               title="Jadikan pertanyaan ini sebagai Subbagian baru di bawah Bagian pilihan"
                                             >
                                               <option value="">+ Subbagian di...</option>
@@ -2810,18 +2814,16 @@ export default function FormPemeriksaanPage() {
 
                                     {/* Sasaran untuk non-meta */}
                                     {group.grup !== "__META__" && availableSasaranOptions.length > 0 && (
-                                      <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-[hsl(var(--border))]/50">
-                                        <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-                                          🎯 Sasaran:
-                                        </span>
-                                        <div className="inline-flex flex-wrap gap-0.5 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-0.5 text-[10px]">
+                                      <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-border/50">
+                                        <span className="text-[10px] font-bold text-muted-foreground">🎯 Sasaran:</span>
+                                        <div className="inline-flex flex-wrap gap-0.5 rounded-md border border-border bg-surface p-0.5 text-[10px]">
                                           <button
                                             type="button"
                                             onClick={() => updateField(index, "targetGolongan", "ALL")}
                                             className={`px-2 py-0.5 rounded transition-colors ${
                                               !field.targetGolongan || field.targetGolongan === "ALL"
-                                                ? "bg-[#00A876] text-white font-bold"
-                                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                                ? "bg-primary text-white font-bold shadow-subtle"
+                                                : "text-muted-foreground hover:text-foreground"
                                             }`}
                                           >
                                             Semua
@@ -2855,7 +2857,7 @@ export default function FormPemeriksaanPage() {
                                                 className={`px-2 py-0.5 rounded transition-colors ${
                                                   isSelected
                                                     ? colorClass
-                                                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                                                    : "text-muted-foreground hover:text-foreground"
                                                 }`}
                                               >
                                                 {opt}
@@ -2883,60 +2885,60 @@ export default function FormPemeriksaanPage() {
                                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                                     <div className="flex items-center gap-1.5">
                                       <label className="flex flex-col items-center" title="Wajib diisi">
-                                        <span className="text-[8px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
+                                        <span className="text-[8px] font-bold uppercase text-muted-foreground">
                                           Wajib
                                         </span>
                                         <input
                                           type="checkbox"
                                           checked={field.isRequired}
                                           onChange={(e) => updateField(index, "isRequired", e.target.checked)}
-                                          className="w-3.5 h-3.5 accent-[#00A876]"
+                                          className="w-3.5 h-3.5 accent-primary"
                                         />
                                       </label>
                                       <label className="flex flex-col items-center" title="Skor maksimal">
-                                        <span className="text-[8px] font-bold uppercase text-[hsl(var(--muted-foreground))]">
+                                        <span className="text-[8px] font-bold uppercase text-muted-foreground">
                                           Skor
                                         </span>
                                         <input
                                           type="number"
                                           value={field.skor ?? 0}
                                           onChange={(e) => updateField(index, "skor", parseFloat(e.target.value) || 0)}
-                                          className="w-12 text-center text-[10px] font-bold border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 px-0.5 py-0.5 outline-none rounded-md focus:border-[#00A876]/50"
+                                          className="w-12 text-center text-[10px] font-bold border border-border bg-surface px-0.5 py-0.5 outline-none rounded-md focus:border-primary/50 text-foreground"
                                         />
                                       </label>
                                       {field.tipe === "BOOLEAN" && (
                                         <>
                                           <label className="flex flex-col items-center" title="Skor jawaban benar">
-                                            <span className="text-[8px] font-bold uppercase text-green-600">B</span>
+                                            <span className="text-[8px] font-bold uppercase text-emerald-600">B</span>
                                             <input
                                               type="number"
                                               value={field.skorBenar ?? 1}
                                               onChange={(e) =>
                                                 updateField(index, "skorBenar", parseFloat(e.target.value) || 0)
                                               }
-                                              className="w-10 text-center text-[10px] border border-green-200 bg-green-50/50 px-0.5 py-0.5 outline-none rounded-md"
+                                              className="w-10 text-center text-[10px] border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
                                             />
                                           </label>
                                           <label className="flex flex-col items-center" title="Skor jawaban salah">
-                                            <span className="text-[8px] font-bold uppercase text-red-500">S</span>
+                                            <span className="text-[8px] font-bold uppercase text-rose-500">S</span>
                                             <input
                                               type="number"
                                               value={field.skorSalah ?? 0}
                                               onChange={(e) =>
                                                 updateField(index, "skorSalah", parseFloat(e.target.value) || 0)
                                               }
-                                              className="w-10 text-center text-[10px] border border-red-200 bg-red-50/50 px-0.5 py-0.5 outline-none rounded-md"
+                                              className="w-10 text-center text-[10px] border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
                                             />
                                           </label>
                                           <label
-                                            className="flex items-center gap-1 text-[9px] text-[hsl(var(--muted-foreground))] cursor-pointer select-none"
+                                            className="flex items-center gap-1 text-[9px] text-muted-foreground cursor-pointer select-none"
                                             title="Izinkan jawaban T/A (Tidak Ada / tidak applicable)"
                                           >
                                             <input
                                               type="checkbox"
                                               checked={field.allowNA ?? false}
                                               onChange={(e) => updateField(index, "allowNA", e.target.checked)}
-                                              className="w-3 h-3 accent-[#00A876]"
+                                              className="w-3 h-3 accent-primary"
                                             />
                                             T/A
                                           </label>
@@ -2952,8 +2954,8 @@ export default function FormPemeriksaanPage() {
                                         }
                                         className={`px-1.5 py-1 rounded text-[9px] font-bold border transition-colors ${
                                           field.isDisabled
-                                            ? "bg-red-100 text-red-700 border-red-300"
-                                            : "bg-green-50 text-green-700 border-green-200"
+                                            ? "bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800"
+                                            : "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
                                         }`}
                                       >
                                         {field.isDisabled ? "🚫" : "✓"}
@@ -2962,7 +2964,7 @@ export default function FormPemeriksaanPage() {
                                         type="button"
                                         onClick={() => removeField(index)}
                                         title="Hapus butir"
-                                        className="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                        className="p-1.5 rounded-md text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
@@ -2991,8 +2993,8 @@ export default function FormPemeriksaanPage() {
                               }}
                               className={`p-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-150 cursor-pointer ${
                                 dropTarget === `drop-into-group:${group.grup}`
-                                  ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/30 scale-[1.01]"
-                                  : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] hover:border-[#00A876]/40 hover:text-[#00A876]"
+                                  ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/30 scale-[1.01]"
+                                  : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary"
                               }`}
                             >
                               📥 Lepaskan di sini untuk MASUKKAN KE{" "}
@@ -3019,8 +3021,8 @@ export default function FormPemeriksaanPage() {
                     }}
                     className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${
                       dropTarget === "drop-new-bagian-bottom"
-                        ? "border-[#00A876] bg-[#00A876]/20 text-[#00A876] ring-2 ring-[#00A876]/40 scale-[1.01]"
-                        : "border-[#00A876]/40 bg-[#00A876]/5 text-[#00A876] hover:bg-[#00A876]/10"
+                        ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/40 scale-[1.01]"
+                        : "border-primary/40 bg-primary-subtle/50 text-primary hover:bg-primary-subtle"
                     }`}
                   >
                     <Sparkles className="w-4 h-4 animate-pulse" />
@@ -3032,10 +3034,10 @@ export default function FormPemeriksaanPage() {
 
             {/* Tambah Bagian — inline, selalu terlihat saat ada fields */}
             {fields.length > 0 && (
-              <div className="px-5 py-4 border-t border-[hsl(var(--border))] bg-[hsl(var(--muted))]/10">
+              <div className="px-5 py-4 border-t border-border bg-surface-subtle/30">
                 {addingInline?.type === "bagian" ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-[#00A876] shrink-0">Bagian baru:</span>
+                    <span className="text-[11px] font-bold text-primary shrink-0">Bagian baru:</span>
                     <input
                       autoFocus
                       value={inlineName}
@@ -3045,17 +3047,17 @@ export default function FormPemeriksaanPage() {
                         if (e.key === "Escape") setAddingInline(null);
                       }}
                       placeholder="Contoh: AIR, BANGUNAN, UDARA..."
-                      className="flex-1 h-8 px-3 text-[12px] border border-[#00A876]/30 rounded-lg outline-none focus:border-[#00A876] bg-white"
+                      className="flex-1 h-8 px-3 text-[12px] border border-primary/30 rounded-lg outline-none focus:border-primary bg-surface text-foreground"
                     />
                     <button
                       onClick={submitInline}
-                      className="h-8 px-3 text-[11px] font-bold bg-[#00A876] text-white rounded-lg hover:opacity-90"
+                      className="h-8 px-3 text-[11px] font-bold bg-primary text-white rounded-lg hover:bg-primary-hover shadow-subtle"
                     >
                       Tambah
                     </button>
                     <button
                       onClick={() => setAddingInline(null)}
-                      className="h-8 px-3 text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg"
+                      className="h-8 px-3 text-[11px] font-bold text-muted-foreground hover:bg-surface-subtle rounded-lg"
                     >
                       Batal
                     </button>
@@ -3067,7 +3069,7 @@ export default function FormPemeriksaanPage() {
                         setAddingInline({ type: "bagian" });
                         setInlineName("");
                       }}
-                      className="flex items-center gap-2 h-9 px-4 text-[11px] font-bold border border-dashed border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[#00A876]/50 hover:text-[#00A876] transition-colors rounded-lg"
+                      className="flex items-center gap-2 h-9 px-4 text-[11px] font-bold border border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors rounded-lg"
                     >
                       <FolderPlus className="w-3.5 h-3.5" /> Tambah Bagian
                     </button>

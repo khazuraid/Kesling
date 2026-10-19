@@ -218,15 +218,18 @@ export function FormView({
 }: FormViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  const metaFields = useMemo(() => activeForm.fields.filter((f: any) => f.grup === "__META__"), [activeForm.fields]);
+  const metaFields = useMemo(
+    () => (activeForm?.fields || []).filter((f: any) => f.grup === "__META__"),
+    [activeForm?.fields],
+  );
   const penilaianFields = useMemo(
-    () => activeForm.fields.filter((f: any) => f.grup !== "__META__"),
-    [activeForm.fields],
+    () => (activeForm?.fields || []).filter((f: any) => f.grup !== "__META__"),
+    [activeForm?.fields],
   );
 
   const selectedGolongan = useMemo(() => {
     // Cek di metaValues dan formValues
-    for (const f of activeForm.fields) {
+    for (const f of activeForm?.fields || []) {
       const val = String((f.grup === "__META__" ? metaValues[f.id] : formValues[f.id]) ?? "").trim();
       if (!val) continue;
       const q = (f.pertanyaan || "").toLowerCase();
@@ -235,7 +238,7 @@ export function FormView({
       }
     }
     return "";
-  }, [activeForm.fields, metaValues, formValues]);
+  }, [activeForm?.fields, metaValues, formValues]);
 
   // Kelompokkan area kuesioner menjadi langkah-langkah wizard
   const areaSteps = useMemo(() => {
@@ -372,7 +375,7 @@ export function FormView({
   return (
     <div className="w-full pb-28 sm:pb-20 fade-in">
       {/* ── STICKY TOP SCORE HUD ── */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
+      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-2.5 sm:gap-3">
           {/* Back & Form Name */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -491,12 +494,12 @@ export function FormView({
                     setCurrentStepIndex(idx);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[12px] font-bold transition-all border ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-card text-[12px] font-bold transition-all border ${
                     isActive
-                      ? "bg-[#0C1B16] text-white border-[#0C1B16] shadow-sm ring-2 ring-[#00A876]/30"
+                      ? "bg-[#0C1B16] text-white border-[#0C1B16] shadow-subtle ring-2 ring-primary/30"
                       : isPassed
-                        ? "bg-[#00A876]/10 text-[#00A876] border-[#00A876]/20 hover:bg-[#00A876]/20"
-                        : "bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:border-[hsl(var(--foreground))]/40"
+                        ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                        : "bg-surface text-muted-foreground border-border hover:border-foreground/40 shadow-subtle"
                   }`}
                 >
                   <span
@@ -505,7 +508,7 @@ export function FormView({
                         ? "bg-[#BEF264] text-[#06281E]"
                         : isPassed
                           ? "bg-[#00A876] text-white"
-                          : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                          : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {isPassed ? <Check className="w-3 h-3 stroke-[3]" /> : step.badge}
@@ -521,35 +524,35 @@ export function FormView({
         <div className="space-y-6">
           {/* STEP 0: INFORMASI SASARAN */}
           {currentStep.type === "meta" && (
-            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-[hsl(var(--border))] bg-gradient-to-r from-[hsl(var(--muted))]/60 to-transparent flex items-center justify-between">
+            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+              <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-border bg-surface-subtle flex items-center justify-between">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-wider mb-1">
                     <FileText className="w-3 h-3" /> Langkah 1 dari {steps.length}
                   </div>
-                  <h3 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
+                  <h3 className="text-[17px] sm:text-[18px] font-extrabold text-foreground">
                     Informasi Sasaran & Pelaksanaan
                   </h3>
-                  <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                  <p className="text-[12px] text-muted-foreground mt-0.5">
                     Lengkapi identitas sasaran yang diperiksa dan tanggal pelaksanaan inspeksi kesehatan lingkungan.
                   </p>
                 </div>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="p-5 sm:p-6 space-y-6">
                 {/* Tanggal Pemeriksaan */}
-                <div className="rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--background))]/50 space-y-2">
+                <div className="rounded-card border border-border p-4 sm:p-5 bg-surface-subtle space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-[13px] font-bold text-[hsl(var(--foreground))] flex items-center gap-1.5">
+                    <label className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
                       Tanggal Pemeriksaan <span className="text-[#E15A4F]">*</span>
                     </label>
-                    <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Wajib diisi</span>
+                    <span className="text-[11px] text-muted-foreground">Wajib diisi</span>
                   </div>
                   <input
                     type="date"
                     value={tanggalPemeriksaan}
                     onChange={(e) => onTanggalChange(e.target.value)}
-                    className="w-full sm:max-w-xs h-11 border border-[hsl(var(--border))] rounded-xl bg-white dark:bg-zinc-900 px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
+                    className="w-full sm:max-w-xs h-11 border border-border rounded-xl bg-surface px-3.5 text-[13px] font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle"
                   />
                 </div>
 
@@ -566,7 +569,7 @@ export function FormView({
                     return (
                       <div
                         key={f.id}
-                        className={`rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--background))]/50 transition-all ${
+                        className={`rounded-card border border-border p-4 sm:p-5 bg-surface-subtle transition-all ${
                           f.tipe === "TEXT" || f.tipe === "SIGNATURE" ? "md:col-span-2" : ""
                         }`}
                       >
@@ -589,33 +592,33 @@ export function FormView({
           {/* STEP 1..N: BAGIAN AREA PENILAIAN */}
           {currentStep.type === "area" && currentStep.areaData && (
             <div className="space-y-6">
-              <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-[hsl(var(--border))] bg-gradient-to-r from-[#0C1B16]/5 to-transparent flex items-center justify-between">
+              <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+                <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-border bg-surface-subtle flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[13px] font-black shadow-sm">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0C1B16] text-[#BEF264] text-[13px] font-black shadow-subtle">
                       {toRoman(currentStep.areaData.areaIndex)}
                     </span>
                     <div>
-                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-[#00A876]">
+                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary">
                         Bagian Penilaian
                       </div>
-                      <h3 className="text-[18px] font-extrabold text-[hsl(var(--foreground))]">
+                      <h3 className="text-[17px] sm:text-[18px] font-extrabold text-foreground">
                         {currentStep.areaData.area}
                       </h3>
                     </div>
                   </div>
-                  <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] px-3 py-1 rounded-full bg-[hsl(var(--muted))]">
+                  <span className="text-[11px] font-bold text-muted-foreground px-3 py-1 rounded-full bg-surface border border-border">
                     {currentStep.areaData.groups.reduce((acc, g) => acc + g.fields.length, 0)} Butir
                   </span>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-5 sm:p-6 space-y-6">
                   {currentStep.areaData.groups.map((group) => (
                     <div key={group.grup} className="space-y-4">
                       {group.subbagian && (
-                        <div className="flex items-center gap-2 pt-2 pb-1 border-b border-[hsl(var(--border))]">
-                          <div className="w-1.5 h-4 rounded-full bg-[#00A876]" />
-                          <h4 className="text-[13px] font-extrabold text-[hsl(var(--foreground))] uppercase tracking-wide">
+                        <div className="flex items-center gap-2 pt-2 pb-1 border-b border-border">
+                          <div className="w-1.5 h-4 rounded-full bg-primary" />
+                          <h4 className="text-[13px] font-extrabold text-foreground uppercase tracking-wide">
                             {group.subbagian}
                           </h4>
                         </div>
@@ -634,8 +637,8 @@ export function FormView({
                           return (
                             <div
                               key={f.id}
-                              className={`rounded-2xl border border-[hsl(var(--border))] p-5 bg-[hsl(var(--card))] hover:border-[#00A876]/40 transition-colors shadow-sm ${
-                                isDisabled ? "opacity-60 bg-[hsl(var(--muted))]/20" : ""
+                              className={`rounded-card border border-border p-4 sm:p-5 bg-surface hover:border-primary/40 transition-colors shadow-subtle ${
+                                isDisabled ? "opacity-60 bg-surface-subtle" : ""
                               }`}
                             >
                               <FieldInput
@@ -660,10 +663,10 @@ export function FormView({
 
           {/* Submit Final Action Card di Langkah Terakhir */}
           {currentStepIndex === steps.length - 1 && (
-            <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+            <div className="rounded-card border border-border bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-subtle">
               <div>
-                <h5 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Siap Menyimpan Pemeriksaan?</h5>
-                <p className="text-[12px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                <h5 className="text-[14px] font-bold text-foreground">Siap Menyimpan Pemeriksaan?</h5>
+                <p className="text-[12px] text-muted-foreground mt-0.5">
                   {canSubmit
                     ? "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
                     : "Masih terdapat butir bertanda bintang (*) yang belum diisi pada formulir."}
@@ -674,7 +677,7 @@ export function FormView({
                 type="button"
                 onClick={onSubmit}
                 disabled={!canSubmit || isPending}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#00A876] hover:bg-[#008f64] text-white text-[13px] font-black transition-all shadow-md hover:shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[13px] font-black transition-all shadow-subtle disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
               >
                 {isPending ? (
                   <>
@@ -691,26 +694,26 @@ export function FormView({
         </div>
 
         {/* ── BOTTOM STICKY NAVIGATION BAR ── */}
-        <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-[hsl(var(--background))]/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-[hsl(var(--border))] p-3 sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
+        <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-surface/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-border p-3 sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentStepIndex === 0}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-2.5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[12px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-2.5 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground hover:bg-surface-subtle transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-subtle"
           >
             <ChevronLeft className="w-4 h-4" /> Sebelumnya
           </button>
 
-          <div className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] hidden md:block text-center truncate max-w-xs">
+          <div className="text-[11px] font-semibold text-muted-foreground hidden md:block text-center truncate max-w-xs">
             Langkah {currentStepIndex + 1} dari {steps.length} ·{" "}
-            <span className="text-[hsl(var(--foreground))] font-bold">{currentStep.title}</span>
+            <span className="text-foreground font-bold">{currentStep.title}</span>
           </div>
 
           {currentStepIndex < steps.length - 1 ? (
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-2xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-sm"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-subtle"
             >
               Selanjutnya <ChevronRight className="w-4 h-4" />
             </button>
@@ -719,7 +722,7 @@ export function FormView({
               type="button"
               onClick={onSubmit}
               disabled={!canSubmit || isPending}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-2.5 rounded-2xl bg-[#00A876] text-white text-[12px] font-black hover:bg-[#008f64] transition-all shadow-sm disabled:opacity-40"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-2.5 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover transition-all shadow-subtle disabled:opacity-40"
             >
               {isPending ? (
                 <>

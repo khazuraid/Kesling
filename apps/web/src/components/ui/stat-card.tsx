@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-/* ── StatCard — Doppelrand Architecture ─────────────────────────── */
+/* ── StatCard — Tamagui Bento Architecture ───────────────────────── */
 
 type TrendDirection = "up" | "down" | "neutral";
 
@@ -18,16 +18,19 @@ interface StatCardProps {
   className?: string;
 }
 
-const TREND_STYLES: Record<TrendDirection, string> = {
-  up: "text-[hsl(var(--accent))] dark:text-[hsl(var(--accent-muted))]",
-  down: "text-[hsl(var(--error))]",
-  neutral: "text-[hsl(var(--muted-foreground))]",
-};
-
-const TREND_ARROWS: Record<TrendDirection, string> = {
-  up: "\u2191",
-  down: "\u2193",
-  neutral: "\u2194",
+const TREND_BADGES: Record<TrendDirection, { badge: string; arrow: string }> = {
+  up: {
+    badge: "bg-success-light text-success border-success/20",
+    arrow: "↑",
+  },
+  down: {
+    badge: "bg-error-light text-error border-error/20",
+    arrow: "↓",
+  },
+  neutral: {
+    badge: "bg-surface-subtle text-muted-foreground border-border",
+    arrow: "↔",
+  },
 };
 
 export function StatCard({
@@ -42,74 +45,56 @@ export function StatCard({
   className,
 }: StatCardProps) {
   const Wrapper = href ? "a" : "div";
-  const shellClass = accent ? "card-accent" : "card-shell";
-  const innerClass = accent ? "card-accent-inner" : "card-inner";
 
   return (
     <Wrapper
       href={href}
       className={cn(
-        shellClass,
-        "group block",
-        href && "cursor-pointer hover:border-[hsl(var(--accent)/0.3)]",
+        "rounded-card border transition-all duration-200 group block",
+        accent
+          ? "border-primary/25 bg-gradient-to-br from-primary-subtle/70 via-surface to-surface shadow-subtle"
+          : "border-border bg-surface shadow-subtle",
+        href && "cursor-pointer hover:border-border-hover hover:shadow-md hover:-translate-y-0.5",
         className,
       )}
     >
-      <div className={cn(innerClass, "flex flex-col gap-3")}>
+      <div className="p-5 flex flex-col gap-3 h-full">
         {/* ── Top row: label + icon ── */}
         <div className="flex items-start justify-between gap-3">
-          <p className="stat-label">{title}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
           {icon && (
-            <div
-              className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]",
-                "dark:bg-[hsl(var(--muted))] dark:text-[hsl(var(--muted-foreground))]",
-              )}
-            >
+            <div className="w-9 h-9 rounded-button flex items-center justify-center shrink-0 bg-surface-subtle text-muted-foreground border border-border/60 transition-colors group-hover:text-primary group-hover:border-primary/20">
               {icon}
             </div>
           )}
         </div>
 
         {/* ── Value + trend ── */}
-        <div className="flex items-end gap-2">
-          <p className="stat-number text-[hsl(var(--foreground))]">{value}</p>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums text-foreground leading-none">
+            {value}
+          </p>
           {trend && trendValue && (
             <span
-              className={cn("text-[var(--text-sm)] font-bold inline-flex items-center gap-0.5", TREND_STYLES[trend])}
+              className={cn(
+                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold tabular-nums leading-none border",
+                TREND_BADGES[trend].badge,
+              )}
             >
-              {TREND_ARROWS[trend]} {trendValue}
+              <span>{TREND_BADGES[trend].arrow}</span>
+              <span>{trendValue}</span>
             </span>
           )}
         </div>
 
         {/* ── Subtitle ── */}
-        {subtitle && (
-          <p className="text-[var(--text-xs)] text-[hsl(var(--muted-foreground))] font-medium leading-relaxed">
-            {subtitle}
-          </p>
-        )}
+        {subtitle && <p className="text-xs text-muted-foreground font-medium leading-relaxed">{subtitle}</p>}
 
         {/* ── Link hint ── */}
         {href && (
-          <div
-            className={cn(
-              "mt-auto flex items-center gap-1",
-              "text-[var(--text-xs)] font-bold uppercase tracking-widest text-[hsl(var(--accent))]",
-              "opacity-0 group-hover:opacity-100",
-              "transition-opacity duration-300 ease-[var(--ease-out)]",
-            )}
-          >
+          <div className="mt-auto pt-1 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             Lihat detail
-            <span
-              className={cn(
-                "translate-x-0 group-hover:translate-x-1",
-                "transition-transform duration-300 ease-[var(--ease-out)]",
-              )}
-            >
-              &#8594;
-            </span>
+            <span className="translate-x-0 group-hover:translate-x-1 transition-transform duration-200">→</span>
           </div>
         )}
       </div>

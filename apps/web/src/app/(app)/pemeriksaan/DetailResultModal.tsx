@@ -18,6 +18,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { calculateInspectionScore, generateInspectionPDF, type InspectionDetailData } from "./pdf-generator";
@@ -144,9 +145,20 @@ export function DetailResultModal({
   };
 
   // Kelompokkan pertanyaan kuesioner per bagian/grup
-  const fields = (template.fields || []).filter(
+  const fieldsFromTemplate = (template.fields || []).filter(
     (f: any) => f.grup !== "__META__" && f.tipe !== "SIGNATURE" && f.tipe !== "PHOTO",
   );
+
+  // Fallback: Jika template.fields kosong, bangun list dari result.values yang membawa field info
+  const fields =
+    fieldsFromTemplate.length > 0
+      ? fieldsFromTemplate
+      : (result?.values || [])
+          .filter(
+            (v: any) =>
+              v.field && v.field.grup !== "__META__" && v.field.tipe !== "SIGNATURE" && v.field.tipe !== "PHOTO",
+          )
+          .map((v: any) => v.field);
 
   const groupedFields: { grup: string; items: any[] }[] = [];
   fields.forEach((f: any) => {
@@ -469,11 +481,13 @@ export function DetailResultModal({
                       className="group relative flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:border-[#00A876] transition-all cursor-pointer"
                     >
                       <div className="relative aspect-[4/3] bg-black/5 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={photo.url}
                           alt={photo.label || "Foto Dokumentasi"}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          unoptimized
                         />
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold">
                           Klik untuk memperbesar
@@ -508,17 +522,19 @@ export function DetailResultModal({
                     <p className="text-[11px] text-[hsl(var(--muted-foreground))]">UPT Puskesmas {puskesmasNama}</p>
                   </div>
 
-                  <div className="h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
+                  <div className="relative h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
                     {signatures.petugas ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
+                      <Image
                         src={
                           signatures.petugas.startsWith("data:image/")
                             ? signatures.petugas
                             : `data:image/png;base64,${signatures.petugas}`
                         }
                         alt="Tanda Tangan Petugas"
+                        width={280}
+                        height={120}
                         className="max-h-full max-w-full object-contain"
+                        unoptimized
                       />
                     ) : (
                       <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
@@ -544,17 +560,19 @@ export function DetailResultModal({
                     <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Sasaran: {namaSasaran}</p>
                   </div>
 
-                  <div className="h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
+                  <div className="relative h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
                     {signatures.pemilik ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
+                      <Image
                         src={
                           signatures.pemilik.startsWith("data:image/")
                             ? signatures.pemilik
                             : `data:image/png;base64,${signatures.pemilik}`
                         }
                         alt="Tanda Tangan Pengelola"
+                        width={280}
+                        height={120}
                         className="max-h-full max-w-full object-contain"
+                        unoptimized
                       />
                     ) : (
                       <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
@@ -635,8 +653,14 @@ export function DetailResultModal({
           className="fixed inset-0 z-60 bg-black/85 flex items-center justify-center p-4 cursor-pointer animate-in fade-in"
         >
           <div className="relative max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl bg-black">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={previewPhoto} alt="Preview Zoom" className="max-h-[85vh] max-w-full object-contain" />
+            <Image
+              src={previewPhoto}
+              alt="Preview Zoom"
+              width={1200}
+              height={900}
+              className="max-h-[85vh] max-w-full w-auto h-auto object-contain"
+              unoptimized
+            />
             <button
               onClick={() => setPreviewPhoto(null)}
               className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black transition-colors"

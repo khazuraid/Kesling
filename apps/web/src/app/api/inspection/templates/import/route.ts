@@ -126,7 +126,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     const jobs = [];
     for (const jId of allJobIds) {
       const data = await redis.hgetall(`inspection-import:${jId}`);
-      if (data && data.fileName) {
+      if (data?.fileName) {
         let fieldCount = 0;
         try {
           if (data.result) {

@@ -69,20 +69,20 @@ interface PaginatedResponse<T> {
 // ─── Tier meta ────────────────────────────────────────────────────────────────
 
 const ACTION_META: Record<string, { chip: string; dot: string }> = {
-  CREATE: { chip: "bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25", dot: "bg-[#00A876]" },
-  UPDATE: { chip: "bg-[#E8A33D]/10 text-[#C07F1F] border border-[#E8A33D]/25", dot: "bg-[#E8A33D]" },
-  DELETE: { chip: "bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25", dot: "bg-[#E15A4F]" },
+  CREATE: { chip: "bg-success-light text-success border border-success/25", dot: "bg-success" },
+  UPDATE: { chip: "bg-warning-light text-warning border border-warning/25", dot: "bg-warning" },
+  DELETE: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
 };
 const SECURITY_META: Record<string, { chip: string; dot: string }> = {
-  LOGIN_SUCCESS: { chip: "bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25", dot: "bg-[#00A876]" },
-  LOGIN_FAILED: { chip: "bg-[#E8A33D]/10 text-[#C07F1F] border border-[#E8A33D]/25", dot: "bg-[#E8A33D]" },
-  RATE_LIMIT: { chip: "bg-[#5B8DEF]/10 text-[#5B8DEF] border border-[#5B8DEF]/25", dot: "bg-[#5B8DEF]" },
-  BRUTE_FORCE: { chip: "bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25", dot: "bg-[#E15A4F]" },
-  SUSPICIOUS: { chip: "bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25", dot: "bg-[#E15A4F]" },
+  LOGIN_SUCCESS: { chip: "bg-success-light text-success border border-success/25", dot: "bg-success" },
+  LOGIN_FAILED: { chip: "bg-warning-light text-warning border border-warning/25", dot: "bg-warning" },
+  RATE_LIMIT: { chip: "bg-info-light text-info border border-info/25", dot: "bg-info" },
+  BRUTE_FORCE: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
+  SUSPICIOUS: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
 };
 const FALLBACK_META = {
-  chip: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]",
-  dot: "bg-[hsl(var(--muted-foreground))]",
+  chip: "bg-muted text-muted-foreground border border-border",
+  dot: "bg-muted-foreground",
 };
 
 const PAGE_SIZE = 25;
@@ -218,20 +218,20 @@ export default function AuditLogPage() {
       const allKeys = Array.from(new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]));
       const changed = allKeys.filter((k) => JSON.stringify(oldData?.[k]) !== JSON.stringify(newData?.[k]));
       if (changed.length === 0)
-        return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada perubahan tercatat</span>;
+        return <span className="text-[11px] text-muted-foreground">Tidak ada perubahan tercatat</span>;
       return (
         <div className="space-y-2.5">
           {changed.map((k) => (
             <div key={k}>
-              <span className="text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] block mb-1">
+              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] block mb-1">
                 {k}
               </span>
               <div className="flex flex-wrap gap-2 items-center text-[11px] font-mono">
-                <span className="px-2 py-0.5 rounded-md bg-[#E15A4F]/10 text-[#E15A4F] line-through">
+                <span className="px-2 py-0.5 rounded-button bg-error-light text-error line-through border border-error/20">
                   {oldData?.[k] !== undefined ? String(oldData?.[k]) : "—"}
                 </span>
-                <span className="text-[hsl(var(--muted-foreground))]">→</span>
-                <span className="px-2 py-0.5 rounded-md bg-[#00A876]/10 text-[#00A876]">
+                <span className="text-muted-foreground">→</span>
+                <span className="px-2 py-0.5 rounded-button bg-success-light text-success border border-success/20">
                   {newData?.[k] !== undefined ? String(newData?.[k]) : "—"}
                 </span>
               </div>
@@ -243,13 +243,13 @@ export default function AuditLogPage() {
 
     const data = item?.action === "DELETE" ? oldData : newData;
     if (!data || Object.keys(data).length === 0)
-      return <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Tidak ada detail</span>;
+      return <span className="text-[11px] text-muted-foreground">Tidak ada detail</span>;
     return (
       <div className="space-y-1">
         {Object.entries(data).map(([k, v]) => (
           <div key={k} className="flex gap-2 text-[11px]">
-            <span className="text-[hsl(var(--muted-foreground))] min-w-[120px] shrink-0">{k}:</span>
-            <span className="font-mono break-all">{String(v)}</span>
+            <span className="text-muted-foreground min-w-[120px] shrink-0">{k}:</span>
+            <span className="font-mono break-all text-text-main">{String(v)}</span>
           </div>
         ))}
       </div>
@@ -264,19 +264,20 @@ export default function AuditLogPage() {
 
   // ═══════════════════ RENDER ═══════════════════
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-4 fade-in bg-canvas min-h-screen">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#E15A4F] opacity-[0.06]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.08]" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-error opacity-[0.05]" />
 
         <div className="relative z-10 px-8 pt-7 pb-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Sistem</p>
-              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Log & Pemantauan</h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary/70 mb-2">Sistem</p>
+              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none text-text-main">
+                Log & Pemantauan
+              </h1>
+              <p className="text-[13px] font-medium text-muted-foreground mt-2">
                 Riwayat aktivitas, keamanan, dan error sistem
               </p>
             </div>
@@ -284,10 +285,10 @@ export default function AuditLogPage() {
               <button
                 onClick={() => setAutoRefresh(!autoRefresh)}
                 title={autoRefresh ? "Matikan auto-refresh" : "Nyalakan auto-refresh"}
-                className={`inline-flex items-center gap-2 h-9 px-4 rounded-full text-[11px] font-extrabold transition ${
+                className={`inline-flex items-center gap-2 h-9 px-4 rounded-button text-[11px] font-extrabold transition active:scale-[0.98] ${
                   autoRefresh
-                    ? "bg-[#BEF264] text-[#06281E]"
-                    : "bg-white/[0.08] border border-white/15 text-white hover:bg-white/[0.14]"
+                    ? "bg-primary text-primary-foreground hover:bg-primary-hover"
+                    : "bg-surface-subtle border border-border text-text-main hover:bg-surface-hover"
                 }`}
               >
                 {autoRefresh ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
@@ -300,7 +301,7 @@ export default function AuditLogPage() {
                       if (confirm("Hapus semua log error?")) clearErrorsMutation.mutate();
                     }}
                     disabled={clearErrorsMutation.isPending}
-                    className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[#E15A4F] text-white text-[11px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+                    className="inline-flex items-center gap-2 h-9 px-4 rounded-button bg-error text-white text-[11px] font-extrabold hover:brightness-95 active:scale-[0.98] transition disabled:opacity-50"
                   >
                     <Trash2 className="w-3 h-3" /> Bersihkan
                   </button>
@@ -308,7 +309,7 @@ export default function AuditLogPage() {
               ) : (
                 <button
                   onClick={handleExport}
-                  className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-white/[0.08] border border-white/15 text-white text-[11px] font-extrabold hover:bg-white/[0.14] transition"
+                  className="inline-flex items-center gap-2 h-9 px-4 rounded-button bg-surface-subtle border border-border text-text-main text-[11px] font-extrabold hover:bg-surface-hover active:scale-[0.98] transition"
                 >
                   <Download className="w-3 h-3" /> CSV
                 </button>
@@ -317,7 +318,7 @@ export default function AuditLogPage() {
           </div>
 
           {/* Tabs — bottom edge hero */}
-          <div className="mt-5 inline-flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/10 p-1">
+          <div className="mt-5 inline-flex items-center gap-1 rounded-button bg-surface-subtle border border-border p-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
@@ -326,15 +327,15 @@ export default function AuditLogPage() {
                   setPage(1);
                   setExpandedId(null);
                 }}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
-                  tab === t.key ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
+                  tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <t.icon className="w-3.5 h-3.5" /> {t.label}
                 {t.count !== undefined && t.count > 0 && (
                   <span
-                    className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                      tab === t.key ? "bg-[#06281E]/15 text-[#06281E]" : "bg-[#E15A4F]/30 text-[#F5A099]"
+                    className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-button ${
+                      tab === t.key ? "bg-white/20 text-white" : "bg-error-light text-error"
                     }`}
                   >
                     {t.count}
@@ -353,7 +354,7 @@ export default function AuditLogPage() {
             {isAudit ? (
               <>
                 <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 text-[hsl(var(--muted-foreground))] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={search}
@@ -362,10 +363,10 @@ export default function AuditLogPage() {
                       setPage(1);
                     }}
                     placeholder="Cari user, tabel, atau aksi..."
-                    className="w-full h-10 pl-10 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+                    className="w-full h-10 pl-10 pr-3 rounded-button bg-surface border border-border text-[12px] font-medium text-text-main outline-none focus:border-primary transition-colors"
                   />
                 </div>
-                <div className="inline-flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1">
+                <div className="inline-flex items-center gap-1 rounded-button border border-border bg-surface p-1 shadow-subtle">
                   {["all", "CREATE", "UPDATE", "DELETE"].map((a) => (
                     <button
                       key={a}
@@ -374,10 +375,10 @@ export default function AuditLogPage() {
                         setPage(1);
                       }}
                       className={cn(
-                        "h-8 px-3 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors",
+                        "h-8 px-3 rounded-button text-[10px] font-extrabold uppercase tracking-wider transition-colors",
                         actionFilter === a
-                          ? "bg-[#0C1B16] text-white"
-                          : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]",
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {a === "all" ? "Semua" : a}
@@ -391,21 +392,21 @@ export default function AuditLogPage() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "inline-flex items-center gap-2 h-10 px-4 rounded-xl border text-[11px] font-extrabold transition-colors",
+                "inline-flex items-center gap-2 h-10 px-4 rounded-button border text-[11px] font-extrabold transition-colors shadow-subtle",
                 showFilters || dateFrom || dateTo
-                  ? "border-[#00A876] text-[#00A876]"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))]",
+                  ? "border-primary text-primary bg-primary-subtle"
+                  : "border-border bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
               <Filter className="w-3.5 h-3.5" /> Tanggal
-              {(dateFrom || dateTo) && <span className="w-1.5 h-1.5 rounded-full bg-[#00A876]" />}
+              {(dateFrom || dateTo) && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
             </button>
           </div>
 
           {showFilters && (
-            <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div className="flex flex-wrap items-center gap-2 p-3 rounded-card border border-border bg-surface shadow-subtle">
               <div className="flex items-center gap-1.5">
-                <label className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                   Dari
                 </label>
                 <input
@@ -415,11 +416,11 @@ export default function AuditLogPage() {
                     setDateFrom(e.target.value);
                     setPage(1);
                   }}
-                  className="h-9 px-2.5 rounded-lg bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[11px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+                  className="h-9 px-2.5 rounded-button bg-surface-subtle border border-border text-[11px] font-medium text-text-main outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div className="flex items-center gap-1.5">
-                <label className="text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                   Sampai
                 </label>
                 <input
@@ -429,7 +430,7 @@ export default function AuditLogPage() {
                     setDateTo(e.target.value);
                     setPage(1);
                   }}
-                  className="h-9 px-2.5 rounded-lg bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[11px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+                  className="h-9 px-2.5 rounded-button bg-surface-subtle border border-border text-[11px] font-medium text-text-main outline-none focus:border-primary transition-colors"
                 />
               </div>
               {(dateFrom || dateTo) && (
@@ -439,7 +440,7 @@ export default function AuditLogPage() {
                     setDateTo("");
                     setPage(1);
                   }}
-                  className="h-9 px-3 text-[10px] font-extrabold text-[#E15A4F] hover:bg-[#E15A4F]/10 rounded-lg transition-colors flex items-center gap-1"
+                  className="h-9 px-3 text-[10px] font-extrabold text-error hover:bg-error-light rounded-button transition-colors flex items-center gap-1"
                 >
                   <X className="w-3 h-3" /> Reset
                 </button>
@@ -453,7 +454,7 @@ export default function AuditLogPage() {
       <div className={cn(isErrors ? "pt-5" : "pt-4")}>
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[#00A876] animate-spin rounded-full" />
+            <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
           </div>
         ) : items.length === 0 ? (
           <EmptyState
@@ -474,20 +475,18 @@ export default function AuditLogPage() {
                 <div
                   key={log.id}
                   className={cn(
-                    "rounded-2xl border bg-[hsl(var(--card))] overflow-hidden transition-colors",
-                    expanded ? "border-[#E15A4F]/40" : "border-[hsl(var(--border))]",
+                    "rounded-card border bg-surface shadow-subtle overflow-hidden transition-colors",
+                    expanded ? "border-error/50" : "border-border",
                   )}
                 >
                   <button
                     onClick={() => setExpandedId(expanded ? null : log.id)}
-                    className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-[hsl(var(--muted))]/30 transition-colors"
+                    className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-surface-hover transition-colors"
                   >
-                    <span className="mt-1 w-2 h-2 rounded-full shrink-0 bg-[#E15A4F]" />
+                    <span className="mt-1 w-2 h-2 rounded-full shrink-0 bg-error" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold font-mono text-[#E15A4F] leading-snug break-all">
-                        {log.message}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
+                      <p className="text-[12px] font-bold font-mono text-error leading-snug break-all">{log.message}</p>
+                      <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[10px] font-semibold text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {new Date(log.createdAt).toLocaleString("id-ID")}
@@ -500,40 +499,38 @@ export default function AuditLogPage() {
                         )}
                       </div>
                     </div>
-                    <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-full bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25 text-[9px] font-extrabold uppercase tracking-wider">
+                    <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-button bg-error-light text-error border border-error/25 text-[9px] font-extrabold uppercase tracking-wider">
                       {log.path || "API"}
                     </span>
                     <ChevronDown
                       className={cn(
-                        "w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] transition-transform mt-1",
+                        "w-4 h-4 shrink-0 text-muted-foreground transition-transform mt-1",
                         expanded && "rotate-180",
                       )}
                     />
                   </button>
 
                   {expanded && (
-                    <div className="px-5 pb-5 pt-4 space-y-4 border-t border-[hsl(var(--border))]/60">
+                    <div className="px-5 pb-5 pt-4 space-y-4 border-t border-border">
                       <div>
-                        <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))] mb-2">
+                        <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                           Pesan Error
                         </p>
-                        <div className="px-4 py-3 rounded-xl bg-[#E15A4F]/[0.05] border border-[#E15A4F]/20 font-mono text-[12px] text-[#E15A4F] break-all whitespace-pre-wrap">
+                        <div className="px-4 py-3 rounded-button bg-error-light border border-error/20 font-mono text-[12px] text-error break-all whitespace-pre-wrap">
                           {log.message}
                         </div>
                       </div>
                       {log.stack ? (
                         <div>
-                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))] mb-2">
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                             Stack Trace
                           </p>
-                          <pre className="px-4 py-3 rounded-xl bg-[#0C1B16] text-[#7CF5CE] font-mono text-[10px] overflow-x-auto max-h-[280px] overflow-y-auto whitespace-pre leading-relaxed">
+                          <pre className="px-4 py-3 rounded-button bg-[#0C1B16] text-[#7CF5CE] font-mono text-[10px] overflow-x-auto max-h-[280px] overflow-y-auto whitespace-pre leading-relaxed">
                             {log.stack}
                           </pre>
                         </div>
                       ) : (
-                        <p className="text-[11px] italic text-[hsl(var(--muted-foreground))]">
-                          Tidak ada stack trace terekam.
-                        </p>
+                        <p className="text-[11px] italic text-muted-foreground">Tidak ada stack trace terekam.</p>
                       )}
                       <div className="flex justify-end">
                         <button
@@ -541,7 +538,7 @@ export default function AuditLogPage() {
                             if (confirm("Hapus log error ini?")) deleteErrorMutation.mutate(log.id);
                           }}
                           disabled={deleteErrorMutation.isPending}
-                          className="inline-flex items-center gap-2 h-9 px-5 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold uppercase tracking-wider hover:bg-[#E15A4F]/10 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-2 h-9 px-5 rounded-button border border-error/40 text-error text-[11px] font-extrabold uppercase tracking-wider hover:bg-error-light active:scale-[0.98] transition-all disabled:opacity-50"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Hapus Log
                         </button>
@@ -554,43 +551,43 @@ export default function AuditLogPage() {
           </div>
         ) : (
           /* ── AUDIT / SECURITY TABLE ── */
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
+          <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
             {/* Header */}
-            <div className="flex items-center px-5 py-3 border-b border-[hsl(var(--border))]">
+            <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle">
               {isAudit ? (
                 <>
-                  <div className="w-[90px] text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[90px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Aksi
                   </div>
-                  <div className="w-[150px] text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[150px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Tabel
                   </div>
-                  <div className="flex-1 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="flex-1 text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     User
                   </div>
-                  <div className="w-[160px] text-right text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[160px] text-right text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Waktu
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="w-[110px] text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[110px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Event
                   </div>
-                  <div className="w-[140px] text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[140px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     IP
                   </div>
-                  <div className="flex-1 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="flex-1 text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Detail
                   </div>
-                  <div className="w-[160px] text-right text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <div className="w-[160px] text-right text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                     Waktu
                   </div>
                 </>
               )}
             </div>
 
-            <div className="max-h-[600px] overflow-y-auto">
+            <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60">
               {items.map((item: any) => {
                 const isExpanded = expandedId === item.id;
                 const meta = isAudit
@@ -600,14 +597,14 @@ export default function AuditLogPage() {
                   <Fragment key={item.id}>
                     <div
                       onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                      className="flex items-center px-5 py-3 border-b border-[hsl(var(--border))]/50 hover:bg-[hsl(var(--muted))]/30 transition-colors cursor-pointer"
+                      className="flex items-center px-5 py-3 hover:bg-surface-hover transition-colors cursor-pointer"
                     >
                       {isAudit ? (
                         <>
                           <div className="w-[90px]">
                             <span
                               className={cn(
-                                "inline-flex items-center h-6 px-2 rounded-full text-[9px] font-extrabold uppercase tracking-wider",
+                                "inline-flex items-center h-6 px-2 rounded-button text-[9px] font-extrabold uppercase tracking-wider",
                                 meta.chip,
                               )}
                             >
@@ -615,25 +612,21 @@ export default function AuditLogPage() {
                             </span>
                           </div>
                           <div className="w-[150px] flex items-center gap-1.5">
-                            <Database className="w-3 h-3 text-[hsl(var(--muted-foreground))] shrink-0" />
-                            <span className="text-[11px] font-bold text-[hsl(var(--foreground))] truncate">
-                              {item.tableName}
-                            </span>
+                            <Database className="w-3 h-3 text-muted-foreground shrink-0" />
+                            <span className="text-[11px] font-bold text-text-main truncate">{item.tableName}</span>
                             {item.recordId ? (
-                              <span className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums">
+                              <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
                                 #{item.recordId}
                               </span>
                             ) : null}
                           </div>
                           <div className="flex-1 flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded-lg bg-[#00A876]/10 text-[#00A876] flex items-center justify-center text-[9px] font-extrabold shrink-0">
+                            <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[9px] font-extrabold shrink-0">
                               {item.user?.nama?.charAt(0) || "U"}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-[11px] font-bold text-[hsl(var(--foreground))] truncate">
-                                {item.user?.nama}
-                              </p>
-                              <p className="text-[8px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                              <p className="text-[11px] font-bold text-text-main truncate">{item.user?.nama}</p>
+                              <p className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider">
                                 {item.user?.role}
                               </p>
                             </div>
@@ -644,7 +637,7 @@ export default function AuditLogPage() {
                           <div className="w-[110px]">
                             <span
                               className={cn(
-                                "inline-flex items-center h-6 px-2 rounded-full text-[9px] font-extrabold uppercase tracking-wider",
+                                "inline-flex items-center h-6 px-2 rounded-button text-[9px] font-extrabold uppercase tracking-wider",
                                 meta.chip,
                               )}
                             >
@@ -652,12 +645,10 @@ export default function AuditLogPage() {
                             </span>
                           </div>
                           <div className="w-[140px]">
-                            <span className="text-[11px] font-bold text-[hsl(var(--foreground))] font-mono">
-                              {item.ip}
-                            </span>
+                            <span className="text-[11px] font-bold text-text-main font-mono">{item.ip}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-medium text-[hsl(var(--foreground))] truncate">
+                            <p className="text-[11px] font-medium text-text-main truncate">
                               {item.detail || item.path || "—"}
                             </p>
                           </div>
@@ -665,14 +656,14 @@ export default function AuditLogPage() {
                       )}
                       <div className="w-[160px] flex items-center justify-end gap-2">
                         <div className="text-right">
-                          <p className="text-[11px] font-medium text-[hsl(var(--foreground))] tabular-nums">
+                          <p className="text-[11px] font-medium text-text-main tabular-nums">
                             {new Date(item.createdAt).toLocaleDateString("id-ID", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
                             })}
                           </p>
-                          <p className="text-[9px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums">
+                          <p className="text-[9px] font-bold text-muted-foreground tabular-nums">
                             {new Date(item.createdAt).toLocaleTimeString("id-ID", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -681,59 +672,59 @@ export default function AuditLogPage() {
                           </p>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="w-3 h-3 text-[hsl(var(--muted-foreground))] shrink-0" />
+                          <ChevronUp className="w-3 h-3 text-muted-foreground shrink-0" />
                         ) : (
-                          <ChevronDown className="w-3 h-3 text-[hsl(var(--muted-foreground))] shrink-0" />
+                          <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
                         )}
                       </div>
                     </div>
                     {isExpanded && (
-                      <div className="px-5 py-4 border-b border-[hsl(var(--border))]/50 bg-[hsl(var(--muted))]/15">
+                      <div className="px-5 py-4 bg-surface-subtle/50">
                         {isAudit ? (
                           <>
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                                 Detail Perubahan
                               </span>
-                              <span className="text-[9px] font-medium text-[hsl(var(--muted-foreground))]">
+                              <span className="text-[9px] font-medium text-muted-foreground">
                                 {item.tableName} • {item.user?.nama} •{" "}
                                 {new Date(item.createdAt).toLocaleString("id-ID")}
                               </span>
                             </div>
-                            <div className="rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
+                            <div className="rounded-button bg-surface border border-border p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
                               {formatChanges(item)}
                             </div>
                           </>
                         ) : (
                           <>
                             <div className="flex items-center gap-2 mb-2">
-                              <AlertTriangle className="w-3.5 h-3.5 text-[#C07F1F]" />
-                              <span className="text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                              <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                                 Detail Event
                               </span>
                             </div>
-                            <div className="space-y-1.5 text-[11px] font-medium text-[hsl(var(--foreground))]">
+                            <div className="space-y-1.5 text-[11px] font-medium text-text-main">
                               <p>
-                                <span className="text-[hsl(var(--muted-foreground))]">IP:</span> {item.ip}
+                                <span className="text-muted-foreground">IP:</span> {item.ip}
                               </p>
                               {item.path && (
                                 <p>
-                                  <span className="text-[hsl(var(--muted-foreground))]">Path:</span> {item.path}
+                                  <span className="text-muted-foreground">Path:</span> {item.path}
                                 </p>
                               )}
                               {item.userAgent && (
                                 <p>
-                                  <span className="text-[hsl(var(--muted-foreground))]">User Agent:</span>{" "}
+                                  <span className="text-muted-foreground">User Agent:</span>{" "}
                                   <span className="text-[10px]">{item.userAgent}</span>
                                 </p>
                               )}
                               {item.detail && (
                                 <p>
-                                  <span className="text-[hsl(var(--muted-foreground))]">Detail:</span> {item.detail}
+                                  <span className="text-muted-foreground">Detail:</span> {item.detail}
                                 </p>
                               )}
                               <p>
-                                <span className="text-[hsl(var(--muted-foreground))]">Waktu:</span>{" "}
+                                <span className="text-muted-foreground">Waktu:</span>{" "}
                                 {new Date(item.createdAt).toLocaleString("id-ID")}
                               </p>
                             </div>
@@ -752,21 +743,21 @@ export default function AuditLogPage() {
       {/* ── PAGINATION ── */}
       {!isErrors && totalPages > 1 && (
         <div className="flex items-center justify-between pt-4">
-          <span className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] tabular-nums">
+          <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
             {total} entri • Hal {page} / {totalPages}
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary active:scale-[0.98] disabled:opacity-30 transition-all shadow-subtle"
             >
               <ChevronLeft className="w-3.5 h-3.5" /> Prev
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary active:scale-[0.98] disabled:opacity-30 transition-all shadow-subtle"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>

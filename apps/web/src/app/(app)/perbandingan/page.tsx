@@ -16,7 +16,7 @@ interface CategoryItem {
 }
 
 function tierOf(pct: number) {
-  if (pct >= 80) return { bar: "#00A876", soft: "rgba(0,168,118,0.12)", text: "#00A876" };
+  if (pct >= 80) return { bar: "#059669", soft: "rgba(5,150,105,0.12)", text: "#059669" };
   if (pct >= 60) return { bar: "#E8A33D", soft: "rgba(232,163,61,0.14)", text: "#C07F1F" };
   return { bar: "#E15A4F", soft: "rgba(225,90,79,0.12)", text: "#E15A4F" };
 }
@@ -59,20 +59,20 @@ export default function PerbandinganPage() {
   const podiumRank = (r: any) => ranking.indexOf(r);
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
       {/* ── HERO + PODIUM ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-48 left-1/3 w-96 h-96 rounded-full bg-[#BEF264] opacity-[0.05]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-48 left-1/3 w-96 h-96 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#123527_0%,transparent_55%)] pointer-events-none" />
 
-        <div className="relative z-10 px-8 pt-7">
+        <div className="relative z-10 px-6 sm:px-8 pt-6 sm:pt-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
                 Kinerja Wilayah
               </p>
-              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">Perbandingan</h1>
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none">Perbandingan</h1>
               <p className="text-[13px] font-medium text-white/50 mt-2">
                 {ranking.length} puskesmas · rata-rata {avgScore}%
               </p>
@@ -155,7 +155,7 @@ export default function PerbandinganPage() {
       </div>
 
       {/* ── BODY ── */}
-      <div className="pt-6">
+      <div className="pt-2">
         {/* EMPTY */}
         {!isLoading && ranking.length === 0 && (
           <EmptyState
@@ -165,110 +165,155 @@ export default function PerbandinganPage() {
           />
         )}
 
-        {/* RANKING BAR LIST */}
+        {/* BENTO SUMMARY CARDS + RANKING BAR LIST */}
         {!isLoading && ranking.length > 0 && (
-          <div className="space-y-2">
-            {/* Column header */}
-            <div className="flex items-center gap-4 px-5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
-              <span className="w-8 text-center">Rank</span>
-              <span className="w-48 shrink-0">Puskesmas</span>
-              <span className="flex-1">Skor per kategori</span>
-              <span className="w-16 text-right">Rata-rata</span>
+          <div className="space-y-6">
+            {/* Bento-style summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+                <div className="w-11 h-11 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
+                    Rata-Rata Kinerja
+                  </p>
+                  <p className="text-[24px] font-black tabular-nums text-foreground leading-none">
+                    {avgScore}
+                    <span className="text-[14px] font-bold text-muted-foreground">%</span>
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+                <div className="w-11 h-11 rounded-xl bg-[#F5B93D]/15 text-[#D98E1F] flex items-center justify-center shrink-0">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
+                    Peringkat 1
+                  </p>
+                  <p className="text-[14px] font-bold text-foreground truncate">{top3[0]?.nama || "—"}</p>
+                  <p className="text-[11px] font-extrabold text-primary tabular-nums mt-0.5">
+                    {top3[0]?.avg || 0}% Capaian
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+                <div className="w-11 h-11 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center shrink-0 font-black text-sm">
+                  {ranking.length}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
+                    Total Puskesmas
+                  </p>
+                  <p className="text-[14px] font-bold text-foreground">{ranking.length} Fasilitas Aktif</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{categories.length} Kategori Program</p>
+                </div>
+              </div>
             </div>
 
-            {ranking.map((r, i) => {
-              const t = tierOf(r.avg);
-              const isTop3 = i < 3;
-              return (
-                <div
-                  key={r.id}
-                  className={cn(
-                    "flex items-center gap-4 px-5 py-3.5 rounded-2xl border transition-colors",
-                    isTop3
-                      ? "border-[hsl(var(--border))] bg-[hsl(var(--card))]"
-                      : "border-[hsl(var(--border))]/60 bg-[hsl(var(--card))]/60 hover:bg-[hsl(var(--card))]",
-                  )}
-                >
-                  {/* Rank */}
-                  <span className="w-8 text-center shrink-0">
-                    {isTop3 ? (
-                      <span
-                        className="inline-flex w-7 h-7 rounded-full items-center justify-center text-[11px] font-black text-[#0C1B16]"
-                        style={{ background: MEDAL[i].ring }}
-                      >
-                        {i + 1}
-                      </span>
-                    ) : (
-                      <span className="text-[13px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+            {/* Ranking cards list */}
+            <div className="space-y-2.5">
+              {/* Column header */}
+              <div className="flex items-center gap-4 px-5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="w-8 text-center">Rank</span>
+                <span className="w-48 shrink-0">Puskesmas</span>
+                <span className="flex-1">Skor per kategori</span>
+                <span className="w-16 text-right">Rata-rata</span>
+              </div>
+
+              {ranking.map((r, i) => {
+                const t = tierOf(r.avg);
+                const isTop3 = i < 3;
+                return (
+                  <div
+                    key={r.id}
+                    className={cn(
+                      "flex items-center gap-4 px-5 py-3.5 rounded-card border transition-all shadow-subtle",
+                      isTop3
+                        ? "border-border bg-surface hover:shadow-float"
+                        : "border-border/70 bg-surface/80 hover:bg-surface hover:border-border hover:shadow-subtle",
                     )}
-                  </span>
-
-                  {/* Name */}
-                  <span className="w-48 shrink-0 text-[13px] font-bold text-[hsl(var(--foreground))] truncate">
-                    {r.nama}
-                  </span>
-
-                  {/* Category score segments */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex h-2.5 rounded-full overflow-hidden bg-[hsl(var(--muted))]">
-                      {categories.map((c) => {
-                        const val = r[c.code] || 0;
-                        if (val <= 0) return null;
-                        return (
-                          <div
-                            key={c.code}
-                            className="h-full transition-all duration-500"
-                            style={{
-                              width: `${val / categories.length}%`,
-                              background: tierOf(val).bar,
-                              opacity: 0.85,
-                            }}
-                            title={`${c.nama}: ${val}%`}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div className="flex gap-3 mt-1.5 flex-wrap">
-                      {categories.map((c) => {
-                        const val = r[c.code] || 0;
-                        return (
-                          <span
-                            key={c.code}
-                            className="text-[9px] font-bold tabular-nums"
-                            style={{ color: tierOf(val).text }}
-                          >
-                            {c.icon} {val}%
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Avg */}
-                  <span
-                    className="w-16 shrink-0 text-right text-[18px] font-black tabular-nums"
-                    style={{ color: t.text }}
                   >
-                    {r.avg}
-                    <span className="text-[10px] font-bold">%</span>
-                  </span>
-                </div>
-              );
-            })}
+                    {/* Rank */}
+                    <span className="w-8 text-center shrink-0">
+                      {isTop3 ? (
+                        <span
+                          className="inline-flex w-7 h-7 rounded-full items-center justify-center text-[11px] font-black text-[#0C1B16]"
+                          style={{ background: MEDAL[i].ring }}
+                        >
+                          {i + 1}
+                        </span>
+                      ) : (
+                        <span className="text-[13px] font-bold text-muted-foreground tabular-nums">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                      )}
+                    </span>
 
-            {/* Legend */}
-            <div className="flex items-center justify-end gap-4 pt-1 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#00A876]" /> ≥80%
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#E8A33D]" /> 60–79%
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#E15A4F]" /> &lt;60%
-              </span>
+                    {/* Name */}
+                    <span className="w-48 shrink-0 text-[13px] font-bold text-foreground truncate">{r.nama}</span>
+
+                    {/* Category score segments */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex h-2.5 rounded-full overflow-hidden bg-surface-subtle">
+                        {categories.map((c) => {
+                          const val = r[c.code] || 0;
+                          if (val <= 0) return null;
+                          return (
+                            <div
+                              key={c.code}
+                              className="h-full transition-all duration-500"
+                              style={{
+                                width: `${val / categories.length}%`,
+                                background: tierOf(val).bar,
+                                opacity: 0.85,
+                              }}
+                              title={`${c.nama}: ${val}%`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-3 mt-1.5 flex-wrap">
+                        {categories.map((c) => {
+                          const val = r[c.code] || 0;
+                          return (
+                            <span
+                              key={c.code}
+                              className="text-[9px] font-bold tabular-nums"
+                              style={{ color: tierOf(val).text }}
+                            >
+                              {c.icon} {val}%
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Avg */}
+                    <span
+                      className="w-16 shrink-0 text-right text-[18px] font-black tabular-nums"
+                      style={{ color: t.text }}
+                    >
+                      {r.avg}
+                      <span className="text-[10px] font-bold">%</span>
+                    </span>
+                  </div>
+                );
+              })}
+
+              {/* Legend */}
+              <div className="flex items-center justify-end gap-4 pt-2 text-[10px] font-bold text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-primary" /> ≥80%
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-[#E8A33D]" /> 60–79%
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-[#E15A4F]" /> &lt;60%
+                </span>
+              </div>
             </div>
           </div>
         )}

@@ -338,13 +338,13 @@ export default function DynamicLaporanPage() {
   // ── Category not found ──
   if (!category && allCategories.length > 0) {
     return (
-      <div className="w-full mx-auto pb-4 space-y-4 fade-in">
-        <div className="border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-12 h-12 bg-[hsl(var(--muted))] border border-[hsl(var(--border))] flex items-center justify-center">
-            <Layers className="w-5 h-5 text-[hsl(var(--muted-foreground))]" />
+      <div className="w-full mx-auto pb-6 space-y-5 fade-in bg-canvas">
+        <div className="rounded-card border border-border bg-surface shadow-subtle flex flex-col items-center justify-center py-20 gap-3">
+          <div className="w-12 h-12 rounded-xl bg-surface-subtle border border-border flex items-center justify-center">
+            <Layers className="w-5 h-5 text-muted-foreground" />
           </div>
-          <h3 className="text-[14px] font-bold text-[hsl(var(--foreground))]">Kategori Tidak Ditemukan</h3>
-          <p className="text-[12px] text-[hsl(var(--muted-foreground))]">
+          <h3 className="text-[14px] font-bold text-foreground">Kategori Tidak Ditemukan</h3>
+          <p className="text-[12px] text-muted-foreground">
             Modul data &quot;{categoryCode}&quot; belum tersedia di sistem.
           </p>
         </div>
@@ -353,16 +353,16 @@ export default function DynamicLaporanPage() {
   }
 
   return (
-    <div className="w-full mx-auto pb-4 space-y-4 fade-in">
+    <div className="w-full mx-auto pb-6 space-y-5 fade-in bg-canvas">
       {/* ── Inline Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="text-lg">{category?.icon || "\uD83D\uDCC4"}</span>
-          <h1 className="text-[16px] font-bold text-[hsl(var(--foreground))]">
+          <h1 className="text-[18px] font-bold tracking-tight text-foreground">
             {category ? category.nama : "Memuat..."}
           </h1>
           {category?.formula?.description && (
-            <p className="text-[12px] text-[hsl(var(--muted-foreground))]">Formula: {category.formula.description}</p>
+            <p className="text-[12px] text-muted-foreground">Formula: {category.formula.description}</p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -371,22 +371,22 @@ export default function DynamicLaporanPage() {
             <button
               onClick={() => openDataDasarForm()}
               disabled={!category}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[11px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button border border-border bg-surface text-[11px] font-bold text-foreground hover:bg-surface-subtle transition-colors shadow-subtle disabled:opacity-50"
             >
-              <Database className="w-3.5 h-3.5" /> Data Dasar
+              <Database className="w-3.5 h-3.5 text-primary" /> Data Dasar
             </button>
           )}
           <button
             onClick={() => setShowCopyModal(true)}
             disabled={!category}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[11px] font-bold text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button border border-border bg-surface text-[11px] font-bold text-foreground hover:bg-surface-subtle transition-colors shadow-subtle disabled:opacity-50"
           >
-            <Copy className="w-3.5 h-3.5" /> Salin
+            <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Salin
           </button>
           <button
             onClick={() => openForm()}
             disabled={!category}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] text-[11px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-colors shadow-subtle disabled:opacity-50"
           >
             <Plus className="w-3.5 h-3.5" /> Input Laporan
           </button>

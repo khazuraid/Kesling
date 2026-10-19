@@ -64,25 +64,31 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-start justify-center pt-[20vh]"
+      className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-start justify-center pt-[15vh] px-4"
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-zinc-200 animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg bg-surface border border-border rounded-card shadow-float text-text-main overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <Command>
           <Command.Input
             placeholder="Cari halaman atau aksi..."
-            className="w-full px-6 py-4 border-b border-zinc-100 bg-transparent outline-none text-[14px] font-semibold text-zinc-950 placeholder:text-zinc-400"
+            className="w-full px-5 py-3.5 border-b border-border bg-transparent outline-none text-[13px] font-semibold text-text-main placeholder:text-muted-foreground"
           />
-          <Command.List className="max-h-72 overflow-y-auto p-3">
-            <Command.Empty className="px-4 py-3 text-[13px] font-medium text-zinc-400">Tidak ditemukan.</Command.Empty>
+          <Command.List className="max-h-72 overflow-y-auto p-2 scrollbar-none">
+            <Command.Empty className="px-4 py-6 text-center text-[12px] font-medium text-muted-foreground">
+              Tidak ditemukan.
+            </Command.Empty>
             {groups.map((group) => {
               const items = allPages.filter((p) => p.group === group);
               if (items.length === 0) return null;
               return (
-                <Command.Group key={group} heading={group} className="mb-2">
+                <Command.Group
+                  key={group}
+                  heading={group}
+                  className="mb-2 [&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-group-heading]]:text-muted-foreground"
+                >
                   {items.map((p) => (
                     <Command.Item
                       key={p.href}
@@ -91,7 +97,7 @@ export function CommandPalette() {
                         router.push(p.href);
                         setOpen(false);
                       }}
-                      className="px-4 py-2.5 rounded-xl cursor-pointer text-[13px] font-semibold text-zinc-700 hover:bg-zinc-100 data-[selected=true]:bg-zinc-950 data-[selected=true]:text-white transition-colors"
+                      className="px-3 py-2 rounded-lg cursor-pointer text-[12px] font-semibold text-text-main hover:bg-surface-subtle data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary transition-colors"
                     >
                       {p.label}
                     </Command.Item>

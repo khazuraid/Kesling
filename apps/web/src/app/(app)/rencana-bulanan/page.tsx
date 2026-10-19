@@ -143,11 +143,11 @@ export default function RencanaBulananPage() {
   const todayDate = isCurrentMonth ? today.getDate() : -1;
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-4 fade-in bg-canvas">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
         <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Perencanaan</p>
@@ -191,25 +191,23 @@ export default function RencanaBulananPage() {
 
       {/* ── STAT PILLS ── */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
-          <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">
-            {data?.progress ?? 0}%
-          </span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">Progress</span>
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-primary/20 shadow-subtle">
+          <span className="text-[18px] font-black tabular-nums text-primary leading-none">{data?.progress ?? 0}%</span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Progress</span>
         </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]">
-          <span className="text-[18px] font-black tabular-nums text-[hsl(var(--foreground))] leading-none">
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
+          <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
             {data?.totalSasaran ?? 0}
           </span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mt-1">
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
             Sasaran
           </span>
         </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/10 border border-[#00A876]/20">
-          <span className="text-[18px] font-black tabular-nums text-[#00A876] leading-none">{selesaiVal}</span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#00A876]/70 mt-1">Selesai</span>
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
+          <span className="text-[18px] font-black tabular-nums text-primary leading-none">{selesaiVal}</span>
+          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
         </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#E8A33D]/10 border border-[#E8A33D]/20">
+        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-[#E8A33D]/20 shadow-subtle">
           <span className="text-[18px] font-black tabular-nums text-[#C07F1F] leading-none">
             {data?.totalTerjadwal ?? 0}
           </span>
@@ -218,7 +216,7 @@ export default function RencanaBulananPage() {
           </span>
         </span>
         <div className="flex items-center gap-2 ml-auto">
-          <label className="text-[11px] font-bold text-[hsl(var(--muted-foreground))]">Kapasitas/hari:</label>
+          <label className="text-[11px] font-bold text-muted-foreground">Kapasitas/hari:</label>
           <Input
             type="number"
             min={1}
@@ -232,8 +230,8 @@ export default function RencanaBulananPage() {
 
       {/* Kalender hero full-width */}
       <div className="pt-6">
-        <div className="border border-[hsl(var(--border))] rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-6 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30">
+        <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+          <div className="grid grid-cols-6 border-b border-border bg-surface-subtle">
             {HARI.map((h) => (
               <div
                 key={h}
@@ -304,7 +302,7 @@ export default function RencanaBulananPage() {
       </div>
 
       {/* Timeline per kategori */}
-      <div className="pt-6 space-y-0 border border-[hsl(var(--border))] rounded-2xl overflow-hidden">
+      <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-[13px] text-[hsl(var(--muted-foreground))] animate-pulse">
             Memuat jadwal...

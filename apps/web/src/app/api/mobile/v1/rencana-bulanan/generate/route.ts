@@ -7,7 +7,7 @@ import { getMobileUser } from "@/lib/mobile-auth";
 // Uses simple round-robin scheduling across working days (Sen-Sab, skip Sundays)
 export async function POST(req: NextRequest) {
   const user = await getMobileUser(req);
-  if (!user || !user.puskesmasId) {
+  if (!user?.puskesmasId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

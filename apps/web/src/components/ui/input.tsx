@@ -6,11 +6,11 @@ const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 pr-10 py-2 text-sm text-[hsl(var(--foreground))] transition-all duration-200",
-        "placeholder:text-[hsl(var(--muted-foreground))]",
-        "hover:border-[hsl(var(--primary))]/30",
-        "focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15",
-        "disabled:cursor-not-allowed disabled:bg-[hsl(var(--muted))] disabled:text-[hsl(var(--muted-foreground))]",
+        "flex h-10 w-full rounded-button border border-border bg-surface px-3.5 py-2 text-sm text-text-main transition-colors duration-150",
+        "placeholder:text-muted-foreground",
+        "hover:border-border-hover",
+        "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+        "disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-muted-foreground disabled:opacity-60",
         className,
       )}
       ref={ref}

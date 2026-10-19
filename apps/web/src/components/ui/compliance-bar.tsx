@@ -24,16 +24,16 @@ const HEIGHT_MAP: Record<string, string> = {
 };
 
 function getFillClass(value: number, threshold: number): string {
-  if (value >= threshold) return "bg-[hsl(var(--accent))]";
-  if (value >= 60) return "bg-[hsl(var(--warning))]";
-  if (value > 0) return "bg-[hsl(var(--error))]";
-  return "bg-[hsl(var(--muted))]";
+  if (value >= threshold) return "bg-primary";
+  if (value >= 60) return "bg-warning";
+  if (value > 0) return "bg-error";
+  return "bg-surface-subtle";
 }
 
 function getValueColor(value: number, threshold: number): string {
-  if (value >= threshold) return "text-[hsl(var(--accent))] dark:text-[hsl(var(--accent-muted))]";
-  if (value >= 60) return "text-[hsl(var(--warning))]";
-  return "text-[hsl(var(--error))]";
+  if (value >= threshold) return "text-primary";
+  if (value >= 60) return "text-warning";
+  return "text-error";
 }
 
 export function ComplianceBar({
@@ -51,12 +51,7 @@ export function ComplianceBar({
   if (compact) {
     return (
       <div
-        className={cn(
-          "relative w-full rounded-full overflow-hidden",
-          "bg-[hsl(var(--muted))]",
-          HEIGHT_MAP[size],
-          className,
-        )}
+        className={cn("relative w-full rounded-full overflow-hidden bg-surface-subtle", HEIGHT_MAP[size], className)}
       >
         <div
           className={cn(
@@ -74,21 +69,14 @@ export function ComplianceBar({
     <div className={cn("flex flex-col gap-1.5", className)}>
       {/* ── Header row ── */}
       <div className="flex items-center justify-between">
-        <span
-          className={cn(
-            "text-[var(--text-xs)] font-bold uppercase tracking-[0.1em]",
-            "text-[hsl(var(--muted-foreground))]",
-          )}
-        >
-          {label}
-        </span>
-        <span className={cn("text-[var(--text-sm)] font-bold tabular-nums", getValueColor(clamped, target))}>
+        <span className="text-xs font-bold uppercase tracking-wider text-text-muted">{label}</span>
+        <span className={cn("text-sm font-bold tabular-nums", getValueColor(clamped, target))}>
           {clamped.toFixed(1)}%
         </span>
       </div>
 
       {/* ── Bar ── */}
-      <div className={cn("relative w-full rounded-full overflow-hidden", "bg-[hsl(var(--muted))]", HEIGHT_MAP[size])}>
+      <div className={cn("relative w-full rounded-full overflow-hidden bg-surface-subtle", HEIGHT_MAP[size])}>
         {/* Fill */}
         <div
           className={cn(
@@ -101,21 +89,14 @@ export function ComplianceBar({
 
         {/* Target marker */}
         <div
-          className={cn(
-            "absolute inset-y-0",
-            "border-l-2 border-dashed",
-            "border-[hsl(var(--foreground)/0.3)]",
-            "dark:border-[hsl(var(--foreground)/0.2)]",
-          )}
+          className="absolute inset-y-0 border-l-2 border-dashed border-border-hover"
           style={{ left: `${Math.min(target, 100)}%` }}
         />
       </div>
 
       {/* ── Target label ── */}
       <div className="flex justify-end">
-        <span className={cn("text-[var(--text-xs)] font-medium tabular-nums", "text-[hsl(var(--muted-foreground))]")}>
-          Target: {target}%
-        </span>
+        <span className="text-xs font-medium tabular-nums text-text-muted">Target: {target}%</span>
       </div>
     </div>
   );

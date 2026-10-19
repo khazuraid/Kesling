@@ -65,7 +65,7 @@ export function LaporanBuilderPreview({
                     <th className="p-4 border-b border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider min-w-[200px]">
                       Entitas / Sasaran
                     </th>
-                    {module.parameters
+                    {[...(module.parameters || [])]
                       .sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0))
                       .map((p: any) => (
                         <th
@@ -81,21 +81,21 @@ export function LaporanBuilderPreview({
                   {!module.subCategories || module.subCategories.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={module.parameters.length + 1}
+                        colSpan={(module.parameters || []).length + 1}
                         className="p-8 text-center text-[13px] text-[hsl(var(--muted-foreground))] font-medium"
                       >
                         Belum ada entitas. Tambahkan entitas untuk melihat baris form.
                       </td>
                     </tr>
                   ) : (
-                    module.subCategories
+                    [...module.subCategories]
                       .sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0))
                       .map((sub: any) => (
                         <tr key={sub.id} className="hover:bg-[hsl(var(--muted))]/20 transition-colors">
                           <td className="p-4 border-b border-[hsl(var(--border))] font-medium text-[hsl(var(--foreground))] text-[13px] whitespace-nowrap">
                             {sub.nama}
                           </td>
-                          {module.parameters
+                          {[...(module.parameters || [])]
                             .sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0))
                             .map((p: any) => {
                               const key = `${sub.id}-${p.id}`;

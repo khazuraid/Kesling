@@ -34,14 +34,14 @@ export async function GET(req: NextRequest) {
   const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const liburMendatang = allLibur
     .filter((l) => {
-      const d = new Date(l.tanggal + "T00:00:00");
+      const d = new Date(`${l.tanggal}T00:00:00`);
       return d >= now && d <= in7Days;
     })
     .map((l) => ({
       tanggal: l.tanggal,
       keterangan: l.keterangan,
       sumber: l.sumber,
-      hari: new Date(l.tanggal + "T00:00:00").toLocaleDateString("id-ID", {
+      hari: new Date(`${l.tanggal}T00:00:00`).toLocaleDateString("id-ID", {
         weekday: "long",
         day: "numeric",
         month: "long",

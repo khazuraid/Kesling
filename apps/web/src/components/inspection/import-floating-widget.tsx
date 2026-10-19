@@ -19,7 +19,7 @@ export function ImportFloatingWidget({ job, onOpenModal, onDismiss }: ImportFloa
 
   return (
     <div className="fixed bottom-5 right-5 z-40 max-w-sm w-full sm:w-auto animate-in slide-in-from-bottom-5 duration-300">
-      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl p-3.5 flex items-center gap-3 backdrop-blur-md">
+      <div className="bg-surface border border-border rounded-card shadow-float p-3.5 flex items-center gap-3 backdrop-blur-md">
         {/* Status Icon */}
         <div
           onClick={onOpenModal}
@@ -42,14 +42,10 @@ export function ImportFloatingWidget({ job, onOpenModal, onDismiss }: ImportFloa
         {/* Content */}
         <div onClick={onOpenModal} className="min-w-0 flex-1 cursor-pointer pr-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-xs font-bold text-[hsl(var(--foreground))] truncate max-w-[180px]">
-              {job.fileName}
-            </p>
-            <span className="text-[10px] font-mono text-[hsl(var(--muted-foreground))]">
-              {job.progress}%
-            </span>
+            <p className="text-xs font-bold text-foreground truncate max-w-[180px]">{job.fileName}</p>
+            <span className="text-[10px] font-mono text-muted-foreground">{job.progress}%</span>
           </div>
-          <p className="text-[11px] text-[hsl(var(--muted-foreground))] truncate max-w-[200px]">
+          <p className="text-[11px] text-muted-foreground truncate max-w-[200px]">
             {isQueued
               ? `Antrean #${job.queuePosition || 1}`
               : isProcessing
@@ -60,7 +56,7 @@ export function ImportFloatingWidget({ job, onOpenModal, onDismiss }: ImportFloa
           </p>
 
           {/* Mini progress bar */}
-          <div className="w-full h-1 rounded-full bg-[hsl(var(--muted))] mt-1.5 overflow-hidden">
+          <div className="w-full h-1 rounded-full bg-muted mt-1.5 overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 isComplete
@@ -79,14 +75,14 @@ export function ImportFloatingWidget({ job, onOpenModal, onDismiss }: ImportFloa
           <button
             onClick={onOpenModal}
             title="Buka detail & terminal log"
-            className="p-1.5 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onDismiss}
             title="Tutup"
-            className="p-1.5 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
             <X className="w-3.5 h-3.5" />
           </button>

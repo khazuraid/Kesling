@@ -25,11 +25,10 @@ type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
 
 // ── Shared styles ──
 const inputCls =
-  "w-full h-9 px-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] transition-all";
-const labelCls =
-  "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mb-1.5";
+  "w-full h-9 px-3 rounded-xl border border-border bg-surface text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
+const labelCls = "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mb-1.5";
 const addBtnCls =
-  "inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition";
+  "inline-flex items-center gap-2 h-9 px-4 rounded-button bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition";
 
 // ── Emoji icon picker ──
 const ICON_CHOICES = [
@@ -102,18 +101,18 @@ function IconPicker({
         onClick={() => setOpen((o) => !o)}
         className={`w-full h-11 px-3 rounded-xl border flex items-center gap-3 transition-colors ${
           dark
-            ? "border-white/15 bg-white/[0.06] hover:border-[#00A876]"
-            : "border-[hsl(var(--border))] bg-[hsl(var(--background))] hover:border-[#00A876]"
+            ? "border-dock-border bg-white/[0.06] hover:border-primary"
+            : "border-border bg-surface hover:border-primary"
         }`}
       >
         <span
           className={`w-8 h-8 rounded-lg flex items-center justify-center text-[18px] shrink-0 ${
-            dark ? "bg-white/10" : "bg-[#0C1B16]"
+            dark ? "bg-white/10" : "bg-dock text-white"
           }`}
         >
           {value || "❓"}
         </span>
-        <span className={`text-[11px] font-bold ${dark ? "text-white/60" : "text-[hsl(var(--muted-foreground))]"}`}>
+        <span className={`text-[11px] font-bold ${dark ? "text-white/60" : "text-muted-foreground"}`}>
           {value ? "Ganti ikon" : "Pilih ikon"}
         </span>
       </button>
@@ -121,8 +120,8 @@ function IconPicker({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
-            className={`absolute z-50 top-full mt-2 left-0 w-[288px] rounded-2xl border shadow-2xl p-3 ${
-              dark ? "bg-[#0C1B16] border-white/15" : "bg-[hsl(var(--card))] border-[hsl(var(--border))]"
+            className={`absolute z-50 top-full mt-2 left-0 w-[288px] rounded-card border shadow-float p-3 ${
+              dark ? "bg-dock border-dock-border text-white" : "bg-surface border-border"
             }`}
           >
             <div className="grid grid-cols-10 gap-1">
@@ -136,10 +135,10 @@ function IconPicker({
                   }}
                   className={`w-6 h-6 rounded-lg flex items-center justify-center text-[15px] transition-colors ${
                     value === emoji
-                      ? "bg-[#00A876]/25 ring-1 ring-[#00A876]"
+                      ? "bg-primary-subtle text-primary ring-1 ring-primary"
                       : dark
                         ? "hover:bg-white/10"
-                        : "hover:bg-[#00A876]/10"
+                        : "hover:bg-primary-subtle"
                   }`}
                 >
                   {emoji}
@@ -169,7 +168,7 @@ function OrderButtons({
   return (
     <div
       className={`inline-flex items-center gap-0.5 rounded-lg p-0.5 border shrink-0 ${
-        dark ? "bg-white/5 border-white/10" : "bg-[hsl(var(--muted))]/50 border-[hsl(var(--border))]"
+        dark ? "bg-white/5 border-white/10" : "bg-surface-subtle border-border"
       }`}
     >
       <button
@@ -179,15 +178,15 @@ function OrderButtons({
         title="Pindah ke atas"
         className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
           dark
-            ? "text-white/60 hover:text-[#7CF5CE] hover:bg-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
-            : "text-[hsl(var(--muted-foreground))] hover:text-[#00A876] hover:bg-[#00A876]/10 disabled:opacity-25 disabled:hover:bg-transparent"
+            ? "text-white/60 hover:text-emerald-300 hover:bg-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
+            : "text-muted-foreground hover:text-primary hover:bg-primary-subtle disabled:opacity-25 disabled:hover:bg-transparent"
         }`}
       >
         <ArrowUp className="w-3.5 h-3.5" />
       </button>
       <span
         className={`text-[10px] font-mono font-bold px-1 min-w-[18px] text-center tabular-nums ${
-          dark ? "text-white/40" : "text-[hsl(var(--muted-foreground))]"
+          dark ? "text-white/40" : "text-muted-foreground"
         }`}
       >
         {index + 1}
@@ -199,8 +198,8 @@ function OrderButtons({
         title="Pindah ke bawah"
         className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
           dark
-            ? "text-white/60 hover:text-[#7CF5CE] hover:bg-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
-            : "text-[hsl(var(--muted-foreground))] hover:text-[#00A876] hover:bg-[#00A876]/10 disabled:opacity-25 disabled:hover:bg-transparent"
+            ? "text-white/60 hover:text-emerald-300 hover:bg-white/10 disabled:opacity-20 disabled:hover:bg-transparent"
+            : "text-muted-foreground hover:text-primary hover:bg-primary-subtle disabled:opacity-25 disabled:hover:bg-transparent"
         }`}
       >
         <ArrowDown className="w-3.5 h-3.5" />
@@ -585,26 +584,26 @@ export default function LaporanBuilderPage() {
   // ══════════════════ INDEX MODE (no module selected) ══════════════════
   if (!selectedModule) {
     return (
-      <div className="w-full min-h-screen pb-16 fade-in">
+      <div className="w-full min-h-screen bg-canvas pb-16 fade-in">
         {/* Masthead */}
-        <div className="relative overflow-hidden bg-[#0C1B16] text-white border-b border-white/10">
-          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+        <div className="relative overflow-hidden bg-dock text-white border-b border-dock-border shadow-subtle">
+          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
           <div className="relative z-10 px-6 sm:px-8 py-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/80 mb-2">
                 Laporan Builder
               </p>
               <h1 className="text-[28px] sm:text-[32px] font-black tracking-[-0.03em] leading-none">
                 Format Laporan & Formulir
               </h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">
+              <p className="text-[13px] font-medium text-white/60 mt-2">
                 {categories.length} modul terdaftar · kelola urutan dan rancang parameter tiap modul
               </p>
             </div>
             <button
               onClick={() => setIsCreatingModule(true)}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition shadow-sm"
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-button bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
             >
               <Plus className="w-4 h-4" /> Modul Baru
             </button>
@@ -631,7 +630,7 @@ export default function LaporanBuilderPage() {
                 return (
                   <div
                     key={cat.id}
-                    className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 flex flex-col justify-between hover:border-[#00A876]/50 hover:shadow-lg transition-all group"
+                    className="rounded-card border border-border bg-surface p-5 flex flex-col justify-between hover:border-primary/50 hover:shadow-subtle transition-all group shadow-subtle"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
@@ -642,14 +641,14 @@ export default function LaporanBuilderPage() {
                           }}
                           className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
                         >
-                          <span className="w-10 h-10 rounded-xl bg-[#0C1B16] flex items-center justify-center text-[18px] shrink-0 border border-white/10 shadow-sm">
+                          <span className="w-10 h-10 rounded-xl bg-dock flex items-center justify-center text-[18px] shrink-0 border border-dock-border shadow-subtle text-white">
                             {cat.icon || "📋"}
                           </span>
                           <div className="min-w-0">
-                            <p className="text-[14px] font-extrabold text-[hsl(var(--foreground))] truncate group-hover:text-[#00A876] transition-colors">
+                            <p className="text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
                               {cat.nama}
                             </p>
-                            <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))]">
+                            <p className="text-[10px] font-mono text-muted-foreground">
                               {cat.code} · {cat.isRowBased ? "Formulir matrix" : "Formulir tunggal"}
                             </p>
                           </div>
@@ -667,7 +666,7 @@ export default function LaporanBuilderPage() {
                             type="button"
                             onClick={() => setDeleteConfirm({ type: "MODULE", id: cat.id, text: cat.nama })}
                             title="Hapus Modul"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-[#E15A4F]/60 hover:text-[#E15A4F] hover:bg-[#E15A4F]/10 transition-colors"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-rose-500/70 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -675,9 +674,7 @@ export default function LaporanBuilderPage() {
                       </div>
 
                       {cat.deskripsi && (
-                        <p className="text-[12px] text-[hsl(var(--muted-foreground))] line-clamp-2 mb-3">
-                          {cat.deskripsi}
-                        </p>
+                        <p className="text-[12px] text-muted-foreground line-clamp-2 mb-3">{cat.deskripsi}</p>
                       )}
                     </div>
 
@@ -686,15 +683,15 @@ export default function LaporanBuilderPage() {
                         setSelectedModuleId(cat.id);
                         setActiveTab("umum");
                       }}
-                      className="cursor-pointer pt-3 border-t border-[hsl(var(--border))]/60 flex items-center justify-between text-[11px] font-bold text-[hsl(var(--muted-foreground))]"
+                      className="cursor-pointer pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-bold text-muted-foreground"
                     >
                       <div className="flex items-center gap-3">
                         <span className="tabular-nums">{pCount} param</span>
                         {cat.isRowBased && <span className="tabular-nums">{eCount} entitas</span>}
                         {ddCount > 0 && <span className="tabular-nums">{ddCount} baseline</span>}
-                        {fCount > 0 && <span className="tabular-nums text-[#00A876]">{fCount} formula</span>}
+                        {fCount > 0 && <span className="tabular-nums text-primary font-bold">{fCount} formula</span>}
                       </div>
-                      <span className="text-[11px] text-[#00A876] font-extrabold group-hover:translate-x-0.5 transition-transform">
+                      <span className="text-[11px] text-primary font-extrabold group-hover:translate-x-0.5 transition-transform">
                         Buka &rarr;
                       </span>
                     </div>
@@ -740,24 +737,24 @@ export default function LaporanBuilderPage() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))] fade-in">
+    <div className="flex h-screen overflow-hidden bg-canvas text-foreground fade-in">
       {/* ── LEFT: structure rail ── */}
-      <aside className="w-[260px] shrink-0 bg-[#0C1B16] flex flex-col border-r border-white/10 h-full">
+      <aside className="w-[260px] shrink-0 bg-dock flex flex-col border-r border-dock-border h-full">
         {/* Back + module identity */}
         <div className="px-4 pt-4 pb-3">
           <button
             onClick={() => setSelectedModuleId(null)}
-            className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/40 hover:text-[#7CF5CE] transition-colors mb-3"
+            className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/50 hover:text-emerald-300 transition-colors mb-3"
           >
             <ChevronLeft className="w-3.5 h-3.5" /> Semua Modul
           </button>
           <div className="flex items-center gap-3 px-1">
-            <span className="w-11 h-11 rounded-2xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-[20px] shrink-0">
+            <span className="w-11 h-11 rounded-2xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-[20px] shrink-0 text-white shadow-subtle">
               {selectedModule.icon || "📋"}
             </span>
             <div className="min-w-0">
               <p className="text-[13px] font-extrabold text-white leading-tight truncate">{selectedModule.nama}</p>
-              <p className="text-[9px] font-bold text-white/40 font-mono mt-1 truncate">{selectedModule.code}</p>
+              <p className="text-[9px] font-bold text-white/50 font-mono mt-1 truncate">{selectedModule.code}</p>
             </div>
           </div>
         </div>
@@ -773,17 +770,19 @@ export default function LaporanBuilderPage() {
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                  active ? "bg-[#00A876]/15 border border-[#00A876]/30" : "border border-transparent hover:bg-white/5"
+                  active
+                    ? "bg-primary-subtle border border-primary/30 text-primary"
+                    : "border border-transparent hover:bg-white/5 text-white/70"
                 }`}
               >
-                <t.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-[#7CF5CE]" : "text-white/40"}`} />
-                <span className={`flex-1 text-[12px] font-bold ${active ? "text-[#7CF5CE]" : "text-white/70"}`}>
+                <t.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary" : "text-white/40"}`} />
+                <span className={`flex-1 text-[12px] font-bold ${active ? "text-primary" : "text-white/70"}`}>
                   {t.label}
                 </span>
                 {t.count !== undefined && (
                   <span
                     className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                      active ? "bg-[#BEF264] text-[#06281E]" : "bg-white/10 text-white/50"
+                      active ? "bg-primary text-white" : "bg-white/10 text-white/50"
                     }`}
                   >
                     {t.count}
@@ -798,7 +797,7 @@ export default function LaporanBuilderPage() {
         <div className="p-3">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-xl bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-button bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition"
           >
             <Eye className="w-3.5 h-3.5" /> Preview Form
           </button>
@@ -806,15 +805,13 @@ export default function LaporanBuilderPage() {
       </aside>
 
       {/* ── CANVAS ── */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[hsl(var(--background))]">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas">
         {/* Top Header Bar */}
-        <header className="h-14 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 sm:px-8 flex items-center justify-between shrink-0">
+        <header className="h-14 border-b border-border bg-surface px-6 sm:px-8 flex items-center justify-between shrink-0 shadow-subtle">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[12px] font-semibold text-[hsl(var(--muted-foreground))] truncate">
-              {selectedModule.nama}
-            </span>
-            <span className="text-[hsl(var(--muted-foreground))]/40">/</span>
-            <h2 className="text-[14px] font-extrabold text-[hsl(var(--foreground))] truncate">
+            <span className="text-[12px] font-semibold text-muted-foreground truncate">{selectedModule.nama}</span>
+            <span className="text-muted-foreground/40">/</span>
+            <h2 className="text-[14px] font-extrabold text-foreground truncate">
               {NAV.find((t) => t.key === activeTab)?.label}
             </h2>
           </div>
@@ -891,7 +888,7 @@ export default function LaporanBuilderPage() {
             {/* TAB: UMUM */}
             {activeTab === "umum" && (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 space-y-4">
+                <div className="rounded-card border border-border bg-surface p-5 space-y-4 shadow-subtle">
                   <div>
                     <label className={labelCls}>Nama Modul</label>
                     <input
@@ -908,7 +905,7 @@ export default function LaporanBuilderPage() {
                       onChange={(e) => setModForm({ ...modForm, deskripsi: e.target.value })}
                       onBlur={() => saveModuleSettings()}
                       rows={3}
-                      className="w-full text-[12px] font-medium px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] resize-none transition-all"
+                      className="w-full text-[12px] font-medium px-3 py-2.5 rounded-xl border border-border bg-surface text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none transition-all"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -941,10 +938,10 @@ export default function LaporanBuilderPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.03] p-5 flex items-center justify-between gap-4">
+                <div className="rounded-card border border-rose-500/25 bg-rose-500/[0.03] p-5 flex items-center justify-between gap-4 shadow-subtle">
                   <div>
-                    <p className="text-[12px] font-extrabold text-[hsl(var(--foreground))]">Hapus Modul</p>
-                    <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                    <p className="text-[12px] font-extrabold text-foreground">Hapus Modul</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
                       Menghapus modul beserta seluruh parameter dan entitasnya.
                     </p>
                   </div>
@@ -952,7 +949,7 @@ export default function LaporanBuilderPage() {
                     onClick={() =>
                       setDeleteConfirm({ type: "MODULE", id: selectedModule.id, text: selectedModule.nama })
                     }
-                    className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold hover:bg-[#E15A4F]/10 transition-colors"
+                    className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-full border border-rose-500/40 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold hover:bg-rose-500/10 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Hapus
                   </button>
@@ -964,7 +961,7 @@ export default function LaporanBuilderPage() {
             {activeTab === "parameter" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
                     {reportParams.length} parameter laporan
                   </p>
                   <button
@@ -997,7 +994,7 @@ export default function LaporanBuilderPage() {
                     return (
                       <div
                         key={p.id}
-                        className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex gap-3 hover:border-[#00A876]/40 hover:shadow-sm transition-all"
+                        className="rounded-card border border-border bg-surface p-4 flex gap-3 hover:border-primary/40 hover:shadow-subtle transition-all shadow-subtle"
                       >
                         <div className="flex flex-col gap-1 shrink-0 pt-1">
                           <OrderButtons
@@ -1043,7 +1040,7 @@ export default function LaporanBuilderPage() {
                             </div>
                             <button
                               onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                              className="mt-5 w-9 h-9 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] shrink-0 border border-[hsl(var(--border))] transition-colors"
+                              className="mt-5 w-9 h-9 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 shrink-0 border border-border transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1062,7 +1059,7 @@ export default function LaporanBuilderPage() {
                             />
                           </div>
                           <div className="flex items-end pb-1">
-                            <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] cursor-pointer">
+                            <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={!!localState.required}
@@ -1071,7 +1068,7 @@ export default function LaporanBuilderPage() {
                                   setParamForm({ ...paramForm, [p.id]: u });
                                   saveParamSettings(p.id, u);
                                 }}
-                                className="w-4 h-4 rounded accent-[#00A876]"
+                                className="w-4 h-4 rounded accent-primary"
                               />
                               Wajib diisi
                             </label>
@@ -1081,7 +1078,7 @@ export default function LaporanBuilderPage() {
                               <label className={labelCls}>Opsi Dropdown (pisahkan koma/baris)</label>
                               <textarea
                                 rows={2}
-                                className="w-full px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium outline-none focus:border-[#00A876] resize-none transition-all"
+                                className="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary resize-none transition-all text-foreground"
                                 value={localState.options || ""}
                                 onChange={(e) => {
                                   const u = { ...localState, options: e.target.value };
@@ -1103,7 +1100,7 @@ export default function LaporanBuilderPage() {
             {/* TAB: ENTITAS */}
             {activeTab === "entitas" && (
               <div className="space-y-4">
-                <div className="rounded-2xl border border-[#00A876]/20 bg-[#00A876]/[0.04] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                <div className="rounded-xl border border-primary/20 bg-primary-subtle px-4 py-3 text-[12px] text-muted-foreground leading-relaxed">
                   Entitas dipakai untuk mengelompokkan data di halaman Data Dasar. Kosongkan kolom Kategori jika tidak
                   perlu pengelompokan.
                 </div>
@@ -1136,7 +1133,7 @@ export default function LaporanBuilderPage() {
                     return (
                       <div
                         key={sub.id}
-                        className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] grid grid-cols-1 md:grid-cols-[auto_1fr_220px_auto] items-end px-4 py-3.5 gap-3 hover:border-[#00A876]/40 hover:shadow-sm transition-all"
+                        className="rounded-card border border-border bg-surface shadow-subtle grid grid-cols-1 md:grid-cols-[auto_1fr_220px_auto] items-end px-4 py-3.5 gap-3 hover:border-primary/40 hover:shadow-subtle transition-all"
                       >
                         <div className="pb-1">
                           <OrderButtons
@@ -1206,7 +1203,7 @@ export default function LaporanBuilderPage() {
                         </div>
                         <button
                           onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
-                          className="h-9 w-9 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] border border-[hsl(var(--border))] transition-colors"
+                          className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 border border-border transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1220,12 +1217,12 @@ export default function LaporanBuilderPage() {
             {/* TAB: DATA DASAR */}
             {activeTab === "dataDasar" && (
               <div className="space-y-4">
-                <div className="rounded-2xl border border-[#00A876]/20 bg-[#00A876]/[0.04] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))] leading-relaxed">
+                <div className="rounded-xl border border-primary/20 bg-primary-subtle px-4 py-3 text-[12px] text-muted-foreground leading-relaxed">
                   Field di tab ini muncul di form Data Dasar. Opsional: hubungkan ke parameter laporan agar jumlah data
                   otomatis mengisi laporan bulan berjalan.
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
                     {dataDasarParams.length} field baseline
                   </p>
                   <button
@@ -1259,9 +1256,9 @@ export default function LaporanBuilderPage() {
                     return (
                       <div
                         key={p.id}
-                        className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-3 hover:border-[#00A876]/40 hover:shadow-sm transition-all"
+                        className="rounded-card border border-border bg-surface p-4 space-y-3 hover:border-primary/40 hover:shadow-subtle transition-all shadow-subtle"
                       >
-                        <div className="flex items-center justify-between pb-2 border-b border-[hsl(var(--border))]/50">
+                        <div className="flex items-center justify-between pb-2 border-b border-border">
                           <OrderButtons
                             index={idx}
                             total={dataDasarParams.length}
@@ -1270,7 +1267,7 @@ export default function LaporanBuilderPage() {
                           />
                           <button
                             onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                            className="h-8 w-8 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] transition-colors"
+                            className="h-8 w-8 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1279,11 +1276,11 @@ export default function LaporanBuilderPage() {
                         <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_140px] gap-3 items-end">
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <label className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))]">
+                              <label className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
                                 Nama Field
                               </label>
                               {localState.syncToEntityField && (
-                                <span className="text-[8px] px-1.5 py-px rounded-full bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25 font-extrabold uppercase tracking-wide">
+                                <span className="text-[8px] px-1.5 py-px rounded-full bg-primary-subtle text-primary border border-primary/20 font-extrabold uppercase tracking-wide">
                                   🔗 {localState.syncToEntityField}
                                 </span>
                               )}
@@ -1329,7 +1326,7 @@ export default function LaporanBuilderPage() {
                           </div>
                         </div>
 
-                        <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] cursor-pointer">
+                        <label className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground cursor-pointer">
                           <input
                             type="checkbox"
                             checked={!!localState.required}
@@ -1338,12 +1335,12 @@ export default function LaporanBuilderPage() {
                               setParamForm({ ...paramForm, [p.id]: u });
                               saveParamSettings(p.id, u);
                             }}
-                            className="w-4 h-4 rounded accent-[#00A876]"
+                            className="w-4 h-4 rounded accent-primary"
                           />
                           Wajib diisi
                         </label>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xl border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xl border border-border bg-surface-subtle/50">
                           <div>
                             <label className={labelCls}>Sinkron ke Parameter</label>
                             <select
@@ -1439,7 +1436,7 @@ export default function LaporanBuilderPage() {
                                   <label className={labelCls}>Opsi (per baris / koma)</label>
                                   <textarea
                                     rows={2}
-                                    className="w-full px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[12px] font-medium outline-none focus:border-[#00A876] resize-none transition-all"
+                                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-foreground text-[12px] font-medium outline-none focus:border-primary resize-none transition-all"
                                     value={localState.options || ""}
                                     onChange={(e) =>
                                       setParamForm({
@@ -1466,7 +1463,7 @@ export default function LaporanBuilderPage() {
             {activeTab === "formula" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
                     {formulaParams.length} formula penilaian
                   </p>
                   <button
@@ -1498,9 +1495,9 @@ export default function LaporanBuilderPage() {
                     return (
                       <div
                         key={p.id}
-                        className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden hover:border-[#00A876]/40 hover:shadow-sm transition-all"
+                        className="rounded-card border border-border bg-surface overflow-hidden hover:border-primary/40 hover:shadow-subtle transition-all shadow-subtle"
                       >
-                        <div className="px-4 py-3 border-b border-[hsl(var(--border))]/70 flex items-center justify-between bg-[hsl(var(--muted))]/20">
+                        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-surface-subtle/50">
                           <div className="flex items-center gap-3 flex-1 mr-3">
                             <OrderButtons
                               index={idx}
@@ -1510,7 +1507,7 @@ export default function LaporanBuilderPage() {
                             />
                             <input
                               type="text"
-                              className="font-extrabold text-[13px] bg-transparent outline-none flex-1 text-[hsl(var(--foreground))] focus:border-b-2 focus:border-[#00A876]"
+                              className="font-extrabold text-[13px] bg-transparent outline-none flex-1 text-foreground focus:border-b-2 focus:border-primary"
                               value={localState.nama || ""}
                               onChange={(e) => {
                                 const u = { ...localState, nama: e.target.value };
@@ -1522,15 +1519,15 @@ export default function LaporanBuilderPage() {
                           </div>
                           <button
                             onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
-                            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#E15A4F]/70 hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] transition-colors"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <div className="px-4 py-7 flex items-center justify-center gap-3 bg-[#0C1B16]/[0.03]">
-                          <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">(</span>
+                        <div className="px-4 py-7 flex items-center justify-center gap-3 bg-surface-subtle/30">
+                          <span className="text-3xl font-light text-muted-foreground/40">(</span>
                           <select
-                            className="h-11 px-3.5 rounded-xl border-2 border-[#00A876]/40 bg-[#00A876]/[0.07] text-[#00A876] font-extrabold text-[12px] outline-none focus:border-[#00A876] cursor-pointer"
+                            className="h-11 px-3.5 rounded-button border border-primary/30 bg-primary-subtle text-primary font-extrabold text-[12px] outline-none focus:border-primary cursor-pointer"
                             value={localState.numeratorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, numeratorCode: e.target.value };
@@ -1545,9 +1542,9 @@ export default function LaporanBuilderPage() {
                               </option>
                             ))}
                           </select>
-                          <span className="text-xl font-black text-[hsl(var(--muted-foreground))]">/</span>
+                          <span className="text-xl font-black text-muted-foreground">/</span>
                           <select
-                            className="h-11 px-3.5 rounded-xl border-2 border-[#E8A33D]/40 bg-[#E8A33D]/[0.07] text-[#C07F1F] font-extrabold text-[12px] outline-none focus:border-[#E8A33D] cursor-pointer"
+                            className="h-11 px-3.5 rounded-button border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold text-[12px] outline-none focus:border-amber-500 cursor-pointer"
                             value={localState.denominatorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, denominatorCode: e.target.value };
@@ -1562,8 +1559,8 @@ export default function LaporanBuilderPage() {
                               </option>
                             ))}
                           </select>
-                          <span className="text-3xl font-light text-[hsl(var(--muted-foreground))]/40">)</span>
-                          <span className="text-[15px] font-black text-[hsl(var(--foreground))]">× 100%</span>
+                          <span className="text-3xl font-light text-muted-foreground/40">)</span>
+                          <span className="text-[15px] font-black text-foreground">× 100%</span>
                         </div>
                       </div>
                     );
@@ -1615,20 +1612,20 @@ function DeleteModal({
         <>
           <button
             onClick={onClose}
-            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="h-10 px-5 rounded-button text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Batal
           </button>
           <button
             onClick={onConfirm}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#E15A4F] text-white text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-button bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-extrabold uppercase tracking-wider shadow-subtle transition"
           >
             <Trash2 className="w-3.5 h-3.5" /> Hapus
           </button>
         </>
       }
     >
-      <div className="rounded-2xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.05] px-4 py-3 text-[12px] text-[hsl(var(--muted-foreground))]">
+      <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-[12px] text-muted-foreground">
         Data yang sudah terhapus tidak dapat dikembalikan. Pastikan tidak ada laporan aktif yang bergantung pada item
         ini.
       </div>
@@ -1659,7 +1656,7 @@ function CreateModuleModal({
         <>
           <button
             onClick={onClose}
-            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+            className="h-10 px-5 rounded-button text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             Batal
           </button>
@@ -1667,10 +1664,10 @@ function CreateModuleModal({
             type="submit"
             form="create-module-form"
             disabled={mutation.isPending}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+            className="inline-flex items-center gap-2 h-10 px-6 rounded-button bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition disabled:opacity-50"
           >
             {mutation.isPending ? (
-              <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
+              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <Plus className="w-3.5 h-3.5" />
             )}

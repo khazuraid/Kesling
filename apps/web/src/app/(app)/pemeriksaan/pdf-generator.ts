@@ -142,7 +142,14 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
     const valStr = String(v?.valueString ?? "").toUpperCase();
     if (valStr === "NA") return; // T/A dikeluarkan
 
-    const fConfig = typeof f.config === "string" ? JSON.parse(f.config || "{}") : f.config || {};
+    let fConfig = f.config || {};
+    if (typeof f.config === "string") {
+      try {
+        fConfig = JSON.parse(f.config || "{}");
+      } catch {
+        fConfig = {};
+      }
+    }
     const skorBenar = Number(fConfig.skorBenar ?? fConfig.skor ?? (f.tipe === "BOOLEAN" ? 1 : 0));
     const skorSalah = Number(fConfig.skorSalah ?? 0);
     const itemMax = Math.max(skorBenar, skorSalah);

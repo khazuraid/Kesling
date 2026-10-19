@@ -1,61 +1,92 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-success: hsl(var(--success));
-  --color-warning: hsl(var(--warning));
-  --color-info: hsl(var(--info));
-  --color-error: hsl(var(--error));
-  --color-accent: hsl(var(--accent));
-  --color-accent-light: hsl(var(--accent-light));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-success-light: hsl(var(--success-light));
-  --color-warning-light: hsl(var(--warning-light));
-  --color-error-light: hsl(var(--error-light));
-  --color-ring: hsl(var(--ring));
-  --radius: 1rem;
+  /* ── Tamagui & Modern Civic Tokens ── */
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F5F9;
+  --color-surface-hover: #F8FAFC;
+
+  --color-background: #F8FAFC;
+  --color-foreground: #0F172A;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0F172A;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-border: #E2E8F0;
+  --color-border-hover: #CBD5E1;
+  --color-input: #E2E8F0;
+  --color-text-main: #0F172A;
+  --color-text-muted: #64748B;
+
+  /* Primary Emerald Brand */
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-subtle: #ECFDF5;
+  --color-secondary: #F1F5F9;
+  --color-secondary-foreground: #0F172A;
+  --color-accent: #10B981;
+  --color-accent-light: #ECFDF5;
+  --color-accent-foreground: #FFFFFF;
+
+  /* Dark Theme Accents (Civic Dock) */
+  --color-dock: #0C1B16;
+  --color-dock-border: #16352B;
+  --color-dock-subtle: rgba(255, 255, 255, 0.08);
+
+  /* Status Semantics */
+  --color-success: #059669;
+  --color-success-light: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-light: #FFFBEB;
+  --color-info: #0284C7;
+  --color-info-light: #F0F9FF;
+  --color-error: #DC2626;
+  --color-error-light: #FEF2F2;
+  --color-ring: #059669;
+
+  /* Typography Variables & Radii */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 0.75rem;
+  --radius-card: 0.875rem;
+  --radius-button: 0.5rem;
+  --radius-pill: 9999px;
+
+  --shadow-subtle: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+  --shadow-float: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 }
 
 @layer base {
   :root {
-    /* ── Warm Industrial (selaras mobile) ── */
-    --background: 40 14% 96%;          /* #F7F5F2 warm paper */
-    --foreground: 30 12% 10%;          /* warm ink */
+    --background: 210 40% 98%;          /* #F8FAFC */
+    --foreground: 222 47% 11%;          /* #0F172A */
     --card: 0 0% 100%;
-    --card-foreground: 30 12% 10%;
-    --muted: 40 10% 92%;
-    --muted-foreground: 30 7% 44%;
-    --border: 36 9% 88%;
-    --input: 36 9% 84%;
-    --primary: 158 100% 33%;           /* teal = accent */
+    --card-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;              /* #F1F5F9 */
+    --muted-foreground: 215 16% 47%;    /* #64748B */
+    --border: 214 32% 91%;             /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --primary: 160 84% 39%;            /* #059669 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 10% 92%;
-    --secondary-foreground: 30 12% 10%;
-    --accent: 158 100% 33%;            /* #00A876 */
-    --accent-light: 158 60% 93%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --accent: 160 84% 39%;             /* #059669 */
+    --accent-light: 152 76% 94%;
     --accent-foreground: 0 0% 100%;
-    --success: 152 76% 36%;
+    --success: 160 84% 39%;
     --success-light: 152 76% 94%;
-    --warning: 36 92% 42%;
-    --warning-light: 36 92% 94%;
-    --info: 199 89% 42%;
-    --error: 0 74% 51%;
-    --error-light: 0 74% 96%;
-    --ring: 158 100% 33%;
-    --shadow: 0 2px 10px 0 rgba(27, 25, 23, 0.05);
-    --shadow-md: 0 6px 20px 0 rgba(27, 25, 23, 0.09);
-    --shadow-lg: 0 12px 36px 0 rgba(27, 25, 23, 0.13);
+    --warning: 38 92% 50%;
+    --warning-light: 48 96% 95%;
+    --info: 199 89% 48%;
+    --error: 0 84% 60%;
+    --error-light: 0 86% 97%;
+    --ring: 160 84% 39%;
+    --shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
   }
 
   * {
@@ -63,7 +94,7 @@
   }
 
   body {
-    background-color: var(--color-background);
+    background-color: var(--color-canvas);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -72,30 +103,31 @@
 }
 
 @layer components {
-  /* ── Design system primitives (used by ui/* components) ── */
+  /* ── Tamagui Bento Primitives ── */
   .card-shell {
-    border-radius: 1.25rem;
-    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-subtle);
+    transition: all 180ms var(--ease-out);
   }
   .card-inner {
     padding: 1.25rem;
   }
   .card-accent {
-    border-radius: 1.25rem;
-    background: linear-gradient(135deg, hsl(var(--accent) / 0.09), hsl(var(--accent) / 0.03));
-    border: 1px solid hsl(var(--accent) / 0.22);
-    box-shadow: var(--shadow);
+    border-radius: var(--radius-card);
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(16, 185, 129, 0.03));
+    border: 1px solid rgba(5, 150, 105, 0.2);
+    box-shadow: var(--shadow-subtle);
   }
   .card-accent-inner {
     padding: 1.25rem;
   }
   .stat-label {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     color: var(--color-muted-foreground);
   }
   .stat-number {
@@ -130,41 +162,43 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: var(--color-accent);
+    color: var(--color-primary);
   }
   .avatar-initial {
     width: 2rem;
     height: 2rem;
-    border-radius: 0.75rem;
+    border-radius: 0.625rem;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 800;
-    color: var(--color-accent-foreground);
-    background-color: var(--color-accent);
+    color: var(--color-primary-foreground);
+    background-color: var(--color-primary);
     flex-shrink: 0;
   }
 
   .card {
-    border-radius: var(--radius);
-    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
     color: var(--color-card-foreground);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-subtle);
   }
 
   .card-hover {
-    border-radius: var(--radius);
-    background-color: var(--color-card);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
     color: var(--color-card-foreground);
-    box-shadow: var(--shadow);
-    transition-property: all;
-    transition-duration: 200ms;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-subtle);
+    transition: all 180ms var(--ease-out);
     cursor: pointer;
   }
   .card-hover:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
   }
 
   .table-modern {
@@ -173,8 +207,8 @@
     line-height: 1.25rem;
   }
   .table-modern thead tr {
-    border-bottom-width: 1px;
-    border-color: var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-surface-subtle);
   }
   .table-modern thead th {
     padding-left: 1rem;
@@ -190,12 +224,11 @@
     letter-spacing: 0.08em;
   }
   .table-modern tbody tr {
-    border-bottom-width: 1px;
-    border-color: var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     transition: background-color 150ms ease;
   }
   .table-modern tbody tr:hover {
-    background-color: hsl(var(--accent) / 0.035);
+    background-color: rgba(5, 150, 105, 0.03);
   }
   .table-modern tbody td {
     padding-left: 1rem;
@@ -204,37 +237,85 @@
     padding-bottom: 0.75rem;
   }
 
+  /* ── Badges ── */
   .badge {
     display: inline-flex;
     align-items: center;
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
-    padding-top: 0.1875rem;
-    padding-bottom: 0.1875rem;
-    border-radius: 9999px;
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
     font-size: 0.75rem;
     line-height: 1rem;
     font-weight: 600;
   }
   .badge-primary {
-    background-color: hsl(var(--primary) / 0.1);
+    background-color: var(--color-primary-subtle);
     color: var(--color-primary);
+    border: 1px solid rgba(5, 150, 105, 0.2);
   }
   .badge-success {
     background-color: var(--color-success-light);
     color: var(--color-success);
+    border: 1px solid rgba(5, 150, 105, 0.2);
   }
   .badge-warning {
     background-color: var(--color-warning-light);
     color: var(--color-warning);
+    border: 1px solid rgba(217, 119, 6, 0.2);
   }
   .badge-error {
     background-color: var(--color-error-light);
     color: var(--color-error);
+    border: 1px solid rgba(220, 38, 38, 0.2);
   }
   .badge-info {
-    background-color: #eff6ff;
-    color: #1d4ed8;
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+    border: 1px solid rgba(2, 132, 199, 0.2);
+  }
+  .badge-draft {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted-foreground);
+    border: 1px solid var(--color-border);
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-submitted {
+    background-color: #f0f9ff;
+    color: #0284c7;
+    border: 1px solid rgba(2, 132, 199, 0.2);
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-approved {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid rgba(5, 150, 105, 0.2);
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-rejected {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-neutral {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-muted-foreground);
+    border: 1px solid var(--color-border);
+    padding: 0.1875rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 }
 

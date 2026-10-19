@@ -15,23 +15,23 @@ type FilterTab = "all" | "SUBMITTED" | "APPROVED" | "DRAFT";
 
 const STATUS_META: Record<string, { chip: string; dot: string; label: string }> = {
   SUBMITTED: {
-    chip: "bg-[#E8A33D]/10 text-[#C07F1F] border border-[#E8A33D]/25",
-    dot: "bg-[#E8A33D]",
+    chip: "bg-warning-light text-warning border border-warning/25",
+    dot: "bg-warning",
     label: "Menunggu",
   },
   APPROVED: {
-    chip: "bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25",
-    dot: "bg-[#00A876]",
+    chip: "bg-success-light text-success border border-success/25",
+    dot: "bg-success",
     label: "Disetujui",
   },
   REJECTED: {
-    chip: "bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25",
-    dot: "bg-[#E15A4F]",
+    chip: "bg-error-light text-error border border-error/25",
+    dot: "bg-error",
     label: "Ditolak",
   },
   DRAFT: {
-    chip: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]",
-    dot: "bg-[hsl(var(--muted-foreground))]",
+    chip: "bg-muted text-muted-foreground border border-border",
+    dot: "bg-muted-foreground",
     label: "Draft",
   },
 };
@@ -138,28 +138,27 @@ export default function ApprovalPage() {
 
   // ═══════════════════ RENDER ═══════════════════
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-4 fade-in bg-canvas min-h-screen">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#E8A33D] opacity-[0.07]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.08]" />
+        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-warning opacity-[0.07]" />
 
         <div className="relative z-10 px-8 py-7 flex flex-wrap items-center gap-8">
           {/* Big pending number */}
           <div className="flex items-center gap-5">
-            <div className="relative w-20 h-20 rounded-3xl bg-[#E8A33D]/15 border border-[#E8A33D]/25 flex flex-col items-center justify-center">
-              <span className="text-[30px] font-black tabular-nums leading-none text-[#F5C97C]">{stats.submitted}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-[#F5C97C]/60 mt-1">
+            <div className="relative w-20 h-20 rounded-3xl bg-warning-light border border-warning/25 flex flex-col items-center justify-center">
+              <span className="text-[30px] font-black tabular-nums leading-none text-warning">{stats.submitted}</span>
+              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-warning/70 mt-1">
                 Menunggu
               </span>
             </div>
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-1.5">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary/70 mb-1.5">
                 Verifikasi
               </p>
-              <h1 className="text-[28px] font-black tracking-[-0.03em] leading-none">Pusat Approval</h1>
-              <p className="text-[12px] font-medium text-white/50 mt-2">
+              <h1 className="text-[28px] font-black tracking-[-0.03em] leading-none text-text-main">Pusat Approval</h1>
+              <p className="text-[12px] font-medium text-muted-foreground mt-2">
                 {stats.approved} disetujui · {stats.draft} draft · {stats.total} total
               </p>
             </div>
@@ -170,7 +169,7 @@ export default function ApprovalPage() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="h-10 px-4 rounded-full bg-white/[0.08] border border-white/15 text-[12px] font-bold text-white outline-none focus:border-[#00A876] transition-colors appearance-none cursor-pointer [&>option]:text-black"
+              className="h-10 px-4 rounded-button bg-surface-subtle border border-border text-[12px] font-bold text-text-main outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
             >
               <option value="all">Semua Kategori</option>
               {categories.map((c) => (
@@ -185,19 +184,21 @@ export default function ApprovalPage() {
 
         {/* Status tabs — bottom edge of hero */}
         <div className="relative z-10 px-8 pb-5">
-          <div className="inline-flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/10 p-1">
+          <div className="inline-flex items-center gap-1 rounded-button bg-surface-subtle border border-border p-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setFilterTab(t.key)}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
-                  filterTab === t.key ? "bg-[#BEF264] text-[#06281E]" : "text-white/60 hover:text-white"
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
+                  filterTab === t.key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t.label}
                 <span
-                  className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                    filterTab === t.key ? "bg-[#06281E]/15 text-[#06281E]" : "bg-white/10 text-white/70"
+                  className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-button ${
+                    filterTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground"
                   }`}
                 >
                   {t.count}
@@ -212,7 +213,7 @@ export default function ApprovalPage() {
       <div className="pt-6">
         {loadingLaporan ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[#00A876] animate-spin rounded-full" />
+            <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
           </div>
         ) : filteredLaporan.length === 0 ? (
           <EmptyState
@@ -233,12 +234,12 @@ export default function ApprovalPage() {
                   <div className="flex items-center justify-between px-1">
                     <div className="flex items-center gap-2.5">
                       <span className="text-lg">{c.icon}</span>
-                      <h3 className="text-[13px] font-extrabold text-[hsl(var(--foreground))]">{c.nama}</h3>
-                      <span className="text-[10px] font-extrabold tabular-nums bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] px-2 py-0.5 rounded-full">
+                      <h3 className="text-[13px] font-extrabold text-foreground">{c.nama}</h3>
+                      <span className="text-[10px] font-extrabold tabular-nums bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                         {groupLaporan.length}
                       </span>
                       {pendingCount > 0 && (
-                        <span className="text-[10px] font-extrabold tabular-nums bg-[#E8A33D]/10 text-[#C07F1F] border border-[#E8A33D]/25 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-extrabold tabular-nums bg-warning-light text-warning border border-warning/25 px-2 py-0.5 rounded-full">
                           {pendingCount} menunggu
                         </span>
                       )}
@@ -246,7 +247,7 @@ export default function ApprovalPage() {
                     {pendingCount > 0 && (
                       <button
                         onClick={() => handleGroupApprove(c.code)}
-                        className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold hover:brightness-95 transition"
+                        className="inline-flex items-center gap-1.5 h-8 px-4 rounded-button bg-primary text-primary-foreground text-[11px] font-extrabold hover:bg-primary-hover active:scale-[0.98] transition"
                       >
                         <CheckCheck className="w-3.5 h-3.5" /> Setujui {pendingCount}
                       </button>
@@ -261,59 +262,57 @@ export default function ApprovalPage() {
                       return (
                         <div
                           key={l.id}
-                          className={`rounded-2xl border bg-[hsl(var(--card))] overflow-hidden transition-colors ${
-                            expanded ? "border-[#00A876]/40" : "border-[hsl(var(--border))]"
+                          className={`rounded-card bg-surface border border-border shadow-subtle overflow-hidden transition-colors ${
+                            expanded ? "border-primary/50" : ""
                           }`}
                         >
                           <button
                             onClick={() => setExpandedId(expanded ? null : l.id)}
-                            className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[hsl(var(--muted))]/30 transition-colors"
+                            className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-surface-hover transition-colors"
                           >
                             <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dot}`} />
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">
-                                {l.puskesmas.nama}
-                              </h4>
-                              <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+                              <h4 className="text-[13px] font-bold text-text-main truncate">{l.puskesmas.nama}</h4>
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
                                 {BULAN_NAMA[l.bulan]} {l.tahun}
                               </p>
                             </div>
                             <span
-                              className={`shrink-0 inline-flex items-center h-6 px-2.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${meta.chip}`}
+                              className={`shrink-0 inline-flex items-center h-6 px-2.5 rounded-button text-[10px] font-extrabold uppercase tracking-wider ${meta.chip}`}
                             >
                               {meta.label}
                             </span>
                             <ChevronDown
-                              className={`w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] transition-transform ${expanded ? "rotate-180" : ""}`}
+                              className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
                             />
                           </button>
 
                           {expanded && (
-                            <div className="px-5 pb-5 pt-4 space-y-4 border-t border-[hsl(var(--border))]/60">
+                            <div className="px-5 pb-5 pt-4 space-y-4 border-t border-border">
                               {/* Detail */}
-                              <div className="rounded-2xl border border-[hsl(var(--border))] overflow-hidden">
+                              <div className="rounded-card border border-border overflow-hidden bg-surface">
                                 {l.category.isRowBased && l.category.subCategories ? (
-                                  <div className="overflow-x-auto">
+                                  <div className="overflow-x-auto max-h-[400px]">
                                     <table className="w-full text-left text-[11px] border-collapse">
-                                      <thead>
-                                        <tr className="bg-[hsl(var(--muted))]/40 border-b border-[hsl(var(--border))]">
-                                          <th className="px-3 py-2.5 font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider text-[9px]">
+                                      <thead className="sticky top-0 z-10 bg-surface-subtle shadow-xs">
+                                        <tr className="border-b border-border">
+                                          <th className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[9px] bg-surface-subtle">
                                             Entitas/Sasaran
                                           </th>
                                           {l.category.parameters?.map((p: any) => (
                                             <th
                                               key={p.id}
-                                              className="px-3 py-2.5 font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-wider text-[9px]"
+                                              className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[9px] bg-surface-subtle"
                                             >
                                               {p.nama}
                                             </th>
                                           ))}
                                         </tr>
                                       </thead>
-                                      <tbody className="divide-y divide-[hsl(var(--border))]/50">
+                                      <tbody className="divide-y divide-border/60">
                                         {l.category.subCategories?.map((sub: any) => (
-                                          <tr key={sub.id} className="hover:bg-[hsl(var(--muted))]/20">
-                                            <td className="px-3 py-2.5 font-bold border-r border-[hsl(var(--border))]/50">
+                                          <tr key={sub.id} className="hover:bg-surface-hover">
+                                            <td className="px-3 py-2.5 font-bold border-r border-border/60">
                                               {sub.nama}
                                             </td>
                                             {l.category.parameters?.map((p: any) => {
@@ -337,10 +336,10 @@ export default function ApprovalPage() {
                                       const valObj = l.values.find((v: any) => v.parameterId === p.id);
                                       return (
                                         <div key={p.id} className="space-y-1">
-                                          <span className="block text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))]">
+                                          <span className="block text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
                                             {p.nama}
                                           </span>
-                                          <span className="block text-[13px] font-extrabold tabular-nums">
+                                          <span className="block text-[13px] font-extrabold tabular-nums text-text-main">
                                             {valObj?.value || "—"}
                                           </span>
                                         </div>
@@ -351,11 +350,11 @@ export default function ApprovalPage() {
                               </div>
 
                               {l.catatan && (
-                                <div className="px-4 py-3 rounded-2xl border border-[#E15A4F]/25 bg-[#E15A4F]/[0.05]">
-                                  <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#E15A4F] block mb-1">
+                                <div className="px-4 py-3 rounded-card border border-error/25 bg-error-light">
+                                  <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-error block mb-1">
                                     Catatan Verifikasi
                                   </span>
-                                  <p className="text-[12px] text-[hsl(var(--foreground))]">{l.catatan}</p>
+                                  <p className="text-[12px] text-text-main">{l.catatan}</p>
                                 </div>
                               )}
 
@@ -363,14 +362,14 @@ export default function ApprovalPage() {
                                 <div className="flex gap-2 justify-end">
                                   <button
                                     onClick={() => setRejectModal({ open: true, id: l.id })}
-                                    className="inline-flex items-center gap-2 h-9 px-5 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold uppercase tracking-wider hover:bg-[#E15A4F]/10 transition-colors"
+                                    className="inline-flex items-center gap-2 h-9 px-5 rounded-button border border-error/40 text-error text-[11px] font-extrabold uppercase tracking-wider hover:bg-error-light active:scale-[0.98] transition-all"
                                   >
                                     <X className="w-3.5 h-3.5" /> Tolak
                                   </button>
                                   <button
                                     onClick={() => approveMutation.mutate({ ids: [l.id] })}
                                     disabled={approveMutation.isPending}
-                                    className="inline-flex items-center gap-2 h-9 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+                                    className="inline-flex items-center gap-2 h-9 px-6 rounded-button bg-primary text-primary-foreground text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50"
                                   >
                                     <Check className="w-3.5 h-3.5" /> Setujui
                                   </button>
@@ -402,14 +401,14 @@ export default function ApprovalPage() {
           <>
             <button
               onClick={() => setRejectModal({ open: false, id: null })}
-              className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+              className="h-10 px-5 rounded-button text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               Batal
             </button>
             <button
               onClick={() => rejectModal.id && rejectMutation.mutate({ id: rejectModal.id, catatan: rejectCatatan })}
               disabled={rejectMutation.isPending || !rejectCatatan}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#E15A4F] text-white text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-6 rounded-button bg-error text-white text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {rejectMutation.isPending ? (
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -426,7 +425,7 @@ export default function ApprovalPage() {
           onChange={(e) => setRejectCatatan(e.target.value)}
           placeholder="Contoh: Data sasaran tidak sesuai dengan kondisi lapangan..."
           rows={5}
-          className="w-full text-[13px] font-medium rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3 outline-none focus:border-[#E15A4F] focus:shadow-[0_0_0_3px_rgba(225,90,79,0.12)] resize-none transition-all"
+          className="w-full text-[13px] font-medium rounded-button border border-border bg-surface text-text-main px-4 py-3 outline-none focus:border-error focus:ring-1 focus:ring-error/25 resize-none transition-all"
         />
       </Modal>
     </div>

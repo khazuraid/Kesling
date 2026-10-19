@@ -4,20 +4,18 @@ import { type ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap border border-[hsl(var(--border))] text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]/30 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-button text-sm font-medium transition-transform duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {
-        default:
-          "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90",
-        destructive: "bg-[hsl(var(--error))] text-white border-[hsl(var(--error))] hover:bg-[hsl(var(--error))]/90",
-        outline:
-          "border border-[hsl(var(--border))] text-[hsl(var(--foreground))] bg-transparent hover:bg-[hsl(var(--muted))]/50",
-        secondary: "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]/70",
-        ghost: "border-transparent text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]",
-        link: "border-transparent text-[hsl(var(--primary))] underline-offset-4 hover:underline",
-        success: "bg-[hsl(var(--success))] text-white border-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90",
-        warning: "bg-[hsl(var(--warning))] text-white border-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/90",
+        default: "bg-primary hover:bg-primary-hover text-white border border-primary shadow-xs font-semibold",
+        destructive: "bg-error hover:bg-error/90 text-white border border-error shadow-xs",
+        outline: "border border-border bg-surface text-foreground hover:bg-surface-subtle hover:border-border-hover",
+        secondary: "border border-border/60 bg-surface-subtle text-foreground hover:bg-border/60",
+        ghost: "border border-transparent text-foreground hover:bg-surface-subtle",
+        link: "border border-transparent text-primary underline-offset-4 hover:underline cursor-pointer",
+        success: "bg-success hover:bg-success/90 text-white border border-success shadow-xs",
+        warning: "bg-warning hover:bg-warning/90 text-white border border-warning shadow-xs",
       },
       size: {
         default: "h-10 px-5 py-2.5",

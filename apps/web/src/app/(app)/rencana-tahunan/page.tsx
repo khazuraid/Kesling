@@ -35,7 +35,7 @@ interface RencanaTahunan {
 }
 
 function tier(p: number) {
-  if (p >= 80) return { bar: "#00A876", text: "#00A876", soft: "rgba(0,168,118,0.12)" };
+  if (p >= 80) return { bar: "#059669", text: "#059669", soft: "rgba(5,150,105,0.12)" };
   if (p >= 50) return { bar: "#E8A33D", text: "#C07F1F", soft: "rgba(232,163,61,0.14)" };
   if (p >= 1) return { bar: "#E15A4F", text: "#E15A4F", soft: "rgba(225,90,79,0.12)" };
   return { bar: "hsl(var(--border))", text: "hsl(var(--muted-foreground))", soft: "transparent" };
@@ -55,11 +55,11 @@ export default function RencanaTahunanPage() {
   });
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in">
+    <div className="w-full mx-auto pb-4 fade-in bg-canvas">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-b-3xl">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
+      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
+        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
         <div className="relative z-10 px-8 py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">Perencanaan</p>
@@ -72,7 +72,7 @@ export default function RencanaTahunanPage() {
           </div>
           <div className="flex items-center gap-3">
             {data && (
-              <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-2xl bg-[#00A876]/15 border border-[#00A876]/30">
+              <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/30">
                 <span className="text-[20px] font-black tabular-nums text-[#7CF5CE] leading-none">
                   {data.progressTahunan}%
                 </span>
@@ -121,7 +121,7 @@ export default function RencanaTahunanPage() {
                 <h2 className="text-[14px] font-extrabold uppercase tracking-wider">12 Bulan</h2>
                 <div className="flex items-center gap-4 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#00A876]" /> ≥80%
+                    <span className="w-2 h-2 rounded-full bg-primary" /> ≥80%
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#E8A33D]" /> ≥50%
@@ -131,7 +131,7 @@ export default function RencanaTahunanPage() {
                   </span>
                 </div>
               </div>
-              <div className="border border-[hsl(var(--border))] rounded-xl overflow-hidden">
+              <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
                 {data.months.map((m, idx) => {
                   const t = tier(m.progress);
                   const isCurrent = tahun === currentYear && m.bulan === currentMonth;
@@ -178,7 +178,7 @@ export default function RencanaTahunanPage() {
               ].map((block) => (
                 <div key={block.title}>
                   <h2 className="text-[14px] font-extrabold uppercase tracking-wider mb-4">{block.title}</h2>
-                  <div className="border border-[hsl(var(--border))] rounded-xl overflow-hidden">
+                  <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
                     {block.items.map((q, idx) => {
                       const t = tier(q.progress);
                       return (

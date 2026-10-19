@@ -57,9 +57,9 @@ type ValueMap = Record<string, string>;
 function buildKey(parameterId: number, subCategoryId?: number | null) {
   return subCategoryId != null ? `${subCategoryId}-${parameterId}` : `${parameterId}`;
 }
-function buildValueMap(values: DynamicLaporanValue[]): ValueMap {
+function buildValueMap(values?: DynamicLaporanValue[] | null): ValueMap {
   const map: ValueMap = {};
-  for (const v of values) map[buildKey(v.parameterId, v.subCategoryId)] = v.value;
+  for (const v of values || []) map[buildKey(v.parameterId, v.subCategoryId)] = v.value;
   return map;
 }
 function calcCompliance(
@@ -70,13 +70,13 @@ function calcCompliance(
   isRowBased: boolean,
 ) {
   if (!formula) return null;
-  const numParam = params.find((p) => p.code === formula.numeratorCode);
-  const denParam = params.find((p) => p.code === formula.denominatorCode);
+  const numParam = (params || []).find((p) => p.code === formula.numeratorCode);
+  const denParam = (params || []).find((p) => p.code === formula.denominatorCode);
   if (!numParam || !denParam) return null;
   let numerator = 0,
     denominator = 0;
   if (isRowBased) {
-    for (const sc of subCats) {
+    for (const sc of subCats || []) {
       numerator += Number(valueMap[buildKey(numParam.id, sc.id)] || 0);
       denominator += Number(valueMap[buildKey(denParam.id, sc.id)] || 0);
     }
@@ -113,10 +113,10 @@ function tierOf(pct: number | null): "high" | "mid" | "low" | "none" {
 
 const tierStyles = {
   high: {
-    ring: "bg-[#00A876]",
-    text: "text-[#00A876]",
-    chip: "bg-[#00A876]/10 text-[#00A876]",
-    bar: "bg-[#00A876]",
+    ring: "bg-primary",
+    text: "text-primary",
+    chip: "bg-primary-subtle text-primary",
+    bar: "bg-primary",
   },
   mid: {
     ring: "bg-[#E8A33D]",
@@ -131,10 +131,10 @@ const tierStyles = {
     bar: "bg-[#E15A4F]",
   },
   none: {
-    ring: "bg-[hsl(var(--border))]",
-    text: "text-[hsl(var(--muted-foreground))]",
-    chip: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]",
-    bar: "bg-[hsl(var(--border))]",
+    ring: "bg-border",
+    text: "text-muted-foreground",
+    chip: "bg-surface-subtle text-muted-foreground",
+    bar: "bg-border",
   },
 };
 
@@ -207,13 +207,13 @@ export function LaporanTable({
       {/* ── Toolbar: tabs kiri, aksi kanan ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {isRowBased ? (
-          <div className="inline-flex items-center gap-1 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1 max-w-full overflow-x-auto">
+          <div className="inline-flex items-center gap-1 rounded-card border border-border bg-surface p-1 max-w-full overflow-x-auto shadow-subtle">
             <button
               onClick={() => setActiveTab("ringkasan")}
-              className={`px-4 h-8 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
+              className={`px-3.5 h-8 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
                 activeTab === "ringkasan"
-                  ? "bg-[#0C1B16] text-white"
-                  : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  ? "bg-primary text-primary-foreground shadow-subtle"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Ringkasan
@@ -222,10 +222,10 @@ export function LaporanTable({
               <button
                 key={sc.id}
                 onClick={() => setActiveTab(String(sc.id))}
-                className={`px-4 h-8 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors ${
+                className={`px-3.5 h-8 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
                   activeTab === String(sc.id)
-                    ? "bg-[#0C1B16] text-white"
-                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                    ? "bg-primary text-primary-foreground shadow-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {sc.nama}
@@ -234,9 +234,9 @@ export function LaporanTable({
           </div>
         ) : (
           /* Distribution legend (non-row-based) */
-          <div className="flex items-center gap-3 text-[10px] font-bold text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#00A876]" /> ≥80% ({dist.high})
+              <span className="w-2 h-2 rounded-full bg-primary" /> ≥80% ({dist.high})
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#E8A33D]" /> 60–79% ({dist.mid})
@@ -245,25 +245,25 @@ export function LaporanTable({
               <span className="w-2 h-2 rounded-full bg-[#E15A4F]" /> &lt;60% ({dist.low})
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[hsl(var(--border))]" /> Belum ({dist.none})
+              <span className="w-2 h-2 rounded-full bg-border" /> Belum ({dist.none})
             </span>
           </div>
         )}
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <input
               type="text"
               placeholder="Cari puskesmas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-56 pl-9 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] outline-none transition-colors focus:border-[#00A876]"
+              className="h-9 w-56 pl-9 pr-3 rounded-button bg-surface border border-border text-[12px] font-medium text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary shadow-subtle"
             />
           </div>
           <a
             href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[11px] font-extrabold text-[hsl(var(--foreground))] hover:border-[#00A876] hover:text-[#00A876] transition"
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-button border border-border bg-surface text-[11px] font-extrabold text-foreground hover:border-primary hover:text-primary transition shadow-subtle"
           >
             <Download className="w-3.5 h-3.5" /> Export
           </a>
@@ -273,10 +273,8 @@ export function LaporanTable({
       {/* ── Body ── */}
       {isLoading ? (
         <div className="py-20 flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[hsl(var(--border))] border-t-[#00A876] animate-spin rounded-full" />
-          <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
-            Memuat data...
-          </p>
+          <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Memuat data...</p>
         </div>
       ) : paginatedList.length === 0 ? (
         <EmptyState
@@ -292,27 +290,27 @@ export function LaporanTable({
           const activeSc = category.subCategories.find((sc) => String(sc.id) === activeTab);
           if (!activeSc) return null;
           return (
-            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+              <div className="overflow-x-auto max-h-[70vh]">
                 <table className="w-full text-[12px]">
-                  <thead>
-                    <tr className="border-b border-[hsl(var(--border))]">
-                      <th className="w-[44px] py-3 px-4 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                  <thead className="sticky top-0 z-20 bg-surface shadow-[0_1px_0_0_var(--color-border)]">
+                    <tr className="border-b border-border bg-surface">
+                      <th className="w-[44px] py-3 px-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] bg-surface">
                         #
                       </th>
-                      <th className="py-3 px-4 text-left text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                      <th className="py-3 px-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] bg-surface">
                         Puskesmas
                       </th>
                       {reportParameters.map((p) => (
                         <th
                           key={p.id}
-                          className="py-3 px-4 text-center text-[10px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] whitespace-nowrap"
+                          className="py-3 px-4 text-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap bg-surface"
                         >
                           {p.nama}
                         </th>
                       ))}
                       {category.formula && (
-                        <th className="py-3 px-4 text-right text-[10px] font-extrabold text-[#00A876] uppercase tracking-[0.15em]">
+                        <th className="py-3 px-4 text-right text-[10px] font-extrabold text-primary uppercase tracking-[0.15em] bg-surface">
                           %
                         </th>
                       )}
@@ -330,15 +328,15 @@ export function LaporanTable({
                         <tr
                           key={pkm.id}
                           onClick={() => onRowClick(pkm.id)}
-                          className="cursor-pointer border-b border-[hsl(var(--border))]/60 hover:bg-[hsl(var(--muted))]/40 transition-colors"
+                          className="cursor-pointer border-b border-border/60 hover:bg-surface-subtle transition-colors"
                         >
-                          <td className="py-3 px-4 text-[11px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums">
+                          <td className="py-3 px-4 text-[11px] font-bold text-muted-foreground tabular-nums">
                             {rowIdx + 1}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2.5">
                               <span className={`w-1.5 h-6 rounded-full shrink-0 ${tierStyles[tier].ring}`} />
-                              <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{pkm.nama}</span>
+                              <span className="text-[12px] font-bold text-foreground">{pkm.nama}</span>
                             </div>
                           </td>
                           {reportParameters.map((p) => {
@@ -347,9 +345,7 @@ export function LaporanTable({
                               <td
                                 key={p.id}
                                 className={`py-3 px-4 text-center font-semibold tabular-nums ${
-                                  val
-                                    ? "text-[hsl(var(--foreground))]"
-                                    : "text-[hsl(var(--muted-foreground))] opacity-40"
+                                  val ? "text-foreground" : "text-muted-foreground opacity-40"
                                 }`}
                               >
                                 {val || "—"}
@@ -396,7 +392,7 @@ export function LaporanTable({
               <button
                 key={pkm.id}
                 onClick={() => onRowClick(pkm.id)}
-                className="group w-full text-left rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[#00A876]/50 transition-colors overflow-hidden"
+                className="group w-full text-left rounded-card border border-border bg-surface hover:border-primary/50 shadow-subtle hover:shadow-float transition-all overflow-hidden"
               >
                 <div className="flex items-stretch">
                   {/* Tier rail */}
@@ -404,18 +400,16 @@ export function LaporanTable({
 
                   <div className="flex-1 flex items-center gap-4 px-5 py-4 min-w-0">
                     {/* Rank */}
-                    <span className="text-[11px] font-bold text-[hsl(var(--muted-foreground))] tabular-nums w-6 shrink-0">
+                    <span className="text-[11px] font-bold text-muted-foreground tabular-nums w-6 shrink-0">
                       {String(rowIdx + 1).padStart(2, "0")}
                     </span>
 
                     {/* Identity */}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">{pkm.nama}</p>
+                      <p className="text-[13px] font-bold text-foreground truncate">{pkm.nama}</p>
                       <div className="mt-1">
                         {!laporan ? (
-                          <span className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
-                            Belum input
-                          </span>
+                          <span className="text-[10px] font-semibold text-muted-foreground">Belum input</span>
                         ) : (
                           <StatusBadge status={laporan.status} />
                         )}
@@ -429,14 +423,12 @@ export function LaporanTable({
                           const val = vm[buildKey(p.id)];
                           return (
                             <div key={p.id} className="text-right">
-                              <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]">
+                              <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
                                 {p.nama}
                               </p>
                               <p
                                 className={`text-[13px] font-extrabold tabular-nums ${
-                                  val
-                                    ? "text-[hsl(var(--foreground))]"
-                                    : "text-[hsl(var(--muted-foreground))] opacity-40"
+                                  val ? "text-foreground" : "text-muted-foreground opacity-40"
                                 }`}
                               >
                                 {val || "—"}
@@ -456,7 +448,7 @@ export function LaporanTable({
                           </span>
                           {totalPct !== null && <span className={`text-[10px] font-bold ${t.text}`}>%</span>}
                         </div>
-                        <div className="h-1.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-surface-subtle rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${t.bar}`}
                             style={{ width: `${Math.min(totalPctNum ?? 0, 100)}%` }}
@@ -466,7 +458,7 @@ export function LaporanTable({
                     )}
 
                     {/* Chevron */}
-                    <ArrowRight className="w-4 h-4 shrink-0 text-[hsl(var(--muted-foreground))] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                    <ArrowRight className="w-4 h-4 shrink-0 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-primary transition-all" />
                   </div>
                 </div>
               </button>
@@ -478,21 +470,21 @@ export function LaporanTable({
       {/* ── Pagination ── */}
       {hasData && totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">
-          <span className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))] tabular-nums">
+          <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
             {String(currentPage).padStart(2, "0")} — {String(totalPages).padStart(2, "0")}
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 disabled:hover:border-[hsl(var(--border))] disabled:hover:text-[hsl(var(--muted-foreground))] transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary shadow-subtle disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5" /> Prev
             </button>
             <button
               onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 px-3 flex items-center gap-1 rounded-xl border border-[hsl(var(--border))] text-[11px] font-bold text-[hsl(var(--muted-foreground))] hover:border-[#00A876] hover:text-[#00A876] disabled:opacity-30 disabled:hover:border-[hsl(var(--border))] disabled:hover:text-[hsl(var(--muted-foreground))] transition-colors"
+              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary shadow-subtle disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>

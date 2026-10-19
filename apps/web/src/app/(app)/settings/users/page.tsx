@@ -8,14 +8,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 
 const inputCls =
-  "w-full h-10 px-3.5 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] focus:shadow-[0_0_0_3px_rgba(0,168,118,0.12)] transition-all";
-const labelCls =
-  "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))] mb-1.5";
+  "w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground";
+const labelCls = "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5";
 
-const ROLE_META: Record<string, { chip: string }> = {
-  ADMIN: { chip: "bg-[#E15A4F]/10 text-[#E15A4F] border border-[#E15A4F]/25" },
-  DINKES: { chip: "bg-[#5B8DEF]/10 text-[#5B8DEF] border border-[#5B8DEF]/25" },
-  OPERATOR: { chip: "bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/25" },
+const ROLE_META: Record<string, { chip: string; label: string }> = {
+  ADMIN: { chip: "bg-error-light text-error border-error/25", label: "Admin" },
+  DINKES: { chip: "bg-info-light text-info border-info/25", label: "Dinkes" },
+  OPERATOR: { chip: "bg-primary-subtle text-primary border-primary/25", label: "Operator" },
 };
 
 export default function UsersPage() {
@@ -100,21 +99,21 @@ export default function UsersPage() {
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             placeholder="Cari nama atau email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+            className="w-full h-10 pl-10 pr-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground"
           />
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+          className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" /> Tambah
+          <Plus className="w-3.5 h-3.5" /> Tambah Operator
         </button>
       </div>
 
@@ -122,33 +121,33 @@ export default function UsersPage() {
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-2xl bg-[hsl(var(--muted))]/50 animate-pulse" />
+            <div key={i} className="h-16 rounded-card bg-surface border border-border animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Users}
           title={search ? "Tidak ada yang cocok" : "Belum ada pengguna"}
-          description="Klik Tambah untuk menambahkan operator baru."
+          description="Klik Tambah Operator untuk menambahkan akun staf atau administrator baru."
         />
       ) : (
-        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
+        <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-[hsl(var(--border))]">
-                <th className="text-left px-5 py-3 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+              <tr className="border-b border-border bg-surface-subtle">
+                <th className="text-left px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Nama
                 </th>
-                <th className="text-left px-4 py-3 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Email
                 </th>
-                <th className="text-left px-4 py-3 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Role
                 </th>
-                <th className="text-left px-4 py-3 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em]">
+                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Puskesmas
                 </th>
-                <th className="text-right px-5 py-3 text-[9px] font-extrabold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] w-24">
+                <th className="text-right px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-24">
                   Aksi
                 </th>
               </tr>
@@ -159,32 +158,33 @@ export default function UsersPage() {
                 return (
                   <tr
                     key={u.id}
-                    className="border-b border-[hsl(var(--border))]/50 last:border-0 hover:bg-[hsl(var(--muted))]/30 transition-colors"
+                    className="border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center text-[11px] font-extrabold shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center text-[11px] font-extrabold shrink-0">
                           {u.nama.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{u.nama}</span>
+                        <span className="text-[12px] font-bold text-foreground">{u.nama}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-[12px] font-medium text-[hsl(var(--muted-foreground))]">{u.email}</td>
+                    <td className="px-4 py-3 text-[12px] font-medium text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider ${roleMeta.chip}`}
+                        className={`inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${roleMeta.chip}`}
                       >
-                        {u.role}
+                        {roleMeta.label || u.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[12px] font-medium text-[hsl(var(--muted-foreground))]">
+                    <td className="px-4 py-3 text-[12px] font-medium text-muted-foreground">
                       {u.puskesmas ? u.puskesmas.nama : "—"}
                     </td>
                     <td className="px-5 py-3 text-right">
                       <div className="flex justify-end gap-1">
                         <button
                           onClick={() => openEdit(u)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[#00A876]/10 hover:text-[#00A876] transition-colors"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-primary-subtle hover:text-primary transition-colors cursor-pointer"
+                          title="Ubah operator"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -192,7 +192,8 @@ export default function UsersPage() {
                           onClick={() => {
                             if (confirm(`Hapus "${u.nama}"?`)) deleteMutation.mutate(u.id);
                           }}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[#E15A4F]/10 hover:text-[#E15A4F] transition-colors"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-error-light hover:text-error transition-colors cursor-pointer"
+                          title="Hapus operator"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -211,8 +212,8 @@ export default function UsersPage() {
         open={showForm}
         onClose={() => setShowForm(false)}
         title={editId ? "Ubah Operator" : "Tambah Operator"}
-        description={editId ? "Perbarui data akun" : "Buat akun pengguna baru"}
-        icon={<Users className="w-4.5 h-4.5" />}
+        description={editId ? "Perbarui informasi akun pengguna" : "Buat akun pengguna baru dalam sistem"}
+        icon={<Users className="w-4 h-4" />}
         size="sm"
         variant="hero"
         footer={
@@ -220,7 +221,7 @@ export default function UsersPage() {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+              className="h-10 px-5 rounded-full text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer"
             >
               Batal
             </button>
@@ -228,7 +229,7 @@ export default function UsersPage() {
               type="button"
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50 cursor-pointer"
             >
               {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
             </button>

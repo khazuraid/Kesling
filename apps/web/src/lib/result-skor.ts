@@ -13,7 +13,8 @@ export function computeResultSkor(values: V[], templateConfig: any = {}): number
   let gained = 0;
   let max = 0;
   for (const v of penilaian) {
-    const f = v.field!;
+    if (!v.field) continue;
+    const f = v.field;
     const fConfig = f.config || {};
     const skorBenar = fConfig.skorBenar ?? fConfig.skor ?? 1;
     const skorSalah = fConfig.skorSalah ?? 0;

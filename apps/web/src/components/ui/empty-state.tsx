@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { isValidElement } from "react";
+import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
   icon: LucideIcon | React.ReactNode;
@@ -14,35 +15,29 @@ export function EmptyState({ icon, title, description, actionLabel, onAction, cl
   const Icon = icon as LucideIcon;
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 py-16 ${className ?? ""}`}
+      className={cn(
+        "relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle p-10 sm:p-14 text-center",
+        className,
+      )}
     >
-      {/* Decorative glow */}
-      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-[#00A876] opacity-[0.06] pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col items-center gap-4 text-center">
+      <div className="relative z-10 flex flex-col items-center gap-3 text-center">
         {/* Icon stack */}
-        <div className="relative">
-          <div className="w-16 h-16 rounded-3xl bg-[#0C1B16] flex items-center justify-center text-[#7CF5CE] [&>svg]:w-7 [&>svg]:h-7">
-            {isValidElement(icon) ? icon : <Icon />}
-          </div>
-          <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-[#BEF264] flex items-center justify-center">
-            <span className="text-[12px] font-black text-[#06281E] leading-none">0</span>
-          </div>
+        <div className="w-14 h-14 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center text-text-muted [&>svg]:w-7 [&>svg]:h-7 mb-1">
+          {isValidElement(icon) ? icon : <Icon />}
         </div>
 
         <div>
-          <p className="text-[15px] font-extrabold text-[hsl(var(--foreground))]">{title}</p>
+          <p className="text-[15px] font-extrabold text-text-main">{title}</p>
           {description && (
-            <p className="text-[12px] font-medium text-[hsl(var(--muted-foreground))] mt-1.5 max-w-[320px]">
-              {description}
-            </p>
+            <p className="text-xs font-medium text-text-muted mt-1.5 max-w-sm mx-auto leading-relaxed">{description}</p>
           )}
         </div>
 
         {actionLabel && onAction && (
           <button
+            type="button"
             onClick={onAction}
-            className="mt-1 inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+            className="mt-2 inline-flex items-center justify-center gap-2 h-9 px-5 rounded-button bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary-hover active:scale-[0.98] transition-all shadow-xs cursor-pointer"
           >
             {actionLabel}
           </button>

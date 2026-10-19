@@ -118,19 +118,19 @@ export function ImportHistoryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-surface border border-border rounded-card shadow-float overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/50 flex items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-b border-border bg-surface-subtle/50 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-[#00A876]/10 border border-[#00A876]/20 flex items-center justify-center shrink-0">
-              <History className="w-5 h-5 text-[#00A876]" />
+            <div className="h-10 w-10 rounded-button bg-primary-subtle border border-primary/20 flex items-center justify-center shrink-0">
+              <History className="w-5 h-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-[hsl(var(--foreground))] truncate">
+              <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                 Status Antrean & Riwayat Upload
               </h3>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 Monitoring antrean worker realtime & riwayat template
               </p>
             </div>
@@ -140,13 +140,13 @@ export function ImportHistoryModal({
               onClick={() => refetch()}
               disabled={isFetching}
               title="Perbarui antrean"
-              className="p-2 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition disabled:opacity-40"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition disabled:opacity-40"
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -156,18 +156,16 @@ export function ImportHistoryModal({
         {/* Content */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
           {/* Queue Overview Summary */}
-          <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-[hsl(var(--muted))]/30 border border-[hsl(var(--border))]">
+          <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border">
             <div className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-lg bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider truncate">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
                   Total Antrean
                 </p>
-                <p className="text-xs sm:text-sm font-black text-[hsl(var(--foreground))]">
-                  {queueInfo?.totalQueued || 0} file
-                </p>
+                <p className="text-xs sm:text-sm font-black text-foreground">{queueInfo?.totalQueued || 0} file</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -181,10 +179,10 @@ export function ImportHistoryModal({
                 <Activity className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider truncate">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
                   Status Worker
                 </p>
-                <p className="text-xs sm:text-sm font-black text-[hsl(var(--foreground))] truncate">
+                <p className="text-xs sm:text-sm font-black text-foreground truncate">
                   {queueInfo?.isWorkerActive ? "Sedang Bekerja" : "Standby / Siap"}
                 </p>
               </div>
@@ -193,24 +191,24 @@ export function ImportHistoryModal({
 
           {/* Active Job Highlight */}
           {activeJob && (
-            <div className="p-4 rounded-xl border border-[#00A876]/30 bg-[#00A876]/5 space-y-3">
+            <div className="p-4 rounded-xl border border-primary/30 bg-primary-subtle/50 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="flex h-2.5 w-2.5 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                   </span>
-                  <p className="text-xs font-bold text-[hsl(var(--foreground))] uppercase tracking-wider">
+                  <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                     {activeJob.status === "queued" ? "Dalam Antrean" : "Sedang Diproses"}
                   </p>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#00A876]">{activeJob.progress}%</span>
+                <span className="text-xs font-mono font-bold text-primary">{activeJob.progress}%</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[hsl(var(--foreground))] truncate">{activeJob.fileName}</p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
+                  <p className="text-sm font-bold text-foreground truncate">{activeJob.fileName}</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {activeJob.status === "queued"
                       ? `Menunggu giliran (posisi #${activeJob.queuePosition || 1} di antrean)`
                       : activeJob.message || "Memproses..."}
@@ -218,7 +216,7 @@ export function ImportHistoryModal({
                 </div>
                 <button
                   onClick={() => onOpenTerminal(activeJob.jobId)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00A876] text-white hover:bg-[#009165] transition shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:bg-primary-hover transition shrink-0"
                 >
                   <Terminal className="w-3.5 h-3.5" />
                   Terminal Log
@@ -226,7 +224,7 @@ export function ImportHistoryModal({
               </div>
 
               {/* Progress bar */}
-              <div className="w-full h-1.5 rounded-full bg-[hsl(var(--muted))] overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all duration-300"
                   style={{ width: `${Math.max(5, activeJob.progress)}%` }}
@@ -238,7 +236,7 @@ export function ImportHistoryModal({
           {/* History List */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
-              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
                 Daftar Riwayat & Antrean Upload
               </h4>
               {(queueInfo?.totalQueued || 0) > 0 && (
@@ -252,15 +250,15 @@ export function ImportHistoryModal({
             </div>
 
             {isLoading ? (
-              <div className="py-8 flex flex-col items-center justify-center gap-2 text-[hsl(var(--muted-foreground))]">
-                <Loader2 className="w-6 h-6 animate-spin text-[#00A876]" />
+              <div className="py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 <p className="text-xs">Memuat antrean & riwayat...</p>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="py-8 border border-dashed border-[hsl(var(--border))] rounded-xl flex flex-col items-center justify-center text-center p-6">
-                <FileText className="w-8 h-8 text-[hsl(var(--muted-foreground))]/40 mb-2" />
-                <p className="text-xs font-bold text-[hsl(var(--foreground))]">Belum Ada Riwayat Upload</p>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
+              <div className="py-8 border border-dashed border-border rounded-xl flex flex-col items-center justify-center text-center p-6">
+                <FileText className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                <p className="text-xs font-bold text-foreground">Belum Ada Riwayat Upload</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
                   File yang Anda import akan otomatis tercatat dan terlihat antreannya di sini.
                 </p>
               </div>
@@ -274,7 +272,7 @@ export function ImportHistoryModal({
                   return (
                     <div
                       key={item.jobId}
-                      className="p-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--border))]/80 transition flex items-center justify-between gap-3"
+                      className="p-3.5 rounded-xl border border-border bg-surface hover:border-border/80 transition flex items-center justify-between gap-3 shadow-subtle"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div
@@ -292,10 +290,10 @@ export function ImportHistoryModal({
                         </div>
 
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-[hsl(var(--foreground))] truncate max-w-[240px] sm:max-w-[340px]">
+                          <p className="text-xs font-bold text-foreground truncate max-w-[240px] sm:max-w-[340px]">
                             {item.fileName}
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))] flex-wrap">
+                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
                             <span>
                               {item.createdAt
                                 ? new Date(item.createdAt).toLocaleString("id-ID", {
@@ -327,7 +325,7 @@ export function ImportHistoryModal({
                         {isDone && (
                           <button
                             onClick={() => handleApplyFromHistory(item.jobId)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#BEF264] text-[#06281E] hover:brightness-95 transition"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-primary text-white hover:bg-primary-hover transition"
                           >
                             <ExternalLink className="w-3 h-3" />
                             Terapkan
@@ -336,7 +334,7 @@ export function ImportHistoryModal({
                         <button
                           onClick={() => onOpenTerminal(item.jobId)}
                           title="Lihat Terminal Log"
-                          className="p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
                         >
                           <Terminal className="w-4 h-4" />
                         </button>
@@ -359,10 +357,10 @@ export function ImportHistoryModal({
         </div>
 
         {/* Footer */}
-        <div className="p-3 sm:p-4 border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/50 flex justify-end">
+        <div className="p-3 sm:p-4 border-t border-border bg-surface-subtle/50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-bold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition"
+            className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition"
           >
             Tutup
           </button>
