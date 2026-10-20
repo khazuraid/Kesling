@@ -14,6 +14,7 @@ import {
   HardDrive,
   LayoutDashboard,
   LogOut,
+  Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -25,7 +26,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { NotificationBell } from "@/components/notification-bell";
 
 type MenuItem = {
