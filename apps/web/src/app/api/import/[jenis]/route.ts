@@ -7,7 +7,7 @@ import { withRateLimit } from "@/lib/rate-limit";
 export const POST = withRateLimit(
   withAdmin(async (req: NextRequest, { params }: { params: Promise<{ jenis: string }> }) => {
     const { jenis } = await params;
-    const formData = await req.formData();
+    const formData = (await req.formData()) as any;
     const file = formData.get("file") as File;
     const bulan = Number(formData.get("bulan"));
     const tahun = Number(formData.get("tahun"));

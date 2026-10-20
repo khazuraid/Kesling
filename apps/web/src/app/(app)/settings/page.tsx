@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { MasterCrud } from "@/components/master-crud";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -272,19 +273,17 @@ export default function SettingsPage() {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in bg-canvas min-h-screen">
-      {/* ── HERO ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#153A2D_0%,transparent_60%)] pointer-events-none" />
-
+      {/* ── HERO (Tamagui Clean Bento) ── */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
               Sistem & Konfigurasi
             </p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">Pengaturan</h1>
-            <p className="text-[13px] font-medium text-white/60 mt-2">
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+              Pengaturan
+            </h1>
+            <p className="text-[13px] font-medium text-muted-foreground mt-2">
               Master data, target capaian, manajemen pengguna, dan integrasi API
             </p>
           </div>
@@ -292,21 +291,21 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/settings/import"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold transition-all border border-white/10"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-subtle"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-[#BEF264]" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
               Import Excel
             </Link>
             <Link
               href="/settings/errors"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold transition-all border border-white/10"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-subtle"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
               Log Error
             </Link>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* ── BENTO SETTINGS GRID ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

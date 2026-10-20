@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, CheckCheck, ChevronDown, Inbox, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
@@ -140,7 +141,7 @@ export default function ApprovalPage() {
   return (
     <div className="w-full mx-auto pb-4 fade-in bg-canvas min-h-screen">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground">
+      <Card className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground p-0">
         <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.08]" />
         <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-warning opacity-[0.07]" />
 
@@ -207,7 +208,7 @@ export default function ApprovalPage() {
             ))}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* ── LIST ── */}
       <div className="pt-6">

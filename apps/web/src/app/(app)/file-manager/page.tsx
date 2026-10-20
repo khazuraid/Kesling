@@ -5,6 +5,7 @@ import { Activity, ExternalLink, HardDrive, Image as ImageIcon, RefreshCw, Searc
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -80,36 +81,31 @@ export default function FileManagerPage() {
   });
 
   const items = data?.items || [];
-  const total = data?.total || 0;
-  const orphans = data?.orphans || 0;
-  const orphanBytes = data?.orphanBytes || 0;
-  const activeCount = total - orphans;
+  const total = data?.total ?? 0;
+  const orphans = data?.orphans ?? 0;
+  const orphanBytes = data?.orphanBytes ?? 0;
+  const activeCount = Math.max(0, total - orphans);
 
   const filtered = items.filter((item) => {
-    if (filter === "orphan" && !item.orphan) return false;
-    if (filter === "active" && item.orphan) return false;
-    if (search.trim()) {
-      return item.path.toLowerCase().includes(search.toLowerCase());
-    }
+    const matchesSearch = item.path.toLowerCase().includes(search.toLowerCase());
+    if (!matchesSearch) return false;
+    if (filter === "orphan") return item.orphan;
+    if (filter === "active") return !item.orphan;
     return true;
   });
 
   return (
-    <div className="w-full mx-auto pb-8 fade-in">
-      {/* ── HERO ── */}
-      <div className="relative overflow-hidden bg-[#0C1B16] text-white">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12]" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.05]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)]" />
-
-        <div className="relative z-10 px-8 pt-7 pb-6">
+    <div className="w-full mx-auto pb-8 fade-in bg-canvas space-y-6">
+      {/* ── HERO (Tamagui Clean Bento) ── */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
+        <div className="relative z-10 px-6 sm:px-8 pt-7 pb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
-                Penyimpanan
-              </p>
-              <h1 className="text-[30px] font-black tracking-[-0.03em] leading-none">File Manager</h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Penyimpanan</p>
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+                File Manager
+              </h1>
+              <p className="text-[13px] font-medium text-muted-foreground mt-2">
                 Manajemen berkas unggahan, deteksi file yatim, dan monitoring storage
               </p>
             </div>
@@ -117,8 +113,10 @@ export default function FileManagerPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowHealth(!showHealth)}
-                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-extrabold transition ${
-                  showHealth ? "bg-[#00A876] text-[#06281E]" : "bg-white/8 hover:bg-white/12 text-white"
+                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-xl text-[11px] font-extrabold transition shadow-subtle ${
+                  showHealth
+                    ? "bg-primary text-white"
+                    : "bg-surface-subtle hover:bg-surface text-foreground border border-border"
                 }`}
               >
                 <Activity className="w-3.5 h-3.5" />
@@ -127,7 +125,7 @@ export default function FileManagerPage() {
               <button
                 onClick={() => refetch()}
                 disabled={isRefetching}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-white/8 hover:bg-white/12 text-white text-[11px] font-extrabold transition disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-surface-subtle hover:bg-surface text-foreground border border-border text-[11px] font-extrabold transition shadow-subtle disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} />
                 Segarkan
@@ -137,29 +135,29 @@ export default function FileManagerPage() {
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-            <div className="rounded-2xl bg-white/[0.04] border border-white/8 p-3.5">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">Total File</p>
-              <p className="text-[22px] font-black tracking-tight text-white mt-1 tabular-nums">{total}</p>
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Total File</p>
+              <p className="text-[22px] font-black tracking-tight text-foreground mt-1 tabular-nums">{total}</p>
             </div>
-            <div className="rounded-2xl bg-white/[0.04] border border-white/8 p-3.5">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">File Terpakai</p>
-              <p className="text-[22px] font-black tracking-tight text-[#7CF5CE] mt-1 tabular-nums">{activeCount}</p>
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Terpakai</p>
+              <p className="text-[22px] font-black tracking-tight text-primary mt-1 tabular-nums">{activeCount}</p>
             </div>
-            <div className="rounded-2xl bg-white/[0.04] border border-white/8 p-3.5">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">File Yatim</p>
-              <p className="text-[22px] font-black tracking-tight text-[#E8A33D] mt-1 tabular-nums">{orphans}</p>
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Yatim</p>
+              <p className="text-[22px] font-black tracking-tight text-amber-600 mt-1 tabular-nums">{orphans}</p>
             </div>
-            <div className="rounded-2xl bg-white/[0.04] border border-white/8 p-3.5">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">Ruang Yatim</p>
-              <p className="text-[22px] font-black tracking-tight text-[#BEF264] mt-1 tabular-nums">
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Ruang Yatim</p>
+              <p className="text-[22px] font-black tracking-tight text-foreground mt-1 tabular-nums">
                 {formatBytes(orphanBytes)}
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="px-6 pt-6 space-y-5">
+      <div className="space-y-5 pt-2">
         {/* ── HEALTH COLLAPSIBLE ── */}
         {showHealth && <SystemHealthDashboard />}
 
@@ -167,23 +165,21 @@ export default function FileManagerPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Cari file path..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-semibold text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+                className="w-full h-10 pl-9 pr-3 rounded-xl bg-surface border border-border text-[12px] font-semibold text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
               />
             </div>
 
-            <div className="inline-flex items-center rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1">
+            <div className="inline-flex items-center rounded-xl border border-border bg-surface p-1 shadow-subtle">
               <button
                 onClick={() => setFilter("all")}
                 className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "all"
-                    ? "bg-[#0C1B16] text-[#7CF5CE]"
-                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  filter === "all" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Semua ({total})
@@ -191,9 +187,7 @@ export default function FileManagerPage() {
               <button
                 onClick={() => setFilter("orphan")}
                 className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "orphan"
-                    ? "bg-[#0C1B16] text-[#E8A33D]"
-                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  filter === "orphan" ? "bg-amber-500/15 text-amber-700" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Yatim ({orphans})
@@ -201,9 +195,7 @@ export default function FileManagerPage() {
               <button
                 onClick={() => setFilter("active")}
                 className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "active"
-                    ? "bg-[#0C1B16] text-[#7CF5CE]"
-                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                  filter === "active" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Terpakai ({activeCount})
@@ -223,7 +215,7 @@ export default function FileManagerPage() {
                 }
               }}
               disabled={deleteOrphansMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[11px] font-extrabold transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[11px] font-extrabold transition shadow-subtle disabled:opacity-50"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {deleteOrphansMutation.isPending ? "Membersihkan..." : `Bersihkan Semua Yatim (${orphans})`}
@@ -235,7 +227,7 @@ export default function FileManagerPage() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-2xl bg-[hsl(var(--muted))]/40 animate-pulse" />
+              <div key={i} className="h-16 rounded-2xl bg-surface-subtle animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -245,10 +237,10 @@ export default function FileManagerPage() {
             description={search ? "Coba kata kunci pencarian lain." : "Belum ada file yang terunggah."}
           />
         ) : (
-          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm">
+          <div className="rounded-card border border-border bg-surface overflow-hidden shadow-subtle">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[12px]">
-                <thead className="bg-[hsl(var(--muted))]/30 border-b border-[hsl(var(--border))] text-[10px] font-extrabold uppercase tracking-[0.15em] text-[hsl(var(--muted-foreground))]">
+                <thead className="bg-surface-subtle border-b border-border text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">File</th>
                     <th className="px-4 py-3">Ukuran</th>
@@ -257,14 +249,14 @@ export default function FileManagerPage() {
                     <th className="px-4 py-3 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[hsl(var(--border))] font-medium">
+                <tbody className="divide-y divide-border font-medium">
                   {filtered.map((item) => {
                     const isImg = /\.(jpe?g|png|webp|gif)$/i.test(item.path);
                     return (
-                      <tr key={item.path} className="hover:bg-[hsl(var(--muted))]/20 transition-colors">
+                      <tr key={item.path} className="hover:bg-surface-subtle/40 transition-colors">
                         <td className="px-4 py-3 min-w-[240px]">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-[hsl(var(--muted))]/60 border border-[hsl(var(--border))] flex items-center justify-center shrink-0 overflow-hidden">
+                            <div className="w-9 h-9 rounded-lg bg-surface-subtle border border-border flex items-center justify-center shrink-0 overflow-hidden">
                               {isImg ? (
                                 <Image
                                   src={item.path}
@@ -278,20 +270,18 @@ export default function FileManagerPage() {
                                   }}
                                 />
                               ) : (
-                                <ImageIcon className="w-4 h-4 text-[hsl(var(--muted-foreground))]" />
+                                <ImageIcon className="w-4 h-4 text-muted-foreground" />
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-[hsl(var(--foreground))] truncate text-[12px]">
+                              <p className="font-bold text-foreground truncate text-[12px]">
                                 {item.path.split("/").pop()}
                               </p>
-                              <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate font-mono">
-                                {item.path}
-                              </p>
+                              <p className="text-[10px] text-muted-foreground truncate font-mono">{item.path}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 tabular-nums font-semibold text-[hsl(var(--foreground))]">
+                        <td className="px-4 py-3 tabular-nums font-semibold text-foreground">
                           {formatBytes(item.size)}
                         </td>
                         <td className="px-4 py-3">
@@ -300,12 +290,12 @@ export default function FileManagerPage() {
                               Yatim
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#00A876]/10 text-[#00A876] border border-[#00A876]/20">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary-subtle text-primary border border-primary/20">
                               Terpakai
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-[11px] text-[hsl(var(--muted-foreground))]">
+                        <td className="px-4 py-3 text-[11px] text-muted-foreground">
                           {new Date(item.mtime).toLocaleString("id-ID", {
                             dateStyle: "medium",
                             timeStyle: "short",
@@ -318,7 +308,7 @@ export default function FileManagerPage() {
                               target="_blank"
                               rel="noreferrer"
                               title="Buka file"
-                              className="p-1.5 rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>

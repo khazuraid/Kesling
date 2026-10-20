@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Building2, ClipboardList, Droplets, Folder, GlassWater, Home, Toilet, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { Card } from "tamagui";
 
 interface Category {
   id: number;
@@ -42,37 +43,50 @@ export default function LaporanListPage() {
 
   return (
     <div className="w-full mx-auto pb-6 space-y-5 fade-in bg-canvas">
-      {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
-          <ClipboardList className="w-5 h-5" />
-        </div>
-        <div>
-          <h1 className="text-[18px] font-bold tracking-tight text-foreground">Laporan</h1>
-          <p className="text-[12px] text-muted-foreground">Pilih kategori laporan untuk mengelola data</p>
-        </div>
-      </div>
+      {/* HERO & STATS (Tamagui Clean Bento) */}
+      <Card className="relative overflow-hidden rounded-card border border-border bg-surface shadow-subtle p-0">
+        <div className="px-6 py-6 border-b border-border flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
+              <ClipboardList className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-0.5">
+                Modul Pelaporan
+              </p>
+              <h1 className="text-[20px] sm:text-[24px] font-black tracking-tight text-foreground">Laporan Bulanan</h1>
+              <p className="text-[12px] text-muted-foreground">Pilih kategori laporan untuk mengelola dan entri data</p>
+            </div>
+          </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-3 rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
-        <div className="flex flex-col items-center justify-center py-4 px-2 border-r border-border">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Kategori</span>
-          <span className="text-[24px] font-black tabular-nums leading-none text-foreground">{categories.length}</span>
-          <span className="text-[10px] text-muted-foreground mt-1">Jenis aktif</span>
-        </div>
-        <div className="flex flex-col items-center justify-center py-4 px-2 border-r border-border">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Total Sub</span>
-          <span className="text-[24px] font-black tabular-nums leading-none text-foreground">{totalSub}</span>
-          <span className="text-[10px] text-muted-foreground mt-1">Sub-kategori</span>
-        </div>
-        <div className="flex flex-col items-center justify-center py-4 px-2">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Format</span>
-          <Link href="/laporan-builder" className="text-[13px] font-bold text-primary hover:underline">
-            Builder →
+          <Link
+            href="/laporan-builder"
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold border border-border shadow-subtle transition-all"
+          >
+            Builder Template →
           </Link>
-          <span className="text-[10px] text-muted-foreground mt-1">Atur template</span>
         </div>
-      </div>
+
+        <div className="grid grid-cols-3 divide-x divide-border bg-surface-subtle/50">
+          <div className="flex flex-col items-center justify-center py-4 px-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Kategori</span>
+            <span className="text-[24px] font-black tabular-nums leading-none text-foreground">
+              {categories.length}
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-1">Jenis aktif</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-4 px-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Total Sub</span>
+            <span className="text-[24px] font-black tabular-nums leading-none text-foreground">{totalSub}</span>
+            <span className="text-[10px] text-muted-foreground mt-1">Sub-kategori</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-4 px-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Integrasi</span>
+            <span className="text-[13px] font-bold text-primary mt-1">Data Dasar</span>
+            <span className="text-[10px] text-muted-foreground mt-1">Sinkronisasi otomatis</span>
+          </div>
+        </div>
+      </Card>
 
       {/* LOADING */}
       {isLoading && (

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
@@ -84,46 +85,24 @@ const ICON_CHOICES = [
   "🚨",
 ];
 
-function IconPicker({
-  value,
-  onChange,
-  dark = false,
-}: {
-  value: string;
-  onChange: (icon: string) => void;
-  dark?: boolean;
-}) {
+function IconPicker({ value, onChange }: { value: string; onChange: (icon: string) => void; dark?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full h-11 px-3 rounded-xl border flex items-center gap-3 transition-colors ${
-          dark
-            ? "border-dock-border bg-white/[0.06] hover:border-primary"
-            : "border-border bg-surface hover:border-primary"
-        }`}
+        className="w-full h-11 px-3 rounded-xl border border-border bg-surface hover:border-primary flex items-center gap-3 transition-colors cursor-pointer"
       >
-        <span
-          className={`w-8 h-8 rounded-lg flex items-center justify-center text-[18px] shrink-0 ${
-            dark ? "bg-white/10" : "bg-dock text-white"
-          }`}
-        >
+        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[18px] shrink-0 bg-surface-subtle text-foreground border border-border">
           {value || "❓"}
         </span>
-        <span className={`text-[11px] font-bold ${dark ? "text-white/60" : "text-muted-foreground"}`}>
-          {value ? "Ganti ikon" : "Pilih ikon"}
-        </span>
+        <span className="text-[11px] font-bold text-muted-foreground">{value ? "Ganti ikon" : "Pilih ikon"}</span>
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div
-            className={`absolute z-50 top-full mt-2 left-0 w-[288px] rounded-card border shadow-float p-3 ${
-              dark ? "bg-dock border-dock-border text-white" : "bg-surface border-border"
-            }`}
-          >
+          <div className="absolute z-50 top-full mt-2 left-0 w-[288px] rounded-card border border-border shadow-float p-3 bg-surface text-foreground">
             <div className="grid grid-cols-10 gap-1">
               {ICON_CHOICES.map((emoji) => (
                 <button
@@ -134,11 +113,7 @@ function IconPicker({
                     setOpen(false);
                   }}
                   className={`w-6 h-6 rounded-lg flex items-center justify-center text-[15px] transition-colors ${
-                    value === emoji
-                      ? "bg-primary-subtle text-primary ring-1 ring-primary"
-                      : dark
-                        ? "hover:bg-white/10"
-                        : "hover:bg-primary-subtle"
+                    value === emoji ? "bg-primary-subtle text-primary ring-1 ring-primary" : "hover:bg-surface-subtle"
                   }`}
                 >
                   {emoji}
@@ -584,34 +559,34 @@ export default function LaporanBuilderPage() {
   // ══════════════════ INDEX MODE (no module selected) ══════════════════
   if (!selectedModule) {
     return (
-      <div className="w-full min-h-screen bg-canvas pb-16 fade-in">
-        {/* Masthead */}
-        <div className="relative overflow-hidden bg-dock text-white border-b border-dock-border shadow-subtle">
-          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
-          <div className="relative z-10 px-6 sm:px-8 py-8 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/80 mb-2">
-                Laporan Builder
-              </p>
-              <h1 className="text-[28px] sm:text-[32px] font-black tracking-[-0.03em] leading-none">
-                Format Laporan & Formulir
-              </h1>
-              <p className="text-[13px] font-medium text-white/60 mt-2">
-                {categories.length} modul terdaftar · kelola urutan dan rancang parameter tiap modul
-              </p>
+      <div className="w-full min-h-screen bg-canvas pb-16 fade-in space-y-6">
+        {/* Masthead (Tamagui Clean Bento) */}
+        <div className="px-6 sm:px-8 pt-6">
+          <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
+            <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
+                  Laporan Builder
+                </p>
+                <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+                  Format Laporan & Formulir
+                </h1>
+                <p className="text-[13px] font-medium text-muted-foreground mt-2">
+                  {categories.length} modul terdaftar · kelola urutan dan rancang parameter tiap modul
+                </p>
+              </div>
+              <button
+                onClick={() => setIsCreatingModule(true)}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Modul Baru
+              </button>
             </div>
-            <button
-              onClick={() => setIsCreatingModule(true)}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-button bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
-            >
-              <Plus className="w-4 h-4" /> Modul Baru
-            </button>
-          </div>
+          </Card>
         </div>
 
         {/* Module cards */}
-        <div className="px-6 sm:px-8 pt-6">
+        <div className="px-6 sm:px-8">
           {categories.length === 0 ? (
             <EmptyState
               icon={LayoutTemplate}
@@ -641,7 +616,7 @@ export default function LaporanBuilderPage() {
                           }}
                           className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
                         >
-                          <span className="w-10 h-10 rounded-xl bg-dock flex items-center justify-center text-[18px] shrink-0 border border-dock-border shadow-subtle text-white">
+                          <span className="w-10 h-10 rounded-xl bg-surface-subtle flex items-center justify-center text-[18px] shrink-0 border border-border shadow-subtle text-foreground">
                             {cat.icon || "📋"}
                           </span>
                           <div className="min-w-0">
@@ -739,27 +714,29 @@ export default function LaporanBuilderPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-canvas text-foreground fade-in">
       {/* ── LEFT: structure rail ── */}
-      <aside className="w-[260px] shrink-0 bg-dock flex flex-col border-r border-dock-border h-full">
+      <aside className="w-[260px] shrink-0 bg-surface flex flex-col border-r border-border h-full shadow-subtle">
         {/* Back + module identity */}
         <div className="px-4 pt-4 pb-3">
           <button
             onClick={() => setSelectedModuleId(null)}
-            className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/50 hover:text-emerald-300 transition-colors mb-3"
+            className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground hover:text-primary transition-colors mb-3 cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5" /> Semua Modul
           </button>
           <div className="flex items-center gap-3 px-1">
-            <span className="w-11 h-11 rounded-2xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-[20px] shrink-0 text-white shadow-subtle">
+            <span className="w-11 h-11 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center text-[20px] shrink-0 text-foreground shadow-subtle">
               {selectedModule.icon || "📋"}
             </span>
             <div className="min-w-0">
-              <p className="text-[13px] font-extrabold text-white leading-tight truncate">{selectedModule.nama}</p>
-              <p className="text-[9px] font-bold text-white/50 font-mono mt-1 truncate">{selectedModule.code}</p>
+              <p className="text-[13px] font-extrabold text-foreground leading-tight truncate">{selectedModule.nama}</p>
+              <p className="text-[9px] font-bold text-muted-foreground font-mono mt-1 truncate">
+                {selectedModule.code}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="mx-4 h-px bg-white/[0.07]" />
+        <div className="mx-4 h-px bg-border" />
 
         {/* Structure nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
@@ -769,20 +746,20 @@ export default function LaporanBuilderPage() {
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                   active
                     ? "bg-primary-subtle border border-primary/30 text-primary"
-                    : "border border-transparent hover:bg-white/5 text-white/70"
+                    : "border border-transparent hover:bg-surface-subtle text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <t.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary" : "text-white/40"}`} />
-                <span className={`flex-1 text-[12px] font-bold ${active ? "text-primary" : "text-white/70"}`}>
+                <t.icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`flex-1 text-[12px] font-bold ${active ? "text-primary" : "text-muted-foreground"}`}>
                   {t.label}
                 </span>
                 {t.count !== undefined && (
                   <span
                     className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                      active ? "bg-primary text-white" : "bg-white/10 text-white/50"
+                      active ? "bg-primary text-white" : "bg-surface-subtle text-muted-foreground"
                     }`}
                   >
                     {t.count}
@@ -797,7 +774,7 @@ export default function LaporanBuilderPage() {
         <div className="p-3">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-button bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition"
+            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-xl bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" /> Preview Form
           </button>

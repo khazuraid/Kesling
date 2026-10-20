@@ -22,7 +22,7 @@ export const POST = withAuth(async (request: NextRequest) => {
   const queued = await redis.llen(QUEUE_KEY);
   if (queued > MAX_QUEUE)
     return NextResponse.json({ error: `Antrian import penuh (${queued}). Coba lagi beberapa saat.` }, { status: 429 });
-  const formData = await req.formData();
+  const formData = (await req.formData()) as any;
   const file = formData.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "File tidak ditemukan" }, { status: 400 });
   if (!/\.(pdf|docx)$/i.test(file.name))

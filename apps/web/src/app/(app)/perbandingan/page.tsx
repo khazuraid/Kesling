@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Crown } from "lucide-react";
+import { Card } from "tamagui";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { PdfExportButton } from "@/components/pdf-export-button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -60,21 +61,20 @@ export default function PerbandinganPage() {
 
   return (
     <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
-      {/* ── HERO + PODIUM ── */}
-      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-48 left-1/3 w-96 h-96 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#123527_0%,transparent_55%)] pointer-events-none" />
-
+      {/* ── HERO + PODIUM (Tamagui Clean Bento) ── */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 pt-6 sm:pt-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
                 Kinerja Wilayah
               </p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none">Perbandingan</h1>
-              <p className="text-[13px] font-medium text-white/50 mt-2">
-                {ranking.length} puskesmas · rata-rata {avgScore}%
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+                Perbandingan
+              </h1>
+              <p className="text-[13px] font-medium text-muted-foreground mt-2">
+                <span className="tabular-nums font-semibold text-foreground">{ranking.length}</span> puskesmas ·
+                rata-rata <span className="tabular-nums font-semibold text-foreground">{avgScore}%</span>
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export default function PerbandinganPage() {
 
           {/* PODIUM */}
           {!isLoading && top3.length > 0 && (
-            <div className="mt-8 flex items-end justify-center gap-3 sm:gap-5">
+            <div className="mt-8 flex items-end justify-center gap-3 sm:gap-5 pb-2">
               {podiumOrder.map((r) => {
                 const rank = podiumRank(r);
                 const medal = MEDAL[rank];
@@ -104,7 +104,7 @@ export default function PerbandinganPage() {
                     <div className="relative mb-3">
                       <div
                         className={cn(
-                          "rounded-full flex items-center justify-center font-black text-[#0C1B16]",
+                          "rounded-full flex items-center justify-center font-black text-slate-900",
                           isFirst ? "w-16 h-16 text-[20px]" : "w-13 h-13 text-[16px]",
                         )}
                         style={{
@@ -120,18 +120,18 @@ export default function PerbandinganPage() {
                         <Crown className="absolute -top-5 left-1/2 -translate-x-1/2 w-5 h-5 text-[#F5B93D]" />
                       )}
                     </div>
-                    <p className="text-[12px] sm:text-[13px] font-bold text-white text-center leading-tight line-clamp-2 h-8">
+                    <p className="text-[12px] sm:text-[13px] font-bold text-foreground text-center leading-tight line-clamp-2 h-8">
                       {r.nama}
                     </p>
-                    <p className="text-[20px] sm:text-[24px] font-black tabular-nums text-[#7CF5CE] mt-1">
+                    <p className="text-[20px] sm:text-[24px] font-black tabular-nums text-primary mt-1">
                       {r.avg}
-                      <span className="text-[12px] font-bold text-white/40">%</span>
+                      <span className="text-[12px] font-bold text-muted-foreground">%</span>
                     </p>
                     {/* Pillar */}
                     <div
-                      className={cn("w-full mt-3 rounded-t-2xl border-x border-t border-white/10", height)}
+                      className={cn("w-full mt-3 rounded-t-2xl border-x border-t border-border shadow-subtle", height)}
                       style={{
-                        background: `linear-gradient(180deg, ${medal.ring}30 0%, rgba(255,255,255,0.03) 100%)`,
+                        background: `linear-gradient(180deg, ${medal.ring}25 0%, rgba(241,245,249,0.5) 100%)`,
                       }}
                     />
                   </div>
@@ -141,18 +141,18 @@ export default function PerbandinganPage() {
           )}
 
           {isLoading && (
-            <div className="mt-8 flex items-end justify-center gap-5 animate-pulse">
+            <div className="mt-8 flex items-end justify-center gap-5 animate-pulse pb-2">
               {[80, 112, 64].map((h, i) => (
                 <div key={i} className="flex flex-col items-center">
-                  <div className="w-13 h-13 rounded-full bg-white/10 mb-3" style={{ width: 52, height: 52 }} />
-                  <div className="h-3 w-24 bg-white/10 rounded mb-2" />
-                  <div className="rounded-t-2xl bg-white/5 w-36 sm:w-44" style={{ height: h }} />
+                  <div className="w-13 h-13 rounded-full bg-surface-subtle mb-3" style={{ width: 52, height: 52 }} />
+                  <div className="h-3 w-24 bg-surface-subtle rounded mb-2" />
+                  <div className="rounded-t-2xl bg-surface-subtle w-36 sm:w-44" style={{ height: h }} />
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* ── BODY ── */}
       <div className="pt-2">
@@ -185,7 +185,7 @@ export default function PerbandinganPage() {
                 </div>
               </div>
               <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
-                <div className="w-11 h-11 rounded-xl bg-[#F5B93D]/15 text-[#D98E1F] flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
                   <Crown className="w-5 h-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -223,7 +223,6 @@ export default function PerbandinganPage() {
               </div>
 
               {ranking.map((r, i) => {
-                const t = tierOf(r.avg);
                 const isTop3 = i < 3;
                 return (
                   <div
@@ -239,7 +238,7 @@ export default function PerbandinganPage() {
                     <span className="w-8 text-center shrink-0">
                       {isTop3 ? (
                         <span
-                          className="inline-flex w-7 h-7 rounded-full items-center justify-center text-[11px] font-black text-[#0C1B16]"
+                          className="inline-flex w-7 h-7 rounded-full items-center justify-center text-[11px] font-black text-slate-900"
                           style={{ background: MEDAL[i].ring }}
                         >
                           {i + 1}
@@ -274,46 +273,16 @@ export default function PerbandinganPage() {
                           );
                         })}
                       </div>
-                      <div className="flex gap-3 mt-1.5 flex-wrap">
-                        {categories.map((c) => {
-                          const val = r[c.code] || 0;
-                          return (
-                            <span
-                              key={c.code}
-                              className="text-[9px] font-bold tabular-nums"
-                              style={{ color: tierOf(val).text }}
-                            >
-                              {c.icon} {val}%
-                            </span>
-                          );
-                        })}
-                      </div>
                     </div>
 
-                    {/* Avg */}
-                    <span
-                      className="w-16 shrink-0 text-right text-[18px] font-black tabular-nums"
-                      style={{ color: t.text }}
-                    >
-                      {r.avg}
-                      <span className="text-[10px] font-bold">%</span>
-                    </span>
+                    {/* Average score */}
+                    <div className="w-16 text-right shrink-0">
+                      <span className="text-[14px] font-black tabular-nums text-foreground">{r.avg}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground ml-0.5">%</span>
+                    </div>
                   </div>
                 );
               })}
-
-              {/* Legend */}
-              <div className="flex items-center justify-end gap-4 pt-2 text-[10px] font-bold text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-primary" /> ≥80%
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-[#E8A33D]" /> 60–79%
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-[#E15A4F]" /> &lt;60%
-                </span>
-              </div>
             </div>
           </div>
         )}

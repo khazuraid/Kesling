@@ -104,17 +104,17 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       {/* Toolbar: search + add */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             placeholder="Cari nama data..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-3 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[#00A876] transition-colors"
+            className="w-full h-10 pl-10 pr-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
           />
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition"
+          className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover active:scale-95 transition shadow-subtle"
         >
           <Plus className="w-3.5 h-3.5" /> Tambah
         </button>
@@ -122,13 +122,13 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
 
       {/* Filter tabs */}
       {hasKategori && kategoriOptions && (
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-x-auto p-1 bg-surface-subtle border border-border rounded-xl">
           <button
             onClick={() => setFilterKategori("")}
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
               !filterKategori
-                ? "bg-[#0C1B16] text-white"
-                : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                ? "bg-primary text-white shadow-subtle"
+                : "text-muted-foreground hover:bg-surface hover:text-foreground"
             }`}
           >
             Semua
@@ -137,10 +137,10 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
             <button
               key={o.value}
               onClick={() => setFilterKategori(o.value)}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
+              className={`shrink-0 px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
                 filterKategori === o.value
-                  ? "bg-[#0C1B16] text-white"
-                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+                  ? "bg-primary text-white shadow-subtle"
+                  : "text-muted-foreground hover:bg-surface hover:text-foreground"
               }`}
             >
               {o.label}
@@ -150,22 +150,22 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       )}
 
       {/* Table */}
-      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden overflow-x-auto">
+      <div className="rounded-card border border-border bg-surface overflow-hidden overflow-x-auto shadow-subtle">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-[hsl(var(--border))]">
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider w-10 text-center">
+            <tr className="border-b border-border bg-surface-subtle">
+              <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-10 text-center">
                 No
               </th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+              <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                 Nama
               </th>
               {hasKategori && (
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                   Kategori
                 </th>
               )}
-              <th className="text-right px-4 py-2.5 text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider w-24">
+              <th className="text-right px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-24">
                 Aksi
               </th>
             </tr>
@@ -173,44 +173,37 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
           <tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-[hsl(var(--border))]/50">
+                <tr key={i} className="border-b border-border/50">
                   <td colSpan={hasKategori ? 4 : 3} className="px-4 py-3">
-                    <div className="h-5 w-3/4 bg-[hsl(var(--muted))] animate-pulse" />
+                    <div className="h-5 w-3/4 bg-surface-subtle animate-pulse rounded" />
                   </td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={hasKategori ? 4 : 3} className="px-4 py-16 text-center">
-                  <Building2 className="w-8 h-8 mx-auto mb-3 text-[hsl(var(--muted-foreground))] opacity-30" />
-                  <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">
+                  <Building2 className="w-8 h-8 mx-auto mb-3 text-muted-foreground opacity-30" />
+                  <p className="text-[13px] font-bold text-foreground">
                     {search ? "Tidak ada data yang cocok" : "Belum ada data terdaftar"}
                   </p>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-1">
-                    Klik Tambah untuk menambahkan data baru
-                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Klik Tambah untuk menambahkan data baru</p>
                 </td>
               </tr>
             ) : (
               filtered.map((item, i) => (
-                <tr
-                  key={item.id}
-                  className="border-b border-[hsl(var(--border))]/50 hover:bg-[hsl(var(--muted))]/30 transition-colors"
-                >
-                  <td className="px-4 py-3 text-center text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
-                    {i + 1}
-                  </td>
+                <tr key={item.id} className="border-b border-border/50 hover:bg-surface-subtle/40 transition-colors">
+                  <td className="px-4 py-3 text-center text-[11px] font-medium text-muted-foreground">{i + 1}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-[#00A876]/10 text-[#00A876] flex items-center justify-center text-[11px] font-extrabold shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
                         {item.nama.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[12px] font-bold text-[hsl(var(--foreground))]">{item.nama}</span>
+                      <span className="text-[12px] font-bold text-foreground">{item.nama}</span>
                     </div>
                   </td>
                   {hasKategori && (
                     <td className="px-4 py-3">
-                      <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                         {item.kategori || "—"}
                       </span>
                     </td>
@@ -219,7 +212,7 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
                     <div className="flex justify-end gap-1">
                       <button
                         onClick={() => openEdit(item)}
-                        className="w-7 h-7 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors rounded-lg"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -227,7 +220,7 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
                         onClick={() => {
                           if (confirm(`Hapus "${item.nama}"?`)) deleteMutation.mutate(item.id);
                         }}
-                        className="w-7 h-7 flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--error))] transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors rounded-lg"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -240,65 +233,36 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
         </table>
       </div>
 
-      <p className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
         Menampilkan {filtered.length} dari {items.length} data
       </p>
 
       {/* Add/Edit Modal */}
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title={editId ? "Ubah Data" : "Tambah Data"}
-        description={editId ? "Perbarui data" : "Tambahkan data baru ke master"}
-        icon={<Building2 className="w-4.5 h-4.5" />}
-        size="sm"
-        variant="hero"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              form="master-form"
-              disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
-            >
-              {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
-            </button>
-          </>
-        }
-      >
-        <form id="master-form" onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))} className="space-y-4">
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editId ? "Edit Data" : "Tambah Data"}>
+        <form onSubmit={form.handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4 pt-2">
           <div>
-            <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
               Nama
             </label>
             <input
               {...form.register("nama")}
-              placeholder="Nama entitas..."
-              className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors"
+              placeholder="Contoh: Puskesmas Sukajadi"
+              className="w-full h-10 px-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
             />
             {form.formState.errors.nama && (
-              <p className="text-[11px] font-bold text-[hsl(var(--error))] mt-1">
-                {form.formState.errors.nama.message}
-              </p>
+              <p className="text-[10px] text-red-600 mt-1">{form.formState.errors.nama.message}</p>
             )}
           </div>
+
           {hasKategori && kategoriOptions && (
             <div>
-              <label className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-wider block mb-1.5">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                 Kategori
               </label>
               <select
                 {...form.register("kategori")}
-                className="w-full h-9 px-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-[12px] font-medium text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none"
+                className="w-full h-10 px-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
               >
-                <option value="">— Tanpa Kategori —</option>
                 {kategoriOptions.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -307,6 +271,23 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
               </select>
             </div>
           )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="h-10 px-4 rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-surface-subtle transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="h-10 px-5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover active:scale-95 transition shadow-subtle disabled:opacity-50"
+            >
+              {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
+            </button>
+          </div>
         </form>
       </Modal>
     </div>

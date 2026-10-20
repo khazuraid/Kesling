@@ -29,6 +29,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
 import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
 import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
@@ -89,7 +90,7 @@ export default function FormPemeriksaanPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImportWidgetVisible, setIsImportWidgetVisible] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -762,6 +763,24 @@ export default function FormPemeriksaanPage() {
     toast.success("Contoh Template Jajanan Keliling (A1 & A2) berhasil dimuat!");
   }
 
+  function resetForm() {
+    setNama("");
+    setDeskripsi("");
+    setSubCategoryId(null);
+    setDataDasarCategoryId(null);
+    setFields([]);
+    setRumus("sum");
+    setCustomFormula("");
+    setThresholdOperator(">=");
+    setThresholdValue(80);
+    setThresholdPassText("Memenuhi Syarat");
+    setThresholdFailText("Tidak Memenuhi Syarat");
+    setDefaultYa(false);
+    setParamDiperiksaId(null);
+    setParamMsId(null);
+    setParamTmsId(null);
+  }
+
   function addField(grup?: string) {
     setFields([
       ...fields,
@@ -1314,28 +1333,26 @@ export default function FormPemeriksaanPage() {
 
   if (!selectedTemplateId && !isCreating) {
     return (
-      <div className="w-full min-h-screen bg-canvas mx-auto pb-8 fade-in">
-        {/* ── HERO ── */}
-        <div className="relative overflow-hidden bg-dock text-white rounded-b-3xl border-b border-dock-border shadow-subtle mb-6">
-          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
+      <div className="w-full min-h-screen bg-canvas mx-auto pb-8 fade-in space-y-6">
+        {/* ── HERO (Tamagui Clean Bento) ── */}
+        <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
           <div className="relative z-10 px-4 sm:px-8 py-6 sm:py-7 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/70 mb-2">Builder</p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-[-0.03em] leading-tight sm:leading-none">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Builder</p>
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-tight sm:leading-none text-foreground">
                 Form Pemeriksaan
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-white/50 mt-1.5">
-                {templates.length} template tersedia
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-1.5">
+                <span className="tabular-nums font-semibold text-foreground">{templates.length}</span> template tersedia
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setIsHistoryModalOpen(true)}
                 title="Lihat status antrean & riwayat upload"
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 hover:text-white transition"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-subtle border border-border text-foreground text-[12px] font-extrabold hover:bg-surface transition shadow-subtle"
               >
-                <History className="w-3.5 h-3.5 text-emerald-300" />
+                <History className="w-3.5 h-3.5 text-primary" />
                 <span>Status & Antrean</span>
                 {(activeImportJob?.status === "processing" || activeImportJob?.status === "queued") && (
                   <span className="flex h-2 w-2 relative ml-0.5">
@@ -1344,8 +1361,8 @@ export default function FormPemeriksaanPage() {
                   </span>
                 )}
               </button>
-              <label className="inline-flex items-center gap-2 h-10 px-4 sm:px-5 rounded-full bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 hover:text-white transition cursor-pointer">
-                <Upload className="w-3.5 h-3.5" /> Import
+              <label className="inline-flex items-center gap-2 h-10 px-4 sm:px-5 rounded-xl bg-surface-subtle border border-border text-foreground text-[12px] font-extrabold hover:bg-surface transition shadow-subtle cursor-pointer">
+                <Upload className="w-3.5 h-3.5 text-primary" /> Import
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -1359,40 +1376,26 @@ export default function FormPemeriksaanPage() {
                 />
               </label>
               <button
-                onClick={() => {
-                  setSelectedTemplateId(null);
-                  setIsCreating(true);
-                  setNama("");
-                  setDeskripsi("");
-                  setSubCategoryId(null);
-                  setDataDasarCategoryId(null);
-                  setFields([]);
-                  setRumus("sum");
-                  setCustomFormula("");
-                  setThresholdOperator(">=");
-                  setThresholdValue(80);
-                  setThresholdPassText("Memenuhi Syarat");
-                  setThresholdFailText("Tidak Memenuhi Syarat");
-                  setDefaultYa(false);
-                  setParamDiperiksaId(null);
-                  setParamMsId(null);
-                  setParamTmsId(null);
-                }}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
-              >
-                <Plus className="w-3.5 h-3.5" /> Buat Baru
-              </button>
-              <button
                 type="button"
                 onClick={loadContohJajananKeliling}
                 title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-amber-500/20 border border-amber-500/35 text-amber-200 text-[12px] font-extrabold hover:bg-amber-500/30 transition"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 text-[12px] font-extrabold hover:bg-amber-500/20 transition shadow-subtle cursor-pointer"
               >
-                🍿 Contoh IKL Jajanan (A1 & A2)
+                🍿 Contoh IKL Jajanan
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedTemplateId(null);
+                  setIsCreating(true);
+                  resetForm();
+                }}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-subtle cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Buat Template
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
         <div className="px-4 sm:px-8 space-y-4">
           {isLoading ? (

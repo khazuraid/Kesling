@@ -67,22 +67,21 @@ export function Modal({
         >
           {/* Header */}
           {hero ? (
-            <div className="shrink-0 relative overflow-hidden bg-dock text-white px-6 pt-5 pb-5 border-b border-dock-border">
-              <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-primary opacity-20 pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_20%,rgba(5,150,105,0.15)_0%,transparent_60%)] pointer-events-none" />
+            <div className="shrink-0 relative overflow-hidden bg-surface-subtle text-foreground px-6 pt-5 pb-5 border-b border-border">
+              <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-primary opacity-10 pointer-events-none" />
               <div className="relative z-10 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {icon && (
-                    <span className="w-10 h-10 flex items-center justify-center rounded-button bg-primary/20 border border-primary/30 text-accent shrink-0">
+                    <span className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-subtle border border-primary/20 text-primary shrink-0 shadow-subtle">
                       {icon}
                     </span>
                   )}
                   <div className="min-w-0">
-                    <Dialog.Title className="text-base sm:text-lg tracking-tight font-extrabold text-white truncate">
+                    <Dialog.Title className="text-base sm:text-lg tracking-tight font-extrabold text-foreground truncate">
                       {title}
                     </Dialog.Title>
                     {description ? (
-                      <Dialog.Description className="text-xs text-white/60 mt-0.5 truncate">
+                      <Dialog.Description className="text-xs text-muted-foreground mt-0.5 truncate">
                         {description}
                       </Dialog.Description>
                     ) : (
@@ -90,7 +89,7 @@ export function Modal({
                     )}
                   </div>
                 </div>
-                <Dialog.Close className="w-8 h-8 rounded-button flex items-center justify-center text-white/60 hover:bg-white/10 hover:text-white transition-colors shrink-0 cursor-pointer">
+                <Dialog.Close className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors shrink-0 cursor-pointer">
                   <X className="w-4 h-4" />
                 </Dialog.Close>
               </div>

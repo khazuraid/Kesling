@@ -9,11 +9,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   outputFileTracingRoot: path.join(import.meta.dirname, "../../"),
   experimental: {
-    optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query"],
+    optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query", "tamagui"],
   },
-  // Transpile internal workspace packages so Turbopack resolves their deps correctly
-  // Fixes "Package @prisma/client can't be external" warnings in Turbopack
-  transpilePackages: ["@apps-kes/database"],
+  transpilePackages: ["@apps-kes/database", "tamagui", "@tamagui/core", "@tamagui/config"],
   async headers() {
     return [
       {

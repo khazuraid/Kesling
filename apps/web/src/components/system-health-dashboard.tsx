@@ -165,7 +165,7 @@ export function SystemHealthDashboard() {
                 onClick={() => setIntervalMs(ms)}
                 className={`h-7 px-2.5 rounded-lg text-[10px] font-extrabold transition ${
                   intervalMs === ms
-                    ? "bg-[#0C1B16] text-[#7CF5CE]"
+                    ? "bg-primary text-white shadow-subtle"
                     : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
                 }`}
               >
@@ -216,7 +216,7 @@ export function SystemHealthDashboard() {
                     style={{ height: `${pct}%`, backgroundColor: color }}
                     className="w-full rounded-sm transition-all duration-300"
                   />
-                  <div className="absolute -top-6 hidden group-hover:block bg-[#0C1B16] text-[#7CF5CE] text-[9px] font-mono px-1 py-0.5 rounded shadow z-10 whitespace-nowrap">
+                  <div className="absolute -top-6 hidden group-hover:block bg-slate-900 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow z-10 whitespace-nowrap border border-border/40">
                     {val}ms
                   </div>
                 </div>
@@ -333,7 +333,7 @@ export function SystemHealthDashboard() {
           <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-[#BEF264]" />
+                <HardDrive className="w-4 h-4 text-primary" />
                 <span className="text-[12px] font-extrabold">Volume Uploads</span>
               </div>
               {data.storage.uploadsWritable ? (

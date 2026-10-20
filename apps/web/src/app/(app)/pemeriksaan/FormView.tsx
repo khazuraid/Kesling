@@ -374,26 +374,26 @@ export function FormView({
 
   return (
     <div className="w-full pb-28 sm:pb-20 fade-in">
-      {/* ── STICKY TOP SCORE HUD ── */}
-      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0C1B16]/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg transition-all">
+      {/* ── STICKY TOP SCORE HUD (Tamagui Clean Bento) ── */}
+      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-2.5 sm:gap-3">
           {/* Back & Form Name */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={onBack}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
+              className="p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
               title="Kembali"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-[#BEF264] px-2 py-0.5 rounded-full bg-[#BEF264]/15">
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
                   {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
                 </span>
-                <span className="text-[11px] text-white/50 hidden md:inline truncate">{activeForm.nama}</span>
+                <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
               </div>
-              <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-white max-w-[160px] sm:max-w-sm">
+              <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[160px] sm:max-w-sm">
                 {String(
                   Object.entries(metaValues).find(([fid]) => {
                     const f = activeForm.fields.find((field: any) => field.id === Number(fid));
@@ -406,27 +406,27 @@ export function FormView({
 
           {/* Prominent Percentage Score HUD */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl bg-white/[0.08] border border-white/10">
+            <div className="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl bg-muted/60 border border-border">
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
                   <span
                     className={`text-[18px] sm:text-[24px] font-black tracking-tight leading-none tabular-nums ${
-                      liveSkor.pass ? "text-[#BEF264]" : "text-[#FF8D80]"
+                      liveSkor.pass ? "text-primary" : "text-error"
                     }`}
                   >
                     {displayPercentage}
                   </span>
                 </div>
-                <div className="text-[9px] sm:text-[10px] text-white/60 font-semibold tabular-nums">
+                <div className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold tabular-nums">
                   {liveSkor.gained} / {liveSkor.max} Poin
                 </div>
               </div>
 
               {/* Status Badge */}
-              <div className="flex flex-col items-start pl-2 border-l border-white/15">
+              <div className="flex flex-col items-start pl-2 border-l border-border">
                 <span
                   className={`inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                    liveSkor.pass ? "bg-[#00A876] text-white shadow-sm" : "bg-[#E15A4F] text-white shadow-sm"
+                    liveSkor.pass ? "bg-primary text-white shadow-xs" : "bg-error text-white shadow-xs"
                   }`}
                 >
                   {liveSkor.pass ? (
@@ -436,7 +436,7 @@ export function FormView({
                   )}
                   <span className="truncate max-w-[85px] sm:max-w-none">{liveSkor.text}</span>
                 </span>
-                <span className="text-[8px] sm:text-[9px] text-white/50 mt-0.5 pl-0.5">
+                <span className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 pl-0.5">
                   {completionStats.answeredQuestions}/{completionStats.totalQuestions} (
                   {completionStats.percentAnswered}%)
                 </span>
@@ -448,7 +448,7 @@ export function FormView({
               <button
                 onClick={onSubmit}
                 disabled={!canSubmit || isPending}
-                className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#BEF264] text-[#06281E] text-[13px] font-black hover:brightness-105 transition-all shadow-md disabled:opacity-40"
+                className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-black hover:bg-primary-hover transition-all shadow-subtle disabled:opacity-40"
               >
                 {isPending ? (
                   <>
@@ -463,7 +463,7 @@ export function FormView({
             ) : (
               <button
                 onClick={handleNext}
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold transition-colors"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border hover:bg-muted text-foreground text-[12px] font-bold transition-colors shadow-xs"
               >
                 Lanjut <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -472,9 +472,9 @@ export function FormView({
         </div>
 
         {/* Global Progress Bar */}
-        <div className="w-full bg-white/10 h-1 mt-2 sm:mt-2.5 rounded-full overflow-hidden">
+        <div className="w-full bg-muted h-1 mt-2 sm:mt-2.5 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#00A876] to-[#BEF264] transition-all duration-300 rounded-full"
+            className="h-full bg-primary transition-all duration-300 rounded-full"
             style={{ width: `${completionStats.percentAnswered}%` }}
           />
         </div>
@@ -496,7 +496,7 @@ export function FormView({
                   }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-card text-[12px] font-bold transition-all border ${
                     isActive
-                      ? "bg-[#0C1B16] text-white border-[#0C1B16] shadow-subtle ring-2 ring-primary/30"
+                      ? "bg-primary text-white border-primary shadow-subtle ring-2 ring-primary/20"
                       : isPassed
                         ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                         : "bg-surface text-muted-foreground border-border hover:border-foreground/40 shadow-subtle"
@@ -505,7 +505,7 @@ export function FormView({
                   <span
                     className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black ${
                       isActive
-                        ? "bg-[#BEF264] text-[#06281E]"
+                        ? "bg-white text-primary"
                         : isPassed
                           ? "bg-[#00A876] text-white"
                           : "bg-muted text-muted-foreground"
@@ -595,7 +595,7 @@ export function FormView({
               <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
                 <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-border bg-surface-subtle flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0C1B16] text-[#BEF264] text-[13px] font-black shadow-subtle">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white text-[13px] font-black shadow-subtle">
                       {toRoman(currentStep.areaData.areaIndex)}
                     </span>
                     <div>
@@ -713,7 +713,7 @@ export function FormView({
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl bg-[#0C1B16] text-[#BEF264] text-[12px] font-extrabold hover:bg-[#122820] transition-colors shadow-subtle"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover transition-colors shadow-subtle cursor-pointer"
             >
               Selanjutnya <ChevronRight className="w-4 h-4" />
             </button>

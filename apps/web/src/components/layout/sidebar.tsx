@@ -34,6 +34,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { XStack, YStack } from "tamagui";
 import { NotificationBell } from "@/components/notification-bell";
 
 interface DynamicCategory {
@@ -189,15 +190,15 @@ export function SideNav() {
             collapsed ? "md:justify-center px-3 md:px-0" : "gap-2.5 px-3"
           } ${
             active
-              ? "bg-emerald-500/20 text-[#7CF5CE] border-l-2 border-[#10B981]"
-              : "text-white/60 hover:text-white hover:bg-white/[0.06] border-l-2 border-transparent"
+              ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
           }`}
         >
-          <span className="shrink-0">{item.icon}</span>
+          <span className={`shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`}>{item.icon}</span>
           {(!collapsed || mobileOpen) && <span className="truncate">{item.label}</span>}
         </Link>
         {collapsed && (
-          <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+          <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
             {item.label}
           </span>
         )}
@@ -207,34 +208,32 @@ export function SideNav() {
 
   return (
     <>
-      {/* Mobile Top Navbar (Visible on < md) */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-[#0C1B16] text-white border-b border-white/10 shrink-0">
+      {/* Mobile Top Navbar */}
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileOpen(true)}
             aria-label="Buka navigasi"
-            className="p-1.5 -ml-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition"
+            className="p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-black text-[#7CF5CE]">KC</span>
+            <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/20 flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-black text-primary">KC</span>
             </div>
-            <span className="text-[13px] font-extrabold tracking-tight">Kesling</span>
+            <span className="text-[13px] font-extrabold tracking-tight text-foreground">Kesling</span>
           </Link>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
             aria-label="Cari"
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
             <Search className="w-4 h-4" />
           </button>
-          <div className="[&_button]:!text-white/70 [&_button:hover]:!text-white [&_button]:!bg-transparent [&_button:hover]:!bg-white/10">
-            <NotificationBell placement="bottom" />
-          </div>
+          <NotificationBell placement="bottom" />
         </div>
       </header>
 
@@ -242,13 +241,13 @@ export function SideNav() {
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-[#0C1B16] border-r border-[#16352B] text-white flex flex-col ${
+        className={`fixed left-0 top-0 bottom-0 bg-surface border-r border-border text-foreground flex flex-col ${
           mounted ? "transition-all duration-200" : ""
         } overflow-hidden select-none ${
           mobileOpen ? "translate-x-0 z-50 w-[260px] shadow-2xl" : "-translate-x-full md:translate-x-0 z-40"
@@ -256,35 +255,35 @@ export function SideNav() {
       >
         {/* Logo & Mobile Close */}
         <div
-          className={`flex items-center h-14 shrink-0 border-b border-[#16352B] ${
+          className={`flex items-center h-14 shrink-0 border-b border-border ${
             collapsed ? "md:justify-center px-4" : "justify-between px-4"
           }`}
         >
           <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <span className="text-[11px] font-black text-[#7CF5CE]">KC</span>
+            <div className="w-8 h-8 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center shrink-0">
+              <span className="text-[11px] font-black text-primary">KC</span>
             </div>
             {(!collapsed || mobileOpen) && (
               <div className="leading-none min-w-0">
-                <p className="text-[13px] font-extrabold tracking-tight truncate">Kesling</p>
-                <p className="text-[8px] font-bold text-[#7CF5CE]/70 uppercase tracking-[0.22em] mt-0.5">Cirebon</p>
+                <p className="text-[13px] font-extrabold tracking-tight truncate text-foreground">Kesling</p>
+                <p className="text-[8px] font-bold text-primary uppercase tracking-[0.22em] mt-0.5">Cirebon</p>
               </div>
             )}
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition"
+            className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Search */}
+        {/* Quick Search Trigger */}
         <div className="shrink-0 pt-3 pb-1 px-3">
           <div className="relative group">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
-              className={`flex items-center rounded-lg bg-white/[0.04] border border-white/[0.08] hover:border-emerald-500/30 hover:bg-white/[0.07] text-white/50 hover:text-white transition-all h-9 w-full ${
+              className={`flex items-center rounded-lg bg-muted/60 border border-border hover:border-primary/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all h-9 w-full ${
                 collapsed ? "justify-center" : "gap-2 px-3"
               }`}
             >
@@ -292,30 +291,30 @@ export function SideNav() {
               {!collapsed && (
                 <>
                   <span className="text-[12px] font-medium flex-1 text-left">Cari...</span>
-                  <kbd className="text-[9px] font-bold text-white/40 border border-white/15 rounded px-1.5 py-0.5 bg-white/[0.04]">
+                  <kbd className="text-[9px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-surface">
                     ⌘K
                   </kbd>
                 </>
               )}
             </button>
             {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                 Cari (⌘K)
               </span>
             )}
           </div>
         </div>
 
-        {/* Nav */}
+        {/* Nav Items */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-none">
           {groups.map((group, gi) => (
             <div key={group.title}>
               {gi > 0 && !collapsed && (
-                <p className="px-3 pt-3.5 pb-1 text-[9px] font-extrabold text-white/35 uppercase tracking-[0.22em]">
+                <p className="px-3 pt-3.5 pb-1 text-[9px] font-extrabold text-muted-foreground/70 uppercase tracking-[0.22em]">
                   {group.title}
                 </p>
               )}
-              {gi > 0 && collapsed && <div className="mx-2 my-2 border-t border-[#16352B]" />}
+              {gi > 0 && collapsed && <div className="mx-2 my-2 border-t border-border" />}
               {group.items.map((item) => {
                 if (item.href === "/laporan") {
                   const lapActive = pathname === "/laporan";
@@ -329,15 +328,17 @@ export function SideNav() {
                           collapsed ? "justify-center px-0" : "gap-2.5 px-3"
                         } ${
                           lapActive
-                            ? "bg-emerald-500/20 text-[#7CF5CE] border-l-2 border-[#10B981]"
-                            : "text-white/60 hover:text-white hover:bg-white/[0.06] border-l-2 border-transparent"
+                            ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
                         }`}
                       >
-                        <span className="shrink-0">{item.icon}</span>
+                        <span className={`shrink-0 ${lapActive ? "text-primary" : "text-muted-foreground"}`}>
+                          {item.icon}
+                        </span>
                         {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                         {!collapsed && categories.length > 0 && (
                           <ChevronDown
-                            className={`w-3.5 h-3.5 shrink-0 text-white/40 transition-transform ${
+                            className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform ${
                               catActive ? "rotate-180" : ""
                             }`}
                           />
@@ -345,14 +346,14 @@ export function SideNav() {
                       </Link>
 
                       {collapsed && (
-                        <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+                        <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                           {item.label}
                         </span>
                       )}
 
-                      {/* Submenu kategori — inline indent */}
+                      {/* Submenu dynamic categories */}
                       {!collapsed && categories.length > 0 && (
-                        <div className="mt-1 mb-1.5 ml-4 pl-2.5 border-l border-white/10 space-y-0.5">
+                        <div className="mt-1 mb-1.5 ml-4 pl-2.5 border-l border-border space-y-0.5">
                           {categories.map((cat) => {
                             const code = cat.code.toLowerCase();
                             const href = `/laporan/${code}`;
@@ -364,11 +365,13 @@ export function SideNav() {
                                 onClick={() => setMobileOpen(false)}
                                 className={`flex items-center gap-2 rounded-md h-8 px-2.5 text-[11px] font-semibold transition-colors ${
                                   active
-                                    ? "bg-emerald-500/20 text-[#7CF5CE]"
-                                    : "text-white/50 hover:text-white hover:bg-white/[0.05]"
+                                    ? "bg-primary-subtle text-primary font-bold"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                 }`}
                               >
-                                <span className="shrink-0 scale-90">
+                                <span
+                                  className={`shrink-0 scale-90 ${active ? "text-primary" : "text-muted-foreground"}`}
+                                >
                                   {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
                                 </span>
                                 <span className="truncate">{SHORT_NAMES[code] || cat.nama}</span>
@@ -378,7 +381,7 @@ export function SideNav() {
                         </div>
                       )}
 
-                      {/* Collapsed: kategori jadi icon row dengan tooltip */}
+                      {/* Collapsed category row */}
                       {collapsed &&
                         categories.map((cat) => {
                           const code = cat.code.toLowerCase();
@@ -391,13 +394,15 @@ export function SideNav() {
                                 href={href}
                                 className={`flex items-center justify-center rounded-lg h-9 transition-colors ${
                                   active
-                                    ? "bg-emerald-500/20 text-[#7CF5CE] border-l-2 border-[#10B981]"
-                                    : "text-white/50 hover:text-white hover:bg-white/[0.06] border-l-2 border-transparent"
+                                    ? "bg-primary-subtle text-primary border-l-2 border-primary"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
                                 }`}
                               >
-                                {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
+                                <span className={active ? "text-primary" : "text-muted-foreground"}>
+                                  {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
+                                </span>
                               </Link>
-                              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+                              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                                 {name}
                               </span>
                             </div>
@@ -413,58 +418,58 @@ export function SideNav() {
         </nav>
 
         {/* Bottom Dock */}
-        <div className="shrink-0 border-t border-[#16352B] p-2 space-y-1 bg-[#0C1B16]">
+        <YStack className="shrink-0 border-t border-border p-2 space-y-1 bg-surface">
           {/* Notification */}
           <div className="relative group">
             <div
               className={`flex items-center rounded-lg transition-colors ${
-                collapsed ? "justify-center p-1" : "px-2 py-1 gap-2 hover:bg-white/[0.05]"
+                collapsed ? "justify-center p-1" : "px-2 py-1 gap-2 hover:bg-muted/60"
               }`}
             >
-              <div className="[&_button]:!text-white/60 [&_button:hover]:!text-white [&_button]:!bg-transparent [&_button:hover]:!bg-white/[0.08] [&_button]:!rounded-lg">
-                <NotificationBell placement={collapsed ? "side" : "top"} />
-              </div>
-              {!collapsed && <span className="text-[12px] font-semibold text-white/60 select-none">Notifikasi</span>}
+              <NotificationBell placement={collapsed ? "side" : "top"} />
+              {!collapsed && (
+                <span className="text-[12px] font-semibold text-muted-foreground select-none">Notifikasi</span>
+              )}
             </div>
             {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                 Notifikasi
               </span>
             )}
           </div>
 
-          {/* Profile */}
+          {/* User Profile */}
           <div className="relative group">
             <Link
               href="/profile"
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center rounded-lg hover:bg-white/[0.06] transition-colors h-11 ${
+              className={`flex items-center rounded-lg hover:bg-muted/60 transition-colors h-11 ${
                 collapsed ? "justify-center px-0" : "gap-2.5 px-2"
               }`}
             >
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[11px] font-black text-[#7CF5CE] shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center text-[11px] font-black text-primary shrink-0">
                 {session?.user?.name?.charAt(0) || "U"}
               </div>
               {!collapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold truncate text-white/90">{session?.user?.name || "User"}</p>
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.18em]">{userRole}</p>
+                  <p className="text-[11px] font-bold truncate text-foreground">{session?.user?.name || "User"}</p>
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.18em]">{userRole}</p>
                 </div>
               )}
             </Link>
             {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                 {session?.user?.name || "Profil"} ({userRole})
               </span>
             )}
           </div>
 
-          {/* Logout & Collapse toggle */}
-          <div className={`flex items-center ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
+          {/* Action Row */}
+          <XStack className={`items-center ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
             <div className={`relative group ${collapsed ? "w-full" : "flex-1"}`}>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className={`flex items-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors h-9 w-full ${
+                className={`flex items-center rounded-lg text-muted-foreground hover:text-error hover:bg-error-light/50 transition-colors h-9 w-full ${
                   collapsed ? "justify-center" : "gap-2.5 px-2.5"
                 }`}
               >
@@ -472,7 +477,7 @@ export function SideNav() {
                 {!collapsed && <span className="text-[12px] font-semibold">Keluar</span>}
               </button>
               {collapsed && (
-                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                   Keluar
                 </span>
               )}
@@ -489,29 +494,21 @@ export function SideNav() {
                   document.dispatchEvent(new CustomEvent("kesling:toggle-sidebar", { detail: { collapsed: next } }));
                 }}
                 aria-label={collapsed ? "Buka sidebar" : "Sembunyikan sidebar"}
-                className={`flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors h-9 ${
+                className={`flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors h-9 ${
                   collapsed ? "w-full" : "w-9"
                 }`}
               >
                 {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
               </button>
               {collapsed && (
-                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#0C1B16] border border-[#16352B] text-white text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
                   Buka sidebar
                 </span>
               )}
             </div>
-          </div>
-        </div>
+          </XStack>
+        </YStack>
       </aside>
     </>
   );
-}
-
-// Back-compat exports
-export function TopNav() {
-  return <SideNav />;
-}
-export function Sidebar() {
-  return <SideNav />;
 }

@@ -5,6 +5,7 @@ import { Building2, Calendar, ChevronDown, ChevronLeft, ChevronRight, Download }
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
+import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -49,11 +50,19 @@ function ScoreRing({ pct, size = 92 }: { pct: number; size?: number }) {
   const c = 2 * Math.PI * r;
   const filled = Math.min(pct, 100) / 100;
   const tier = pctTier(pct || null);
-  const color = tier === "empty" ? "#7CF5CE" : TIER[tier].bg;
+  const color = tier === "empty" ? "#059669" : TIER[tier].bg;
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={7} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          className="text-border"
+          strokeWidth={7}
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -68,9 +77,9 @@ function ScoreRing({ pct, size = 92 }: { pct: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[22px] font-black tabular-nums leading-none text-white">
+        <span className="text-[22px] font-black tabular-nums leading-none text-foreground">
           {pct.toFixed(0)}
-          <span className="text-[11px] font-bold text-white/50">%</span>
+          <span className="text-[11px] font-bold text-muted-foreground">%</span>
         </span>
       </div>
     </div>
@@ -129,47 +138,43 @@ export default function RekapPage() {
 
   return (
     <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
-      {/* ── HERO: score ring + filters ── */}
-      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
-
+      {/* ── HERO: score ring + filters (Tamagui Clean Bento) ── */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7">
           <div className="flex flex-wrap items-center gap-8">
             <ScoreRing pct={overallPct} />
 
             <div className="flex-1 min-w-[220px]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
                 Rekapitulasi Tahunan
               </p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-tight">
+              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-tight text-foreground">
                 {data?.selectedPkm ? data.selectedPkm.nama : "Semua Puskesmas"}
               </h1>
-              <p className="text-[12px] font-medium text-white/50 mt-1.5">
+              <p className="text-[12px] font-medium text-muted-foreground mt-1.5">
                 {overallLabel} · rata-rata {overallPct.toFixed(1)}% dari {cats.length} kategori
               </p>
 
               {/* Tier chips */}
               <div className="flex items-center gap-2 mt-4">
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary/15 border border-primary/30 text-[#7CF5CE] text-[11px] font-extrabold tabular-nums">
+                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary-subtle border border-primary/20 text-primary text-[11px] font-extrabold tabular-nums">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {goodCount} Baik
                 </span>
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#E8A33D]/15 border border-[#E8A33D]/25 text-[#F5C97C] text-[11px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E8A33D]" /> {warnCount} Cukup
+                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 text-[11px] font-extrabold tabular-nums">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> {warnCount} Cukup
                 </span>
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#E15A4F]/15 border border-[#E15A4F]/25 text-[#F5A099] text-[11px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E15A4F]" /> {badCount} Kurang
+                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[11px] font-extrabold tabular-nums">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> {badCount} Kurang
                 </span>
               </div>
             </div>
 
             {/* Filters — inside hero, right side */}
             <div className="flex flex-col items-end gap-2.5">
-              <div className="flex items-center rounded-full bg-white/[0.08] border border-white/15 overflow-hidden">
+              <div className="flex items-center rounded-xl bg-surface-subtle border border-border overflow-hidden">
                 <button
                   onClick={() => setTahun((t) => t - 1)}
-                  className="w-9 h-10 flex items-center justify-center text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                  className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -177,11 +182,11 @@ export default function RekapPage() {
                   type="number"
                   value={tahun}
                   onChange={(e) => setTahun(Number(e.target.value))}
-                  className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-white text-center outline-none tabular-nums"
+                  className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-foreground text-center outline-none tabular-nums"
                 />
                 <button
                   onClick={() => setTahun((t) => t + 1)}
-                  className="w-9 h-10 flex items-center justify-center text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                  className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -189,11 +194,11 @@ export default function RekapPage() {
 
               {user?.role === "ADMIN" && data?.puskesmasList && (
                 <div className="relative">
-                  <Building2 className="w-3.5 h-3.5 text-white/50 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+                  <Building2 className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
                   <select
                     value={puskesmasId}
                     onChange={(e) => setPuskesmasId(e.target.value)}
-                    className="h-10 pl-9 pr-8 rounded-full bg-white/[0.08] border border-white/15 text-[12px] font-bold text-white outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-black"
+                    className="h-10 pl-9 pr-8 rounded-xl bg-surface-subtle border border-border text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-foreground [&>option]:bg-surface"
                   >
                     <option value="">Semua Puskesmas</option>
                     {data.puskesmasList.map((p) => (
@@ -202,20 +207,20 @@ export default function RekapPage() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-white/50 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               )}
 
               <a
                 href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}
-                className="h-10 px-5 flex items-center gap-2 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold hover:brightness-95 transition"
+                className="h-10 px-5 flex items-center gap-2 rounded-xl bg-primary text-white text-[11px] font-black hover:bg-primary-hover active:scale-95 transition shadow-subtle"
               >
                 <Download className="w-3.5 h-3.5" /> Export Excel
               </a>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* ── BODY ── */}
       <div className="pt-2">
@@ -249,16 +254,16 @@ export default function RekapPage() {
                   </span>
                 </div>
                 <div className="rounded-card bg-surface border border-border shadow-subtle p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-error-light text-error flex items-center justify-center text-2xl shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-red-500/10 text-red-600 flex items-center justify-center text-2xl shrink-0">
                     {worst.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-error mb-1">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-600 mb-1">
                       Perlu Perhatian
                     </p>
                     <p className="text-[15px] font-bold text-foreground truncate">{worst.nama}</p>
                   </div>
-                  <span className="text-[26px] font-black tabular-nums text-error">
+                  <span className="text-[26px] font-black tabular-nums text-red-600">
                     {(worst.pctTotalYear || 0).toFixed(0)}%
                   </span>
                 </div>
@@ -266,70 +271,56 @@ export default function RekapPage() {
             )}
 
             {/* ── HEATMAP MATRIX ── */}
-            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[860px]">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-surface sticky top-0 z-20">
-                      <th className="sticky left-0 z-30 bg-surface px-5 py-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] min-w-[200px]">
-                        Kategori
-                      </th>
+                    <tr className="border-b border-border bg-surface-subtle text-[11px] font-extrabold text-muted-foreground uppercase tracking-wider">
+                      <th className="py-3.5 px-4 w-[280px]">Kategori</th>
                       {BULAN.map((b) => (
-                        <th
-                          key={b}
-                          className="px-1 py-4 text-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-[62px]"
-                        >
+                        <th key={b} className="py-3.5 px-2 text-center text-[10px] font-bold">
                           {b}
                         </th>
                       ))}
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold text-primary uppercase tracking-[0.15em] w-[90px]">
-                        Tahun
-                      </th>
+                      <th className="py-3.5 px-4 text-center font-extrabold text-foreground">Total</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/60">
                     {cats.map((cat) => {
-                      const yearPct = cat.pctTotalYear || 0;
-                      const yTier = pctTier(yearPct);
+                      const totalTier = pctTier(cat.pctTotalYear || null);
                       return (
-                        <tr
-                          key={cat.id}
-                          className="border-b border-border/50 last:border-0 hover:bg-surface-subtle transition-colors"
-                        >
-                          <td className="sticky left-0 z-10 bg-surface px-5 py-2.5">
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-base shrink-0">{cat.icon}</span>
-                              <span className="text-[12px] font-bold text-foreground leading-tight">{cat.nama}</span>
-                            </div>
+                        <tr key={cat.id} className="hover:bg-surface-subtle/50 transition-colors">
+                          <td className="py-3 px-4 font-bold text-[13px] text-foreground flex items-center gap-2.5">
+                            <span className="text-lg shrink-0">{cat.icon}</span>
+                            <span className="truncate">{cat.nama}</span>
                           </td>
-                          {Array.from({ length: 12 }, (_, i) => {
-                            const m = cat.pctMonthly?.[i] || 0;
-                            const t = pctTier(m || null);
+                          {cat.pctMonthly.map((pct, idx) => {
+                            const t = pctTier(pct);
                             return (
-                              <td key={i} className="px-1 py-2.5">
+                              <td key={idx} className="py-2 px-1 text-center">
                                 <div
-                                  className="h-9 rounded-lg flex items-center justify-center text-[10px] font-extrabold tabular-nums transition-transform hover:scale-105"
+                                  className="w-full py-2 rounded-lg text-[11px] font-bold tabular-nums transition-all"
                                   style={{
-                                    background: m > 0 ? TIER[t].soft : "transparent",
-                                    color: m > 0 ? TIER[t].text : "var(--color-muted-foreground)",
-                                    opacity: m > 0 ? 1 : 0.3,
+                                    backgroundColor: TIER[t].soft,
+                                    color: TIER[t].text,
                                   }}
-                                  title={`${BULAN[i]}: ${m > 0 ? m.toFixed(1) : 0}%`}
                                 >
-                                  {m > 0 ? m.toFixed(0) : "·"}
+                                  {pct !== null && pct > 0 ? `${pct}%` : "—"}
                                 </div>
                               </td>
                             );
                           })}
-                          <td className="px-4 py-2.5 text-right">
+                          <td className="py-2 px-4 text-center">
                             <span
-                              className="inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-extrabold tabular-nums"
+                              className="inline-block px-3 py-1.5 rounded-lg text-[12px] font-black tabular-nums"
                               style={{
-                                background: yearPct > 0 ? TIER[yTier].soft : "var(--color-surface-subtle)",
-                                color: yearPct > 0 ? TIER[yTier].text : "var(--color-muted-foreground)",
+                                backgroundColor: TIER[totalTier].soft,
+                                color: TIER[totalTier].text,
                               }}
                             >
-                              {yearPct.toFixed(1)}%
+                              {cat.pctTotalYear !== null && cat.pctTotalYear > 0
+                                ? `${cat.pctTotalYear.toFixed(1)}%`
+                                : "—"}
                             </span>
                           </td>
                         </tr>
@@ -337,36 +328,6 @@ export default function RekapPage() {
                     })}
                   </tbody>
                 </table>
-              </div>
-
-              {/* Legend footer */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-surface-subtle">
-                <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-md"
-                      style={{ background: TIER.good.soft, border: `1px solid ${TIER.good.bg}40` }}
-                    />
-                    ≥ 80%
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-md"
-                      style={{ background: TIER.warn.soft, border: `1px solid ${TIER.warn.bg}40` }}
-                    />
-                    60–79%
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-md"
-                      style={{ background: TIER.low.soft, border: `1px solid ${TIER.low.bg}40` }}
-                    />
-                    &lt; 60%
-                  </span>
-                </div>
-                <span className="text-[10px] font-semibold text-muted-foreground">
-                  {cats.length} kategori × 12 bulan
-                </span>
               </div>
             </div>
           </div>

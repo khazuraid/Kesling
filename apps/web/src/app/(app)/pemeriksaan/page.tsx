@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { DetailResultModal } from "./DetailResultModal";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
@@ -1143,20 +1144,18 @@ export default function PemeriksaanPage() {
           </div>
         </div>
 
-        {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white p-5 sm:p-7 shadow-float border border-[#16352B]">
-          <div className="absolute -top-24 -right-16 w-80 h-80 rounded-full bg-[#00A876] opacity-[0.14] blur-2xl pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,#123527_0%,transparent_60%)] pointer-events-none" />
+        {/* Hero Card (Tamagui Clean Bento) */}
+        <Card className="relative overflow-hidden rounded-card bg-surface text-foreground p-5 sm:p-7 shadow-subtle border border-border">
           <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] border border-white/10 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#7CF5CE]">
-                <Sparkles className="w-3 h-3 text-[#BEF264]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-subtle border border-primary/25 text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary">
+                <Sparkles className="w-3 h-3 text-primary" />
                 {pendingForm.dataDasarCategory?.nama || pendingForm.nama}
               </div>
-              <h1 className="text-[22px] sm:text-[26px] font-black tracking-tight leading-tight">
+              <h1 className="text-[22px] sm:text-[26px] font-black tracking-tight leading-tight text-foreground">
                 Pilih Sasaran Pemeriksaan
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-white/70 leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground leading-relaxed">
                 Pilih sasaran yang akan diinspeksi. Data profil (alamat, pengelola, kontak, koordinat) otomatis terisi
                 ke form penilaian.
               </p>
@@ -1165,7 +1164,7 @@ export default function PemeriksaanPage() {
               <button
                 type="button"
                 onClick={() => openFormWithoutSasaran(pendingForm)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white text-[12px] font-bold transition-all shadow-subtle"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-[12px] font-bold transition-all shadow-subtle"
               >
                 Lewati (Tanpa Sasaran)
               </button>
@@ -1178,7 +1177,7 @@ export default function PemeriksaanPage() {
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Search & Info Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -1363,7 +1362,7 @@ export default function PemeriksaanPage() {
                         </button>
                         <Link
                           href="/laporan-builder"
-                          className="inline-flex h-10 px-5 items-center rounded-full bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition"
+                          className="inline-flex h-10 px-5 items-center rounded-full bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
                         >
                           Buka Builder
                         </Link>
@@ -1488,29 +1487,31 @@ export default function PemeriksaanPage() {
   if (!activeForm) {
     return (
       <div className="w-full mx-auto pb-4 fade-in">
-        {/* ── HERO ── */}
-        <div className="relative overflow-hidden bg-[#0C1B16] text-white rounded-card shadow-float border border-[#16352B]">
-          <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-[#00A876] opacity-[0.12] pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#123527_0%,transparent_55%)] pointer-events-none" />
+        {/* ── HERO (Tamagui Clean Bento) ── */}
+        <Card className="relative overflow-hidden bg-surface text-foreground rounded-card shadow-subtle border border-border p-0">
           <div className="relative z-10 px-5 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/60 mb-1.5 sm:mb-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Pemeriksaan
               </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none">Inspeksi Lapangan</h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-white/60 mt-2">
-                <span className="tabular-nums font-bold text-white">{templates.length}</span> formulir ·{" "}
-                <span className="tabular-nums font-bold text-white">{totalRiwayat}</span> riwayat pemeriksaan
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+                Inspeksi Lapangan
+              </h1>
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                <span className="tabular-nums font-bold text-foreground">{templates.length}</span> formulir ·{" "}
+                <span className="tabular-nums font-bold text-foreground">{totalRiwayat}</span> riwayat pemeriksaan
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 p-1 w-full sm:w-auto">
+            <div className="flex items-center gap-1 rounded-full bg-muted/80 border border-border p-1 w-full sm:w-auto">
               <button
                 onClick={() => {
                   setActiveTab("formulir");
                   setFormulirPage(1);
                 }}
                 className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
-                  activeTab === "formulir" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
+                  activeTab === "formulir"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Formulir ({templates.length})
@@ -1521,14 +1522,16 @@ export default function PemeriksaanPage() {
                   setRiwayatPage(1);
                 }}
                 className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
-                  activeTab === "riwayat" ? "bg-[#BEF264] text-[#06281E] shadow-sm" : "text-white/60 hover:text-white"
+                  activeTab === "riwayat"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Riwayat ({totalRiwayat})
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
         <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -1659,7 +1662,7 @@ export default function PemeriksaanPage() {
                       onClick={() => setFormulirPage(i + 1)}
                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
                         formulirPage === i + 1
-                          ? "bg-[#0C1B16] text-[#BEF264]"
+                          ? "bg-primary text-white shadow-subtle"
                           : "text-muted-foreground hover:bg-surface-subtle"
                       }`}
                     >
@@ -1822,7 +1825,7 @@ export default function PemeriksaanPage() {
                       onClick={() => setRiwayatPage(i + 1)}
                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
                         riwayatPage === i + 1
-                          ? "bg-[#0C1B16] text-[#BEF264]"
+                          ? "bg-primary text-white shadow-subtle"
                           : "text-muted-foreground hover:bg-surface-subtle"
                       }`}
                     >

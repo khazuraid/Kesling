@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModuleSparkChips } from "@/components/module-spark-chips";
+import { TamaguiCard } from "@/components/ui/tamagui-card";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -107,58 +108,53 @@ export default async function DashboardPage() {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in">
-      {/* ── HEADER HERO (Tamagui Bento Style) ── */}
-      <div className="relative overflow-hidden rounded-card bg-[#0C1B16] text-white border border-[#16352B] shadow-float">
-        {/* Decorative background glows */}
-        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#00A876] opacity-[0.16] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.08] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#153A2D_0%,transparent_70%)] pointer-events-none" />
-
+      {/* ── HEADER HERO (Tamagui Clean Bento Card) ── */}
+      <TamaguiCard className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-5 sm:px-8 py-5 sm:py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider text-[#7CF5CE]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#7CF5CE] animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-subtle border border-primary/25 text-[10px] font-black uppercase tracking-wider text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 Dinas Kesehatan · Kota Cirebon
               </span>
-              <span className="text-[11px] font-bold text-white/50">
+              <span className="text-[11px] font-bold text-muted-foreground">
                 {BULAN[bulan]} {tahun}
               </span>
             </div>
-            <h1 className="text-[24px] sm:text-[30px] font-black tracking-tight leading-tight">
+            <h1 className="text-[24px] sm:text-[30px] font-black tracking-tight leading-tight text-foreground">
               Executive Dashboard Kesling
             </h1>
-            <p className="text-[12px] sm:text-[13px] font-medium text-white/70 flex items-center gap-2 flex-wrap">
+            <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground flex items-center gap-2 flex-wrap">
               <span>{pkmCount} Puskesmas</span>
               <span>·</span>
               <span>{categories.length} Program Prioritas</span>
               <span>·</span>
-              <span className="text-[#BEF264] font-bold tabular-nums">{totalData} Laporan Terverifikasi</span>
+              <span className="text-primary font-bold tabular-nums">{totalData} Laporan Terverifikasi</span>
             </p>
           </div>
 
           <div className="flex items-center gap-4 sm:gap-6 self-start md:self-auto shrink-0">
-            <div className="text-right border-r border-white/10 pr-4 sm:pr-6">
+            <div className="text-right border-r border-border pr-4 sm:pr-6">
               <div className="flex items-baseline justify-end gap-1">
-                <span className="text-[36px] sm:text-[42px] font-black tabular-nums leading-none text-[#BEF264]">
+                <span className="text-[36px] sm:text-[42px] font-black tabular-nums leading-none text-primary">
                   {completionRate}
                 </span>
-                <span className="text-[16px] sm:text-[18px] font-bold text-[#BEF264]/70">%</span>
+                <span className="text-[16px] sm:text-[18px] font-bold text-primary/70">%</span>
               </div>
-              <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">Capaian Kota</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Capaian Kota</p>
             </div>
 
             <div className="flex flex-col sm:flex-row md:flex-col gap-2">
               <a
                 href="/api/export/all"
-                className="h-9 sm:h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-black hover:bg-[#aee64b] active:scale-[0.98] transition shadow-subtle shrink-0"
+                className="h-9 sm:h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-[0.98] transition shadow-subtle shrink-0"
               >
                 <Download className="w-4 h-4 shrink-0" />
                 <span>Export Data</span>
               </a>
               <Link
                 href="/laporan"
-                className="h-8 sm:h-9 px-3.5 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 text-white text-[11px] font-bold hover:bg-white/15 active:scale-[0.98] transition border border-white/10 shrink-0"
+                className="h-8 sm:h-9 px-3.5 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface text-foreground text-[11px] font-bold hover:bg-muted active:scale-[0.98] transition border border-border shrink-0"
               >
                 <span>Semua Laporan</span>
                 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
@@ -166,7 +162,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
+      </TamaguiCard>
 
       {/* ── KPI CARDS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

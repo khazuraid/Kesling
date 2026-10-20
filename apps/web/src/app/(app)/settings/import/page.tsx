@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, ChevronLeft, FileText, Upload, X } from "luc
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 
 const JENIS_OPTIONS = [
   { value: "tpp", label: "TPP (Tempat Pengelolaan Pangan)" },
@@ -115,21 +116,20 @@ export default function ImportSettingsPage() {
         <ChevronLeft className="w-4 h-4" /> Kembali ke Pengaturan
       </Link>
 
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#153A2D_0%,transparent_60%)] pointer-events-none" />
+      {/* Hero Header (Tamagui Clean Bento) */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">Import Data</p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">Import Excel</h1>
-            <p className="text-[13px] font-medium text-white/60 mt-2">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Import Data</p>
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+              Import Excel
+            </h1>
+            <p className="text-[13px] font-medium text-muted-foreground mt-2">
               Upload formulir dan data capaian dari berkas Excel (.xlsx / .xls) secara massal
             </p>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left -- Config */}

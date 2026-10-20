@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 
@@ -92,30 +93,29 @@ export default function SystemErrorsPage() {
         <ChevronLeft className="w-4 h-4" /> Kembali ke Pengaturan
       </Link>
 
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-error opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#2D1515_0%,transparent_60%)] pointer-events-none" />
+      {/* Hero Header (Tamagui Clean Bento) */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-red-300/80 mb-2">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-red-600 mb-2">
               Diagnostik Sistem
             </p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">Log Error Sistem</h1>
-            <p className="text-[13px] font-medium text-white/60 mt-2">
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+              Log Error Sistem
+            </h1>
+            <p className="text-[13px] font-medium text-muted-foreground mt-2">
               Daftar uncaught exceptions, kegagalan query, dan crash aplikasi
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-white/10 text-white text-[11px] font-bold border border-white/10">
-              <span className="w-2 h-2 rounded-full bg-red-400" />
+            <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-red-500/10 text-red-600 text-[11px] font-bold border border-red-500/20">
+              <span className="w-2 h-2 rounded-full bg-red-500" />
               {logs.length} Total Error
             </span>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

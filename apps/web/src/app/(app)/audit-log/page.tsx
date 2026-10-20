@@ -25,6 +25,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
@@ -266,7 +267,7 @@ export default function AuditLogPage() {
   return (
     <div className="w-full mx-auto pb-4 fade-in bg-canvas min-h-screen">
       {/* ── HERO ── */}
-      <div className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground">
+      <Card className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground p-0">
         <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.08]" />
         <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-error opacity-[0.05]" />
 
@@ -345,7 +346,7 @@ export default function AuditLogPage() {
             ))}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* ── TOOLBAR ── */}
       {!isErrors && (
@@ -525,7 +526,7 @@ export default function AuditLogPage() {
                           <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                             Stack Trace
                           </p>
-                          <pre className="px-4 py-3 rounded-button bg-[#0C1B16] text-[#7CF5CE] font-mono text-[10px] overflow-x-auto max-h-[280px] overflow-y-auto whitespace-pre leading-relaxed">
+                          <pre className="px-4 py-3 rounded-xl bg-slate-950 text-emerald-400 border border-border/40 font-mono text-[10px] overflow-x-auto max-h-[280px] overflow-y-auto whitespace-pre leading-relaxed">
                             {log.stack}
                           </pre>
                         </div>

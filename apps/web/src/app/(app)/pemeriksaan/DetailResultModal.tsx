@@ -172,24 +172,24 @@ export function DetailResultModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-5 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl h-[95vh] sm:h-auto sm:max-h-[88vh] flex flex-col bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
-        {/* ── HEADER MODAL ── */}
-        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[hsl(var(--border))] bg-[#0C1B16] text-white flex items-center justify-between gap-3 shrink-0">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-5 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl h-[95vh] sm:h-auto sm:max-h-[88vh] flex flex-col bg-surface border border-border rounded-t-3xl sm:rounded-3xl shadow-float overflow-hidden">
+        {/* ── HEADER MODAL (Tamagui Clean Bento) ── */}
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border bg-surface text-foreground flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#00A876]/20 text-[#BEF264] flex items-center justify-center shrink-0 border border-white/10">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary-subtle text-primary flex items-center justify-center shrink-0 border border-primary/20">
               <FileCheck2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-[#BEF264] px-2 py-0.5 rounded-full bg-white/10">
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
                   Detail Pemeriksaan
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-white/50 truncate hidden sm:inline">
+                <span className="text-[10px] sm:text-[11px] text-muted-foreground truncate hidden sm:inline">
                   No. #{result.id}
                 </span>
               </div>
-              <h2 className="text-[15px] sm:text-[18px] font-black text-white truncate mt-0.5">{namaSasaran}</h2>
+              <h2 className="text-[15px] sm:text-[18px] font-black text-foreground truncate mt-0.5">{namaSasaran}</h2>
             </div>
           </div>
 
@@ -198,7 +198,7 @@ export function DetailResultModal({
               type="button"
               onClick={handleDownloadPDF}
               disabled={isExportingPDF}
-              className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#00A876] hover:bg-[#008f64] text-white text-[12px] font-extrabold transition-all shadow-sm disabled:opacity-50"
+              className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold transition-all shadow-subtle disabled:opacity-50"
             >
               {isExportingPDF ? (
                 <>
@@ -213,7 +213,7 @@ export function DetailResultModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
               title="Tutup"
             >
               <X className="w-5 h-5" />

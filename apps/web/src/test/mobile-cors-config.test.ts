@@ -5,8 +5,10 @@ describe("mobile API CORS configuration", () => {
   it("allows browser clients to preflight every mobile API route", async () => {
     expect(nextConfig.headers).toBeTypeOf("function");
     const rules = await nextConfig.headers?.();
-    const mobile = rules?.find((rule) => rule.source === "/api/mobile/:path*");
-    const headers = new Map(mobile?.headers.map((header) => [header.key, header.value]));
+    const mobile = rules?.find((rule: { source: string }) => rule.source === "/api/mobile/:path*");
+    const headers = new Map(
+      mobile?.headers.map((header: { key: string; value: string }) => [header.key, header.value]),
+    );
 
     expect(headers.get("Access-Control-Allow-Origin")).toBe("*");
     expect(headers.get("Access-Control-Allow-Methods")).toContain("OPTIONS");

@@ -107,7 +107,7 @@ export function LaporanFormModal({
           type="button"
           onClick={(e) => handleSubmit(e, false, "APPROVED")}
           disabled={submitMutation.isPending}
-          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover transition shadow-subtle disabled:opacity-50 cursor-pointer"
         >
           <ShieldCheck className="w-4 h-4" /> Setujui
         </button>
@@ -136,10 +136,10 @@ export function LaporanFormModal({
           type="submit"
           form="laporan-form"
           disabled={submitMutation.isPending}
-          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-[#BEF264] text-[#06281E] text-[11px] font-extrabold uppercase tracking-wider hover:brightness-95 transition disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover transition shadow-subtle disabled:opacity-50 cursor-pointer"
         >
           {submitMutation.isPending ? (
-            <span className="w-3.5 h-3.5 border-2 border-[#06281E]/30 border-t-[#06281E] rounded-full animate-spin" />
+            <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <Send className="w-3.5 h-3.5" />
           )}

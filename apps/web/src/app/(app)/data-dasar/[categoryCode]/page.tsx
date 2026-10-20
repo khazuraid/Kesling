@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 
 interface Parameter {
@@ -421,7 +422,7 @@ export default function DataDasarSubCatPage() {
         </div>
         <Link
           href="/dashboard-pkm"
-          className="h-10 px-5 inline-flex items-center rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition shadow-sm"
+          className="h-10 px-5 inline-flex items-center rounded-xl bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover transition shadow-subtle"
         >
           Kembali ke Dashboard
         </Link>
@@ -442,38 +443,35 @@ export default function DataDasarSubCatPage() {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in bg-canvas min-h-screen">
-      {/* ── HERO ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0C1B16] text-white border border-[#16352B] shadow-lg">
-        <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-primary opacity-[0.14] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-20 w-80 h-80 rounded-full bg-[#BEF264] opacity-[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,#153A2D_0%,transparent_60%)] pointer-events-none" />
+      {/* ── HERO (Tamagui Clean Bento) ── */}
+      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
         <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#7CF5CE]/70 mb-2">
-              <Link href="/data-dasar" className="hover:text-white transition-colors">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
+              <Link href="/data-dasar" className="hover:underline transition-colors">
                 ← Data Dasar
               </Link>
             </p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none">
+            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
               {category?.nama || "Memuat..."}
             </h1>
-            <p className="text-[13px] font-medium text-white/60 mt-2">
-              <span className="tabular-nums font-semibold">{sasaranPage.total}</span> entitas ·{" "}
-              <span className="tabular-nums font-semibold">{baselineParams.length}</span> field ·{" "}
-              <span className="tabular-nums font-semibold">{syncedParams.length}</span> sync
+            <p className="text-[13px] font-medium text-muted-foreground mt-2">
+              <span className="tabular-nums font-semibold text-foreground">{sasaranPage.total}</span> entitas ·{" "}
+              <span className="tabular-nums font-semibold text-foreground">{baselineParams.length}</span> field ·{" "}
+              <span className="tabular-nums font-semibold text-foreground">{syncedParams.length}</span> sync
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href="/laporan-builder"
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white/[0.08] border border-white/15 text-white/80 text-[12px] font-extrabold hover:bg-white/15 transition shadow-sm"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface border border-border text-foreground text-[12px] font-extrabold hover:bg-muted transition shadow-xs"
             >
               <Settings2 className="w-3.5 h-3.5" /> Builder
             </Link>
             <button
               onClick={handleNew}
               disabled={!selectedSubCatId}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#BEF264] text-[#06281E] text-[12px] font-black hover:brightness-105 active:scale-95 transition shadow-sm disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-subtle disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" /> Tambah Data
             </button>
@@ -491,8 +489,8 @@ export default function DataDasarSubCatPage() {
               }}
               className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
                 sc.id === selectedSubCatId
-                  ? "bg-[#BEF264] text-[#06281E] shadow-sm"
-                  : "bg-white/[0.08] text-white/70 border border-white/15 hover:text-white hover:bg-white/15"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
               }`}
             >
               {sc.grup && <span className="text-[9px] font-extrabold opacity-60 uppercase">{sc.grup}</span>}
@@ -500,7 +498,7 @@ export default function DataDasarSubCatPage() {
             </button>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* ── SEARCH + FILTER ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -741,7 +739,7 @@ export default function DataDasarSubCatPage() {
                       </button>
                       <Link
                         href="/laporan-builder"
-                        className="inline-flex h-10 px-5 items-center rounded-button bg-[#BEF264] text-[#06281E] text-[12px] font-extrabold hover:brightness-95 transition shadow-subtle"
+                        className="inline-flex h-10 px-5 items-center rounded-button bg-surface-subtle border border-border text-foreground hover:bg-surface-hover text-[12px] font-extrabold transition shadow-subtle"
                       >
                         Buka Builder
                       </Link>

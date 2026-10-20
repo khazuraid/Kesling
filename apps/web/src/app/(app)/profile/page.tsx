@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Card } from "tamagui";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -136,7 +137,7 @@ export default function ProfilePage() {
   return (
     <div className="w-full mx-auto pb-4 space-y-6 fade-in bg-canvas min-h-screen">
       {/* HERO */}
-      <div className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground px-8 py-7">
+      <Card className="relative overflow-hidden rounded-card bg-surface border border-border shadow-subtle text-foreground px-8 py-7 p-0">
         <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary opacity-[0.08]" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-[22px] font-black text-primary-foreground shrink-0 shadow-subtle">
@@ -150,7 +151,7 @@ export default function ProfilePage() {
             <p className="text-[12px] font-medium text-muted-foreground mt-1.5">{displayEmail}</p>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* LEFT - Avatar + Details */}
