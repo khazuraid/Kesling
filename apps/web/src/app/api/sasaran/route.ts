@@ -1,6 +1,8 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { recalculateLaporanBulanan } from "@/lib/aggregate-inspection";
+import { cacheInvalidate } from "@/lib/redis";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -126,6 +128,18 @@ export async function POST(req: NextRequest) {
         puskesmas: { select: { id: true, nama: true } },
       },
     });
+
+    // Invalidate laporan cache and auto-recalculate current month's report
+    await cacheInvalidate("laporan:*");
+    try {
+      const now = new Date();
+      await recalculateLaporanBulanan({
+        puskesmasId: Number(finalPkmId),
+        subCategoryId: Number(subCategoryId),
+        bulan: now.getMonth() + 1,
+        tahun: now.getFullYear(),
+      });
+    } catch {}
 
     return NextResponse.json(newSasaran, { status: 201 });
   } catch (error: any) {

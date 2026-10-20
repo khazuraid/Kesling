@@ -229,7 +229,11 @@ export default function DynamicLaporanPage() {
       const res = await fetch(`/api/laporan/${categoryCode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...body, bulan, tahun }),
+        body: JSON.stringify({
+          ...body,
+          bulan: body.isDataDasar ? 0 : bulan,
+          tahun,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -241,7 +245,6 @@ export default function DynamicLaporanPage() {
       queryClient.invalidateQueries({ queryKey: ["laporan", categoryCode] });
       if (variables.isDataDasar) setShowDataDasarForm(false);
       else setShowForm(false);
-      setShowForm(false);
     },
     onError: (e: Error) => {
       toast.error(e.message || "Gagal menyimpan data");
@@ -253,34 +256,28 @@ export default function DynamicLaporanPage() {
   const openForm = useCallback(
     (pkmId?: number) => {
       const id = pkmId || (session?.user as any)?.puskesmasId || puskesmasList[0]?.id || 0;
-
-      const baselineParams = category?.parameters.filter((p) => p.isBaseline) || [];
       setFormPuskesmasId(id);
 
       const existing = laporanList.find((l) => l.puskesmasId === id);
-      if (existing) {
-        setFormValues(buildValueMap(existing.values));
-      } else {
-        if (baselineParams.length > 0 && dataDasarList.length > 0) {
-          const baselineData = dataDasarList.find((l) => l.puskesmasId === id);
-          if (baselineData) {
-            const prefilled: ValueMap = {};
-            for (const v of baselineData.values) {
-              if (baselineParams.some((bp) => bp.id === v.parameterId)) {
-                prefilled[buildKey(v.parameterId, v.subCategoryId)] = v.value;
-              }
+      const prefilled: ValueMap = existing ? buildValueMap(existing.values) : {};
+
+      // Fallback isi data dasar (bulan = 0) jika nilai terdaftar/baseline belum ada atau masih 0
+      if (dataDasarList.length > 0) {
+        const baselineData = dataDasarList.find((l) => l.puskesmasId === id);
+        if (baselineData) {
+          for (const v of baselineData.values) {
+            const k = buildKey(v.parameterId, v.subCategoryId);
+            if (!prefilled[k] || prefilled[k] === "0") {
+              prefilled[k] = v.value;
             }
-            setFormValues(prefilled);
-          } else {
-            setFormValues({});
           }
-        } else {
-          setFormValues({});
         }
       }
+
+      setFormValues(prefilled);
       setShowForm(true);
     },
-    [laporanList, dataDasarList, puskesmasList, session, category],
+    [laporanList, dataDasarList, puskesmasList, session],
   );
 
   const openDataDasarForm = useCallback(

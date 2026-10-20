@@ -38,6 +38,14 @@ function buildKey(parameterId: number, subCategoryId?: number | null) {
   return subCategoryId != null ? `${subCategoryId}-${parameterId}` : `${parameterId}`;
 }
 
+function buildValueMap(values: DynamicLaporanValue[]): ValueMap {
+  const map: ValueMap = {};
+  for (const v of values || []) {
+    map[buildKey(v.parameterId, v.subCategoryId)] = v.value;
+  }
+  return map;
+}
+
 // ─── Component Props ───────────────────────────────────────────────────
 
 interface LaporanFormModalProps {
@@ -178,7 +186,7 @@ export function LaporanFormModal({
                   const id = Number(e.target.value);
                   setFormPuskesmasId(id);
                   const existing = laporanList.find((l) => l.puskesmasId === id);
-                  setFormValues(existing ? buildValueMapFromLaporan(existing.values) : {});
+                  setFormValues(existing ? buildValueMap(existing.values) : {});
                 }}
                 className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-foreground outline-none appearance-none cursor-pointer"
               >

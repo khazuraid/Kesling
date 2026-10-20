@@ -241,12 +241,14 @@ export async function recalculateLaporanBulanan({
   if (paramMsId) updates.push({ id: paramMsId, val: sumMs });
   if (paramTmsId) updates.push({ id: paramTmsId, val: sumTms });
 
-  if (paramTerdaftarId && sumDiperiksa > 0) {
+  if (paramTerdaftarId) {
     const sasaranCount = await prisma.sasaran.count({
       where: { puskesmasId, subCategoryId },
     });
     const targetTerdaftar = Math.max(sasaranCount, sumDiperiksa);
-    updates.push({ id: paramTerdaftarId, val: targetTerdaftar, isMinOnly: true });
+    if (targetTerdaftar > 0) {
+      updates.push({ id: paramTerdaftarId, val: targetTerdaftar, isMinOnly: true });
+    }
   }
 
   console.log("AGREGASI RUNNING:", {

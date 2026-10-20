@@ -1,6 +1,8 @@
 import { prisma } from "@apps-kes/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { recalculateLaporanBulanan } from "@/lib/aggregate-inspection";
+import { cacheInvalidate } from "@/lib/redis";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +77,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
+    await cacheInvalidate("laporan:*");
+    try {
+      const now = new Date();
+      await recalculateLaporanBulanan({
+        puskesmasId: updated.puskesmasId,
+        subCategoryId: updated.subCategoryId,
+        bulan: now.getMonth() + 1,
+        tahun: now.getFullYear(),
+      });
+    } catch {}
+
     return NextResponse.json(updated);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Gagal memperbarui sasaran" }, { status: 500 });
@@ -101,6 +114,17 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     await prisma.sasaran.delete({
       where: { id: sasaranId },
     });
+
+    await cacheInvalidate("laporan:*");
+    try {
+      const now = new Date();
+      await recalculateLaporanBulanan({
+        puskesmasId: existing.puskesmasId,
+        subCategoryId: existing.subCategoryId,
+        bulan: now.getMonth() + 1,
+        tahun: now.getFullYear(),
+      });
+    } catch {}
 
     return NextResponse.json({ message: "Sasaran berhasil dihapus" });
   } catch (error: any) {

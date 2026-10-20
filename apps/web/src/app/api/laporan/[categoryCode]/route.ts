@@ -12,7 +12,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cate
     const { categoryCode } = await params;
 
     const { searchParams } = new URL(req.url);
-    const bulan = Number(searchParams.get("bulan")) || new Date().getMonth() + 1;
+    const rawBulan = searchParams.get("bulan");
+    const bulan = rawBulan !== null && !isNaN(Number(rawBulan)) ? Number(rawBulan) : new Date().getMonth() + 1;
     const tahun = Number(searchParams.get("tahun")) || new Date().getFullYear();
 
     const cacheKey = `laporan:${categoryCode}:${bulan}:${tahun}:${user.role === "OPERATOR" ? user.puskesmasId : "all"}`;
@@ -22,6 +23,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cate
     // 1. Find dynamic category by code
     const category = await prisma.dynamicCategory.findFirst({
       where: { code: { equals: categoryCode, mode: "insensitive" } },
+      include: {
+        parameters: true,
+        subCategories: true,
+      },
     });
 
     if (!category) {
@@ -48,6 +53,150 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cate
       },
       orderBy: { puskesmas: { urutan: "asc" } },
     });
+
+    // 3. Auto-sync sasaran dari Data Dasar (prisma.sasaran) ke parameter Terdaftar jika belum terisi
+    const paramTerdaftar =
+      category.parameters.find(
+        (p) =>
+          p.code === "terdaftar" ||
+          p.code === "jumlahTotal" ||
+          p.code === "jumlahSarana" ||
+          (p.code === "jumlah" && p.isBaseline),
+      ) || category.parameters.find((p) => p.nama.toLowerCase().includes("terdaftar"));
+
+    if (paramTerdaftar) {
+      if (category.isRowBased) {
+        const sasaranCounts = await prisma.sasaran.groupBy({
+          by: ["puskesmasId", "subCategoryId"],
+          where: {
+            subCategory: { categoryId: category.id },
+            ...(user.role === "OPERATOR" && user.puskesmasId ? { puskesmasId: user.puskesmasId } : {}),
+          },
+          _count: { id: true },
+        });
+
+        for (const item of sasaranCounts) {
+          const count = item._count.id;
+          if (count <= 0) continue;
+
+          let report = data.find((l) => l.puskesmasId === item.puskesmasId);
+          if (!report) {
+            const newLaporan = await prisma.dynamicLaporan.create({
+              data: {
+                puskesmasId: item.puskesmasId,
+                categoryId: category.id,
+                bulan,
+                tahun,
+                status: "DRAFT",
+              },
+              include: {
+                puskesmas: true,
+                values: {
+                  include: {
+                    parameter: true,
+                    subCategory: true,
+                  },
+                },
+              },
+            });
+            data.push(newLaporan);
+            report = newLaporan;
+          }
+
+          const existingVal = report.values.find(
+            (v) => v.parameterId === paramTerdaftar.id && v.subCategoryId === item.subCategoryId,
+          );
+
+          if (!existingVal) {
+            const createdVal = await prisma.dynamicLaporanValue.create({
+              data: {
+                laporanId: report.id,
+                parameterId: paramTerdaftar.id,
+                subCategoryId: item.subCategoryId,
+                value: String(count),
+              },
+              include: {
+                parameter: true,
+                subCategory: true,
+              },
+            });
+            report.values.push(createdVal);
+          } else if (!existingVal.value || existingVal.value === "0" || Number(existingVal.value) < count) {
+            const targetVal = String(Math.max(Number(existingVal.value) || 0, count));
+            await prisma.dynamicLaporanValue.update({
+              where: { id: existingVal.id },
+              data: { value: targetVal },
+            });
+            existingVal.value = targetVal;
+          }
+        }
+      } else {
+        const sasaranCountsNonRow = await prisma.sasaran.groupBy({
+          by: ["puskesmasId"],
+          where: {
+            subCategory: { categoryId: category.id },
+            ...(user.role === "OPERATOR" && user.puskesmasId ? { puskesmasId: user.puskesmasId } : {}),
+          },
+          _count: { id: true },
+        });
+
+        for (const item of sasaranCountsNonRow) {
+          const count = item._count.id;
+          if (count <= 0) continue;
+
+          let report = data.find((l) => l.puskesmasId === item.puskesmasId);
+          if (!report) {
+            const newLaporan = await prisma.dynamicLaporan.create({
+              data: {
+                puskesmasId: item.puskesmasId,
+                categoryId: category.id,
+                bulan,
+                tahun,
+                status: "DRAFT",
+              },
+              include: {
+                puskesmas: true,
+                values: {
+                  include: {
+                    parameter: true,
+                    subCategory: true,
+                  },
+                },
+              },
+            });
+            data.push(newLaporan);
+            report = newLaporan;
+          }
+
+          const existingVal = report.values.find(
+            (v) => v.parameterId === paramTerdaftar.id && v.subCategoryId === null,
+          );
+
+          if (!existingVal) {
+            const createdVal = await prisma.dynamicLaporanValue.create({
+              data: {
+                laporanId: report.id,
+                parameterId: paramTerdaftar.id,
+                subCategoryId: null,
+                value: String(count),
+              },
+              include: {
+                parameter: true,
+                subCategory: true,
+              },
+            });
+            report.values.push(createdVal);
+          } else if (!existingVal.value || existingVal.value === "0" || Number(existingVal.value) < count) {
+            const targetVal = String(Math.max(Number(existingVal.value) || 0, count));
+            await prisma.dynamicLaporanValue.update({
+              where: { id: existingVal.id },
+              data: { value: targetVal },
+            });
+            existingVal.value = targetVal;
+          }
+        }
+      }
+    }
 
     await cacheSet(cacheKey, data, 180);
     return NextResponse.json(data);
@@ -76,7 +225,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cat
     const body = await req.json();
     const { puskesmasId, bulan, tahun, values, catatan, status } = body;
 
-    if (!puskesmasId || !bulan || !tahun || !Array.isArray(values)) {
+    if (!puskesmasId || bulan === undefined || bulan === null || !tahun || !Array.isArray(values)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
