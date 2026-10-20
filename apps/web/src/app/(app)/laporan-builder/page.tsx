@@ -559,34 +559,35 @@ export default function LaporanBuilderPage() {
   // ══════════════════ INDEX MODE (no module selected) ══════════════════
   if (!selectedModule) {
     return (
-      <div className="w-full min-h-screen bg-canvas pb-16 fade-in space-y-6">
-        {/* Masthead (Tamagui Clean Bento) */}
-        <div className="px-6 sm:px-8 pt-6">
-          <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-            <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
-                  Laporan Builder
-                </p>
-                <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
-                  Format Laporan & Formulir
-                </h1>
-                <p className="text-[13px] font-medium text-muted-foreground mt-2">
-                  {categories.length} modul terdaftar · kelola urutan dan rancang parameter tiap modul
-                </p>
-              </div>
+      <div className="w-full fade-in min-h-screen bg-canvas">
+        {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+          <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+                Laporan Builder
+              </p>
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+                Format Laporan & Formulir
+              </h1>
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                <span className="tabular-nums font-semibold text-foreground">{categories.length}</span> modul terdaftar
+                · kelola urutan dan rancang parameter tiap modul
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsCreatingModule(true)}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs cursor-pointer"
               >
-                <Plus className="w-4 h-4" /> Modul Baru
+                <Plus className="w-3.5 h-3.5" /> Modul Baru
               </button>
             </div>
-          </Card>
+          </div>
         </div>
 
-        {/* Module cards */}
-        <div className="px-6 sm:px-8">
+        {/* ── CONTENT BODY (CANVAS) ── */}
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
           {categories.length === 0 ? (
             <EmptyState
               icon={LayoutTemplate}

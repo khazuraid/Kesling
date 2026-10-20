@@ -272,18 +272,18 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in bg-canvas min-h-screen">
-      {/* ── HERO (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
               Sistem & Konfigurasi
             </p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+            <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Pengaturan
             </h1>
-            <p className="text-[13px] font-medium text-muted-foreground mt-2">
+            <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
               Master data, target capaian, manajemen pengguna, dan integrasi API
             </p>
           </div>
@@ -291,72 +291,75 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/settings/import"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-subtle"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-xs"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
               Import Excel
             </Link>
             <Link
               href="/settings/errors"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-subtle"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-xs"
             >
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
               Log Error
             </Link>
           </div>
         </div>
-      </Card>
-
-      {/* ── BENTO SETTINGS GRID ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`rounded-card bg-surface border text-left p-3.5 sm:p-4 transition-all duration-180 flex flex-col justify-between group cursor-pointer ${
-                isActive
-                  ? "border-primary bg-primary-subtle/50 ring-1 ring-primary shadow-subtle"
-                  : "border-border shadow-subtle hover:border-border-hover hover:bg-surface-hover hover:shadow-md"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2.5">
-                <span
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                    isActive
-                      ? "bg-primary text-white"
-                      : "bg-surface-subtle text-muted-foreground group-hover:text-primary group-hover:bg-primary-subtle"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                </span>
-                {isActive && <span className="w-2 h-2 rounded-full bg-primary" />}
-              </div>
-              <div>
-                <p
-                  className={`text-[12px] sm:text-[13px] font-bold leading-tight ${isActive ? "text-primary" : "text-foreground"}`}
-                >
-                  {tab.label}
-                </p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 mt-0.5 font-medium">
-                  {tab.desc}
-                </p>
-              </div>
-            </button>
-          );
-        })}
       </div>
 
-      {/* ── CONTENT CONTAINER ── */}
-      <div className="pt-2">
-        {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
-        {activeTab === "target" && <TargetManagement />}
-        {activeTab === "users" && <UsersPage />}
-        {activeTab === "telegram" && <TelegramSettingsPage />}
-        {activeTab === "ai" && <AISettingsPage />}
-        {activeTab === "health" && <SystemHealthDashboard />}
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        {/* ── BENTO SETTINGS GRID ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`rounded-card bg-surface border text-left p-3.5 sm:p-4 transition-all duration-180 flex flex-col justify-between group cursor-pointer ${
+                  isActive
+                    ? "border-primary bg-primary-subtle/50 ring-1 ring-primary shadow-subtle"
+                    : "border-border shadow-subtle hover:border-border-hover hover:bg-surface-hover hover:shadow-md"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2.5">
+                  <span
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                      isActive
+                        ? "bg-primary text-white"
+                        : "bg-surface-subtle text-muted-foreground group-hover:text-primary group-hover:bg-primary-subtle"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </span>
+                  {isActive && <span className="w-2 h-2 rounded-full bg-primary" />}
+                </div>
+                <div>
+                  <p
+                    className={`text-[12px] sm:text-[13px] font-bold leading-tight ${isActive ? "text-primary" : "text-foreground"}`}
+                  >
+                    {tab.label}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 mt-0.5 font-medium">
+                    {tab.desc}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── CONTENT CONTAINER ── */}
+        <div className="pt-2">
+          {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
+          {activeTab === "target" && <TargetManagement />}
+          {activeTab === "users" && <UsersPage />}
+          {activeTab === "telegram" && <TelegramSettingsPage />}
+          {activeTab === "ai" && <AISettingsPage />}
+          {activeTab === "health" && <SystemHealthDashboard />}
+        </div>
       </div>
     </div>
   );

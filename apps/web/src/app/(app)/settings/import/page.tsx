@@ -107,263 +107,267 @@ export default function ImportSettingsPage() {
   }
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in bg-canvas min-h-screen">
-      {/* Back Link */}
-      <Link
-        href="/settings"
-        className="inline-flex items-center gap-2 text-[12px] font-bold text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" /> Kembali ke Pengaturan
-      </Link>
-
-      {/* Hero Header (Tamagui Clean Bento) */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Import Data</p>
-            <h1 className="text-[26px] sm:text-[32px] font-black tracking-tight leading-none text-foreground">
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+              <Link
+                href="/settings"
+                className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Pengaturan
+              </Link>
+              <span className="text-muted-foreground/40">•</span>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary">Import Data</p>
+            </div>
+            <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Import Excel
             </h1>
-            <p className="text-[13px] font-medium text-muted-foreground mt-2">
+            <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
               Upload formulir dan data capaian dari berkas Excel (.xlsx / .xls) secara massal
             </p>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left -- Config */}
-        <div className="space-y-6">
-          <div className="rounded-card bg-surface border border-border shadow-subtle p-5 space-y-4">
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Konfigurasi Import
-            </span>
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left -- Config */}
+          <div className="space-y-6">
+            <div className="rounded-card bg-surface border border-border shadow-subtle p-5 space-y-4">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Konfigurasi Import
+              </span>
 
-            {/* Mode */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Mode Import
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDynamicCatCode("");
-                    setJenis("tpp");
-                  }}
-                  className={`h-10 text-[11px] font-bold rounded-xl transition-all cursor-pointer ${
-                    !dynamicCatCode
-                      ? "bg-primary text-white shadow-subtle"
-                      : "bg-surface-subtle text-muted-foreground hover:bg-surface-hover border border-border"
-                  }`}
-                >
-                  Static (Legacy)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDynamicCatCode(dynamicCategories[0]?.code || "")}
-                  className={`h-10 text-[11px] font-bold rounded-xl transition-all cursor-pointer ${
-                    dynamicCatCode
-                      ? "bg-primary text-white shadow-subtle"
-                      : "bg-surface-subtle text-muted-foreground hover:bg-surface-hover border border-border"
-                  }`}
-                >
-                  Dynamic (New)
-                </button>
-              </div>
-            </div>
-
-            {/* Dynamic category select */}
-            {dynamicCatCode && (
-              <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Kategori Dynamic
-                </label>
-                <select
-                  value={dynamicCatCode}
-                  onChange={(e) => setDynamicCatCode(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
-                >
-                  {dynamicCategories.map((c: any) => (
-                    <option key={c.code} value={c.code}>
-                      {c.icon} {c.nama}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Static jenis select */}
-            {!dynamicCatCode && (
+              {/* Mode */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Jenis Data
+                  Mode Import
                 </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDynamicCatCode("");
+                      setJenis("tpp");
+                    }}
+                    className={`h-10 text-[11px] font-bold rounded-xl transition-all cursor-pointer ${
+                      !dynamicCatCode
+                        ? "bg-primary text-white shadow-subtle"
+                        : "bg-surface-subtle text-muted-foreground hover:bg-surface-hover border border-border"
+                    }`}
+                  >
+                    Static (Legacy)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDynamicCatCode(dynamicCategories[0]?.code || "")}
+                    className={`h-10 text-[11px] font-bold rounded-xl transition-all cursor-pointer ${
+                      dynamicCatCode
+                        ? "bg-primary text-white shadow-subtle"
+                        : "bg-surface-subtle text-muted-foreground hover:bg-surface-hover border border-border"
+                    }`}
+                  >
+                    Dynamic (New)
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic category select */}
+              {dynamicCatCode && (
+                <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Kategori Dynamic
+                  </label>
+                  <select
+                    value={dynamicCatCode}
+                    onChange={(e) => setDynamicCatCode(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
+                  >
+                    {dynamicCategories.map((c: any) => (
+                      <option key={c.code} value={c.code}>
+                        {c.icon} {c.nama}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Static jenis select */}
+              {!dynamicCatCode && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Jenis Data
+                  </label>
+                  <select
+                    value={jenis}
+                    onChange={(e) => setJenis(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
+                  >
+                    {JENIS_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Bulan */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Bulan</label>
                 <select
-                  value={jenis}
-                  onChange={(e) => setJenis(e.target.value)}
+                  value={bulan}
+                  onChange={(e) => setBulan(Number(e.target.value))}
                   className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
                 >
-                  {JENIS_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
+                  {BULAN_NAMES.slice(1).map((nama, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {nama}
                     </option>
                   ))}
                 </select>
               </div>
-            )}
 
-            {/* Bulan */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Bulan</label>
-              <select
-                value={bulan}
-                onChange={(e) => setBulan(Number(e.target.value))}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
-              >
-                {BULAN_NAMES.slice(1).map((nama, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {nama}
-                  </option>
-                ))}
-              </select>
+              {/* Tahun */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tahun</label>
+                <input
+                  type="number"
+                  value={tahun}
+                  onChange={(e) => setTahun(Number(e.target.value))}
+                  className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all"
+                  min={2020}
+                  max={2100}
+                />
+              </div>
             </div>
 
-            {/* Tahun */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tahun</label>
-              <input
-                type="number"
-                value={tahun}
-                onChange={(e) => setTahun(Number(e.target.value))}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all"
-                min={2020}
-                max={2100}
-              />
+            {/* Format info */}
+            <div className="rounded-card bg-primary-subtle/50 border border-primary/20 shadow-subtle p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-primary" />
+                <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Format File Excel</span>
+              </div>
+              <ul className="space-y-2 text-[11px] font-medium text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> File harus berformat .xlsx atau .xls
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> Ukuran maksimal file 5MB
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom pertama: No / Urutan
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom kedua: Nama Puskesmas
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom berikutnya: Data per jenis sarana
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 shrink-0">\u2022</span> Nama puskesmas harus persis sama dengan
+                  data master
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Format info */}
-          <div className="rounded-card bg-primary-subtle/50 border border-primary/20 shadow-subtle p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Format File Excel</span>
-            </div>
-            <ul className="space-y-2 text-[11px] font-medium text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> File harus berformat .xlsx atau .xls
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> Ukuran maksimal file 5MB
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom pertama: No / Urutan
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom kedua: Nama Puskesmas
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> Kolom berikutnya: Data per jenis sarana
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-0.5 shrink-0">\u2022</span> Nama puskesmas harus persis sama dengan
-                data master
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Right -- Upload & Result */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Drop zone */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => !file && fileRef.current?.click()}
-            className={`rounded-card border-2 border-dashed p-10 sm:p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
-              dragOver
-                ? "border-primary bg-primary-subtle/60 shadow-md ring-2 ring-primary/20"
-                : file
-                  ? "border-primary/40 bg-primary-subtle/30 shadow-subtle cursor-default"
-                  : "border-border bg-surface hover:border-primary/50 hover:bg-surface-hover shadow-subtle"
-            }`}
-          >
-            <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
-
-            {file ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-primary-subtle border border-primary/20 flex items-center justify-center text-primary shadow-subtle">
-                  <FileText className="w-7 h-7" />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground text-[14px]">{file.name}</p>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">{formatBytes(file.size)}</p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFile(null);
-                    setResult(null);
-                  }}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-error hover:opacity-80 transition-opacity mt-1 cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" /> Hapus File
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center text-muted-foreground shadow-subtle">
-                  <Upload className="w-7 h-7" />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground text-[14px]">Drag & drop file Excel di sini</p>
-                  <p className="text-[12px] text-muted-foreground mt-1">atau klik untuk memilih file .xlsx / .xls</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Result */}
-          {result && (
-            <div className="rounded-card bg-surface border border-border shadow-subtle p-5 animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground text-[14px]">Import Berhasil</p>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">{result.message}</p>
-                  <p className="text-[11px] text-primary mt-1.5 font-semibold">
-                    Periode: {BULAN_NAMES[bulan]} {tahun} \u2014 Jenis:{" "}
-                    {dynamicCatCode || JENIS_OPTIONS.find((j) => j.value === jenis)?.label}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Submit button */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => importMutation.mutate()}
-              disabled={!file || importMutation.isPending}
-              className="inline-flex items-center gap-2 h-11 px-8 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50 cursor-pointer"
+          {/* Right -- Upload & Result */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => !file && fileRef.current?.click()}
+              className={`rounded-card border-2 border-dashed p-10 sm:p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                dragOver
+                  ? "border-primary bg-primary-subtle/60 shadow-md ring-2 ring-primary/20"
+                  : file
+                    ? "border-primary/40 bg-primary-subtle/30 shadow-subtle cursor-default"
+                    : "border-border bg-surface hover:border-primary/50 hover:bg-surface-hover shadow-subtle"
+              }`}
             >
-              {importMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Mengimport...
-                </>
+              <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleFileChange} />
+
+              {file ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-primary-subtle border border-primary/20 flex items-center justify-center text-primary shadow-subtle">
+                    <FileText className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground text-[14px]">{file.name}</p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">{formatBytes(file.size)}</p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFile(null);
+                      setResult(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-error hover:opacity-80 transition-opacity mt-1 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" /> Hapus File
+                  </button>
+                </div>
               ) : (
-                <>
-                  <Upload className="w-4 h-4" /> Mulai Import
-                </>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center text-muted-foreground shadow-subtle">
+                    <Upload className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground text-[14px]">Drag & drop file Excel di sini</p>
+                    <p className="text-[12px] text-muted-foreground mt-1">atau klik untuk memilih file .xlsx / .xls</p>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
+
+            {/* Result */}
+            {result && (
+              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 animate-in fade-in slide-in-from-bottom-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground text-[14px]">Import Berhasil</p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">{result.message}</p>
+                    <p className="text-[11px] text-primary mt-1.5 font-semibold">
+                      Periode: {BULAN_NAMES[bulan]} {tahun} \u2014 Jenis:{" "}
+                      {dynamicCatCode || JENIS_OPTIONS.find((j) => j.value === jenis)?.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submit button */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => importMutation.mutate()}
+                disabled={!file || importMutation.isPending}
+                className="inline-flex items-center gap-2 h-11 px-8 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {importMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Mengimport...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" /> Mulai Import
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

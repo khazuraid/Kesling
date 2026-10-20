@@ -107,11 +107,11 @@ export default async function DashboardPage() {
   const top3 = pkmStats.slice(0, 3);
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 fade-in">
-      {/* ── HEADER HERO (Tamagui Clean Bento Card) ── */}
-      <TamaguiCard className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-5 sm:px-8 py-5 sm:py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-subtle border border-primary/25 text-[10px] font-black uppercase tracking-wider text-primary">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
                 {BULAN[bulan]} {tahun}
               </span>
             </div>
-            <h1 className="text-[24px] sm:text-[30px] font-black tracking-tight leading-tight text-foreground">
+            <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-tight text-foreground">
               Executive Dashboard Kesling
             </h1>
             <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground flex items-center gap-2 flex-wrap">
@@ -136,10 +136,10 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-4 sm:gap-6 self-start md:self-auto shrink-0">
             <div className="text-right border-r border-border pr-4 sm:pr-6">
               <div className="flex items-baseline justify-end gap-1">
-                <span className="text-[36px] sm:text-[42px] font-black tabular-nums leading-none text-primary">
+                <span className="text-[32px] sm:text-[38px] font-black tabular-nums leading-none text-primary">
                   {completionRate}
                 </span>
-                <span className="text-[16px] sm:text-[18px] font-bold text-primary/70">%</span>
+                <span className="text-[14px] sm:text-[16px] font-bold text-primary/70">%</span>
               </div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Capaian Kota</p>
             </div>
@@ -147,14 +147,14 @@ export default async function DashboardPage() {
             <div className="flex flex-col sm:flex-row md:flex-col gap-2">
               <a
                 href="/api/export/all"
-                className="h-9 sm:h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-[0.98] transition shadow-subtle shrink-0"
+                className="h-9 sm:h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-[0.98] transition shadow-xs shrink-0"
               >
                 <Download className="w-4 h-4 shrink-0" />
                 <span>Export Data</span>
               </a>
               <Link
                 href="/laporan"
-                className="h-8 sm:h-9 px-3.5 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-surface text-foreground text-[11px] font-bold hover:bg-muted active:scale-[0.98] transition border border-border shrink-0"
+                className="h-8 sm:h-9 px-3.5 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-surface text-foreground text-[11px] font-bold hover:bg-muted active:scale-[0.98] transition border border-border shrink-0"
               >
                 <span>Semua Laporan</span>
                 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
@@ -162,262 +162,269 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-      </TamaguiCard>
-
-      {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Capaian */}
-        <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Total Capaian</span>
-            <span
-              className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
-                delta >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
-              }`}
-            >
-              {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              <span className="tabular-nums">{delta >= 0 ? `+${delta}` : delta}</span>
-            </span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-foreground">
-              {completionRate}%
-            </span>
-          </div>
-          <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-            <span className="tabular-nums font-bold text-foreground">{totalData}</span> dari{" "}
-            <span className="tabular-nums">{totalTarget}</span> target laporan
-          </p>
-        </div>
-
-        {/* Card 2: Tercapai */}
-        <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-emerald-600">
-              {achieved}
-            </span>
-            <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-          </div>
-          <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-              style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-            Kepatuhan &ge; 80% (
-            <span className="tabular-nums">{pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%</span> wilayah)
-          </p>
-        </div>
-
-        {/* Card 3: Parsial */}
-        <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-amber-600">
-              {partial}
-            </span>
-            <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-          </div>
-          <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-amber-500 transition-all duration-500"
-              style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-            Capaian 50% &ndash; 79% (
-            <span className="tabular-nums">{pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%</span> wilayah)
-          </p>
-        </div>
-
-        {/* Card 4: Rendah / Butuh Pembinaan */}
-        <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
-            <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-rose-600">
-              {low}
-            </span>
-            <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-          </div>
-          <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-rose-500 transition-all duration-500"
-              style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-            Capaian &lt; 50% target bulanan
-          </p>
-        </div>
       </div>
 
-      {/* ── MODUL / PROGRAM PRIORITAS ── */}
-      <div className="rounded-card border border-border bg-surface p-5 sm:p-6 shadow-subtle">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-[15px] font-black text-foreground">Status Program & Modul</h2>
-            <p className="text-[12px] text-muted-foreground font-medium mt-0.5">
-              Distribusi input laporan per indikator kesehatan lingkungan
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        {/* ── KPI CARDS ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Total Capaian */}
+          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Total Capaian
+              </span>
+              <span
+                className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
+                  delta >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
+                }`}
+              >
+                {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <span className="tabular-nums">{delta >= 0 ? `+${delta}` : delta}</span>
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-foreground">
+                {completionRate}%
+              </span>
+            </div>
+            <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+              <span className="tabular-nums font-bold text-foreground">{totalData}</span> dari{" "}
+              <span className="tabular-nums">{totalTarget}</span> target laporan
             </p>
           </div>
-          <Link
-            href="/laporan"
-            className="inline-flex items-center gap-1.5 text-[12px] font-bold text-primary hover:underline"
-          >
-            Buka Semua Modul <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <ModuleSparkChips
-          stats={counts.map((c) => ({
-            id: c.id,
-            nama: c.nama,
-            code: c.code,
-            icon: c.icon,
-            count: c.count,
-            prevCount: c.prevCount,
-            pkmCount,
-          }))}
-        />
-      </div>
 
-      {/* ── LEADERBOARD WILAYAH KERJA ── */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-[16px] font-black text-foreground">Pemantauan Kinerja Puskesmas</h2>
-          <p className="text-[12px] text-muted-foreground font-medium mt-0.5">
-            Peringkat kepatuhan pelaporan seluruh puskesmas se-Kota Cirebon
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Top 3 Podium Cards */}
-          <div className="space-y-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Top 3 Teratas
-            </span>
-            <div className="space-y-2.5">
-              {top3.map((pkm, idx) => {
-                const medalColors = [
-                  { bg: "bg-amber-400 text-amber-950 border-amber-300", badge: "🥇 Rank 1", color: "text-amber-500" },
-                  { bg: "bg-slate-300 text-slate-900 border-slate-200", badge: "🥈 Rank 2", color: "text-slate-400" },
-                  { bg: "bg-amber-600/80 text-white border-amber-500", badge: "🥉 Rank 3", color: "text-amber-600" },
-                ][idx];
-
-                return (
-                  <Link
-                    key={pkm.id}
-                    href={`/laporan/tpp?puskesmasId=${pkm.id}`}
-                    className="group block p-4 rounded-card border border-border bg-surface hover:border-primary hover:shadow-md transition-all shadow-subtle"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${medalColors.bg}`}>
-                        {medalColors.badge}
-                      </span>
-                      <span className="text-[18px] font-black tabular-nums text-primary">{pkm.percentage}%</span>
-                    </div>
-                    <h3 className="text-[14px] font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
-                      {pkm.nama}
-                    </h3>
-                    <p className="text-[11px] font-medium text-muted-foreground mt-1">
-                      <span className="tabular-nums font-semibold">{pkm.submitted}</span> dari{" "}
-                      <span className="tabular-nums">{pkm.target}</span> target laporan terpenuhi
-                    </p>
-                    <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${Math.min(pkm.percentage, 100)}%` }}
-                      />
-                    </div>
-                  </Link>
-                );
-              })}
+          {/* Card 2: Tercapai */}
+          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-emerald-600">
+                {achieved}
+              </span>
+              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+            </div>
+            <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+              Kepatuhan &ge; 80% (
+              <span className="tabular-nums">{pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%</span>{" "}
+              wilayah)
+            </p>
           </div>
 
-          {/* Full Ranking Table */}
-          <div className="lg:col-span-2 space-y-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Peringkat Keseluruhan ({pkmStats.length} Puskesmas)
-            </span>
-            <div className="rounded-card border border-border bg-surface divide-y divide-border overflow-hidden shadow-subtle">
-              <div className="p-3 bg-surface-subtle grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                <span className="col-span-1 text-center">#</span>
-                <span className="col-span-6 sm:col-span-6">Nama Puskesmas</span>
-                <span className="hidden sm:block sm:col-span-3 text-center">Progress Target</span>
-                <span className="col-span-5 sm:col-span-2 text-right">Capaian</span>
+          {/* Card 3: Parsial */}
+          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
+              <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4" />
               </div>
-              <div className="max-h-[380px] overflow-y-auto divide-y divide-border">
-                {pkmStats.map((pkm, idx) => (
-                  <Link
-                    key={pkm.id}
-                    href={`/laporan/tpp?puskesmasId=${pkm.id}`}
-                    className="grid grid-cols-12 items-center p-3 hover:bg-surface-subtle transition-colors group text-[12px]"
-                  >
-                    <span className="col-span-1 text-center font-bold font-mono text-muted-foreground tabular-nums">
-                      {idx + 1}
-                    </span>
-                    <div className="col-span-6 sm:col-span-6 min-w-0 pr-2">
-                      <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-amber-600">
+                {partial}
+              </span>
+              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+            </div>
+            <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+              Capaian 50% &ndash; 79% (
+              <span className="tabular-nums">{pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%</span>{" "}
+              wilayah)
+            </p>
+          </div>
+
+          {/* Card 4: Rendah / Butuh Pembinaan */}
+          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
+              <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+                <AlertCircle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-rose-600">
+                {low}
+              </span>
+              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+            </div>
+            <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-rose-500 transition-all duration-500"
+                style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+              Capaian &lt; 50% target bulanan
+            </p>
+          </div>
+        </div>
+
+        {/* ── MODUL / PROGRAM PRIORITAS ── */}
+        <div className="rounded-card border border-border bg-surface p-5 sm:p-6 shadow-subtle">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-[15px] font-black text-foreground">Status Program & Modul</h2>
+              <p className="text-[12px] text-muted-foreground font-medium mt-0.5">
+                Distribusi input laporan per indikator kesehatan lingkungan
+              </p>
+            </div>
+            <Link
+              href="/laporan"
+              className="inline-flex items-center gap-1.5 text-[12px] font-bold text-primary hover:underline"
+            >
+              Buka Semua Modul <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <ModuleSparkChips
+            stats={counts.map((c) => ({
+              id: c.id,
+              nama: c.nama,
+              code: c.code,
+              icon: c.icon,
+              count: c.count,
+              prevCount: c.prevCount,
+              pkmCount,
+            }))}
+          />
+        </div>
+
+        {/* ── LEADERBOARD WILAYAH KERJA ── */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-[16px] font-black text-foreground">Pemantauan Kinerja Puskesmas</h2>
+            <p className="text-[12px] text-muted-foreground font-medium mt-0.5">
+              Peringkat kepatuhan pelaporan seluruh puskesmas se-Kota Cirebon
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Top 3 Podium Cards */}
+            <div className="space-y-3">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                Top 3 Teratas
+              </span>
+              <div className="space-y-2.5">
+                {top3.map((pkm, idx) => {
+                  const medalColors = [
+                    { bg: "bg-amber-400 text-amber-950 border-amber-300", badge: "🥇 Rank 1", color: "text-amber-500" },
+                    { bg: "bg-slate-300 text-slate-900 border-slate-200", badge: "🥈 Rank 2", color: "text-slate-400" },
+                    { bg: "bg-amber-600/80 text-white border-amber-500", badge: "🥉 Rank 3", color: "text-amber-600" },
+                  ][idx];
+
+                  return (
+                    <Link
+                      key={pkm.id}
+                      href={`/laporan/tpp?puskesmasId=${pkm.id}`}
+                      className="group block p-4 rounded-card border border-border bg-surface hover:border-primary hover:shadow-md transition-all shadow-subtle"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${medalColors.bg}`}>
+                          {medalColors.badge}
+                        </span>
+                        <span className="text-[18px] font-black tabular-nums text-primary">{pkm.percentage}%</span>
+                      </div>
+                      <h3 className="text-[14px] font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
                         {pkm.nama}
+                      </h3>
+                      <p className="text-[11px] font-medium text-muted-foreground mt-1">
+                        <span className="tabular-nums font-semibold">{pkm.submitted}</span> dari{" "}
+                        <span className="tabular-nums">{pkm.target}</span> target laporan terpenuhi
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        <span className="tabular-nums">{pkm.submitted}</span> /{" "}
-                        <span className="tabular-nums">{pkm.target}</span> laporan
-                      </p>
-                    </div>
-                    <div className="hidden sm:block sm:col-span-3 px-2">
-                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${
-                            pkm.percentage >= 80
-                              ? "bg-emerald-500"
-                              : pkm.percentage >= 50
-                                ? "bg-amber-500"
-                                : "bg-rose-500"
-                          }`}
+                          className="h-full rounded-full bg-primary"
                           style={{ width: `${Math.min(pkm.percentage, 100)}%` }}
                         />
                       </div>
-                    </div>
-                    <div className="col-span-5 sm:col-span-2 text-right flex items-center justify-end gap-1.5 font-black tabular-nums">
-                      <span
-                        className={`text-[12px] px-2 py-0.5 rounded-md ${
-                          pkm.percentage >= 80
-                            ? "bg-emerald-500/10 text-emerald-600"
-                            : pkm.percentage >= 50
-                              ? "bg-amber-500/10 text-amber-600"
-                              : "bg-rose-500/10 text-rose-600"
-                        }`}
-                      >
-                        {pkm.percentage}%
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Full Ranking Table */}
+            <div className="lg:col-span-2 space-y-3">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                Peringkat Keseluruhan ({pkmStats.length} Puskesmas)
+              </span>
+              <div className="rounded-card border border-border bg-surface divide-y divide-border overflow-hidden shadow-subtle">
+                <div className="p-3 bg-surface-subtle grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <span className="col-span-1 text-center">#</span>
+                  <span className="col-span-6 sm:col-span-6">Nama Puskesmas</span>
+                  <span className="hidden sm:block sm:col-span-3 text-center">Progress Target</span>
+                  <span className="col-span-5 sm:col-span-2 text-right">Capaian</span>
+                </div>
+                <div className="max-h-[380px] overflow-y-auto divide-y divide-border">
+                  {pkmStats.map((pkm, idx) => (
+                    <Link
+                      key={pkm.id}
+                      href={`/laporan/tpp?puskesmasId=${pkm.id}`}
+                      className="grid grid-cols-12 items-center p-3 hover:bg-surface-subtle transition-colors group text-[12px]"
+                    >
+                      <span className="col-span-1 text-center font-bold font-mono text-muted-foreground tabular-nums">
+                        {idx + 1}
                       </span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Link>
-                ))}
+                      <div className="col-span-6 sm:col-span-6 min-w-0 pr-2">
+                        <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                          {pkm.nama}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          <span className="tabular-nums">{pkm.submitted}</span> /{" "}
+                          <span className="tabular-nums">{pkm.target}</span> laporan
+                        </p>
+                      </div>
+                      <div className="hidden sm:block sm:col-span-3 px-2">
+                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              pkm.percentage >= 80
+                                ? "bg-emerald-500"
+                                : pkm.percentage >= 50
+                                  ? "bg-amber-500"
+                                  : "bg-rose-500"
+                            }`}
+                            style={{ width: `${Math.min(pkm.percentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-span-5 sm:col-span-2 text-right flex items-center justify-end gap-1.5 font-black tabular-nums">
+                        <span
+                          className={`text-[12px] px-2 py-0.5 rounded-md ${
+                            pkm.percentage >= 80
+                              ? "bg-emerald-500/10 text-emerald-600"
+                              : pkm.percentage >= 50
+                                ? "bg-amber-500/10 text-amber-600"
+                                : "bg-rose-500/10 text-rose-600"
+                          }`}
+                        >
+                          {pkm.percentage}%
+                        </span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

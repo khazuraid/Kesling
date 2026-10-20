@@ -144,32 +144,34 @@ export default function RencanaBulananPage() {
   const todayDate = isCurrentMonth ? today.getDate() : -1;
 
   return (
-    <div className="w-full mx-auto pb-4 fade-in bg-canvas space-y-6">
-      {/* ── HERO (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Perencanaan</p>
-            <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+              Perencanaan
+            </p>
+            <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               {BULAN_FULL[bulan - 1]} {tahun}
             </h1>
-            <p className="text-[13px] font-medium text-muted-foreground mt-2">
-              <span className="tabular-nums font-semibold text-foreground">{selesaiVal}</span>/{data?.totalSasaran ?? 0}{" "}
-              selesai · <span className="tabular-nums font-semibold text-foreground">{data?.totalTerjadwal ?? 0}</span>{" "}
+            <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+              <span className="tabular-nums font-bold text-foreground">{selesaiVal}</span>/{data?.totalSasaran ?? 0}{" "}
+              selesai · <span className="tabular-nums font-bold text-foreground">{data?.totalTerjadwal ?? 0}</span>{" "}
               terjadwal
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl bg-surface-subtle border border-border p-1">
+            <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
               <button
                 onClick={prevMonth}
-                className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextMonth}
-                className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -177,7 +179,7 @@ export default function RencanaBulananPage() {
             <button
               onClick={() => generateMut.mutate()}
               disabled={generateMut.isPending}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-subtle disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs disabled:opacity-50"
             >
               {generateMut.isPending ? (
                 <Clock className="w-3.5 h-3.5 animate-spin" />
@@ -188,207 +190,212 @@ export default function RencanaBulananPage() {
             </button>
           </div>
         </div>
-      </Card>
-
-      {/* ── STAT PILLS ── */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-primary/20 shadow-subtle">
-          <span className="text-[18px] font-black tabular-nums text-primary leading-none">{data?.progress ?? 0}%</span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Progress</span>
-        </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
-          <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
-            {data?.totalSasaran ?? 0}
-          </span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
-            Sasaran
-          </span>
-        </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
-          <span className="text-[18px] font-black tabular-nums text-primary leading-none">{selesaiVal}</span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
-        </span>
-        <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-amber-500/20 shadow-subtle">
-          <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
-            {data?.totalTerjadwal ?? 0}
-          </span>
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
-            Terjadwal
-          </span>
-        </span>
-        <div className="flex items-center gap-2 ml-auto">
-          <label className="text-[11px] font-bold text-muted-foreground">Kapasitas/hari:</label>
-          <Input
-            type="number"
-            min={1}
-            max={50}
-            value={kapasitas}
-            onChange={(e) => setKapasitas(Number(e.target.value) || 1)}
-            className="w-20 h-9"
-          />
-        </div>
       </div>
 
-      {/* Kalender hero full-width */}
-      <div className="pt-2">
-        <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
-          <div className="grid grid-cols-6 border-b border-border bg-surface-subtle">
-            {HARI.map((h) => (
-              <div
-                key={h}
-                className="text-center text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground py-3 border-r border-border last:border-r-0"
-              >
-                {h}
-              </div>
-            ))}
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        {/* ── STAT PILLS ── */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-primary/20 shadow-subtle">
+            <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+              {data?.progress ?? 0}%
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Progress</span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
+            <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
+              {data?.totalSasaran ?? 0}
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+              Sasaran
+            </span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
+            <span className="text-[18px] font-black tabular-nums text-primary leading-none">{selesaiVal}</span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
+          </span>
+          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-amber-500/20 shadow-subtle">
+            <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+              {data?.totalTerjadwal ?? 0}
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+              Terjadwal
+            </span>
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            <label className="text-[11px] font-bold text-muted-foreground">Kapasitas/hari:</label>
+            <Input
+              type="number"
+              min={1}
+              max={50}
+              value={kapasitas}
+              onChange={(e) => setKapasitas(Number(e.target.value) || 1)}
+              className="w-20 h-9"
+            />
           </div>
-          <div className="grid grid-cols-6">
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div
-                key={`empty-${i}`}
-                className="aspect-[4/3] border-r border-b border-border/50 bg-surface-subtle/30"
-              />
-            ))}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const items = itemsByDate[day] || [];
-              const hasSelesai = items.some((it) => it.sudahDiperiksa);
-              const hasTerjadwal = items.some((it) => it.status === "TERJADWAL" && !it.sudahDiperiksa);
-              const isToday = day === todayDate;
-              return (
+        </div>
+
+        {/* Kalender hero full-width */}
+        <div className="pt-2">
+          <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+            <div className="grid grid-cols-6 border-b border-border bg-surface-subtle">
+              {HARI.map((h) => (
                 <div
-                  key={day}
-                  className={`aspect-[4/3] border-r border-b border-border/50 p-2 flex flex-col transition-colors ${
-                    isToday ? "bg-primary-subtle/40" : "hover:bg-surface-subtle/40"
-                  }`}
+                  key={h}
+                  className="text-center text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground py-3 border-r border-border last:border-r-0"
                 >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-[13px] font-bold tabular-nums ${
-                        isToday
-                          ? "w-6 h-6 flex items-center justify-center rounded-full bg-primary text-white text-[11px]"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {day}
-                    </span>
+                  {h}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-6">
+              {Array.from({ length: firstDay }).map((_, i) => (
+                <div
+                  key={`empty-${i}`}
+                  className="aspect-[4/3] border-r border-b border-border/50 bg-surface-subtle/30"
+                />
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1;
+                const items = itemsByDate[day] || [];
+                const hasSelesai = items.some((it) => it.sudahDiperiksa);
+                const hasTerjadwal = items.some((it) => it.status === "TERJADWAL" && !it.sudahDiperiksa);
+                const isToday = day === todayDate;
+                return (
+                  <div
+                    key={day}
+                    className={`aspect-[4/3] border-r border-b border-border/50 p-2 flex flex-col transition-colors ${
+                      isToday ? "bg-primary-subtle/40" : "hover:bg-surface-subtle/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-[13px] font-bold tabular-nums ${
+                          isToday
+                            ? "w-6 h-6 flex items-center justify-center rounded-full bg-primary text-white text-[11px]"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {day}
+                      </span>
+                      {items.length > 0 && (
+                        <span className="text-[10px] font-extrabold text-muted-foreground">{items.length}</span>
+                      )}
+                    </div>
                     {items.length > 0 && (
-                      <span className="text-[10px] font-extrabold text-muted-foreground">{items.length}</span>
+                      <div className="mt-auto space-y-1">
+                        <div
+                          className={`h-1.5 rounded-full ${
+                            hasSelesai ? "bg-emerald-500" : hasTerjadwal ? "bg-primary" : "bg-border"
+                          }`}
+                        />
+                        <div className="text-[9px] font-bold truncate text-muted-foreground">
+                          {items[0].nama}
+                          {items.length > 1 && ` +${items.length - 1}`}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {items.length > 0 && (
-                    <div className="mt-auto space-y-1">
-                      <div
-                        className={`h-1.5 rounded-full ${
-                          hasSelesai ? "bg-emerald-500" : hasTerjadwal ? "bg-primary" : "bg-border"
-                        }`}
-                      />
-                      <div className="text-[9px] font-bold truncate text-muted-foreground">
-                        {items[0].nama}
-                        {items.length > 1 && ` +${items.length - 1}`}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Timeline per kategori */}
-      <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 text-center text-[13px] text-muted-foreground animate-pulse">Memuat jadwal...</div>
-        ) : !data || data.kategori.length === 0 ? (
-          <div className="p-16 flex flex-col items-center justify-center text-center gap-3">
-            <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
-            <p className="text-[14px] font-bold text-foreground">Belum ada jadwal</p>
-            <p className="text-[12px] text-muted-foreground">Klik Jadwalkan Otomatis untuk generate.</p>
-          </div>
-        ) : (
-          data.kategori.map((kat, katIdx) => (
-            <div key={kat.kategoriNama} className={katIdx !== 0 ? "border-t-2 border-border" : ""}>
-              <div className="flex items-center gap-3 px-5 py-3 bg-surface-subtle border-b border-border">
-                <span className="text-base">{kat.kategoriIcon}</span>
-                <span className="text-[13px] font-extrabold uppercase tracking-wider text-foreground">
-                  {kat.kategoriNama}
-                </span>
-                <span className="text-[11px] font-bold text-muted-foreground ml-auto">{kat.list.length} sasaran</span>
-              </div>
-              <div>
-                {kat.list.map((item) => {
-                  const badge = STATUS_BADGE[item.status] || STATUS_BADGE.BELUM;
-                  return (
-                    <div
-                      key={item.sasaranId}
-                      className="flex items-center gap-4 px-5 py-3 border-b border-border/50 last:border-0 hover:bg-surface-subtle/30 transition-colors"
-                    >
+        {/* Timeline per kategori */}
+        <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+          {isLoading ? (
+            <div className="p-12 text-center text-[13px] text-muted-foreground animate-pulse">Memuat jadwal...</div>
+          ) : !data || data.kategori.length === 0 ? (
+            <div className="p-16 flex flex-col items-center justify-center text-center gap-3">
+              <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
+              <p className="text-[14px] font-bold text-foreground">Belum ada jadwal</p>
+              <p className="text-[12px] text-muted-foreground">Klik Jadwalkan Otomatis untuk generate.</p>
+            </div>
+          ) : (
+            data.kategori.map((kat, katIdx) => (
+              <div key={kat.kategoriNama} className={katIdx !== 0 ? "border-t-2 border-border" : ""}>
+                <div className="flex items-center gap-3 px-5 py-3 bg-surface-subtle border-b border-border">
+                  <span className="text-base">{kat.kategoriIcon}</span>
+                  <span className="text-[13px] font-extrabold uppercase tracking-wider text-foreground">
+                    {kat.kategoriNama}
+                  </span>
+                  <span className="text-[11px] font-bold text-muted-foreground ml-auto">{kat.list.length} sasaran</span>
+                </div>
+                <div>
+                  {kat.list.map((item) => {
+                    const badge = STATUS_BADGE[item.status] || STATUS_BADGE.BELUM;
+                    return (
                       <div
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          item.sudahDiperiksa
-                            ? "bg-emerald-500"
-                            : item.status === "TERJADWAL"
-                              ? "bg-primary"
-                              : "bg-border"
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-bold text-foreground truncate">{item.nama}</span>
-                          {item.prioritas === 1 && (
-                            <span className="text-[9px] font-extrabold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">
-                              PRIORITAS
-                            </span>
-                          )}
+                        key={item.sasaranId}
+                        className="flex items-center gap-4 px-5 py-3 border-b border-border/50 last:border-0 hover:bg-surface-subtle/30 transition-colors"
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            item.sudahDiperiksa
+                              ? "bg-emerald-500"
+                              : item.status === "TERJADWAL"
+                                ? "bg-primary"
+                                : "bg-border"
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[13px] font-bold text-foreground truncate">{item.nama}</span>
+                            {item.prioritas === 1 && (
+                              <span className="text-[9px] font-extrabold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">
+                                PRIORITAS
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground truncate">
+                            {item.sudahDiperiksa && item.tanggalPeriksa
+                              ? `Diperiksa ${new Date(item.tanggalPeriksa).toLocaleDateString("id-ID")}`
+                              : item.tanggalRencana
+                                ? `Jadwal: ${new Date(item.tanggalRencana).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`
+                                : item.alamat || "Belum dijadwalkan"}
+                          </div>
                         </div>
-                        <div className="text-[11px] text-muted-foreground truncate">
-                          {item.sudahDiperiksa && item.tanggalPeriksa
-                            ? `Diperiksa ${new Date(item.tanggalPeriksa).toLocaleDateString("id-ID")}`
-                            : item.tanggalRencana
-                              ? `Jadwal: ${new Date(item.tanggalRencana).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`
-                              : item.alamat || "Belum dijadwalkan"}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${badge.cls}`}>
-                          {badge.label}
-                        </span>
-                        {item.sudahDiperiksa ? (
-                          <a
-                            href="/pemeriksaan"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-subtle transition"
-                          >
-                            <CheckCircle2 className="w-3 h-3" /> Detail
-                          </a>
-                        ) : (
-                          <>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                          {item.sudahDiperiksa ? (
                             <a
                               href="/pemeriksaan"
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-primary text-white hover:bg-primary-hover shadow-subtle transition"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-subtle transition"
                             >
-                              <ClipboardCheck className="w-3 h-3" /> Periksa
+                              <CheckCircle2 className="w-3 h-3" /> Detail
                             </a>
-                            {item.rencanaId && (
-                              <button
-                                onClick={() =>
-                                  updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
-                                }
-                                className="p-1.5 rounded-button hover:bg-red-500/10 hover:text-red-600 text-muted-foreground transition-colors"
+                          ) : (
+                            <>
+                              <a
+                                href="/pemeriksaan"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-primary text-white hover:bg-primary-hover shadow-subtle transition"
                               >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </>
-                        )}
+                                <ClipboardCheck className="w-3 h-3" /> Periksa
+                              </a>
+                              {item.rencanaId && (
+                                <button
+                                  onClick={() =>
+                                    updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
+                                  }
+                                  className="p-1.5 rounded-button hover:bg-red-500/10 hover:text-red-600 text-muted-foreground transition-colors"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

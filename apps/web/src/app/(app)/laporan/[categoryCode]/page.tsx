@@ -353,68 +353,84 @@ export default function DynamicLaporanPage() {
   }
 
   return (
-    <div className="w-full mx-auto pb-6 space-y-5 fade-in bg-canvas">
-      {/* ── Inline Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-lg">{category?.icon || "\uD83D\uDCC4"}</span>
-          <h1 className="text-[18px] font-bold tracking-tight text-foreground">
-            {category ? category.nama : "Memuat..."}
-          </h1>
-          {category?.formula?.description && (
-            <p className="text-[12px] text-muted-foreground">Formula: {category.formula.description}</p>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <LaporanFilter />
-          {category?.parameters && category.parameters.filter((p) => p.isBaseline).length > 0 && (
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+              Pelaporan Program
+            </p>
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl sm:text-2xl">{category?.icon || "\uD83D\uDCC4"}</span>
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+                {category ? category.nama : "Memuat..."}
+              </h1>
+            </div>
+            {category?.formula?.description ? (
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                Formula: {category.formula.description}
+              </p>
+            ) : (
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                Formulir matriks data bulanan dan monitoring indikator
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <LaporanFilter />
+            {category?.parameters && category.parameters.filter((p) => p.isBaseline).length > 0 && (
+              <button
+                onClick={() => openDataDasarForm()}
+                disabled={!category}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border bg-surface-subtle hover:bg-surface text-[11px] font-bold text-foreground transition-all shadow-xs disabled:opacity-50"
+              >
+                <Database className="w-3.5 h-3.5 text-primary" /> Data Dasar
+              </button>
+            )}
             <button
-              onClick={() => openDataDasarForm()}
+              onClick={() => setShowCopyModal(true)}
               disabled={!category}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button border border-border bg-surface text-[11px] font-bold text-foreground hover:bg-surface-subtle transition-colors shadow-subtle disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border bg-surface-subtle hover:bg-surface text-[11px] font-bold text-foreground transition-all shadow-xs disabled:opacity-50"
             >
-              <Database className="w-3.5 h-3.5 text-primary" /> Data Dasar
+              <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Salin
             </button>
-          )}
-          <button
-            onClick={() => setShowCopyModal(true)}
-            disabled={!category}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button border border-border bg-surface text-[11px] font-bold text-foreground hover:bg-surface-subtle transition-colors shadow-subtle disabled:opacity-50"
-          >
-            <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Salin
-          </button>
-          <button
-            onClick={() => openForm()}
-            disabled={!category}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-button bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-colors shadow-subtle disabled:opacity-50"
-          >
-            <Plus className="w-3.5 h-3.5" /> Input Laporan
-          </button>
+            <button
+              onClick={() => openForm()}
+              disabled={!category}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs disabled:opacity-50"
+            >
+              <Plus className="w-3.5 h-3.5" /> Input Laporan
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Data Table (includes summary cards + tabbed sub-categories) ── */}
-      {category && (
-        <LaporanTable
-          category={category}
-          laporanList={laporanList}
-          isLoading={isLoading}
-          paginatedList={paginatedList}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          PAGE_SIZE={PAGE_SIZE}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          setCurrentPage={setCurrentPage}
-          laporanCount={laporanList.length}
-          puskesmasTotal={puskesmasList.length}
-          categoryCode={categoryCode}
-          bulan={bulan}
-          tahun={tahun}
-          onRowClick={(pkmId) => openForm(pkmId)}
-          openForm={() => openForm()}
-        />
-      )}
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        {/* ── Data Table (includes summary cards + tabbed sub-categories) ── */}
+        {category && (
+          <LaporanTable
+            category={category}
+            laporanList={laporanList}
+            isLoading={isLoading}
+            paginatedList={paginatedList}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            PAGE_SIZE={PAGE_SIZE}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            setCurrentPage={setCurrentPage}
+            laporanCount={laporanList.length}
+            puskesmasTotal={puskesmasList.length}
+            categoryCode={categoryCode}
+            bulan={bulan}
+            tahun={tahun}
+            onRowClick={(pkmId) => openForm(pkmId)}
+            openForm={() => openForm()}
+          />
+        )}
+      </div>
 
       {/* ── Data Dasar Modal ── */}
       {showDataDasarForm && category && (

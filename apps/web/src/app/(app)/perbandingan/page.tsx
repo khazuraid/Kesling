@@ -60,21 +60,21 @@ export default function PerbandinganPage() {
   const podiumRank = (r: any) => ranking.indexOf(r);
 
   return (
-    <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
-      {/* ── HERO + PODIUM (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 pt-6 sm:pt-7">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Kinerja Wilayah
               </p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Perbandingan
               </h1>
-              <p className="text-[13px] font-medium text-muted-foreground mt-2">
-                <span className="tabular-nums font-semibold text-foreground">{ranking.length}</span> puskesmas ·
-                rata-rata <span className="tabular-nums font-semibold text-foreground">{avgScore}%</span>
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                <span className="tabular-nums font-bold text-foreground">{ranking.length}</span> puskesmas · rata-rata{" "}
+                <span className="tabular-nums font-bold text-foreground">{avgScore}%</span>
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -92,44 +92,47 @@ export default function PerbandinganPage() {
 
           {/* PODIUM */}
           {!isLoading && top3.length > 0 && (
-            <div className="mt-8 flex items-end justify-center gap-3 sm:gap-5 pb-2">
+            <div className="mt-6 sm:mt-8 flex items-end justify-center gap-3 sm:gap-5 pb-1">
               {podiumOrder.map((r) => {
                 const rank = podiumRank(r);
                 const medal = MEDAL[rank];
                 const isFirst = rank === 0;
-                const height = isFirst ? "h-28" : rank === 1 ? "h-20" : "h-16";
+                const height = isFirst ? "h-24 sm:h-28" : rank === 1 ? "h-16 sm:h-20" : "h-12 sm:h-16";
                 return (
-                  <div key={r.id} className="flex flex-col items-center w-36 sm:w-44">
+                  <div key={r.id} className="flex flex-col items-center w-32 sm:w-44">
                     {/* Medal + name */}
-                    <div className="relative mb-3">
+                    <div className="relative mb-2.5">
                       <div
                         className={cn(
                           "rounded-full flex items-center justify-center font-black text-slate-900",
-                          isFirst ? "w-16 h-16 text-[20px]" : "w-13 h-13 text-[16px]",
+                          isFirst
+                            ? "w-14 h-14 sm:w-16 sm:h-16 text-[18px] sm:text-[20px]"
+                            : "w-11 h-11 sm:w-13 sm:h-13 text-[14px] sm:text-[16px]",
                         )}
                         style={{
-                          width: isFirst ? 64 : 52,
-                          height: isFirst ? 64 : 52,
                           background: medal.ring,
-                          boxShadow: `0 0 0 5px ${medal.glow}`,
+                          boxShadow: `0 0 0 4px ${medal.glow}`,
                         }}
                       >
                         {rank + 1}
                       </div>
                       {isFirst && (
-                        <Crown className="absolute -top-5 left-1/2 -translate-x-1/2 w-5 h-5 text-[#F5B93D]" />
+                        <Crown className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 sm:w-5 h-4 sm:h-5 text-[#F5B93D]" />
                       )}
                     </div>
-                    <p className="text-[12px] sm:text-[13px] font-bold text-foreground text-center leading-tight line-clamp-2 h-8">
+                    <p className="text-[11px] sm:text-[13px] font-bold text-foreground text-center leading-tight line-clamp-2 h-7 sm:h-8">
                       {r.nama}
                     </p>
-                    <p className="text-[20px] sm:text-[24px] font-black tabular-nums text-primary mt-1">
+                    <p className="text-[18px] sm:text-[24px] font-black tabular-nums text-primary mt-0.5">
                       {r.avg}
-                      <span className="text-[12px] font-bold text-muted-foreground">%</span>
+                      <span className="text-[11px] font-bold text-muted-foreground">%</span>
                     </p>
                     {/* Pillar */}
                     <div
-                      className={cn("w-full mt-3 rounded-t-2xl border-x border-t border-border shadow-subtle", height)}
+                      className={cn(
+                        "w-full mt-2 sm:mt-3 rounded-t-2xl border-x border-t border-border shadow-subtle",
+                        height,
+                      )}
                       style={{
                         background: `linear-gradient(180deg, ${medal.ring}25 0%, rgba(241,245,249,0.5) 100%)`,
                       }}
@@ -141,21 +144,21 @@ export default function PerbandinganPage() {
           )}
 
           {isLoading && (
-            <div className="mt-8 flex items-end justify-center gap-5 animate-pulse pb-2">
+            <div className="mt-6 flex items-end justify-center gap-5 animate-pulse pb-1">
               {[80, 112, 64].map((h, i) => (
                 <div key={i} className="flex flex-col items-center">
-                  <div className="w-13 h-13 rounded-full bg-surface-subtle mb-3" style={{ width: 52, height: 52 }} />
-                  <div className="h-3 w-24 bg-surface-subtle rounded mb-2" />
-                  <div className="rounded-t-2xl bg-surface-subtle w-36 sm:w-44" style={{ height: h }} />
+                  <div className="w-12 h-12 rounded-full bg-surface-subtle mb-3" />
+                  <div className="h-3 w-20 bg-surface-subtle rounded mb-2" />
+                  <div className="rounded-t-2xl bg-surface-subtle w-32 sm:w-44" style={{ height: h }} />
                 </div>
               ))}
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* ── BODY ── */}
-      <div className="pt-2">
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* EMPTY */}
         {!isLoading && ranking.length === 0 && (
           <EmptyState

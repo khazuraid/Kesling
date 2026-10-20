@@ -95,17 +95,19 @@ export default function FileManagerPage() {
   });
 
   return (
-    <div className="w-full mx-auto pb-8 fade-in bg-canvas space-y-6">
-      {/* ── HERO (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 pt-7 pb-6">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Penyimpanan</p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+                Penyimpanan
+              </p>
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 File Manager
               </h1>
-              <p className="text-[13px] font-medium text-muted-foreground mt-2">
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
                 Manajemen berkas unggahan, deteksi file yatim, dan monitoring storage
               </p>
             </div>
@@ -113,7 +115,7 @@ export default function FileManagerPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowHealth(!showHealth)}
-                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-xl text-[11px] font-extrabold transition shadow-subtle ${
+                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-extrabold transition shadow-xs ${
                   showHealth
                     ? "bg-primary text-white"
                     : "bg-surface-subtle hover:bg-surface text-foreground border border-border"
@@ -125,7 +127,7 @@ export default function FileManagerPage() {
               <button
                 onClick={() => refetch()}
                 disabled={isRefetching}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-surface-subtle hover:bg-surface text-foreground border border-border text-[11px] font-extrabold transition shadow-subtle disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground border border-border text-[11px] font-extrabold transition shadow-xs disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} />
                 Segarkan
@@ -134,30 +136,31 @@ export default function FileManagerPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Total File</p>
-              <p className="text-[22px] font-black tracking-tight text-foreground mt-1 tabular-nums">{total}</p>
+              <p className="text-[20px] font-black tracking-tight text-foreground mt-0.5 tabular-nums">{total}</p>
             </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Terpakai</p>
-              <p className="text-[22px] font-black tracking-tight text-primary mt-1 tabular-nums">{activeCount}</p>
+              <p className="text-[20px] font-black tracking-tight text-primary mt-0.5 tabular-nums">{activeCount}</p>
             </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Yatim</p>
-              <p className="text-[22px] font-black tracking-tight text-amber-600 mt-1 tabular-nums">{orphans}</p>
+              <p className="text-[20px] font-black tracking-tight text-amber-600 mt-0.5 tabular-nums">{orphans}</p>
             </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3.5">
+            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Ruang Yatim</p>
-              <p className="text-[22px] font-black tracking-tight text-foreground mt-1 tabular-nums">
+              <p className="text-[20px] font-black tracking-tight text-foreground mt-0.5 tabular-nums">
                 {formatBytes(orphanBytes)}
               </p>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <div className="space-y-5 pt-2">
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── HEALTH COLLAPSIBLE ── */}
         {showHealth && <SystemHealthDashboard />}
 

@@ -56,27 +56,29 @@ export default function RencanaTahunanPage() {
   });
 
   return (
-    <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
-      {/* ── HERO (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">Perencanaan</p>
-            <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-none text-foreground">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+              Perencanaan
+            </p>
+            <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Rencana Tahunan
             </h1>
             {data && (
-              <p className="text-[13px] font-medium text-muted-foreground mt-2">
-                <span className="tabular-nums font-semibold text-foreground">{data.totalSelesai}</span> selesai dari{" "}
-                <span className="tabular-nums font-semibold text-foreground">{data.totalTarget}</span> target ·{" "}
-                <span className="tabular-nums font-semibold text-foreground">{data.totalSasaran}</span> sasaran
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                <span className="tabular-nums font-bold text-foreground">{data.totalSelesai}</span> selesai dari{" "}
+                <span className="tabular-nums font-bold text-foreground">{data.totalTarget}</span> target ·{" "}
+                <span className="tabular-nums font-bold text-foreground">{data.totalSasaran}</span> sasaran
               </p>
             )}
           </div>
           <div className="flex items-center gap-3">
             {data && (
-              <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
-                <span className="text-[20px] font-black tabular-nums text-primary leading-none">
+              <span className="inline-flex flex-col items-center h-12 justify-center px-4 rounded-xl bg-primary-subtle text-primary border border-primary/20 shadow-xs">
+                <span className="text-[18px] font-black tabular-nums text-primary leading-none">
                   {data.progressTahunan}%
                 </span>
                 <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
@@ -84,26 +86,27 @@ export default function RencanaTahunanPage() {
                 </span>
               </span>
             )}
-            <div className="flex items-center gap-1 rounded-xl bg-surface-subtle border border-border p-1">
+            <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
               <button
                 onClick={() => setTahun(tahun - 1)}
-                className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="w-14 text-[14px] font-black text-foreground text-center tabular-nums">{tahun}</span>
+              <span className="w-14 text-[13px] font-black text-foreground text-center tabular-nums">{tahun}</span>
               <button
                 onClick={() => setTahun(tahun + 1)}
-                className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <div className="space-y-8 pt-2">
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-8">
         {isLoading ? (
           <div className="flex justify-center py-24">
             <div className="w-8 h-8 border-2 border-border border-t-primary animate-spin rounded-full" />

@@ -137,93 +137,93 @@ export default function RekapPage() {
   const worst = sorted[sorted.length - 1];
 
   return (
-    <div className="w-full mx-auto pb-6 space-y-6 fade-in bg-canvas">
-      {/* ── HERO: score ring + filters (Tamagui Clean Bento) ── */}
-      <Card className="relative overflow-hidden rounded-card bg-surface text-foreground border border-border shadow-subtle p-0">
-        <div className="relative z-10 px-6 sm:px-8 py-6 sm:py-7">
-          <div className="flex flex-wrap items-center gap-8">
+    <div className="w-full fade-in min-h-screen bg-canvas">
+      {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-6">
             <ScoreRing pct={overallPct} />
 
-            <div className="flex-1 min-w-[220px]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-2">
+            <div className="min-w-[220px]">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5">
                 Rekapitulasi Tahunan
               </p>
-              <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight leading-tight text-foreground">
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-tight text-foreground">
                 {data?.selectedPkm ? data.selectedPkm.nama : "Semua Puskesmas"}
               </h1>
-              <p className="text-[12px] font-medium text-muted-foreground mt-1.5">
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-1.5">
                 {overallLabel} · rata-rata {overallPct.toFixed(1)}% dari {cats.length} kategori
               </p>
 
               {/* Tier chips */}
-              <div className="flex items-center gap-2 mt-4">
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary-subtle border border-primary/20 text-primary text-[11px] font-extrabold tabular-nums">
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary-subtle border border-primary/20 text-primary text-[10px] font-extrabold tabular-nums">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {goodCount} Baik
                 </span>
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 text-[11px] font-extrabold tabular-nums">
+                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 text-[10px] font-extrabold tabular-nums">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> {warnCount} Cukup
                 </span>
-                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[11px] font-extrabold tabular-nums">
+                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[10px] font-extrabold tabular-nums">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> {badCount} Kurang
                 </span>
               </div>
             </div>
+          </div>
 
-            {/* Filters — inside hero, right side */}
-            <div className="flex flex-col items-end gap-2.5">
-              <div className="flex items-center rounded-xl bg-surface-subtle border border-border overflow-hidden">
-                <button
-                  onClick={() => setTahun((t) => t - 1)}
-                  className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <input
-                  type="number"
-                  value={tahun}
-                  onChange={(e) => setTahun(Number(e.target.value))}
-                  className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-foreground text-center outline-none tabular-nums"
-                />
-                <button
-                  onClick={() => setTahun((t) => t + 1)}
-                  className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {user?.role === "ADMIN" && data?.puskesmasList && (
-                <div className="relative">
-                  <Building2 className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
-                  <select
-                    value={puskesmasId}
-                    onChange={(e) => setPuskesmasId(e.target.value)}
-                    className="h-10 pl-9 pr-8 rounded-xl bg-surface-subtle border border-border text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-foreground [&>option]:bg-surface"
-                  >
-                    <option value="">Semua Puskesmas</option>
-                    {data.puskesmasList.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              )}
-
-              <a
-                href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}
-                className="h-10 px-5 flex items-center gap-2 rounded-xl bg-primary text-white text-[11px] font-black hover:bg-primary-hover active:scale-95 transition shadow-subtle"
+          {/* Filters — inside hero, right side */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center rounded-full bg-surface-subtle border border-border overflow-hidden">
+              <button
+                onClick={() => setTahun((t) => t - 1)}
+                className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
               >
-                <Download className="w-3.5 h-3.5" /> Export Excel
-              </a>
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <input
+                type="number"
+                value={tahun}
+                onChange={(e) => setTahun(Number(e.target.value))}
+                className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-foreground text-center outline-none tabular-nums"
+              />
+              <button
+                onClick={() => setTahun((t) => t + 1)}
+                className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
+
+            {user?.role === "ADMIN" && data?.puskesmasList && (
+              <div className="relative">
+                <Building2 className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+                <select
+                  value={puskesmasId}
+                  onChange={(e) => setPuskesmasId(e.target.value)}
+                  className="h-10 pl-9 pr-8 rounded-full bg-surface-subtle border border-border text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-foreground [&>option]:bg-surface"
+                >
+                  <option value="">Semua Puskesmas</option>
+                  {data.puskesmasList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            )}
+
+            <a
+              href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}
+              className="h-10 px-5 flex items-center gap-2 rounded-full bg-primary text-white text-[11px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" /> Export Excel
+            </a>
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* ── BODY ── */}
-      <div className="pt-2">
+      {/* ── CONTENT BODY (CANVAS) ── */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
