@@ -224,11 +224,30 @@ export async function recalculateLaporanBulanan({
     parameters.find((p) => p.nama.toLowerCase().includes("tms") || p.nama.toLowerCase() === "tidak memenuhi syarat")
       ?.id;
 
+  const paramTerdaftarId =
+    configBuilder.paramTerdaftarId ||
+    parameters.find(
+      (p) =>
+        p.code === "terdaftar" ||
+        p.code === "jumlahTotal" ||
+        p.code === "jumlahSarana" ||
+        (p.code === "jumlah" && p.isBaseline),
+    )?.id ||
+    parameters.find((p) => p.nama.toLowerCase().includes("terdaftar"))?.id;
+
   // 3. Update database nilai dengan sum total (override total, jangan nambah-nambah buta)
-  const updates = [];
+  const updates: { id: number; val: number; isMinOnly?: boolean }[] = [];
   if (paramDiperiksaId) updates.push({ id: paramDiperiksaId, val: sumDiperiksa });
   if (paramMsId) updates.push({ id: paramMsId, val: sumMs });
   if (paramTmsId) updates.push({ id: paramTmsId, val: sumTms });
+
+  if (paramTerdaftarId && sumDiperiksa > 0) {
+    const sasaranCount = await prisma.sasaran.count({
+      where: { puskesmasId, subCategoryId },
+    });
+    const targetTerdaftar = Math.max(sasaranCount, sumDiperiksa);
+    updates.push({ id: paramTerdaftarId, val: targetTerdaftar, isMinOnly: true });
+  }
 
   console.log("AGREGASI RUNNING:", {
     subCategoryId,
@@ -240,6 +259,7 @@ export async function recalculateLaporanBulanan({
     paramDiperiksaId,
     paramMsId,
     paramTmsId,
+    paramTerdaftarId,
   });
 
   for (const up of updates) {
@@ -247,10 +267,12 @@ export async function recalculateLaporanBulanan({
       where: { laporanId: laporan.id, parameterId: up.id, subCategoryId },
     });
 
+    const finalVal = up.isMinOnly && existingVal ? Math.max(Number(existingVal.value) || 0, up.val) : up.val;
+
     if (existingVal) {
       await prisma.dynamicLaporanValue.update({
         where: { id: existingVal.id },
-        data: { value: String(up.val) },
+        data: { value: String(finalVal) },
       });
     } else {
       await prisma.dynamicLaporanValue.create({
@@ -258,7 +280,7 @@ export async function recalculateLaporanBulanan({
           laporanId: laporan.id,
           parameterId: up.id,
           subCategoryId,
-          value: String(up.val),
+          value: String(finalVal),
         },
       });
     }
