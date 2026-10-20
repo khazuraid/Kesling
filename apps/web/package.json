@@ -24,7 +24,6 @@
     "@serwist/next": "^9.5.12",
     "@tamagui/config": "^2.7.7",
     "@tamagui/core": "^2.7.7",
-    "@tamagui/next-plugin": "^2.7.7",
     "@tanstack/react-query": "5.101.4",
     "@tanstack/react-table": "8.21.3",
     "@tanstack/react-virtual": "3.14.9",
