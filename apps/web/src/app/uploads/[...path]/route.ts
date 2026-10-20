@@ -2,9 +2,12 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function GET(_req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
-    const { path: pathSegments } = await context.params;
+    const { path: pathSegments } = await params;
     if (!pathSegments || pathSegments.length === 0) {
       return new NextResponse("Not Found", { status: 404 });
     }
@@ -50,7 +53,7 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ path: 
 
     const buffer = await readFile(targetPath);
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type": contentType,
