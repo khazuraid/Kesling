@@ -11,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SideNav />
       <SidebarOffset>
         <DesktopHeader />
-        <main className="w-full min-h-[calc(100vh-4rem)] bg-background">
+        <main className="w-full min-h-[calc(100vh-4rem)] bg-canvas">
           <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
         </main>
       </SidebarOffset>

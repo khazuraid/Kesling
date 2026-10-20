@@ -2,13 +2,16 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Compass,
   Database,
   Download,
+  Droplets,
   Edit3,
   Eye,
   FileCheck,
@@ -19,17 +22,18 @@ import {
   Plus,
   Search,
   ShieldAlert,
+  SkipForward,
   Sparkles,
   Store,
   Trash2,
   UserCheck,
+  UtensilsCrossed,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { DetailResultModal } from "./DetailResultModal";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
@@ -43,6 +47,37 @@ function getTodayLocalDate(): string {
   return `${year}-${month}-${day}`;
 }
 
+function getSasaranIcon(subCatName?: string, nama?: string) {
+  const text = `${subCatName || ""} ${nama || ""}`.toLowerCase();
+  if (text.includes("air") || text.includes("depot") || text.includes("dam")) {
+    return {
+      icon: Droplets,
+      bg: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20",
+    };
+  }
+  if (
+    text.includes("makan") ||
+    text.includes("restoran") ||
+    text.includes("pangan") ||
+    text.includes("jajanan") ||
+    text.includes("ketoprak") ||
+    text.includes("soto") ||
+    text.includes("tahu") ||
+    text.includes("warung") ||
+    text.includes("kfc") ||
+    text.includes("kuliner")
+  ) {
+    return {
+      icon: UtensilsCrossed,
+      bg: "bg-primary-subtle text-primary border border-primary/25",
+    };
+  }
+  return {
+    icon: Store,
+    bg: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
+  };
+}
+
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role;
@@ -52,6 +87,7 @@ export default function PemeriksaanPage() {
   const [activeForm, setActiveForm] = useState<any>(null);
   const [pendingForm, setPendingForm] = useState<any>(null);
   const [sasaranSearch, setSasaranSearch] = useState("");
+  const [sasaranCategoryFilter, setSasaranCategoryFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [detailModalResult, setDetailModalResult] = useState<any | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -188,6 +224,15 @@ export default function PemeriksaanPage() {
       return acc + cnt;
     }, 0);
   }, [templates]);
+
+  const sasaranSubCategories = useMemo(() => {
+    const map = new Map<string, number>();
+    sasarans.forEach((s: any) => {
+      const name = s.subCategory?.nama || "Lainnya";
+      map.set(name, (map.get(name) || 0) + 1);
+    });
+    return Array.from(map.entries()).map(([nama, count]) => ({ nama, count }));
+  }, [sasarans]);
 
   const submitMut = useMutation({
     mutationFn: async (data: any) => {
@@ -1114,206 +1159,280 @@ export default function PemeriksaanPage() {
 
   const filteredSasarans = sasarans.filter((sasaran: any) => {
     const term = sasaranSearch.trim().toLowerCase();
-    return (
+    const matchTerm =
       !term ||
-      [sasaran.nama, sasaran.alamat, sasaran.pemilik].some((value) =>
+      [sasaran.nama, sasaran.alamat, sasaran.pemilik, sasaran.subCategory?.nama].some((value) =>
         String(value || "")
           .toLowerCase()
           .includes(term),
-      )
-    );
+      );
+    const matchCategory =
+      sasaranCategoryFilter === "all" || (sasaran.subCategory?.nama || "Lainnya") === sasaranCategoryFilter;
+    return matchTerm && matchCategory;
   });
 
   if (pendingForm) {
     return (
-      <div className="w-full pb-8 fade-in space-y-5">
-        {/* Navigation & Breadcrumb */}
-        <div className="flex items-center justify-between gap-3">
-          <button
-            onClick={() => setPendingForm(null)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-all shadow-subtle"
-          >
-            <ArrowLeft className="h-4 w-4" /> Kembali ke Formulir
-          </button>
-          <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
-            <span>Formulir</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="font-bold text-foreground truncate max-w-[200px]">{pendingForm.nama}</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-primary font-bold">Pilih Sasaran</span>
-          </div>
-        </div>
+      <div className="w-full fade-in min-h-screen bg-canvas">
+        {/* ── SEAMLESS MASTHEAD (FLUSH LANGSUNG KE NAVBAR) ── */}
+        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+          <div className="w-full max-w-[1600px] mx-auto space-y-4">
+            {/* Top Navigation Row: Back Button & Breadcrumbs */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingForm(null)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold shadow-xs transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Kembali ke Formulir</span>
+                </button>
+                <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-muted-foreground border-l border-border pl-3">
+                  <span>Inspeksi</span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="font-bold text-foreground truncate max-w-[240px]">{pendingForm.nama}</span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="text-primary font-bold">Pilih Sasaran</span>
+                </div>
+              </div>
 
-        {/* Hero Card (Tamagui Clean Bento) */}
-        <Card className="relative overflow-hidden rounded-card bg-surface text-foreground p-5 sm:p-7 shadow-subtle border border-border">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-subtle border border-primary/25 text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary">
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => openFormWithoutSasaran(pendingForm)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <SkipForward className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Lewati (Tanpa Sasaran)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNewSasaranModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Sasaran Baru</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Title & Category Info */}
+            <div className="space-y-1.5 pt-1">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-primary-subtle border border-primary/25 text-[10px] font-black uppercase tracking-wider text-primary">
                 <Sparkles className="w-3 h-3 text-primary" />
                 {pendingForm.dataDasarCategory?.nama || pendingForm.nama}
               </div>
               <h1 className="text-[22px] sm:text-[26px] font-black tracking-tight leading-tight text-foreground">
                 Pilih Sasaran Pemeriksaan
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground leading-relaxed max-w-3xl">
                 Pilih sasaran yang akan diinspeksi. Data profil (alamat, pengelola, kontak, koordinat) otomatis terisi
                 ke form penilaian.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => openFormWithoutSasaran(pendingForm)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-[12px] font-bold transition-all shadow-subtle"
-              >
-                Lewati (Tanpa Sasaran)
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsNewSasaranModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-bold shadow-subtle transition-all"
-              >
-                <Plus className="w-4 h-4" /> Tambah Sasaran Baru
-              </button>
-            </div>
           </div>
-        </Card>
-
-        {/* Search & Info Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              value={sasaranSearch}
-              onChange={(e) => setSasaranSearch(e.target.value)}
-              placeholder="Cari nama sasaran, alamat, atau pemilik..."
-              className="w-full h-11 pl-10 pr-10 rounded-card border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary shadow-subtle transition-colors"
-            />
-            {sasaranSearch && (
-              <button
-                onClick={() => setSasaranSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          <span className="text-[11px] font-bold text-muted-foreground shrink-0 self-end sm:self-center">
-            {filteredSasarans.length} sasaran tersedia
-          </span>
         </div>
 
-        {/* Sasaran Cards Grid */}
-        {filteredSasarans.length === 0 ? (
-          <div className="border border-dashed border-border bg-surface rounded-card p-10 sm:p-14 text-center flex flex-col items-center justify-center shadow-subtle">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3.5">
-              <Database className="w-7 h-7" />
-            </div>
-            <h3 className="text-[15px] font-extrabold text-foreground">Data Dasar Tidak Ditemukan</h3>
-            <p className="text-[12px] text-muted-foreground max-w-sm mt-1">
-              {sasaranSearch
-                ? `Tidak ada sasaran yang cocok dengan kata kunci "${sasaranSearch}".`
-                : "Belum ada data sasaran pada kategori ini. Anda dapat menambahkannya sekarang atau melanjutkan tanpa sasaran."}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5">
-              <button
-                type="button"
-                onClick={() => setIsNewSasaranModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all shadow-subtle"
-              >
-                <Plus className="w-4 h-4" /> Tambah Sasaran Baru
-              </button>
-              <button
-                type="button"
-                onClick={() => openFormWithoutSasaran(pendingForm)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-surface text-[12px] font-bold hover:bg-surface-subtle transition-colors shadow-subtle"
-              >
-                Lanjut Tanpa Sasaran
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {filteredSasarans.map((sasaran: any) => {
-              const subCatNama = sasaran.subCategory?.nama;
-              return (
-                <div
-                  key={sasaran.id}
-                  onClick={() => openFormWithSasaran(pendingForm, sasaran)}
-                  className="group relative flex flex-col justify-between rounded-card border border-border bg-surface hover:border-primary hover:shadow-md transition-all duration-200 p-4 sm:p-5 text-left cursor-pointer active:scale-[0.99] shadow-subtle"
+        {/* ── CONTENT BODY (CANVAS) ── */}
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+          {/* Subcategory Filter Tabs & Search Bar */}
+          <div className="space-y-3">
+            {/* Filter Pills */}
+            {sasaranSubCategories.length > 1 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setSasaranCategoryFilter("all")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
+                    sasaranCategoryFilter === "all"
+                      ? "bg-primary text-white shadow-xs"
+                      : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:bg-surface-subtle"
+                  }`}
                 >
-                  <div className="space-y-3">
-                    {/* Top Row: Icon + SubCategory Tag */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <Store className="w-5 h-5" />
-                      </div>
-                      {subCatNama && (
-                        <span className="inline-block px-2.5 py-1 rounded-full bg-surface-subtle text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground truncate max-w-[150px] border border-border">
-                          {subCatNama}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <div>
-                      <h3 className="text-[14px] sm:text-[15px] font-extrabold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                        {sasaran.nama}
-                      </h3>
-                      {sasaran.alamat ? (
-                        <p className="text-[11px] sm:text-[12px] text-muted-foreground flex items-start gap-1.5 mt-1.5 line-clamp-2">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" />
-                          <span>{sasaran.alamat}</span>
-                        </p>
-                      ) : (
-                        <p className="text-[11px] text-muted-foreground/60 italic mt-1.5 flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 text-muted-foreground/40" />
-                          Alamat belum diisi
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Metadata details */}
-                    <div className="pt-2 border-t border-border/60 space-y-1 text-[11px] text-muted-foreground">
-                      {sasaran.pemilik && (
-                        <div className="flex items-center gap-1.5 truncate">
-                          <UserCheck className="w-3.5 h-3.5 shrink-0 text-muted-foreground/70" />
-                          <span className="truncate">
-                            Pengelola: <strong className="text-foreground font-semibold">{sasaran.pemilik}</strong>
-                          </span>
-                        </div>
-                      )}
-                      {sasaran.kontak && (
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Phone className="w-3.5 h-3.5 shrink-0 text-muted-foreground/70" />
-                          <span className="truncate">{sasaran.kontak}</span>
-                        </div>
-                      )}
-                      {sasaran.lat && sasaran.lng && (
-                        <div className="flex items-center gap-1.5 font-mono text-[10px] text-primary truncate">
-                          <Compass className="w-3.5 h-3.5 shrink-0" />
-                          <span>
-                            {Number(sasaran.lat).toFixed(4)}, {Number(sasaran.lng).toFixed(4)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Bottom Action */}
-                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-primary group-hover:underline">
-                      Pilih & Mulai Inspeksi
+                  Semua Sasaran
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums font-extrabold ${
+                      sasaranCategoryFilter === "all" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {sasarans.length}
+                  </span>
+                </button>
+                {sasaranSubCategories.map((sc) => (
+                  <button
+                    key={sc.nama}
+                    type="button"
+                    onClick={() => setSasaranCategoryFilter(sc.nama)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
+                      sasaranCategoryFilter === sc.nama
+                        ? "bg-primary text-white shadow-xs"
+                        : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:bg-surface-subtle"
+                    }`}
+                  >
+                    {sc.nama}
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums font-extrabold ${
+                        sasaranCategoryFilter === sc.nama ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {sc.count}
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-surface-subtle text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                      <ChevronRight className="w-4 h-4" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Search Input Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  value={sasaranSearch}
+                  onChange={(e) => setSasaranSearch(e.target.value)}
+                  placeholder="Cari nama sasaran, alamat, atau pemilik..."
+                  className="w-full h-11 pl-10 pr-10 rounded-xl border border-border bg-surface text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-xs transition-colors"
+                />
+                {sasaranSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setSasaranSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <div className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-surface border border-border text-[11px] font-bold text-muted-foreground shrink-0 self-end sm:self-center shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <span>
+                  <strong className="text-foreground font-black tabular-nums">{filteredSasarans.length}</strong> sasaran
+                  tersedia
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sasaran Cards Grid */}
+          {filteredSasarans.length === 0 ? (
+            <div className="border border-dashed border-border bg-surface rounded-card p-10 sm:p-14 text-center flex flex-col items-center justify-center shadow-subtle">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3.5">
+                <Database className="w-7 h-7" />
+              </div>
+              <h3 className="text-[15px] font-extrabold text-foreground">Data Dasar Tidak Ditemukan</h3>
+              <p className="text-[12px] text-muted-foreground max-w-sm mt-1">
+                {sasaranSearch
+                  ? `Tidak ada sasaran yang cocok dengan kata kunci "${sasaranSearch}".`
+                  : "Belum ada data sasaran pada kategori ini. Anda dapat menambahkannya sekarang atau melanjutkan tanpa sasaran."}
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5">
+                <button
+                  type="button"
+                  onClick={() => setIsNewSasaranModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all shadow-subtle cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Tambah Sasaran Baru
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openFormWithoutSasaran(pendingForm)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-surface text-[12px] font-bold hover:bg-surface-subtle transition-colors shadow-subtle cursor-pointer"
+                >
+                  Lanjut Tanpa Sasaran
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredSasarans.map((sasaran: any) => {
+                const subCatNama = sasaran.subCategory?.nama;
+                const iconInfo = getSasaranIcon(subCatNama, sasaran.nama);
+                const IconComponent = iconInfo.icon;
+                return (
+                  <div
+                    key={sasaran.id}
+                    onClick={() => openFormWithSasaran(pendingForm, sasaran)}
+                    className="group relative flex flex-col justify-between rounded-card border border-border bg-surface hover:border-primary hover:shadow-subtle hover:-translate-y-0.5 transition-all duration-200 p-5 text-left cursor-pointer active:scale-[0.99] shadow-xs"
+                  >
+                    <div className="space-y-3.5">
+                      {/* Top Row: Icon + SubCategory Tag */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div
+                          className={`w-11 h-11 rounded-xl ${iconInfo.bg} flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform`}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                        {subCatNama && (
+                          <span className="shrink-0 px-2.5 py-1 rounded-full bg-surface-subtle border border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                            {subCatNama}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title & Address */}
+                      <div className="space-y-1">
+                        <h3 className="text-[15px] font-black tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                          {sasaran.nama}
+                        </h3>
+                        {sasaran.alamat ? (
+                          <p className="text-[12px] text-muted-foreground flex items-start gap-1.5 line-clamp-2">
+                            <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" />
+                            <span>{sasaran.alamat}</span>
+                          </p>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-semibold">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>Alamat belum dilengkapi</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Balanced Metadata Box */}
+                      <div className="p-3 rounded-xl bg-surface-subtle/70 border border-border/70 space-y-2 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-2 truncate">
+                          <UserCheck className="w-3.5 h-3.5 shrink-0 text-primary" />
+                          <span className="truncate">
+                            Pengelola:{" "}
+                            <strong className="text-foreground font-semibold">
+                              {sasaran.pemilik || "Belum tercatat"}
+                            </strong>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 truncate">
+                          <Phone className="w-3.5 h-3.5 shrink-0 text-primary" />
+                          <span className="truncate font-medium">{sasaran.kontak || "Kontak belum tercatat"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 truncate">
+                          <Compass className="w-3.5 h-3.5 shrink-0 text-primary" />
+                          {sasaran.lat && sasaran.lng ? (
+                            <span className="font-mono text-[10px] text-primary font-bold">
+                              {Number(sasaran.lat).toFixed(4)}, {Number(sasaran.lng).toFixed(4)}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/80 font-medium">
+                              Koordinat GPS belum tercatat
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Footer */}
+                    <div className="mt-4 pt-3.5 border-t border-border flex items-center justify-between">
+                      <span className="text-[12px] font-extrabold text-primary group-hover:text-primary-hover flex items-center gap-1.5">
+                        Pilih & Mulai Inspeksi
+                      </span>
+                      <div className="w-7 h-7 rounded-lg bg-primary-subtle text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* ── MODAL: TAMBAH DATA DASAR (FORMAT SESUAI DATA-DASAR) ── */}
         {isNewSasaranModalOpen && (
@@ -1486,10 +1605,10 @@ export default function PemeriksaanPage() {
 
   if (!activeForm) {
     return (
-      <div className="w-full mx-auto pb-4 fade-in">
-        {/* ── HERO (Tamagui Clean Bento) ── */}
-        <Card className="relative overflow-hidden bg-surface text-foreground rounded-card shadow-subtle border border-border p-0">
-          <div className="relative z-10 px-5 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="w-full fade-in min-h-screen bg-canvas">
+        {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
+        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+          <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Pemeriksaan
@@ -1504,11 +1623,12 @@ export default function PemeriksaanPage() {
             </div>
             <div className="flex items-center gap-1 rounded-full bg-muted/80 border border-border p-1 w-full sm:w-auto">
               <button
+                type="button"
                 onClick={() => {
                   setActiveTab("formulir");
                   setFormulirPage(1);
                 }}
-                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center cursor-pointer ${
                   activeTab === "formulir"
                     ? "bg-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -1517,11 +1637,12 @@ export default function PemeriksaanPage() {
                 Formulir ({templates.length})
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setActiveTab("riwayat");
                   setRiwayatPage(1);
                 }}
-                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center cursor-pointer ${
                   activeTab === "riwayat"
                     ? "bg-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -1531,332 +1652,339 @@ export default function PemeriksaanPage() {
               </button>
             </div>
           </div>
-        </Card>
-
-        {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-            <span className="text-[18px] font-black tabular-nums text-primary leading-none">{templates.length}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Formulir</span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
-            <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalRiwayat}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
-              Riwayat
-            </span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-            <span className="text-[18px] font-black tabular-nums text-primary leading-none">{totalVariabel}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Variabel</span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
-              {categories.length}
-            </span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
-              Kategori
-            </span>
-          </span>
         </div>
 
-        {/* ── TAB FORMULIR ── */}
-        {activeTab === "formulir" && (
-          <div className="pt-6 space-y-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={formulirSearch}
-                  onChange={(e) => {
-                    setFormulirSearch(e.target.value);
-                    setFormulirPage(1);
-                  }}
-                  placeholder="Cari nama formulir atau jenis..."
-                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
-                />
-              </div>
-              <span className="text-[11px] font-bold text-muted-foreground">
-                Menampilkan <span className="tabular-nums">{paginatedTemplates.length}</span> dari{" "}
-                <span className="tabular-nums">{filteredTemplates.length}</span> formulir
+        {/* ── CONTENT BODY (CANVAS) ── */}
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+          {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">{templates.length}</span>
+              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                Formulir
               </span>
-            </div>
-
-            {filteredTemplates.length === 0 ? (
-              <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
-                <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
-                <p className="text-[13px] font-bold text-foreground">
-                  {formulirSearch ? "Formulir Tidak Ditemukan" : "Belum Ada Template"}
-                </p>
-                <p className="text-[12px] text-muted-foreground mt-1">
-                  {formulirSearch
-                    ? "Coba kata kunci pencarian lain."
-                    : "Import template lewat halaman Form Pemeriksaan."}
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {paginatedTemplates.map((tpl: any) => {
-                  const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
-                  return (
-                    <div
-                      key={tpl.id}
-                      onClick={() => handleOpenForm(tpl)}
-                      className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden cursor-pointer shadow-subtle"
-                    >
-                      <div className="w-1 shrink-0 bg-primary" />
-                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all">
-                            <FileText className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
-                              {tpl.nama}
-                            </h4>
-                            <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
-                              {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
-                              {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                          <div className="text-left sm:text-center">
-                            <div className="text-[15px] font-black tabular-nums text-primary leading-none">
-                              {fieldCount}
-                            </div>
-                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
-                              Variabel
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-primary text-white text-[11px] font-bold group-hover:bg-primary-hover transition-all shadow-subtle"
-                          >
-                            <span>Mulai</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Pagination Controls Formulir */}
-            {totalFormulirPages > 1 && (
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
-                <button
-                  onClick={() => setFormulirPage((p) => Math.max(1, p - 1))}
-                  disabled={formulirPage <= 1}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                >
-                  <ChevronLeft className="w-4 h-4" /> Prev
-                </button>
-                <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
-                  {Array.from({ length: totalFormulirPages }).map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setFormulirPage(i + 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
-                        formulirPage === i + 1
-                          ? "bg-primary text-white shadow-subtle"
-                          : "text-muted-foreground hover:bg-surface-subtle"
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setFormulirPage((p) => Math.min(totalFormulirPages, p + 1))}
-                  disabled={formulirPage >= totalFormulirPages}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                >
-                  Next <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            </span>
+            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalRiwayat}</span>
+              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+                Riwayat
+              </span>
+            </span>
+            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">{totalVariabel}</span>
+              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                Variabel
+              </span>
+            </span>
+            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
+                {categories.length}
+              </span>
+              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+                Kategori
+              </span>
+            </span>
           </div>
-        )}
 
-        {/* ── TAB RIWAYAT ── */}
-        {activeTab === "riwayat" && (
-          <div className="pt-6 space-y-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={riwayatSearch}
-                  onChange={(e) => {
-                    setRiwayatSearch(e.target.value);
-                    setRiwayatPage(1);
-                  }}
-                  placeholder="Cari nama sasaran, puskesmas, formulir..."
-                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
-                />
+          {/* ── TAB FORMULIR ── */}
+          {activeTab === "formulir" && (
+            <div className="pt-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={formulirSearch}
+                    onChange={(e) => {
+                      setFormulirSearch(e.target.value);
+                      setFormulirPage(1);
+                    }}
+                    placeholder="Cari nama formulir atau jenis..."
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
+                  />
+                </div>
+                <span className="text-[11px] font-bold text-muted-foreground">
+                  Menampilkan <span className="tabular-nums">{paginatedTemplates.length}</span> dari{" "}
+                  <span className="tabular-nums">{filteredTemplates.length}</span> formulir
+                </span>
               </div>
-              <span className="text-[11px] font-bold text-muted-foreground">
-                Menampilkan <span className="tabular-nums">{paginatedResults.length}</span> dari{" "}
-                <span className="tabular-nums">{totalRiwayat}</span> riwayat
-              </span>
-            </div>
 
-            {isLoadingRiwayat ? (
-              <div className="py-12 flex flex-col items-center justify-center text-center">
-                <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                <p className="text-[12px] font-medium text-muted-foreground">Memuat data riwayat...</p>
-              </div>
-            ) : paginatedResults.length === 0 ? (
-              <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
-                <ShieldAlert className="w-8 h-8 text-muted-foreground/40 mb-3" />
-                <p className="text-[13px] font-bold text-foreground">
-                  {riwayatSearch ? "Data Tidak Ditemukan" : "Belum Ada Riwayat"}
-                </p>
-                <p className="text-[12px] text-muted-foreground mt-1">
-                  {riwayatSearch ? "Gunakan kata kunci pencarian lain." : "Hasil pemeriksaan akan tampil di sini."}
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {paginatedResults.map((res: any) => {
-                  const isApproved = res.status === "APPROVED";
-                  return (
-                    <div
-                      key={res.id}
-                      className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden shadow-subtle"
-                    >
-                      <div className="w-1 shrink-0" style={{ background: isApproved ? "#00A876" : "#E8A33D" }} />
-                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                        <div
-                          onClick={() => handleOpenDetail(res)}
-                          className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
-                          title="Klik untuk melihat detail lengkap hasil pemeriksaan"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover/title:bg-primary group-hover/title:text-white transition-all">
-                            <FileCheck className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground group-hover/title:text-primary transition-colors truncate">
-                                {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
+              {filteredTemplates.length === 0 ? (
+                <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
+                  <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
+                  <p className="text-[13px] font-bold text-foreground">
+                    {formulirSearch ? "Formulir Tidak Ditemukan" : "Belum Ada Template"}
+                  </p>
+                  <p className="text-[12px] text-muted-foreground mt-1">
+                    {formulirSearch
+                      ? "Coba kata kunci pencarian lain."
+                      : "Import template lewat halaman Form Pemeriksaan."}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {paginatedTemplates.map((tpl: any) => {
+                    const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                    return (
+                      <div
+                        key={tpl.id}
+                        onClick={() => handleOpenForm(tpl)}
+                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden cursor-pointer shadow-subtle"
+                      >
+                        <div className="w-1 shrink-0 bg-primary" />
+                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                                {tpl.nama}
                               </h4>
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${
-                                  isApproved
-                                    ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                                    : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                                }`}
-                              >
-                                <CheckCircle2 className="w-2.5 h-2.5" />
-                                {isApproved ? "Disetujui" : res.status || "Selesai"}
-                              </span>
+                              <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
+                                {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
+                                {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
+                              </p>
                             </div>
-                            <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
-                              {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
-                              {new Date(res.createdAt).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                            <div className="text-left sm:text-center">
+                              <div className="text-[15px] font-black tabular-nums text-primary leading-none">
+                                {fieldCount}
+                              </div>
+                              <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                                Variabel
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-primary text-white text-[11px] font-bold group-hover:bg-primary-hover transition-all shadow-subtle"
+                            >
+                              <span>Mulai</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                        <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                          <button
-                            title="Lihat Detail Pemeriksaan"
+              {/* Pagination Controls Formulir */}
+              {totalFormulirPages > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
+                  <button
+                    onClick={() => setFormulirPage((p) => Math.max(1, p - 1))}
+                    disabled={formulirPage <= 1}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Prev
+                  </button>
+                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
+                    {Array.from({ length: totalFormulirPages }).map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setFormulirPage(i + 1)}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
+                          formulirPage === i + 1
+                            ? "bg-primary text-white shadow-subtle"
+                            : "text-muted-foreground hover:bg-surface-subtle"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setFormulirPage((p) => Math.min(totalFormulirPages, p + 1))}
+                    disabled={formulirPage >= totalFormulirPages}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
+                  >
+                    Next <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── TAB RIWAYAT ── */}
+          {activeTab === "riwayat" && (
+            <div className="pt-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={riwayatSearch}
+                    onChange={(e) => {
+                      setRiwayatSearch(e.target.value);
+                      setRiwayatPage(1);
+                    }}
+                    placeholder="Cari nama sasaran, puskesmas, formulir..."
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
+                  />
+                </div>
+                <span className="text-[11px] font-bold text-muted-foreground">
+                  Menampilkan <span className="tabular-nums">{paginatedResults.length}</span> dari{" "}
+                  <span className="tabular-nums">{totalRiwayat}</span> riwayat
+                </span>
+              </div>
+
+              {isLoadingRiwayat ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+                  <p className="text-[12px] font-medium text-muted-foreground">Memuat data riwayat...</p>
+                </div>
+              ) : paginatedResults.length === 0 ? (
+                <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
+                  <ShieldAlert className="w-8 h-8 text-muted-foreground/40 mb-3" />
+                  <p className="text-[13px] font-bold text-foreground">
+                    {riwayatSearch ? "Data Tidak Ditemukan" : "Belum Ada Riwayat"}
+                  </p>
+                  <p className="text-[12px] text-muted-foreground mt-1">
+                    {riwayatSearch ? "Gunakan kata kunci pencarian lain." : "Hasil pemeriksaan akan tampil di sini."}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {paginatedResults.map((res: any) => {
+                    const isApproved = res.status === "APPROVED";
+                    return (
+                      <div
+                        key={res.id}
+                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden shadow-subtle"
+                      >
+                        <div className="w-1 shrink-0" style={{ background: isApproved ? "#00A876" : "#E8A33D" }} />
+                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                          <div
                             onClick={() => handleOpenDetail(res)}
-                            disabled={isLoadingDetail}
-                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
+                            className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
+                            title="Klik untuk melihat detail lengkap hasil pemeriksaan"
                           >
-                            <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
-                          </button>
-                          <button
-                            title="Export PDF"
-                            onClick={() => handleExportPDF(res)}
-                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5" /> <span>PDF</span>
-                          </button>
-                          <button
-                            title="Edit Pemeriksaan"
-                            onClick={() => handleEditResult(res)}
-                            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground hover:bg-surface-subtle rounded-lg transition-colors"
-                          >
-                            <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> <span>Edit</span>
-                          </button>
-                          <button
-                            title="Hapus"
-                            onClick={() => {
-                              if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
-                                deleteMut.mutate(res.id);
-                              }
-                            }}
-                            className="inline-flex items-center justify-center h-8 w-8 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover/title:bg-primary group-hover/title:text-white transition-all">
+                              <FileCheck className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground group-hover/title:text-primary transition-colors truncate">
+                                  {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
+                                </h4>
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                    isApproved
+                                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                                      : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                  }`}
+                                >
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                  {isApproved ? "Disetujui" : res.status || "Selesai"}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
+                                {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
+                                {new Date(res.createdAt).toLocaleDateString("id-ID", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                            <button
+                              title="Lihat Detail Pemeriksaan"
+                              onClick={() => handleOpenDetail(res)}
+                              disabled={isLoadingDetail}
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
+                            </button>
+                            <button
+                              title="Export PDF"
+                              onClick={() => handleExportPDF(res)}
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
+                            >
+                              <Download className="w-3.5 h-3.5" /> <span>PDF</span>
+                            </button>
+                            <button
+                              title="Edit Pemeriksaan"
+                              onClick={() => handleEditResult(res)}
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground hover:bg-surface-subtle rounded-lg transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> <span>Edit</span>
+                            </button>
+                            <button
+                              title="Hapus"
+                              onClick={() => {
+                                if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
+                                  deleteMut.mutate(res.id);
+                                }
+                              }}
+                              className="inline-flex items-center justify-center h-8 w-8 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Pagination Controls Riwayat */}
-            {totalRiwayatPages > 1 && (
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
-                <button
-                  onClick={() => setRiwayatPage((p) => Math.max(1, p - 1))}
-                  disabled={riwayatPage <= 1}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                >
-                  <ChevronLeft className="w-4 h-4" /> Prev
-                </button>
-                <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
-                  {Array.from({ length: totalRiwayatPages }).map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setRiwayatPage(i + 1)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
-                        riwayatPage === i + 1
-                          ? "bg-primary text-white shadow-subtle"
-                          : "text-muted-foreground hover:bg-surface-subtle"
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
-                <button
-                  onClick={() => setRiwayatPage((p) => Math.min(totalRiwayatPages, p + 1))}
-                  disabled={riwayatPage >= totalRiwayatPages}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                >
-                  Next <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              )}
 
-        {/* Modal Detail Hasil Pemeriksaan Lengkap */}
-        <DetailResultModal
-          isOpen={Boolean(detailModalResult)}
-          onClose={() => setDetailModalResult(null)}
-          result={detailModalResult}
-          template={
-            detailModalResult
-              ? templates.find((t) => t.id === detailModalResult.templateId) || detailModalResult.template
-              : null
-          }
-          onEdit={handleEditResult}
-        />
+              {/* Pagination Controls Riwayat */}
+              {totalRiwayatPages > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
+                  <button
+                    onClick={() => setRiwayatPage((p) => Math.max(1, p - 1))}
+                    disabled={riwayatPage <= 1}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Prev
+                  </button>
+                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
+                    {Array.from({ length: totalRiwayatPages }).map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => setRiwayatPage(i + 1)}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
+                          riwayatPage === i + 1
+                            ? "bg-primary text-white shadow-subtle"
+                            : "text-muted-foreground hover:bg-surface-subtle"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setRiwayatPage((p) => Math.min(totalRiwayatPages, p + 1))}
+                    disabled={riwayatPage >= totalRiwayatPages}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
+                  >
+                    Next <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Modal Detail Hasil Pemeriksaan Lengkap */}
+          <DetailResultModal
+            isOpen={Boolean(detailModalResult)}
+            onClose={() => setDetailModalResult(null)}
+            result={detailModalResult}
+            template={
+              detailModalResult
+                ? templates.find((t) => t.id === detailModalResult.templateId) || detailModalResult.template
+                : null
+            }
+            onEdit={handleEditResult}
+          />
+        </div>
       </div>
     );
   }
