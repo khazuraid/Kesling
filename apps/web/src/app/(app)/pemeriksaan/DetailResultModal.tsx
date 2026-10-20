@@ -423,7 +423,30 @@ export function DetailResultModal({
 
                             {/* Badge Jawaban */}
                             <div className="shrink-0 sm:text-right">
-                              {f.tipe === "BOOLEAN" ? (
+                              {f.tipe === "PHOTO" ? (
+                                valObj?.valueString ? (
+                                  <div
+                                    onClick={() => setPreviewPhoto(valObj.valueString || null)}
+                                    className="inline-flex items-center gap-2 p-1.5 rounded-xl border border-border bg-surface hover:border-primary transition-all cursor-pointer shadow-xs group/photo"
+                                  >
+                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-black/5">
+                                      {/* biome-ignore lint/performance/noImgElement: photo field preview */}
+                                      <img
+                                        src={valObj.valueString}
+                                        alt={f.pertanyaan || "Foto"}
+                                        className="w-full h-full object-cover group-hover/photo:scale-105 transition-transform"
+                                      />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-primary pr-2 flex items-center gap-1">
+                                      <ImageIcon className="w-3.5 h-3.5" /> Lihat Foto
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
+                                    Foto belum diunggah
+                                  </span>
+                                )
+                              ) : f.tipe === "BOOLEAN" ? (
                                 isTrue ? (
                                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#00A876]/15 text-[#00A876] text-[11px] font-black border border-[#00A876]/30">
                                     <CheckCircle2 className="w-3.5 h-3.5" /> Ya
