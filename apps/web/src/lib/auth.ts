@@ -115,7 +115,16 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl || parsed.hostname === "kesling.biz.id") return url;
+      } catch {}
+      return baseUrl;
+    },
   },
+  useSecureCookies: process.env.NODE_ENV === "production" || process.env.NEXTAUTH_URL?.startsWith("https"),
   pages: { signIn: "/login" },
   session: { strategy: "jwt", maxAge: 24 * 60 * 60 },
 };

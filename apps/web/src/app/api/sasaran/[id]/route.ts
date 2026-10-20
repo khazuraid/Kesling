@@ -1,103 +1,107 @@
 import { prisma } from "@apps-kes/database";
-import { type NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/api-auth";
-import { syncDataDasarToLaporan } from "@/lib/sync-data-dasar";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/session";
 
-function optionalFloat(value: unknown) {
-  if (value === undefined || value === null || value === "") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function isEmpty(value: unknown) {
-  return value === undefined || value === null || value === "";
-}
-
-export const PUT = withAuth(async (req: NextRequest, context: any) => {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const pkmId = (req as any).user?.puskesmasId;
-    const role = (req as any).user?.role;
-    const { id: rawId } = await context.params;
-    const id = Number(rawId);
-    if (!Number.isInteger(id)) return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json();
-    const where: any = { id };
-    if (role !== "ADMIN") where.puskesmasId = pkmId;
-
-    const existing = await prisma.sasaran.findFirst({
-      where,
-      include: { subCategory: { include: { category: { include: { parameters: true } } } } },
-    });
-    if (!existing)
-      return NextResponse.json({ error: "Data tidak ditemukan atau tidak memiliki akses" }, { status: 404 });
-
-    const dataDinamis = body.dataDinamis && typeof body.dataDinamis === "object" ? { ...body.dataDinamis } : {};
-    for (const p of existing.subCategory.category.parameters) {
-      if (p.isBaseline && isEmpty(dataDinamis[p.code])) {
-        const config =
-          p.config && typeof p.config === "object" && !Array.isArray(p.config)
-            ? (p.config as Record<string, any>)
-            : null;
-        if (config?.syncToEntityField === "nama" && body.nama) dataDinamis[p.code] = body.nama;
-        else if (config?.syncToEntityField === "alamat" && body.alamat) dataDinamis[p.code] = body.alamat;
-        else if (config?.syncToEntityField === "pemilik" && body.pemilik) dataDinamis[p.code] = body.pemilik;
-        else if (config?.syncToEntityField === "kontak" && body.kontak) dataDinamis[p.code] = body.kontak;
-        else if (["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"].includes(p.code) && body.nama)
-          dataDinamis[p.code] = body.nama;
-        else if (["alamat", "alamat_lengkap"].includes(p.code) && body.alamat) dataDinamis[p.code] = body.alamat;
-        else if (["pemilik", "pengelola", "nama_pemilik"].includes(p.code) && body.pemilik)
-          dataDinamis[p.code] = body.pemilik;
-        else if (["kontak", "telepon", "no_hp", "hp"].includes(p.code) && body.kontak)
-          dataDinamis[p.code] = body.kontak;
-      }
-    }
-
-    const missing = existing.subCategory.category.parameters
-      .filter((p) => p.isBaseline && p.required && isEmpty((dataDinamis as any)[p.code]))
-      .map((p) => p.nama);
-    if (missing.length > 0) {
-      return NextResponse.json({ error: `Field wajib belum diisi: ${missing.join(", ")}` }, { status: 400 });
-    }
-
-    const data = await prisma.sasaran.update({
-      where: { id: existing.id },
-      data: {
-        nama: body.nama || "Data Dasar",
-        alamat: body.alamat || null,
-        pemilik: body.pemilik || null,
-        kontak: body.kontak || null,
-        lat: optionalFloat(body.lat),
-        lng: optionalFloat(body.lng),
-        dataDinamis,
+    const { id } = await params;
+    const sasaran = await prisma.sasaran.findUnique({
+      where: { id: Number(id) },
+      include: {
+        subCategory: {
+          include: {
+            category: { select: { id: true, nama: true, code: true } },
+          },
+        },
+        puskesmas: { select: { id: true, nama: true } },
       },
     });
 
-    await syncDataDasarToLaporan(data.subCategoryId, data.puskesmasId);
-    return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ error: error?.message || "Gagal memperbarui Data Dasar" }, { status: 500 });
-  }
-});
+    if (!sasaran) return NextResponse.json({ error: "Sasaran tidak ditemukan" }, { status: 404 });
 
-export const DELETE = withAuth(async (req: NextRequest, context: any) => {
+    if (user.role === "OPERATOR" && sasaran.puskesmasId !== user.puskesmasId) {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
+
+    return NextResponse.json(sasaran);
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || "Gagal memuat sasaran" }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const pkmId = (req as any).user?.puskesmasId;
-    const role = (req as any).user?.role;
-    const { id: rawId } = await context.params;
-    const id = Number(rawId);
-    if (!Number.isInteger(id)) return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const where: any = { id };
-    if (role !== "ADMIN") where.puskesmasId = pkmId;
+    const { id } = await params;
+    const sasaranId = Number(id);
 
-    const old = await prisma.sasaran.findFirst({ where, select: { id: true, subCategoryId: true, puskesmasId: true } });
-    if (!old) return NextResponse.json({ error: "Data tidak ditemukan atau tidak memiliki akses" }, { status: 404 });
+    const existing = await prisma.sasaran.findUnique({
+      where: { id: sasaranId },
+    });
+    if (!existing) return NextResponse.json({ error: "Sasaran tidak ditemukan" }, { status: 404 });
 
-    await prisma.sasaran.delete({ where: { id: old.id } });
-    await syncDataDasarToLaporan(old.subCategoryId, old.puskesmasId);
-    return NextResponse.json({ success: true });
+    if (user.role === "OPERATOR" && existing.puskesmasId !== user.puskesmasId) {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { nama, subCategoryId, puskesmasId, alamat, pemilik, kontak, lat, lng, dataDinamis } = body;
+
+    const updated = await prisma.sasaran.update({
+      where: { id: sasaranId },
+      data: {
+        nama: nama ? String(nama).trim() : existing.nama,
+        subCategoryId: subCategoryId ? Number(subCategoryId) : existing.subCategoryId,
+        puskesmasId:
+          user.role === "OPERATOR" ? existing.puskesmasId : puskesmasId ? Number(puskesmasId) : existing.puskesmasId,
+        alamat: alamat !== undefined ? (alamat ? String(alamat).trim() : null) : existing.alamat,
+        pemilik: pemilik !== undefined ? (pemilik ? String(pemilik).trim() : null) : existing.pemilik,
+        kontak: kontak !== undefined ? (kontak ? String(kontak).trim() : null) : existing.kontak,
+        lat: typeof lat === "number" ? lat : existing.lat,
+        lng: typeof lng === "number" ? lng : existing.lng,
+        dataDinamis: dataDinamis !== undefined ? dataDinamis : existing.dataDinamis,
+      },
+      include: {
+        subCategory: { select: { id: true, nama: true } },
+        puskesmas: { select: { id: true, nama: true } },
+      },
+    });
+
+    return NextResponse.json(updated);
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || "Gagal menghapus Data Dasar" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Gagal memperbarui sasaran" }, { status: 500 });
   }
-});
+}
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    const sasaranId = Number(id);
+
+    const existing = await prisma.sasaran.findUnique({
+      where: { id: sasaranId },
+    });
+    if (!existing) return NextResponse.json({ error: "Sasaran tidak ditemukan" }, { status: 404 });
+
+    if (user.role === "OPERATOR" && existing.puskesmasId !== user.puskesmasId) {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
+
+    await prisma.sasaran.delete({
+      where: { id: sasaranId },
+    });
+
+    return NextResponse.json({ message: "Sasaran berhasil dihapus" });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || "Gagal menghapus sasaran" }, { status: 500 });
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Database, Layers, Plus } from "lucide-react";
+import { Copy, Database, Layers, Plus, RefreshCw } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
@@ -198,6 +198,27 @@ export default function DynamicLaporanPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const pkmId = (session?.user as any)?.puskesmasId || puskesmasList[0]?.id;
+      const res = await fetch("/api/laporan/sync-inspection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryCode, puskesmasId: pkmId, bulan, tahun }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Gagal menyinkronkan data dari pemeriksaan");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Data pemeriksaan berhasil disinkronkan");
+      queryClient.invalidateQueries({ queryKey: ["laporan", categoryCode] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const submitMutation = useMutation({
     mutationFn: async (body: {
       puskesmasId: number;
@@ -234,16 +255,6 @@ export default function DynamicLaporanPage() {
       const id = pkmId || (session?.user as any)?.puskesmasId || puskesmasList[0]?.id || 0;
 
       const baselineParams = category?.parameters.filter((p) => p.isBaseline) || [];
-      if (baselineParams.length > 0) {
-        const hasDataDasar = dataDasarList.some((l) => l.puskesmasId === id);
-        if (!hasDataDasar) {
-          alert(
-            "Anda harus mengisi 'Atur Data Dasar' terlebih dahulu untuk instansi ini sebelum dapat menginput laporan bulanan.",
-          );
-          return;
-        }
-      }
-
       setFormPuskesmasId(id);
 
       const existing = laporanList.find((l) => l.puskesmasId === id);
@@ -394,6 +405,16 @@ export default function DynamicLaporanPage() {
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border bg-surface-subtle hover:bg-surface text-[11px] font-bold text-foreground transition-all shadow-xs disabled:opacity-50"
             >
               <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Salin
+            </button>
+            <button
+              type="button"
+              onClick={() => syncMutation.mutate()}
+              disabled={!category || syncMutation.isPending}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/15 text-[11px] font-bold text-primary transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              title="Tarik data hasil pemeriksaan IKL bulan ini otomatis ke laporan"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-primary ${syncMutation.isPending ? "animate-spin" : ""}`} />
+              {syncMutation.isPending ? "Menyinkronkan..." : "Tarik IKL"}
             </button>
             <button
               onClick={() => openForm()}

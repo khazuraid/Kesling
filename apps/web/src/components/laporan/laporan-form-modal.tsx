@@ -254,14 +254,11 @@ export function LaporanFormModal({
                                 onChange={(e) =>
                                   setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))
                                 }
-                                readOnly={p.isBaseline}
                                 placeholder="—"
                                 className={`w-full h-10 px-3 text-[13px] font-bold text-center tabular-nums rounded-button outline-none transition-all ${
-                                  p.isBaseline
-                                    ? "bg-surface-subtle text-muted-foreground/40 cursor-not-allowed border border-dashed border-border/40"
-                                    : val !== ""
-                                      ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                      : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
+                                  val !== ""
+                                    ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                    : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
                                 }`}
                               />
                             </td>
@@ -312,14 +309,11 @@ export function LaporanFormModal({
                     required={p.required}
                     value={val}
                     onChange={(e) => setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))}
-                    readOnly={p.isBaseline}
                     placeholder="0"
                     className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-button outline-none transition-all ${
-                      p.isBaseline
-                        ? "bg-transparent text-muted-foreground/40 cursor-not-allowed border border-dashed border-border/40"
-                        : val !== ""
-                          ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
-                          : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
+                      val !== ""
+                        ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
                     }`}
                   />
                 </div>

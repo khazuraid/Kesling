@@ -1,12 +1,29 @@
 "use client";
 
 import { ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const rawCallback = searchParams.get("callbackUrl") || "/";
+
+  let safeCallback = "/";
+  if (rawCallback.startsWith("/") && !rawCallback.startsWith("//")) {
+    safeCallback = rawCallback;
+  } else {
+    try {
+      const parsed = new URL(rawCallback);
+      if (
+        typeof window !== "undefined" &&
+        (parsed.origin === window.location.origin || parsed.hostname === "kesling.biz.id")
+      ) {
+        safeCallback = parsed.pathname + parsed.search;
+      }
+    } catch {}
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,13 +34,17 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/" });
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: safeCallback,
+    });
     setLoading(false);
     if (res?.error) {
       setError("Kredensial tidak valid. Silakan periksa kembali email atau sandi Anda.");
     } else {
-      router.push(res?.url || "/");
-      router.refresh();
+      window.location.href = safeCallback;
     }
   }
 
@@ -105,7 +126,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-button bg-primary hover:bg-primary-hover active:scale-[0.98] text-white text-sm font-semibold tracking-tight transition-transform duration-150 disabled:opacity-50 disabled:pointer-events-none shadow-xs"
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-button bg-primary hover:bg-primary-hover active:scale-[0.98] text-white text-sm font-semibold tracking-tight transition-transform duration-150 disabled:opacity-50 disabled:pointer-events-none shadow-xs cursor-pointer"
             >
               {loading ? (
                 <>
@@ -133,5 +154,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

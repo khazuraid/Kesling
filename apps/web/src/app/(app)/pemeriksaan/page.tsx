@@ -1177,45 +1177,13 @@ export default function PemeriksaanPage() {
         {/* ── SEAMLESS MASTHEAD (FLUSH LANGSUNG KE NAVBAR) ── */}
         <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
           <div className="w-full max-w-[1600px] mx-auto space-y-4">
-            {/* Top Navigation Row: Back Button & Breadcrumbs */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPendingForm(null)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold shadow-xs transition-all cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Kembali ke Formulir</span>
-                </button>
-                <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-muted-foreground border-l border-border pl-3">
-                  <span>Inspeksi</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
-                  <span className="font-bold text-foreground truncate max-w-[240px]">{pendingForm.nama}</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
-                  <span className="text-primary font-bold">Pilih Sasaran</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2.5 ml-auto">
-                <button
-                  type="button"
-                  onClick={() => openFormWithoutSasaran(pendingForm)}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  <SkipForward className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Lewati (Tanpa Sasaran)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsNewSasaranModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition-all cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Sasaran Baru</span>
-                </button>
-              </div>
+            {/* Top Navigation Row: Breadcrumbs */}
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+              <span>Inspeksi</span>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+              <span className="font-bold text-foreground truncate max-w-[280px]">{pendingForm.nama}</span>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+              <span className="text-primary font-bold">Pilih Sasaran</span>
             </div>
 
             {/* Title & Category Info */}
@@ -1231,6 +1199,34 @@ export default function PemeriksaanPage() {
                 Pilih sasaran yang akan diinspeksi. Data profil (alamat, pengelola, kontak, koordinat) otomatis terisi
                 ke form penilaian.
               </p>
+
+              {/* Action Buttons di bawah Pilih Sasaran */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingForm(null)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold shadow-xs transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Kembali ke Formulir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openFormWithoutSasaran(pendingForm)}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <SkipForward className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Lewati (Tanpa Sasaran)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNewSasaranModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition-all cursor-pointer sm:ml-auto"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Sasaran Baru</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

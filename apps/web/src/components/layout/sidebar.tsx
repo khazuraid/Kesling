@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   ArrowLeftRight,
@@ -8,26 +7,19 @@ import {
   Building2,
   Calendar,
   CalendarRange,
-  ChevronDown,
   ClipboardCheck,
   ClipboardList,
   Database,
-  Droplets,
   FileEdit,
   Folder,
-  GlassWater,
   HardDrive,
-  Home,
   LayoutDashboard,
   LogOut,
-  Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
   Settings2,
   ShieldCheck,
-  Toilet,
-  UtensilsCrossed,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,33 +28,6 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { XStack, YStack } from "tamagui";
 import { NotificationBell } from "@/components/notification-bell";
-
-interface DynamicCategory {
-  id: number;
-  nama: string;
-  code: string;
-  icon: string;
-  isRowBased: boolean;
-  urutan: number;
-}
-
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  tpp: <UtensilsCrossed className="w-4 h-4" />,
-  spal: <Droplets className="w-4 h-4" />,
-  sab: <GlassWater className="w-4 h-4" />,
-  jamban: <Toilet className="w-4 h-4" />,
-  rumah: <Home className="w-4 h-4" />,
-  ttu: <Building2 className="w-4 h-4" />,
-};
-
-const SHORT_NAMES: Record<string, string> = {
-  tpp: "TPP",
-  spal: "SPAL",
-  sab: "SAB",
-  rumah: "Rumah",
-  jamban: "Jamban",
-  ttu: "TTU",
-};
 
 type MenuItem = {
   label: string;
@@ -163,15 +128,6 @@ export function SideNav() {
     localStorage.setItem(LS_KEY, collapsed ? "1" : "0");
     document.documentElement.style.setProperty("--sidebar-w", collapsed ? "64px" : "232px");
   }, [collapsed]);
-
-  const { data: categories = [] } = useQuery<DynamicCategory[]>({
-    queryKey: ["laporan-categories"],
-    queryFn: async () => {
-      const res = await fetch("/api/laporan/categories");
-      if (!res.ok) throw new Error("Failed to fetch categories");
-      return res.json();
-    },
-  });
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -315,104 +271,7 @@ export function SideNav() {
                 </p>
               )}
               {gi > 0 && collapsed && <div className="mx-2 my-2 border-t border-border" />}
-              {group.items.map((item) => {
-                if (item.href === "/laporan") {
-                  const lapActive = pathname === "/laporan";
-                  const catActive = pathname.startsWith("/laporan/");
-                  return (
-                    <div key={item.href} className="relative group">
-                      <Link
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex items-center rounded-lg h-9 text-[12px] font-semibold transition-all duration-150 ${
-                          collapsed ? "justify-center px-0" : "gap-2.5 px-3"
-                        } ${
-                          lapActive
-                            ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
-                        }`}
-                      >
-                        <span className={`shrink-0 ${lapActive ? "text-primary" : "text-muted-foreground"}`}>
-                          {item.icon}
-                        </span>
-                        {!collapsed && <span className="truncate flex-1">{item.label}</span>}
-                        {!collapsed && categories.length > 0 && (
-                          <ChevronDown
-                            className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform ${
-                              catActive ? "rotate-180" : ""
-                            }`}
-                          />
-                        )}
-                      </Link>
-
-                      {collapsed && (
-                        <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                          {item.label}
-                        </span>
-                      )}
-
-                      {/* Submenu dynamic categories */}
-                      {!collapsed && categories.length > 0 && (
-                        <div className="mt-1 mb-1.5 ml-4 pl-2.5 border-l border-border space-y-0.5">
-                          {categories.map((cat) => {
-                            const code = cat.code.toLowerCase();
-                            const href = `/laporan/${code}`;
-                            const active = pathname === href;
-                            return (
-                              <Link
-                                key={cat.id}
-                                href={href}
-                                onClick={() => setMobileOpen(false)}
-                                className={`flex items-center gap-2 rounded-md h-8 px-2.5 text-[11px] font-semibold transition-colors ${
-                                  active
-                                    ? "bg-primary-subtle text-primary font-bold"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                }`}
-                              >
-                                <span
-                                  className={`shrink-0 scale-90 ${active ? "text-primary" : "text-muted-foreground"}`}
-                                >
-                                  {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
-                                </span>
-                                <span className="truncate">{SHORT_NAMES[code] || cat.nama}</span>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* Collapsed category row */}
-                      {collapsed &&
-                        categories.map((cat) => {
-                          const code = cat.code.toLowerCase();
-                          const href = `/laporan/${code}`;
-                          const active = pathname === href;
-                          const name = SHORT_NAMES[code] || cat.nama;
-                          return (
-                            <div key={cat.id} className="relative group">
-                              <Link
-                                href={href}
-                                className={`flex items-center justify-center rounded-lg h-9 transition-colors ${
-                                  active
-                                    ? "bg-primary-subtle text-primary border-l-2 border-primary"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
-                                }`}
-                              >
-                                <span className={active ? "text-primary" : "text-muted-foreground"}>
-                                  {CATEGORY_ICONS[code] || <Folder className="w-4 h-4" />}
-                                </span>
-                              </Link>
-                              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                                {name}
-                              </span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  );
-                }
-                return renderItem(item);
-              })}
+              {group.items.map((item) => renderItem(item))}
             </div>
           ))}
         </nav>

@@ -89,6 +89,36 @@ export function compressImage(
   });
 }
 
+export function isSingleLineField(f: any): boolean {
+  if (!f) return false;
+  if (f.config?.multiline === true || f.multiline === true) return false;
+  if (f.grup === "__META__") {
+    const p = (f.pertanyaan || "").toLowerCase();
+    if (p.includes("catatan") || p.includes("keterangan") || p.includes("uraian")) {
+      return false;
+    }
+    return true;
+  }
+  const p = (f.pertanyaan || "").toLowerCase();
+  if (
+    f.config?.autoFill ||
+    p.includes("nama") ||
+    p.includes("wilayah") ||
+    p.includes("puskesmas") ||
+    p.includes("nip") ||
+    p.includes("petugas") ||
+    p.includes("pemeriksa") ||
+    p.includes("kontak") ||
+    p.includes("telepon") ||
+    p.includes("jabatan") ||
+    p.includes("no.") ||
+    p.includes("nomor")
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function isSignatureField(f: any): boolean {
   if (!f) return false;
   if (f.tipe === "SIGNATURE") return true;
@@ -373,39 +403,74 @@ export function FormView({
   };
 
   return (
-    <div className="w-full pb-28 sm:pb-20 fade-in">
+    <div className="w-full pb-32 sm:pb-20 fade-in">
       {/* ── STICKY TOP SCORE HUD (Tamagui Clean Bento) ── */}
-      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2.5 sm:gap-3">
-          {/* Back & Form Name */}
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
-              onClick={onBack}
-              className="p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
-              title="Kembali"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
-                  {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
-                </span>
-                <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
+      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 sm:py-3 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
+        <div className="max-w-6xl mx-auto flex flex-col gap-1.5 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+          {/* Top Row / Main Header */}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            {/* Back & Form Name */}
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <button
+                onClick={onBack}
+                className="p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
+                title="Kembali"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
+                    {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
+                </div>
+                <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[190px] sm:max-w-sm">
+                  {String(
+                    Object.entries(metaValues).find(([fid]) => {
+                      const f = activeForm.fields.find((field: any) => field.id === Number(fid));
+                      return f?.pertanyaan?.toLowerCase().includes("nama");
+                    })?.[1] || activeForm.nama,
+                  )}
+                </h2>
               </div>
-              <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[160px] sm:max-w-sm">
-                {String(
-                  Object.entries(metaValues).find(([fid]) => {
-                    const f = activeForm.fields.find((field: any) => field.id === Number(fid));
-                    return f?.pertanyaan?.toLowerCase().includes("nama");
-                  })?.[1] || activeForm.nama,
-                )}
-              </h2>
+            </div>
+
+            {/* Mobile Status Pill (Only on mobile) */}
+            <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+              <span
+                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                  liveSkor.pass ? "bg-primary text-white shadow-xs" : "bg-error text-white shadow-xs"
+                }`}
+              >
+                {liveSkor.pass ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                <span className="truncate max-w-[100px]">{liveSkor.text}</span>
+              </span>
             </div>
           </div>
 
-          {/* Prominent Percentage Score HUD */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* Mobile Secondary Row: Score & Stats (Visible only on mobile) */}
+          <div className="flex sm:hidden items-center justify-between gap-2 pt-1 border-t border-border/40">
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-[16px] font-black tracking-tight leading-none tabular-nums ${
+                  liveSkor.pass ? "text-primary" : "text-error"
+                }`}
+              >
+                {displayPercentage}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-semibold tabular-nums">
+                ({liveSkor.gained}/{liveSkor.max} Poin)
+              </span>
+            </div>
+            <div className="text-[10px] font-semibold text-muted-foreground tabular-nums">
+              Progres: {completionStats.answeredQuestions}/{completionStats.totalQuestions} (
+              {completionStats.percentAnswered}%)
+            </div>
+          </div>
+
+          {/* Desktop Prominent Percentage Score HUD */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-4 shrink-0">
             <div className="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl bg-muted/60 border border-border">
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
@@ -448,7 +513,7 @@ export function FormView({
               <button
                 onClick={onSubmit}
                 disabled={!canSubmit || isPending}
-                className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-black hover:bg-primary-hover transition-all shadow-subtle disabled:opacity-40"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-black hover:bg-primary-hover transition-all shadow-subtle disabled:opacity-40"
               >
                 {isPending ? (
                   <>
@@ -463,7 +528,7 @@ export function FormView({
             ) : (
               <button
                 onClick={handleNext}
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border hover:bg-muted text-foreground text-[12px] font-bold transition-colors shadow-xs"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border hover:bg-muted text-foreground text-[12px] font-bold transition-colors shadow-xs"
               >
                 Lanjut <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -472,7 +537,7 @@ export function FormView({
         </div>
 
         {/* Global Progress Bar */}
-        <div className="w-full bg-muted h-1 mt-2 sm:mt-2.5 rounded-full overflow-hidden">
+        <div className="w-full bg-muted h-1 mt-1.5 sm:mt-2.5 rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300 rounded-full"
             style={{ width: `${completionStats.percentAnswered}%` }}
@@ -480,9 +545,9 @@ export function FormView({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-1 sm:px-0 pt-6">
+      <div className="max-w-5xl mx-auto px-1 sm:px-0 pt-4 sm:pt-6">
         {/* ── STEP WIZARD NAVIGATION PILLS ── */}
-        <div className="mb-6 overflow-x-auto pb-2 scrollbar-none">
+        <div className="mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-none px-1 sm:px-0">
           <div className="flex items-center gap-2 min-w-max">
             {steps.map((step, idx) => {
               const isActive = idx === currentStepIndex;
@@ -494,7 +559,7 @@ export function FormView({
                     setCurrentStepIndex(idx);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-card text-[12px] font-bold transition-all border ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-card text-[12px] font-bold transition-all border ${
                     isActive
                       ? "bg-primary text-white border-primary shadow-subtle ring-2 ring-primary/20"
                       : isPassed
@@ -570,7 +635,7 @@ export function FormView({
                       <div
                         key={f.id}
                         className={`rounded-card border border-border p-4 sm:p-5 bg-surface-subtle transition-all ${
-                          f.tipe === "TEXT" || f.tipe === "SIGNATURE" ? "md:col-span-2" : ""
+                          (!isSingleLineField(f) && f.tipe === "TEXT") || f.tipe === "SIGNATURE" ? "md:col-span-2" : ""
                         }`}
                       >
                         <FieldInput
@@ -694,7 +759,7 @@ export function FormView({
         </div>
 
         {/* ── BOTTOM STICKY NAVIGATION BAR ── */}
-        <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-surface/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-border p-3 sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
+        <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-surface/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
           <button
             type="button"
             onClick={handlePrev}
@@ -899,16 +964,27 @@ function FieldInput({
         </div>
       )}
 
-      {f.tipe === "TEXT" && !isSignatureField(f) && (
-        <textarea
-          rows={3}
-          disabled={disabled}
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Tuliskan keterangan / uraian temuan..."
-          className="w-full border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all resize-y disabled:bg-[hsl(var(--muted))]/30 disabled:cursor-not-allowed shadow-sm"
-        />
-      )}
+      {f.tipe === "TEXT" &&
+        !isSignatureField(f) &&
+        (isSingleLineField(f) ? (
+          <input
+            type="text"
+            disabled={disabled}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={f.pertanyaan ? `Masukkan ${f.pertanyaan.toLowerCase()}...` : "Masukkan data..."}
+            className="w-full h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle disabled:bg-muted/40 disabled:cursor-not-allowed"
+          />
+        ) : (
+          <textarea
+            rows={3}
+            disabled={disabled}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Tuliskan keterangan / uraian temuan..."
+            className="w-full border border-border bg-surface rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y disabled:bg-muted/40 disabled:cursor-not-allowed shadow-subtle"
+          />
+        ))}
 
       {f.tipe === "NUMBER" && (
         <input
@@ -916,7 +992,7 @@ function FieldInput({
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="w-full max-w-[200px] h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium tabular-nums outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
+          className="w-full max-w-[200px] h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium tabular-nums outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle"
         />
       )}
 
@@ -925,7 +1001,7 @@ function FieldInput({
           type="date"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full max-w-[220px] h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm"
+          className="w-full max-w-[220px] h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle"
         />
       )}
 
@@ -933,7 +1009,7 @@ function FieldInput({
         <select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-11 border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-[#00A876] focus:ring-2 focus:ring-[#00A876]/20 transition-all shadow-sm cursor-pointer"
+          className="w-full h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle cursor-pointer text-foreground"
         >
           <option value="">— Pilih Opsi —</option>
           {parseDropdownOptions(f.options || f.opsi || f.config?.options).map((opt: string) => (
