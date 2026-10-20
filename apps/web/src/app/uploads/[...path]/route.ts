@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pat
       const resolved = path.resolve(dir, ...pathSegments);
       if (!resolved.startsWith(dir)) continue; // Traversal protection
       try {
-        const s = await stat(resolved);
+        const s = await stat(/*turbopackIgnore: true*/ resolved);
         if (s.isFile()) {
           targetPath = resolved;
           break;
@@ -51,7 +51,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pat
     };
     const contentType = mimeTypes[ext] || "application/octet-stream";
 
-    const buffer = await readFile(targetPath);
+    const buffer = await readFile(/*turbopackIgnore: true*/ targetPath);
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
