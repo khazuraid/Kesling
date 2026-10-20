@@ -817,7 +817,7 @@ export default function PemeriksaanPage() {
 
   async function handleOpenDetail(res: any) {
     let fullRes = res;
-    if (!res.values || res.values.length === 0) {
+    if (!res.values || res.values.length === 0 || res.fotoPaths === undefined) {
       setIsLoadingDetail(true);
       try {
         const detailRes = await fetch(`/api/inspection/results/${res.id}`);
@@ -840,7 +840,7 @@ export default function PemeriksaanPage() {
 
   async function handleExportPDF(res: any) {
     let fullRes = res;
-    if (!res.values || res.values.length === 0) {
+    if (!res.values || res.values.length === 0 || res.fotoPaths === undefined) {
       try {
         const detailRes = await fetch(`/api/inspection/results/${res.id}`);
         if (detailRes.ok) {

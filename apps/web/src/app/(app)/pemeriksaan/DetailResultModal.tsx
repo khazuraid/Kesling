@@ -18,7 +18,6 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { calculateInspectionScore, generateInspectionPDF, type InspectionDetailData } from "./pdf-generator";
@@ -29,6 +28,56 @@ interface DetailResultModalProps {
   result: InspectionDetailData | null;
   template?: any;
   onEdit?: (result: InspectionDetailData) => void;
+}
+
+function PhotoCard({
+  photo,
+  index,
+  onPreview,
+}: {
+  photo: { url: string; label?: string };
+  index: number;
+  onPreview: (url: string) => void;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div
+      onClick={() => onPreview(photo.url)}
+      className="group relative flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:border-[#00A876] transition-all cursor-pointer"
+    >
+      <div className="relative aspect-[4/3] bg-[hsl(var(--muted))]/30 overflow-hidden flex items-center justify-center">
+        {hasError ? (
+          <div className="p-4 flex flex-col items-center justify-center text-center space-y-1.5 text-[hsl(var(--muted-foreground))]">
+            <ImageIcon className="w-8 h-8 opacity-40" />
+            <span className="text-[11px] font-semibold">Foto tidak dapat dimuat</span>
+            <span className="text-[9px] opacity-70 truncate max-w-[180px]">{photo.url}</span>
+          </div>
+        ) : (
+          <>
+            {/* biome-ignore lint/performance/noImgElement: direct img prevents next/image runtime crash on arbitrary inspection uploads */}
+            <img
+              src={photo.url}
+              alt={photo.label || "Foto Dokumentasi"}
+              loading="lazy"
+              decoding="async"
+              onError={() => setHasError(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold">
+              Klik untuk memperbesar
+            </div>
+          </>
+        )}
+      </div>
+      <div className="p-3">
+        <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">
+          {photo.label || `Foto #${index + 1}`}
+        </p>
+        <span className="text-[10px] text-[hsl(var(--muted-foreground))] block mt-0.5">Dokumentasi Hasil Lapangan</span>
+      </div>
+    </div>
+  );
 }
 
 export function DetailResultModal({
@@ -49,38 +98,131 @@ export function DetailResultModal({
     return calculateInspectionScore(result, template);
   }, [result, template]);
 
-  // Kumpulkan foto-foto dokumentasi
+  // Kumpulkan foto-foto dokumentasi secara aman & robust
   const allPhotos = useMemo(() => {
     if (!result) return [];
     const photos: { url: string; label?: string }[] = [];
+    const seenUrls = new Set<string>();
 
-    if (Array.isArray(result.fotoPaths)) {
-      result.fotoPaths.forEach((p, idx) => {
-        if (typeof p === "string" && p) {
-          photos.push({ url: p, label: `Dokumentasi #${idx + 1}` });
-        }
-      });
+    const normalizeUrl = (raw: unknown): string | null => {
+      if (!raw || typeof raw !== "string") return null;
+      let u = raw.trim();
+      if (!u || u === "-" || u === "null" || u === "undefined" || u === "[]" || u === "{}") return null;
+
+      if (u.startsWith("data:image/")) return u;
+      u = u.replace(/\\/g, "/");
+      if (/^https?:\/\//i.test(u)) return u;
+
+      if (u.startsWith("/public/uploads/")) {
+        u = u.replace("/public", "");
+      } else if (u.startsWith("public/uploads/")) {
+        u = `/${u.replace("public/", "")}`;
+      }
+
+      if (!u.startsWith("/")) {
+        u = `/${u}`;
+      }
+      return u;
+    };
+
+    const addPhoto = (raw: unknown, label?: string) => {
+      if (!raw) return;
+
+      if (Array.isArray(raw)) {
+        raw.forEach((item, idx) => {
+          addPhoto(item, label ? `${label} #${idx + 1}` : undefined);
+        });
+        return;
+      }
+
+      if (typeof raw === "object" && raw !== null) {
+        Object.values(raw).forEach((val) => {
+          addPhoto(val, label);
+        });
+        return;
+      }
+
+      if (typeof raw !== "string") return;
+
+      const trimmed = raw.trim();
+      if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((item, idx) => {
+              addPhoto(item, label ? `${label} #${idx + 1}` : undefined);
+            });
+            return;
+          }
+        } catch {}
+      }
+
+      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (typeof parsed === "object" && parsed !== null) {
+            Object.values(parsed).forEach((val) => {
+              addPhoto(val, label);
+            });
+            return;
+          }
+        } catch {}
+      }
+
+      const normalized = normalizeUrl(trimmed);
+      if (!normalized) return;
+
+      if (!seenUrls.has(normalized)) {
+        seenUrls.add(normalized);
+        photos.push({
+          url: normalized,
+          label: label || `Dokumentasi #${photos.length + 1}`,
+        });
+      }
+    };
+
+    // 1. Ekstraksi dari result.fotoPaths
+    if (result.fotoPaths) {
+      addPhoto(result.fotoPaths);
     }
 
-    (result.values || []).forEach((v) => {
-      if (v.field?.tipe === "PHOTO" && v.valueString) {
-        if (!photos.some((p) => p.url === v.valueString)) {
-          photos.push({
-            url: v.valueString,
-            label: v.field.pertanyaan || "Foto Dokumentasi",
-          });
-        }
+    // 2. Ekstraksi dari values
+    const fields = template?.fields || result.template?.fields || [];
+    (result.values || []).forEach((v: any) => {
+      const field = v.field || fields.find((f: any) => f.id === v.fieldId);
+      const tipe = (field?.tipe || "").toUpperCase();
+      const pertanyaan = field?.pertanyaan || "Foto Dokumentasi";
+      const valStr = typeof v.valueString === "string" ? v.valueString.trim() : "";
+
+      const isPhotoField = tipe === "PHOTO" || tipe === "FOTO" || tipe === "IMAGE" || tipe === "FILE";
+      const looksLikeImage =
+        valStr.startsWith("data:image/") ||
+        valStr.includes("/uploads/") ||
+        valStr.includes("uploads/") ||
+        /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(valStr);
+
+      if ((isPhotoField || looksLikeImage) && valStr) {
+        addPhoto(valStr, pertanyaan);
       }
     });
 
     return photos;
-  }, [result]);
+  }, [result, template]);
 
-  // Kumpulkan tanda tangan
+  // Kumpulkan tanda tangan secara aman
   const signatures = useMemo(() => {
     if (!result) return { petugas: null, pemilik: null };
-    const sigMap: Record<string, string> =
-      result.signatureData && typeof result.signatureData === "object" ? result.signatureData : {};
+    let sigMap: Record<string, string> = {};
+
+    if (typeof result.signatureData === "string") {
+      try {
+        sigMap = JSON.parse(result.signatureData);
+      } catch {
+        sigMap = {};
+      }
+    } else if (result.signatureData && typeof result.signatureData === "object") {
+      sigMap = result.signatureData;
+    }
 
     let petugas: string | null = sigMap.petugas || null;
     let pemilik: string | null = sigMap.pemilik || null;
@@ -97,9 +239,12 @@ export function DetailResultModal({
       }
     });
 
-    (result.values || []).forEach((v) => {
-      if (v.field?.tipe === "SIGNATURE" && v.valueString) {
-        const q = (v.field.pertanyaan || "").toLowerCase();
+    const fields = template?.fields || result.template?.fields || [];
+    (result.values || []).forEach((v: any) => {
+      const field = v.field || fields.find((f: any) => f.id === v.fieldId);
+      const tipe = (field?.tipe || "").toUpperCase();
+      if ((tipe === "SIGNATURE" || tipe === "TTD") && v.valueString) {
+        const q = (field?.pertanyaan || "").toLowerCase();
         if (q.includes("pemilik") || q.includes("pengelola")) {
           pemilik = v.valueString;
         } else if (!petugas) {
@@ -109,7 +254,7 @@ export function DetailResultModal({
     });
 
     return { petugas, pemilik };
-  }, [result]);
+  }, [result, template]);
 
   if (!isOpen || !result) return null;
 
@@ -498,33 +643,12 @@ export function DetailResultModal({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {allPhotos.map((photo, pIdx) => (
-                    <div
-                      key={pIdx}
-                      onClick={() => setPreviewPhoto(photo.url)}
-                      className="group relative flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:border-[#00A876] transition-all cursor-pointer"
-                    >
-                      <div className="relative aspect-[4/3] bg-black/5 overflow-hidden">
-                        <Image
-                          src={photo.url}
-                          alt={photo.label || "Foto Dokumentasi"}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          unoptimized
-                        />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold">
-                          Klik untuk memperbesar
-                        </div>
-                      </div>
-                      <div className="p-3">
-                        <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">
-                          {photo.label || `Foto #${pIdx + 1}`}
-                        </p>
-                        <span className="text-[10px] text-[hsl(var(--muted-foreground))] block mt-0.5">
-                          Dokumentasi Hasil Lapangan
-                        </span>
-                      </div>
-                    </div>
+                    <PhotoCard
+                      key={`${photo.url}-${pIdx}`}
+                      photo={photo}
+                      index={pIdx}
+                      onPreview={(url) => setPreviewPhoto(url)}
+                    />
                   ))}
                 </div>
               )}
@@ -547,17 +671,17 @@ export function DetailResultModal({
 
                   <div className="relative h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
                     {signatures.petugas ? (
-                      <Image
+                      /* biome-ignore lint/performance/noImgElement: direct img prevents next/image runtime crash */
+                      <img
                         src={
-                          signatures.petugas.startsWith("data:image/")
+                          signatures.petugas.startsWith("data:image/") ||
+                          signatures.petugas.startsWith("/") ||
+                          signatures.petugas.startsWith("http")
                             ? signatures.petugas
                             : `data:image/png;base64,${signatures.petugas}`
                         }
                         alt="Tanda Tangan Petugas"
-                        width={280}
-                        height={120}
                         className="max-h-full max-w-full object-contain"
-                        unoptimized
                       />
                     ) : (
                       <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
@@ -585,17 +709,17 @@ export function DetailResultModal({
 
                   <div className="relative h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
                     {signatures.pemilik ? (
-                      <Image
+                      /* biome-ignore lint/performance/noImgElement: direct img prevents next/image runtime crash */
+                      <img
                         src={
-                          signatures.pemilik.startsWith("data:image/")
+                          signatures.pemilik.startsWith("data:image/") ||
+                          signatures.pemilik.startsWith("/") ||
+                          signatures.pemilik.startsWith("http")
                             ? signatures.pemilik
                             : `data:image/png;base64,${signatures.pemilik}`
                         }
                         alt="Tanda Tangan Pengelola"
-                        width={280}
-                        height={120}
                         className="max-h-full max-w-full object-contain"
-                        unoptimized
                       />
                     ) : (
                       <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">
@@ -673,23 +797,40 @@ export function DetailResultModal({
       {previewPhoto && (
         <div
           onClick={() => setPreviewPhoto(null)}
-          className="fixed inset-0 z-60 bg-black/85 flex items-center justify-center p-4 cursor-pointer animate-in fade-in"
+          className="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-4 cursor-pointer animate-in fade-in"
         >
-          <div className="relative max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl bg-black">
-            <Image
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center rounded-2xl bg-black/60 p-2 border border-white/10"
+          >
+            {/* biome-ignore lint/performance/noImgElement: direct img for fullscreen zoom preview */}
+            <img
               src={previewPhoto}
               alt="Preview Zoom"
-              width={1200}
-              height={900}
-              className="max-h-[85vh] max-w-full w-auto h-auto object-contain"
-              unoptimized
+              className="max-h-[80vh] max-w-full w-auto h-auto object-contain rounded-xl"
             />
-            <button
-              onClick={() => setPreviewPhoto(null)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="w-full flex items-center justify-between mt-3 px-2 text-white/80">
+              <span className="text-[12px] font-medium truncate max-w-[70%]">
+                {allPhotos.find((p) => p.url === previewPhoto)?.label || "Foto Dokumentasi"}
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewPhoto}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold transition-colors"
+                >
+                  Buka Asli
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewPhoto(null)}
+                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

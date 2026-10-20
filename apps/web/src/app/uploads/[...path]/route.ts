@@ -9,16 +9,30 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ path: 
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    const uploadsDir = path.resolve(process.cwd(), "public", "uploads");
-    const targetPath = path.resolve(uploadsDir, ...pathSegments);
+    const candidateDirs = [
+      path.resolve(process.cwd(), "public", "uploads"),
+      path.resolve(process.cwd(), "apps", "web", "public", "uploads"),
+      path.resolve(process.cwd(), "..", "public", "uploads"),
+      "/app/apps/web/public/uploads",
+      "/app/public/uploads",
+    ];
 
-    // Prevent directory traversal attacks
-    if (!targetPath.startsWith(uploadsDir)) {
-      return new NextResponse("Forbidden", { status: 403 });
+    let targetPath: string | null = null;
+    for (const dir of candidateDirs) {
+      const resolved = path.resolve(dir, ...pathSegments);
+      if (!resolved.startsWith(dir)) continue; // Traversal protection
+      try {
+        const s = await stat(resolved);
+        if (s.isFile()) {
+          targetPath = resolved;
+          break;
+        }
+      } catch {
+        // Continue searching next candidate
+      }
     }
 
-    const fileStat = await stat(targetPath);
-    if (!fileStat.isFile()) {
+    if (!targetPath) {
       return new NextResponse("Not Found", { status: 404 });
     }
 

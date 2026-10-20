@@ -507,20 +507,74 @@ export async function generateInspectionPDF(
 
   // 7. Dokumentasi Foto Lapangan (PHOTO)
   const photoUrls: string[] = [];
+  const seenPhotoUrls = new Set<string>();
+
+  const normalizePhotoUrl = (raw: unknown): string | null => {
+    if (!raw || typeof raw !== "string") return null;
+    let u = raw.trim();
+    if (!u || u === "-" || u === "null" || u === "undefined" || u === "[]" || u === "{}") return null;
+    if (u.startsWith("data:image/")) return u;
+    u = u.replace(/\\/g, "/");
+    if (/^https?:\/\//i.test(u)) return u;
+    if (u.startsWith("/public/uploads/")) {
+      u = u.replace("/public", "");
+    } else if (u.startsWith("public/uploads/")) {
+      u = `/${u.replace("public/", "")}`;
+    }
+    if (!u.startsWith("/")) {
+      u = `/${u}`;
+    }
+    return u;
+  };
+
+  const addPdfPhoto = (raw: unknown) => {
+    if (!raw) return;
+    if (Array.isArray(raw)) {
+      raw.forEach(addPdfPhoto);
+      return;
+    }
+    if (typeof raw === "object" && raw !== null) {
+      Object.values(raw).forEach(addPdfPhoto);
+      return;
+    }
+    if (typeof raw !== "string") return;
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(addPdfPhoto);
+          return;
+        }
+      } catch {}
+    }
+    const normalized = normalizePhotoUrl(trimmed);
+    if (normalized && !seenPhotoUrls.has(normalized)) {
+      seenPhotoUrls.add(normalized);
+      photoUrls.push(normalized);
+    }
+  };
 
   // Ambil dari fotoPaths
-  if (Array.isArray(result.fotoPaths)) {
-    result.fotoPaths.forEach((p) => {
-      if (typeof p === "string" && p) photoUrls.push(p);
-    });
+  if (result.fotoPaths) {
+    addPdfPhoto(result.fotoPaths);
   }
 
-  // Ambil dari values dengan tipe PHOTO
+  // Ambil dari values dengan tipe PHOTO atau valueString path gambar
+  const allTemplateFields = template?.fields || result.template?.fields || [];
   (result.values || []).forEach((v: any) => {
-    if (v.field?.tipe === "PHOTO" && v.valueString) {
-      if (!photoUrls.includes(v.valueString)) {
-        photoUrls.push(v.valueString);
-      }
+    const field = v.field || allTemplateFields.find((f: any) => f.id === v.fieldId);
+    const tipe = (field?.tipe || "").toUpperCase();
+    const valStr = typeof v.valueString === "string" ? v.valueString.trim() : "";
+    const isPhoto = tipe === "PHOTO" || tipe === "FOTO" || tipe === "IMAGE" || tipe === "FILE";
+    const looksLikeImage =
+      valStr.startsWith("data:image/") ||
+      valStr.includes("/uploads/") ||
+      valStr.includes("uploads/") ||
+      /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(valStr);
+
+    if ((isPhoto || looksLikeImage) && valStr) {
+      addPdfPhoto(valStr);
     }
   });
 
