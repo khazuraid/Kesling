@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Copy,
   FileText,
   FolderPlus,
   GripVertical,
@@ -91,6 +92,9 @@ export default function FormPemeriksaanPage() {
   const [isImportWidgetVisible, setIsImportWidgetVisible] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const currentUserPkmId = (session?.user as any)?.puskesmasId;
+  const currentUserRole = (session?.user as any)?.role;
 
   useEffect(() => {
     return () => {
@@ -289,9 +293,30 @@ export default function FormPemeriksaanPage() {
     })),
   });
 
+  const activeTemplate = useMemo(() => {
+    return templates.find((t: any) => t.id === selectedTemplateId);
+  }, [templates, selectedTemplateId]);
+
+  const isOwner =
+    !selectedTemplateId ||
+    isCreating ||
+    currentUserRole === "ADMIN" ||
+    (activeTemplate?.puskesmasId && activeTemplate?.puskesmasId === currentUserPkmId);
+
+  function handleDuplicate() {
+    setSelectedTemplateId(null);
+    setIsCreating(true);
+    setNama((prev) => (prev.endsWith("(Salinan)") ? prev : `${prev} (Salinan)`));
+    toast.info("Template disalin. Silakan sesuaikan dan klik Simpan untuk membuat template Puskesmas Anda.");
+  }
+
   function handleSave() {
     if (!nama.trim()) {
       toast.error("Nama template wajib diisi");
+      return;
+    }
+    if (!isOwner) {
+      toast.error("Anda tidak memiliki izin mengubah template puskesmas lain. Gunakan tombol 'Duplikat'.");
       return;
     }
     createMutation.mutate(buildSavePayload());
@@ -304,6 +329,7 @@ export default function FormPemeriksaanPage() {
   const autoSavePendingRef = useRef(false);
 
   const doAutoSave = async () => {
+    if (!isOwner) return;
     if (autoSaveInFlightRef.current) {
       autoSavePendingRef.current = true;
       return;
@@ -349,7 +375,7 @@ export default function FormPemeriksaanPage() {
       skipAutoSaveRef.current = false;
       return;
     }
-    if (!selectedTemplateId || isCreating) {
+    if (!selectedTemplateId || isCreating || !isOwner) {
       setAutoSaveState("idle");
       return;
     }
@@ -1504,12 +1530,45 @@ export default function FormPemeriksaanPage() {
                           <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
-                            {tpl.nama}
-                          </h4>
-                          <p className="text-[10px] font-semibold text-muted-foreground mt-0.5 truncate">
-                            {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
-                          </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                              {tpl.nama}
+                            </h4>
+                            {!tpl.puskesmasId ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                                🏛️ Dinkes
+                              </span>
+                            ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
+                              <span
+                                className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                                  currentUserRole === "ADMIN" ||
+                                  (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)
+                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                                    : "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20"
+                                }`}
+                              >
+                                🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                              </span>
+                            ) : null}
+                            {currentUserRole !== "ADMIN" && tpl.puskesmasId && tpl.puskesmasId !== currentUserPkmId && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                Publik
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
+                            <span className="font-semibold">
+                              {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
+                            </span>
+                            {tpl.config?.authorName && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 font-medium text-foreground/80">
+                                  👤 {tpl.config.authorName}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
                         <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
                           <div className="text-center">
@@ -1528,24 +1587,27 @@ export default function FormPemeriksaanPage() {
                               Grup
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (
-                                confirm(
-                                  `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
-                                )
-                              ) {
-                                deleteMutation.mutate(tpl.id);
-                              }
-                            }}
-                            disabled={deleteMutation.isPending}
-                            title="Hapus template"
-                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {(currentUserRole === "ADMIN" ||
+                            (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (
+                                  confirm(
+                                    `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
+                                  )
+                                ) {
+                                  deleteMutation.mutate(tpl.id);
+                                }
+                              }}
+                              disabled={deleteMutation.isPending}
+                              title="Hapus template"
+                              className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                           <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </div>
@@ -1703,7 +1765,7 @@ export default function FormPemeriksaanPage() {
             >
               🍿 Contoh A1 / A2
             </button>
-            {selectedTemplateId && (
+            {selectedTemplateId && isOwner && (
               <button
                 type="button"
                 onClick={() => {
@@ -1726,20 +1788,53 @@ export default function FormPemeriksaanPage() {
                 <span className="hidden sm:inline">Hapus</span>
               </button>
             )}
-            <button
-              onClick={handleSave}
-              disabled={createMutation.isPending}
-              className="flex items-center justify-center gap-2 h-9 px-5 text-[11px] font-bold bg-primary text-white hover:bg-primary-hover disabled:opacity-40 transition-all rounded-full shadow-xs flex-1 sm:flex-initial"
-            >
-              <Check className="w-4 h-4" />
-              {createMutation.isPending ? "Menyimpan..." : "Simpan"}
-            </button>
+            {selectedTemplateId && !isOwner && (
+              <button
+                type="button"
+                onClick={handleDuplicate}
+                className="flex items-center justify-center gap-1.5 h-9 px-4 text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all rounded-full shadow-xs shrink-0"
+              >
+                <Copy className="w-3.5 h-3.5" /> Duplikat
+              </button>
+            )}
+            {isOwner && (
+              <button
+                onClick={handleSave}
+                disabled={createMutation.isPending}
+                className="flex items-center justify-center gap-2 h-9 px-5 text-[11px] font-bold bg-primary text-white hover:bg-primary-hover disabled:opacity-40 transition-all rounded-full shadow-xs flex-1 sm:flex-initial"
+              >
+                <Check className="w-4 h-4" />
+                {createMutation.isPending ? "Menyimpan..." : "Simpan"}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        {!isOwner && activeTemplate && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-card border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-[12px] font-medium shadow-subtle">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>Mode Pratinjau (Read-Only):</strong> Template ini dibuat oleh{" "}
+                <strong>
+                  {activeTemplate.puskesmas?.nama || activeTemplate.config?.authorPuskesmas || "Puskesmas Lain"}
+                </strong>
+                {activeTemplate.config?.authorName ? ` (${activeTemplate.config.authorName})` : ""}. Anda dapat melihat
+                butir pertanyaan atau menduplikatnya untuk disesuaikan dengan Puskesmas Anda.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleDuplicate}
+              className="inline-flex items-center justify-center gap-1.5 h-8 px-4 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors shadow-xs"
+            >
+              <Copy className="w-3.5 h-3.5" /> Duplikat ke Puskesmas Saya
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
           {/* Left Panel: Config */}
           <div className="space-y-4">

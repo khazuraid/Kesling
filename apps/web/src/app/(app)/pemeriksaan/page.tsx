@@ -1734,12 +1734,24 @@ export default function PemeriksaanPage() {
                               <FileText className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                              <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
-                                {tpl.nama}
-                              </h4>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                                  {tpl.nama}
+                                </h4>
+                                {!tpl.puskesmasId ? (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                                    🏛️ Dinkes
+                                  </span>
+                                ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
+                                    🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                                  </span>
+                                ) : null}
+                              </div>
                               <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
                                 {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
                                 {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
+                                {tpl.config?.authorName ? ` (oleh: ${tpl.config.authorName})` : ""}
                               </p>
                             </div>
                           </div>

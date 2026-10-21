@@ -25,11 +25,13 @@ export const GET = withAuth(async (req: NextRequest) => {
   const pkmId = (req as any).user?.puskesmasId;
   const role = (req as any).user?.role;
   const subCatId = req.nextUrl.searchParams.get("subCategoryId");
+  const pkmFilter = req.nextUrl.searchParams.get("puskesmasId");
 
   const includeInactive = req.nextUrl.searchParams.get("includeInactive") === "true";
   const where: any = includeInactive ? {} : { isActive: true };
   if (subCatId) where.subCategoryId = parseInt(subCatId, 10);
-  if (role !== "ADMIN") where.OR = [{ puskesmasId: null }, { puskesmasId: pkmId }];
+  if (pkmFilter) where.puskesmasId = parseInt(pkmFilter, 10);
+  // Visibilitas template dibuka untuk seluruh puskesmas
 
   const templates = await prisma.inspectionTemplate.findMany({
     where,
@@ -40,7 +42,7 @@ export const GET = withAuth(async (req: NextRequest) => {
         },
       },
       fields: { orderBy: { urutan: "asc" } },
-      puskesmas: { select: { nama: true } },
+      puskesmas: { select: { id: true, nama: true } },
     },
     orderBy: { id: "desc" },
   });
@@ -97,8 +99,42 @@ export const POST = withAuth(async (req: NextRequest) => {
     const assignPkmId = role === "ADMIN" ? (body.puskesmasId ?? null) : pkmId;
     const safeFields = Array.isArray(fields) ? fields : [];
 
+    // Ambil info nama user dan puskesmas untuk metadata pembuat
+    const userRecord = userId
+      ? await prisma.user.findUnique({
+          where: { id: userId },
+          select: { nama: true, puskesmas: { select: { id: true, nama: true } } },
+        })
+      : null;
+    const authorName = userRecord?.nama || (req as any).user?.name || "Sanitarian";
+    const authorPuskesmas = userRecord?.puskesmas?.nama || (role === "ADMIN" ? "Dinas Kesehatan" : "Puskesmas");
+
     if (id && id !== "undefined" && id !== null) {
       const numericId = parseInt(id, 10);
+
+      // Cek apakah template ada dan verifikasi izin ubah
+      const existingTemplate = await prisma.inspectionTemplate.findUnique({
+        where: { id: numericId },
+        include: { puskesmas: true },
+      });
+      if (!existingTemplate) {
+        return NextResponse.json({ error: "Template tidak ditemukan" }, { status: 404 });
+      }
+      if (role !== "ADMIN" && existingTemplate.puskesmasId && existingTemplate.puskesmasId !== pkmId) {
+        return NextResponse.json(
+          { error: "Anda tidak memiliki izin mengubah template milik puskesmas lain" },
+          { status: 403 },
+        );
+      }
+
+      const existingConfig = (existingTemplate.config as any) || {};
+      const updatedConfig = {
+        ...existingConfig,
+        ...(config || {}),
+        authorName: existingConfig.authorName || authorName,
+        authorPuskesmas: existingConfig.authorPuskesmas || existingTemplate.puskesmas?.nama || authorPuskesmas,
+        lastUpdatedBy: authorName,
+      };
 
       // Ambil field yang sudah ada di database beserta jumlah relasi nilai inspeksi
       const existingFields = await prisma.inspectionField.findMany({
@@ -174,11 +210,12 @@ export const POST = withAuth(async (req: NextRequest) => {
           nama,
           deskripsi,
           subCategoryId: subCategoryId ? Number(subCategoryId) : null,
-          config: config || undefined,
+          config: updatedConfig,
           puskesmasId: assignPkmId,
         },
         include: {
           fields: { orderBy: { urutan: "asc" } },
+          puskesmas: { select: { id: true, nama: true } },
         },
       });
 
@@ -189,12 +226,19 @@ export const POST = withAuth(async (req: NextRequest) => {
       return NextResponse.json(updated);
     }
 
+    const newConfig = {
+      ...(config || {}),
+      authorName: config?.authorName || authorName,
+      authorPuskesmas: config?.authorPuskesmas || authorPuskesmas,
+      creatorUserId: userId,
+    };
+
     const template = await prisma.inspectionTemplate.create({
       data: {
         nama,
         deskripsi,
         subCategoryId: subCategoryId ? Number(subCategoryId) : null,
-        config: config || undefined,
+        config: newConfig,
         puskesmasId: assignPkmId,
         fields: {
           create: safeFields.map((f: any) => ({
@@ -217,6 +261,10 @@ export const POST = withAuth(async (req: NextRequest) => {
             },
           })),
         },
+      },
+      include: {
+        fields: { orderBy: { urutan: "asc" } },
+        puskesmas: { select: { id: true, nama: true } },
       },
     });
 

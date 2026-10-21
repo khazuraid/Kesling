@@ -10,9 +10,19 @@ export const DELETE = withAuth(async (req: NextRequest, ctx: any) => {
     if (Number.isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
     const userId = (req as any).user?.id;
+    const pkmId = (req as any).user?.puskesmasId;
+    const role = (req as any).user?.role;
     const old = await prisma.inspectionTemplate.findUnique({ where: { id } });
     if (!old) {
       return NextResponse.json({ error: "Template tidak ditemukan" }, { status: 404 });
+    }
+
+    // Otorisasi: hanya admin atau puskesmas pembuat yang boleh menghapus
+    if (role !== "ADMIN" && old.puskesmasId && old.puskesmasId !== pkmId) {
+      return NextResponse.json(
+        { error: "Anda tidak memiliki izin menghapus template milik puskesmas lain" },
+        { status: 403 },
+      );
     }
 
     // Cek apakah ada riwayat hasil pemeriksaan untuk template ini
