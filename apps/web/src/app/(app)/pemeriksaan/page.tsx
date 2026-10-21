@@ -1986,7 +1986,7 @@ export default function PemeriksaanPage() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="w-full min-h-screen">
       <FormView
         activeForm={activeForm}
         editingId={editingId}

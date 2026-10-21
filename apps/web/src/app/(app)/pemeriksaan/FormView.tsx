@@ -405,27 +405,27 @@ export function FormView({
   return (
     <div className="w-full pb-28 sm:pb-20 fade-in">
       {/* ── STICKY TOP SCORE HUD (Clean & Compact) ── */}
-      <div className="sticky top-14 md:top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
-        <div className="max-w-6xl mx-auto flex flex-col gap-2 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-14 md:top-0 z-20 -mx-4 sm:-mx-6 px-3.5 sm:px-6 py-2 sm:py-2.5 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
+        <div className="max-w-6xl mx-auto flex flex-col gap-1.5 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
           {/* Main Row */}
-          <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="flex items-center justify-between gap-2.5 sm:gap-3 min-w-0">
             {/* Back & Form Name */}
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
+                className="p-1.5 sm:p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
                 title="Kembali"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
+                  <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-widest text-primary px-1.5 sm:px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20 shrink-0">
                     {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
                   </span>
                   <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
                 </div>
-                <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[180px] sm:max-w-sm">
+                <h2 className="text-[13px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[200px] sm:max-w-sm">
                   {String(
                     Object.entries(metaValues).find(([fid]) => {
                       const f = activeForm.fields.find((field: any) => field.id === Number(fid));
@@ -437,24 +437,24 @@ export function FormView({
             </div>
 
             {/* Mobile Score & Status Pill */}
-            <div className="flex sm:hidden items-center gap-2 shrink-0">
+            <div className="flex sm:hidden items-center gap-1.5 shrink-0">
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-white font-extrabold shadow-xs ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-xl text-white font-extrabold shadow-xs ${
                   liveSkor.pass ? "bg-primary" : "bg-error"
                 }`}
               >
-                <span className="text-[14px] tabular-nums leading-none">{displayPercentage}</span>
-                <span className="text-[10px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
+                <span className="text-[13px] tabular-nums leading-none">{displayPercentage}</span>
+                <span className="text-[9px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
               </div>
             </div>
           </div>
 
           {/* Mobile Secondary Row: Compact Progress Info */}
-          <div className="flex sm:hidden items-center justify-between text-[10px] text-muted-foreground font-semibold">
-            <span>
+          <div className="flex sm:hidden items-center justify-between text-[9px] xs:text-[10px] text-muted-foreground font-semibold px-0.5">
+            <span className="truncate max-w-[190px]">
               Langkah {currentStepIndex + 1}/{steps.length} · {currentStep.title}
             </span>
-            <span className="tabular-nums">
+            <span className="tabular-nums shrink-0">
               {completionStats.answeredQuestions}/{completionStats.totalQuestions} ({completionStats.percentAnswered}%)
             </span>
           </div>
@@ -535,10 +535,10 @@ export function FormView({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-0 sm:px-0 pt-4 sm:pt-6">
+      <div className="max-w-5xl mx-auto px-0 sm:px-0 pt-3 sm:pt-6">
         {/* ── STEP WIZARD NAVIGATION PILLS ── */}
-        <div className="mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex items-center gap-2 min-w-max">
+        <div className="mb-3 sm:mb-6 overflow-x-auto pb-1.5 sm:pb-2 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-max">
             {steps.map((step, idx) => {
               const isActive = idx === currentStepIndex;
               const isPassed = idx < currentStepIndex;
@@ -549,7 +549,7 @@ export function FormView({
                     setCurrentStepIndex(idx);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-card text-[12px] font-bold transition-all border ${
+                  className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-card text-[11px] sm:text-[12px] font-bold transition-all border shrink-0 ${
                     isActive
                       ? "bg-primary text-white border-primary shadow-subtle ring-2 ring-primary/20"
                       : isPassed
@@ -558,7 +558,7 @@ export function FormView({
                   }`}
                 >
                   <span
-                    className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black ${
+                    className={`flex items-center justify-center w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-black shrink-0 ${
                       isActive
                         ? "bg-white text-primary"
                         : isPassed
@@ -566,9 +566,9 @@ export function FormView({
                           : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {isPassed ? <Check className="w-3 h-3 stroke-[3]" /> : step.badge}
+                    {isPassed ? <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]" /> : step.badge}
                   </span>
-                  <span className="truncate max-w-[140px] sm:max-w-[200px]">{step.title}</span>
+                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{step.title}</span>
                 </button>
               );
             })}
@@ -823,16 +823,16 @@ function FieldInput({
     <div className={`space-y-3 ${disabled ? "opacity-60" : ""}`}>
       {/* Label Row */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5 flex-1">
+        <div className="flex items-start gap-2.5 flex-1 min-w-0">
           {index && (
-            <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-[hsl(var(--muted))] text-[11px] font-black text-[hsl(var(--foreground))] shrink-0 mt-0.5">
+            <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-muted text-[11px] font-black text-foreground shrink-0 mt-0.5">
               {index}
             </span>
           )}
-          <div className="space-y-1 flex-1">
+          <div className="space-y-1 flex-1 min-w-0">
             <label
-              className={`text-[13px] font-bold text-[hsl(var(--foreground))] leading-snug block ${
-                disabled ? "line-through text-[hsl(var(--muted-foreground))]" : ""
+              className={`text-[13px] font-bold text-foreground leading-snug block ${
+                disabled ? "line-through text-muted-foreground" : ""
               }`}
             >
               {f.pertanyaan}
@@ -842,7 +842,7 @@ function FieldInput({
             {/* Badges / Pill Contexts */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
               {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00A876]/10 text-[#00A876] font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
                   👤 Akun Pemeriksa
                 </span>
               )}
@@ -881,7 +881,7 @@ function FieldInput({
         </div>
 
         {(f.config?.skor ?? 0) > 0 && !disabled && (
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#00A876]/10 text-[#00A876] whitespace-nowrap shrink-0">
+          <span className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl bg-primary/10 text-primary whitespace-nowrap shrink-0">
             Bobot: {f.config.skor}
           </span>
         )}
@@ -907,19 +907,19 @@ function FieldInput({
       )}
 
       {f.tipe === "BOOLEAN" && !isSignatureField(f) && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 pt-1">
           {/* Tombol YA (Emerald Modern) */}
           <button
             type="button"
             disabled={disabled}
             onClick={() => onChange("TRUE")}
-            className={`h-11 px-4 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-50 ${
+            className={`min-h-[44px] h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
               String(value ?? "").toUpperCase() === "TRUE"
                 ? "bg-[#00A876] text-white border-[#00A876] shadow-sm ring-2 ring-[#00A876]/30"
-                : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-700 dark:text-slate-200 hover:border-[#00A876]/60 hover:bg-[#00A876]/5"
+                : "bg-surface border-border text-foreground hover:border-[#00A876]/60 hover:bg-[#00A876]/5"
             }`}
           >
-            <Check className="w-4 h-4 stroke-[3]" /> Ya (Memenuhi)
+            <Check className="w-4 h-4 stroke-[3] shrink-0" /> Ya (Memenuhi)
           </button>
 
           {/* Tombol TIDAK (Soft Coral / Rose) */}
@@ -927,13 +927,13 @@ function FieldInput({
             type="button"
             disabled={disabled}
             onClick={() => onChange("FALSE")}
-            className={`h-11 px-4 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-50 ${
+            className={`min-h-[44px] h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
               String(value ?? "").toUpperCase() === "FALSE"
                 ? "bg-[#E15A4F] text-white border-[#E15A4F] shadow-sm ring-2 ring-[#E15A4F]/30"
-                : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-700 dark:text-slate-200 hover:border-[#E15A4F]/60 hover:bg-[#E15A4F]/5"
+                : "bg-surface border-border text-foreground hover:border-[#E15A4F]/60 hover:bg-[#E15A4F]/5"
             }`}
           >
-            <X className="w-4 h-4 stroke-[3]" /> Tidak
+            <X className="w-4 h-4 stroke-[3] shrink-0" /> Tidak
           </button>
 
           {/* Tombol T/A (Amber Soft) */}
@@ -942,10 +942,10 @@ function FieldInput({
               type="button"
               disabled={disabled}
               onClick={() => onChange("NA")}
-              className={`h-11 px-4 rounded-xl text-[12px] font-bold border transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 disabled:pointer-events-none disabled:opacity-50 ${
+              className={`min-h-[44px] h-11 px-3 sm:px-4 rounded-xl text-[11px] sm:text-[12px] font-bold border transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
                 String(value ?? "").toUpperCase() === "NA"
                   ? "bg-amber-500 text-white border-amber-500 shadow-sm ring-2 ring-amber-500/30"
-                  : "bg-white dark:bg-zinc-900 border-[hsl(var(--border))] text-slate-600 dark:text-slate-300 hover:border-amber-400 hover:bg-amber-50/50"
+                  : "bg-surface border-border text-muted-foreground hover:border-amber-400 hover:text-foreground hover:bg-amber-50/50"
               }`}
             >
               T/A (Tidak Ada)
@@ -1015,13 +1015,13 @@ function FieldInput({
           <button
             type="button"
             onClick={onGPS}
-            className="h-11 px-4 rounded-xl border border-[hsl(var(--border))] bg-white dark:bg-zinc-900 hover:border-[#00A876] text-[12px] font-bold text-[hsl(var(--foreground))] transition-colors flex items-center gap-2 shadow-sm"
+            className="h-11 px-4 rounded-xl border border-border bg-surface hover:border-primary text-[12px] font-bold text-foreground transition-colors flex items-center gap-2 shadow-subtle active:scale-[0.98]"
           >
-            <MapPin className="w-4 h-4 text-[#00A876]" />
+            <MapPin className="w-4 h-4 text-primary" />
             {hasValue ? "Perbarui Koordinat" : "Ambil Lokasi GPS"}
           </button>
           {hasValue && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#00A876]/10 text-[#00A876] font-mono text-[11px] font-bold">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary font-mono text-[11px] font-bold">
               <Check className="w-3.5 h-3.5" /> {value}
             </div>
           )}
@@ -1032,12 +1032,12 @@ function FieldInput({
       {f.tipe === "PHOTO" && (
         <div className="space-y-2">
           {isCompressing ? (
-            <div className="flex items-center gap-2.5 p-4 rounded-2xl border border-dashed border-[#00A876] bg-[#00A876]/5 text-[#00A876] text-[12px] font-bold animate-pulse">
+            <div className="flex items-center gap-2.5 p-4 rounded-2xl border border-dashed border-primary bg-primary/5 text-primary text-[12px] font-bold animate-pulse">
               <Loader2 className="w-4 h-4 animate-spin" />
               Mengompresi foto (mengurangi ukuran ke ~200KB)...
             </div>
           ) : hasValue ? (
-            <div className="relative inline-block rounded-2xl overflow-hidden border border-[hsl(var(--border))] shadow-sm group">
+            <div className="relative inline-block rounded-2xl overflow-hidden border border-border shadow-subtle group">
               {/* biome-ignore lint/performance/noImgElement: user inspection photo preview */}
               <img src={value} className="w-48 h-36 object-cover" alt="Foto Inspeksi" />
               <button
@@ -1056,7 +1056,7 @@ function FieldInput({
               </div>
             </div>
           ) : (
-            <label className="inline-flex items-center gap-2.5 h-11 px-5 rounded-2xl border-2 border-dashed border-[hsl(var(--border))] hover:border-[#00A876] bg-white dark:bg-zinc-900 cursor-pointer text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:text-[#00A876] transition-all shadow-sm">
+            <label className="inline-flex items-center gap-2.5 h-11 px-5 rounded-2xl border-2 border-dashed border-border hover:border-primary bg-surface cursor-pointer text-[12px] font-bold text-muted-foreground hover:text-primary transition-all shadow-subtle">
               <Upload className="w-4 h-4" />
               Ambil / Pilih Foto (Auto Kompresi)
               <input
