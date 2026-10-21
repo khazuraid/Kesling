@@ -306,7 +306,7 @@ export default function DynamicLaporanPage() {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  function handleSubmit(e: React.FormEvent, isDataDasar = false, status = "DRAFT") {
+  function handleSubmit(e: React.FormEvent, isDataDasar = false, status = "SUBMITTED") {
     e.preventDefault();
     if (!category) return;
 

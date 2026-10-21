@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
@@ -29,7 +28,7 @@ const inputCls =
   "w-full h-9 px-3 rounded-xl border border-border bg-surface text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
 const labelCls = "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mb-1.5";
 const addBtnCls =
-  "inline-flex items-center gap-2 h-9 px-4 rounded-button bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition";
+  "inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-button bg-primary text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition shrink-0";
 
 // ── Emoji icon picker ──
 const ICON_CHOICES = [
@@ -561,16 +560,16 @@ export default function LaporanBuilderPage() {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">
         {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-5 sm:py-6">
           <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Laporan Builder
               </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+              <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Format Laporan & Formulir
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+              <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground mt-2">
                 <span className="tabular-nums font-semibold text-foreground">{categories.length}</span> modul terdaftar
                 · kelola urutan dan rancang parameter tiap modul
               </p>
@@ -578,7 +577,7 @@ export default function LaporanBuilderPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsCreatingModule(true)}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs cursor-pointer w-full sm:w-auto"
               >
                 <Plus className="w-3.5 h-3.5" /> Modul Baru
               </button>
@@ -587,7 +586,7 @@ export default function LaporanBuilderPage() {
         </div>
 
         {/* ── CONTENT BODY (CANVAS) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-5 sm:py-6 space-y-6">
           {categories.length === 0 ? (
             <EmptyState
               icon={LayoutTemplate}
@@ -713,9 +712,9 @@ export default function LaporanBuilderPage() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas text-foreground fade-in">
-      {/* ── LEFT: structure rail ── */}
-      <aside className="w-[260px] shrink-0 bg-surface flex flex-col border-r border-border h-full shadow-subtle">
+    <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-canvas text-foreground fade-in">
+      {/* ── LEFT: structure rail (Desktop) ── */}
+      <aside className="hidden lg:flex w-[260px] shrink-0 bg-surface flex-col border-r border-border h-full shadow-subtle">
         {/* Back + module identity */}
         <div className="px-4 pt-4 pb-3">
           <button
@@ -782,10 +781,66 @@ export default function LaporanBuilderPage() {
         </div>
       </aside>
 
+      {/* ── TOP: structure navigation (Mobile & Tablet) ── */}
+      <div className="lg:hidden shrink-0 bg-surface border-b border-border shadow-subtle">
+        <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-border/60">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              onClick={() => setSelectedModuleId(null)}
+              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-subtle shrink-0"
+              title="Semua Modul"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="w-8 h-8 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-[15px] shrink-0">
+              {selectedModule.icon || "📋"}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[12px] font-extrabold text-foreground truncate leading-tight">{selectedModule.nama}</p>
+              <p className="text-[9px] font-mono text-muted-foreground truncate">{selectedModule.code}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsPreviewOpen(true)}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border bg-surface-subtle text-[11px] font-bold text-foreground shrink-0 hover:bg-surface shadow-xs"
+          >
+            <Eye className="w-3.5 h-3.5 text-primary" /> Preview
+          </button>
+        </div>
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar px-3 py-2">
+          {NAV.filter((t) => !t.hidden).map((t) => {
+            const active = activeTab === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-bold whitespace-nowrap shrink-0 transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-subtle"
+                }`}
+              >
+                <t.icon className="w-3.5 h-3.5" />
+                {t.label}
+                {t.count !== undefined && (
+                  <span
+                    className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
+                      active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {t.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── CANVAS ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas">
         {/* Top Header Bar */}
-        <header className="h-14 border-b border-border bg-surface px-6 sm:px-8 flex items-center justify-between shrink-0 shadow-subtle">
+        <header className="h-14 border-b border-border bg-surface px-4 sm:px-8 flex items-center justify-between shrink-0 shadow-subtle">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-[12px] font-semibold text-muted-foreground truncate">{selectedModule.nama}</span>
             <span className="text-muted-foreground/40">/</span>
@@ -861,12 +916,12 @@ export default function LaporanBuilderPage() {
         </header>
 
         {/* Scrollable Canvas Body */}
-        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-6">
           <div className="max-w-4xl mx-auto space-y-5">
             {/* TAB: UMUM */}
             {activeTab === "umum" && (
               <div className="space-y-5">
-                <div className="rounded-card border border-border bg-surface p-5 space-y-4 shadow-subtle">
+                <div className="rounded-card border border-border bg-surface p-4 sm:p-5 space-y-4 shadow-subtle">
                   <div>
                     <label className={labelCls}>Nama Modul</label>
                     <input
@@ -886,7 +941,7 @@ export default function LaporanBuilderPage() {
                       className="w-full text-[12px] font-medium px-3 py-2.5 rounded-xl border border-border bg-surface text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none transition-all"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelCls}>Icon Modul</label>
                       <IconPicker
@@ -916,7 +971,7 @@ export default function LaporanBuilderPage() {
                   </div>
                 </div>
 
-                <div className="rounded-card border border-rose-500/25 bg-rose-500/[0.03] p-5 flex items-center justify-between gap-4 shadow-subtle">
+                <div className="rounded-card border border-rose-500/25 bg-rose-500/[0.03] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-subtle">
                   <div>
                     <p className="text-[12px] font-extrabold text-foreground">Hapus Modul</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -982,7 +1037,7 @@ export default function LaporanBuilderPage() {
                             onMoveDown={() => moveParam(p.id, 1, "report")}
                           />
                         </div>
-                        <div className="flex-1 grid grid-cols-2 gap-3">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className={labelCls}>Nama Parameter</label>
                             <input
@@ -1052,7 +1107,7 @@ export default function LaporanBuilderPage() {
                             </label>
                           </div>
                           {localState.type === "SELECT" && (
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                               <label className={labelCls}>Opsi Dropdown (pisahkan koma/baris)</label>
                               <textarea
                                 rows={2}
@@ -1111,15 +1166,21 @@ export default function LaporanBuilderPage() {
                     return (
                       <div
                         key={sub.id}
-                        className="rounded-card border border-border bg-surface shadow-subtle grid grid-cols-1 md:grid-cols-[auto_1fr_220px_auto] items-end px-4 py-3.5 gap-3 hover:border-primary/40 hover:shadow-subtle transition-all"
+                        className="rounded-card border border-border bg-surface shadow-subtle p-3.5 space-y-3 md:space-y-0 md:grid md:grid-cols-[auto_1fr_220px_auto] items-end gap-3 hover:border-primary/40 hover:shadow-subtle transition-all"
                       >
-                        <div className="pb-1">
+                        <div className="flex items-center justify-between md:block pb-1">
                           <OrderButtons
                             index={idx}
                             total={selectedModule.subCategories.length}
                             onMoveUp={() => moveEntity(sub.id, -1)}
                             onMoveDown={() => moveEntity(sub.id, 1)}
                           />
+                          <button
+                            onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
+                            className="md:hidden h-8 w-8 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 border border-border transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                         <div>
                           <label className={labelCls}>Nama Entitas</label>
@@ -1181,7 +1242,7 @@ export default function LaporanBuilderPage() {
                         </div>
                         <button
                           onClick={() => setDeleteConfirm({ type: "ENTITY", id: sub.id, text: sub.nama })}
-                          className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 border border-border transition-colors"
+                          className="hidden md:flex h-9 w-9 rounded-xl items-center justify-center text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-600 border border-border transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1502,10 +1563,12 @@ export default function LaporanBuilderPage() {
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <div className="px-4 py-7 flex items-center justify-center gap-3 bg-surface-subtle/30">
-                          <span className="text-3xl font-light text-muted-foreground/40">(</span>
+                        <div className="px-4 py-5 sm:py-7 flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-surface-subtle/30">
+                          <span className="text-2xl sm:text-3xl font-light text-muted-foreground/40 hidden xs:inline">
+                            (
+                          </span>
                           <select
-                            className="h-11 px-3.5 rounded-button border border-primary/30 bg-primary-subtle text-primary font-extrabold text-[12px] outline-none focus:border-primary cursor-pointer"
+                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-primary/30 bg-primary-subtle text-primary font-extrabold text-[11px] sm:text-[12px] outline-none focus:border-primary cursor-pointer max-w-[140px] sm:max-w-none truncate"
                             value={localState.numeratorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, numeratorCode: e.target.value };
@@ -1520,9 +1583,9 @@ export default function LaporanBuilderPage() {
                               </option>
                             ))}
                           </select>
-                          <span className="text-xl font-black text-muted-foreground">/</span>
+                          <span className="text-lg sm:text-xl font-black text-muted-foreground">/</span>
                           <select
-                            className="h-11 px-3.5 rounded-button border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold text-[12px] outline-none focus:border-amber-500 cursor-pointer"
+                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] sm:text-[12px] outline-none focus:border-amber-500 cursor-pointer max-w-[140px] sm:max-w-none truncate"
                             value={localState.denominatorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, denominatorCode: e.target.value };
@@ -1537,8 +1600,10 @@ export default function LaporanBuilderPage() {
                               </option>
                             ))}
                           </select>
-                          <span className="text-3xl font-light text-muted-foreground/40">)</span>
-                          <span className="text-[15px] font-black text-foreground">× 100%</span>
+                          <span className="text-2xl sm:text-3xl font-light text-muted-foreground/40 hidden xs:inline">
+                            )
+                          </span>
+                          <span className="text-[13px] sm:text-[15px] font-black text-foreground">× 100%</span>
                         </div>
                       </div>
                     );

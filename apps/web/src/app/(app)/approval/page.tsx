@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, CheckCheck, ChevronDown, Inbox, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
@@ -141,22 +140,24 @@ export default function ApprovalPage() {
   return (
     <div className="w-full fade-in min-h-screen bg-canvas">
       {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+      <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4 sm:gap-5">
-              <div className="relative w-14 h-14 rounded-2xl bg-warning-light border border-warning/25 flex flex-col items-center justify-center shrink-0">
-                <span className="text-[22px] font-black tabular-nums leading-none text-warning">{stats.submitted}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 sm:gap-5">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-warning-light border border-warning/25 flex flex-col items-center justify-center shrink-0">
+                <span className="text-[20px] sm:text-[22px] font-black tabular-nums leading-none text-warning">
+                  {stats.submitted}
+                </span>
                 <span className="text-[7px] font-extrabold uppercase tracking-[0.15em] text-warning/70 mt-0.5">
                   Menunggu
                 </span>
               </div>
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1">Verifikasi</p>
-                <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-0.5">Verifikasi</p>
+                <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                   Pusat Approval
                 </h1>
-                <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-1.5">
+                <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground mt-1">
                   <span className="tabular-nums font-bold text-foreground">{stats.approved}</span> disetujui ·{" "}
                   <span className="tabular-nums font-bold text-foreground">{stats.draft}</span> draft ·{" "}
                   <span className="tabular-nums font-bold text-foreground">{stats.total}</span> total
@@ -164,11 +165,11 @@ export default function ApprovalPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="h-10 px-4 rounded-full bg-surface-subtle border border-border text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                className="h-9 sm:h-10 px-3.5 rounded-full bg-surface-subtle hover:bg-surface border border-border text-[11px] sm:text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer shadow-xs"
               >
                 <option value="all">Semua Kategori</option>
                 {categories.map((c) => (
@@ -182,33 +183,35 @@ export default function ApprovalPage() {
           </div>
 
           {/* Status tabs — bottom row of masthead */}
-          <div className="inline-flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setFilterTab(t.key)}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
-                  filterTab === t.key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-                <span
-                  className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                    filterTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground"
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="inline-flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1 min-w-max">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setFilterTab(t.key)}
+                  className={`inline-flex items-center gap-1.5 h-8 px-3.5 sm:px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                    filterTab === t.key
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t.count}
-                </span>
-              </button>
-            ))}
+                  {t.label}
+                  <span
+                    className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
+                      filterTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground"
+                    }`}
+                  >
+                    {t.count}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── CONTENT BODY (CANVAS) ── */}
-      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-5 sm:py-6 space-y-6">
         {loadingLaporan ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />

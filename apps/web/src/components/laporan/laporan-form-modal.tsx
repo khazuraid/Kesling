@@ -171,7 +171,7 @@ export function LaporanFormModal({
       variant="hero"
       footer={footer}
     >
-      <form id="laporan-form" onSubmit={(e) => handleSubmit(e, false)} className="space-y-5">
+      <form id="laporan-form" onSubmit={(e) => handleSubmit(e, false, "SUBMITTED")} className="space-y-5">
         {/* Puskesmas selector */}
         {!isOperator && (
           <div className="flex items-center gap-3 px-4 py-3 rounded-card border border-border bg-surface shadow-subtle">
@@ -332,13 +332,4 @@ export function LaporanFormModal({
       </form>
     </Modal>
   );
-}
-
-// ── Helper ──
-function buildValueMapFromLaporan(values: DynamicLaporanValue[]): ValueMap {
-  const map: ValueMap = {};
-  for (const v of values) {
-    map[buildKey(v.parameterId, v.subCategoryId)] = v.value;
-  }
-  return map;
 }

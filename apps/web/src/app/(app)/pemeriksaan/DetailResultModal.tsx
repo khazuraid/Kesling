@@ -33,10 +33,12 @@ interface DetailResultModalProps {
 function PhotoCard({
   photo,
   index,
+  single,
   onPreview,
 }: {
   photo: { url: string; label?: string };
   index: number;
+  single?: boolean;
   onPreview: (url: string) => void;
 }) {
   const [hasError, setHasError] = useState(false);
@@ -46,7 +48,11 @@ function PhotoCard({
       onClick={() => onPreview(photo.url)}
       className="group relative flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:border-[#00A876] transition-all cursor-pointer"
     >
-      <div className="relative aspect-[4/3] bg-[hsl(var(--muted))]/30 overflow-hidden flex items-center justify-center">
+      <div
+        className={`relative ${
+          single ? "aspect-[16/10] sm:aspect-[4/3]" : "aspect-[4/3]"
+        } bg-[hsl(var(--muted))]/30 overflow-hidden flex items-center justify-center`}
+      >
         {hasError ? (
           <div className="p-4 flex flex-col items-center justify-center text-center space-y-1.5 text-[hsl(var(--muted-foreground))]">
             <ImageIcon className="w-8 h-8 opacity-40" />
@@ -104,10 +110,50 @@ export function DetailResultModal({
     const photos: { url: string; label?: string }[] = [];
     const seenUrls = new Set<string>();
 
+    // 0. Kumpulkan semua nilai tanda tangan agar tidak pernah masuk ke galeri foto
+    const signatureStringSet = new Set<string>();
+    if (result.signatureData) {
+      if (typeof result.signatureData === "string") {
+        try {
+          const parsed = JSON.parse(result.signatureData);
+          if (typeof parsed === "object" && parsed !== null) {
+            Object.values(parsed).forEach((s) => {
+              if (typeof s === "string" && s.trim()) signatureStringSet.add(s.trim());
+            });
+          }
+        } catch {
+          signatureStringSet.add(result.signatureData.trim());
+        }
+      } else if (typeof result.signatureData === "object") {
+        Object.values(result.signatureData).forEach((s) => {
+          if (typeof s === "string" && s.trim()) signatureStringSet.add(s.trim());
+        });
+      }
+    }
+
+    const fields = template?.fields || result.template?.fields || [];
+    (result.values || []).forEach((v: any) => {
+      const field = v.field || fields.find((f: any) => f.id === v.fieldId);
+      const tipe = (field?.tipe || "").toUpperCase();
+      const q = (field?.pertanyaan || "").toLowerCase();
+      const isSig =
+        tipe === "SIGNATURE" ||
+        tipe === "TTD" ||
+        q.includes("tanda tangan") ||
+        q.includes("ttd") ||
+        q.includes("paraf");
+      if (isSig && v.valueString && typeof v.valueString === "string") {
+        signatureStringSet.add(v.valueString.trim());
+      }
+    });
+
     const normalizeUrl = (raw: unknown): string | null => {
       if (!raw || typeof raw !== "string") return null;
       let u = raw.trim();
       if (!u || u === "-" || u === "null" || u === "undefined" || u === "[]" || u === "{}") return null;
+
+      // Tolak jika merupakan tanda tangan yang terdaftar
+      if (signatureStringSet.has(u)) return null;
 
       if (u.startsWith("data:image/")) return u;
       u = u.replace(/\\/g, "/");
@@ -123,6 +169,11 @@ export function DetailResultModal({
         u = `/${u}`;
       }
       return u;
+    };
+
+    const getCanonicalKey = (url: string): string => {
+      if (url.startsWith("data:image/")) return url.slice(0, 80);
+      return url.split("?")[0].split("#")[0].toLowerCase().trim();
     };
 
     const addPhoto = (raw: unknown, label?: string) => {
@@ -172,39 +223,61 @@ export function DetailResultModal({
       const normalized = normalizeUrl(trimmed);
       if (!normalized) return;
 
-      if (!seenUrls.has(normalized)) {
-        seenUrls.add(normalized);
-        photos.push({
-          url: normalized,
-          label: label || `Dokumentasi #${photos.length + 1}`,
-        });
+      const canonical = getCanonicalKey(normalized);
+      if (seenUrls.has(canonical)) {
+        // Jika sudah ada tapi label baru lebih spesifik dari label generic
+        if (label) {
+          const existing = photos.find((p) => getCanonicalKey(p.url) === canonical);
+          if (existing?.label?.startsWith("Dokumentasi #")) {
+            existing.label = label;
+          }
+        }
+        return;
       }
+
+      seenUrls.add(canonical);
+      photos.push({
+        url: normalized,
+        label: label || `Dokumentasi #${photos.length + 1}`,
+      });
     };
 
-    // 1. Ekstraksi dari result.fotoPaths
-    if (result.fotoPaths) {
-      addPhoto(result.fotoPaths);
-    }
-
-    // 2. Ekstraksi dari values
-    const fields = template?.fields || result.template?.fields || [];
+    // 1. Ekstraksi dari values terlebih dahulu (karena memiliki label pertanyaan yang lebih spesifik)
     (result.values || []).forEach((v: any) => {
       const field = v.field || fields.find((f: any) => f.id === v.fieldId);
       const tipe = (field?.tipe || "").toUpperCase();
       const pertanyaan = field?.pertanyaan || "Foto Dokumentasi";
+      const q = pertanyaan.toLowerCase();
       const valStr = typeof v.valueString === "string" ? v.valueString.trim() : "";
+
+      // Pastikan bukan tanda tangan
+      if (
+        tipe === "SIGNATURE" ||
+        tipe === "TTD" ||
+        q.includes("tanda tangan") ||
+        q.includes("ttd") ||
+        q.includes("paraf") ||
+        signatureStringSet.has(valStr)
+      ) {
+        return;
+      }
 
       const isPhotoField = tipe === "PHOTO" || tipe === "FOTO" || tipe === "IMAGE" || tipe === "FILE";
       const looksLikeImage =
-        valStr.startsWith("data:image/") ||
         valStr.includes("/uploads/") ||
         valStr.includes("uploads/") ||
-        /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(valStr);
+        /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(valStr) ||
+        (valStr.startsWith("data:image/") && !signatureStringSet.has(valStr));
 
       if ((isPhotoField || looksLikeImage) && valStr) {
         addPhoto(valStr, pertanyaan);
       }
     });
+
+    // 2. Ekstraksi dari result.fotoPaths (jika ada foto kegiatan lapangan tambahan)
+    if (result.fotoPaths) {
+      addPhoto(result.fotoPaths, "Foto Kegiatan");
+    }
 
     return photos;
   }, [result, template]);
@@ -641,12 +714,21 @@ export function DetailResultModal({
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div
+                  className={
+                    allPhotos.length === 1
+                      ? "max-w-md mx-auto w-full"
+                      : allPhotos.length === 2
+                        ? "grid grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto gap-4"
+                        : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                  }
+                >
                   {allPhotos.map((photo, pIdx) => (
                     <PhotoCard
                       key={`${photo.url}-${pIdx}`}
                       photo={photo}
                       index={pIdx}
+                      single={allPhotos.length === 1}
                       onPreview={(url) => setPreviewPhoto(url)}
                     />
                   ))}

@@ -403,14 +403,14 @@ export function FormView({
   };
 
   return (
-    <div className="w-full pb-32 sm:pb-20 fade-in">
-      {/* ── STICKY TOP SCORE HUD (Tamagui Clean Bento) ── */}
-      <div className="sticky top-14 md:top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 sm:py-3 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
-        <div className="max-w-6xl mx-auto flex flex-col gap-1.5 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
-          {/* Top Row / Main Header */}
-          <div className="flex items-center justify-between gap-2 min-w-0">
+    <div className="w-full pb-28 sm:pb-20 fade-in">
+      {/* ── STICKY TOP SCORE HUD (Clean & Compact) ── */}
+      <div className="sticky top-14 md:top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
+        <div className="max-w-6xl mx-auto flex flex-col gap-2 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
+          {/* Main Row */}
+          <div className="flex items-center justify-between gap-3 min-w-0">
             {/* Back & Form Name */}
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <button
                 onClick={onBack}
                 className="p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
@@ -419,13 +419,13 @@ export function FormView({
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
                     {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
                   </span>
                   <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
                 </div>
-                <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[190px] sm:max-w-sm">
+                <h2 className="text-[14px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[180px] sm:max-w-sm">
                   {String(
                     Object.entries(metaValues).find(([fid]) => {
                       const f = activeForm.fields.find((field: any) => field.id === Number(fid));
@@ -436,37 +436,27 @@ export function FormView({
               </div>
             </div>
 
-            {/* Mobile Status Pill (Only on mobile) */}
-            <div className="flex sm:hidden items-center gap-1.5 shrink-0">
-              <span
-                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                  liveSkor.pass ? "bg-primary text-white shadow-xs" : "bg-error text-white shadow-xs"
+            {/* Mobile Score & Status Pill */}
+            <div className="flex sm:hidden items-center gap-2 shrink-0">
+              <div
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-white font-extrabold shadow-xs ${
+                  liveSkor.pass ? "bg-primary" : "bg-error"
                 }`}
               >
-                {liveSkor.pass ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                <span className="truncate max-w-[100px]">{liveSkor.text}</span>
-              </span>
+                <span className="text-[14px] tabular-nums leading-none">{displayPercentage}</span>
+                <span className="text-[10px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
+              </div>
             </div>
           </div>
 
-          {/* Mobile Secondary Row: Score & Stats (Visible only on mobile) */}
-          <div className="flex sm:hidden items-center justify-between gap-2 pt-1 border-t border-border/40">
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-[16px] font-black tracking-tight leading-none tabular-nums ${
-                  liveSkor.pass ? "text-primary" : "text-error"
-                }`}
-              >
-                {displayPercentage}
-              </span>
-              <span className="text-[10px] text-muted-foreground font-semibold tabular-nums">
-                ({liveSkor.gained}/{liveSkor.max} Poin)
-              </span>
-            </div>
-            <div className="text-[10px] font-semibold text-muted-foreground tabular-nums">
-              Progres: {completionStats.answeredQuestions}/{completionStats.totalQuestions} (
-              {completionStats.percentAnswered}%)
-            </div>
+          {/* Mobile Secondary Row: Compact Progress Info */}
+          <div className="flex sm:hidden items-center justify-between text-[10px] text-muted-foreground font-semibold">
+            <span>
+              Langkah {currentStepIndex + 1}/{steps.length} · {currentStep.title}
+            </span>
+            <span className="tabular-nums">
+              {completionStats.answeredQuestions}/{completionStats.totalQuestions} ({completionStats.percentAnswered}%)
+            </span>
           </div>
 
           {/* Desktop Prominent Percentage Score HUD */}
@@ -537,7 +527,7 @@ export function FormView({
         </div>
 
         {/* Global Progress Bar */}
-        <div className="w-full bg-muted h-1 mt-1.5 sm:mt-2.5 rounded-full overflow-hidden">
+        <div className="w-full bg-muted h-1 mt-2 rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300 rounded-full"
             style={{ width: `${completionStats.percentAnswered}%` }}
@@ -545,9 +535,9 @@ export function FormView({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-1 sm:px-0 pt-4 sm:pt-6">
+      <div className="max-w-5xl mx-auto px-0 sm:px-0 pt-4 sm:pt-6">
         {/* ── STEP WIZARD NAVIGATION PILLS ── */}
-        <div className="mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-none px-1 sm:px-0">
+        <div className="mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
           <div className="flex items-center gap-2 min-w-max">
             {steps.map((step, idx) => {
               const isActive = idx === currentStepIndex;
