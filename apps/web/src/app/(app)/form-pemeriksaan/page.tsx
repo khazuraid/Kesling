@@ -2109,33 +2109,34 @@ export default function FormPemeriksaanPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
           {/* Left Panel: Config */}
           <div className="space-y-4">
-            {/* Deskripsi */}
+            {/* Konfigurasi Sasaran & Kolom Area Matriks */}
             <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
               <div className="px-5 py-3 border-b border-border bg-surface-subtle/50">
-                <span className="text-[12px] font-bold text-foreground">Deskripsi Laporan</span>
+                <span className="text-[12px] font-bold text-foreground">Sasaran & Deskripsi Laporan</span>
               </div>
               <div className="p-5 space-y-4">
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
-                    Deskripsi
+                    Deskripsi Form
                   </label>
                   <textarea
                     value={deskripsi}
                     onChange={(e) => setDeskripsi(e.target.value)}
                     rows={2}
+                    placeholder="Tuliskan keterangan sasaran dan tujuan form inspeksi..."
                     className="w-full text-[13px] text-foreground placeholder:text-muted-foreground/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-surface resize-none transition-all"
                   />
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
-                    Kategori Data Dasar
+                    Kategori Sasaran (Data Dasar)
                   </label>
                   <select
                     value={dataDasarCategoryId || ""}
                     onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
                   >
-                    <option value="">— Pilih Kategori —</option>
+                    <option value="">— Pilih Kategori Sasaran —</option>
                     {categories
                       .filter((c: any) => (c.parameters || []).some((p: any) => p.isBaseline))
                       .map((c: any) => (
@@ -2144,7 +2145,9 @@ export default function FormPemeriksaanPage() {
                         </option>
                       ))}
                   </select>
-                  <p className="text-[11px] text-muted-foreground mt-2">Sumber data sasaran untuk form ini</p>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    Sumber master data objek/lokasi sasaran (SPPG, RS, Restoran, dll)
+                  </p>
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
@@ -2165,6 +2168,140 @@ export default function FormPemeriksaanPage() {
                     )}
                   </select>
                   <p className="text-[11px] text-muted-foreground mt-2">Referensi input untuk agregasi laporan</p>
+                </div>
+
+                {/* Kolom Area Matriks Terpadu di Sasaran */}
+                <div className="pt-3 border-t border-border space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-[10px] font-black shrink-0">
+                        ⊞
+                      </span>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-foreground truncate">
+                        Kolom Area Matriks ({matrixColumns.length})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowMatrixColManager(!showMatrixColManager)}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg border border-border hover:bg-surface-subtle text-muted-foreground transition shrink-0"
+                    >
+                      {showMatrixColManager ? "Tutup" : "Kelola"}
+                    </button>
+                  </div>
+
+                  <p className="text-[10px] text-muted-foreground leading-normal">
+                    Area inspeksi sasaran dinamis. Dapat ditambah tanpa batas (A-H, I, dst).
+                  </p>
+
+                  {/* Ringkasan Kode Area Pill */}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {matrixColumns.map((col, cIdx) => (
+                      <span
+                        key={cIdx}
+                        title={`${col.code}: ${col.label}`}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-subtle border border-border text-[10px] font-bold text-foreground"
+                      >
+                        <strong className="text-primary">{col.code}</strong>
+                        <span className="text-[9px] text-muted-foreground max-w-[80px] truncate hidden sm:inline">
+                          {col.label}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Mode Detail / Manager */}
+                  {showMatrixColManager && (
+                    <div className="pt-2 border-t border-border space-y-2">
+                      <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                        {matrixColumns.map((col, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1.5 p-1 rounded-lg border border-border bg-surface-subtle/40"
+                          >
+                            <input
+                              type="text"
+                              value={col.code}
+                              onChange={(e) => updateMatrixColumn(idx, "code", e.target.value.toUpperCase())}
+                              className="w-9 h-6 text-center text-[10px] font-black uppercase rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                              placeholder="Kode"
+                            />
+                            <input
+                              type="text"
+                              value={col.label}
+                              onChange={(e) => updateMatrixColumn(idx, "label", e.target.value)}
+                              className="flex-1 h-6 px-2 text-[10px] font-medium rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                              placeholder="Keterangan area..."
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeMatrixColumn(idx)}
+                              className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
+                              title="Hapus kolom"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Form Tambah Kolom Baru */}
+                      <div className="pt-2 border-t border-dashed border-border space-y-1.5">
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                          + Tambah Kolom Baru
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={newColumnCode}
+                            onChange={(e) => setNewColumnCode(e.target.value.toUpperCase())}
+                            placeholder={
+                              matrixColumns.length > 0 && matrixColumns[matrixColumns.length - 1].code.length === 1
+                                ? String.fromCharCode(matrixColumns[matrixColumns.length - 1].code.charCodeAt(0) + 1)
+                                : `A${matrixColumns.length + 1}`
+                            }
+                            className="w-12 h-7 px-1 text-center text-[10px] font-black uppercase rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
+                          />
+                          <input
+                            type="text"
+                            value={newColumnLabel}
+                            onChange={(e) => setNewColumnLabel(e.target.value)}
+                            placeholder="Deskripsi area..."
+                            className="flex-1 h-7 px-2 text-[10px] font-medium rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addMatrixColumn();
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addMatrixColumn()}
+                            className="h-7 px-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[10px] font-bold shrink-0 transition shadow-xs"
+                          >
+                            <Plus className="w-3 h-3 inline mr-0.5" /> Tambah
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
+                              toast.info("Kolom area direset ke standar A s/d H");
+                            }}
+                            className="text-[9px] text-muted-foreground hover:text-foreground underline"
+                          >
+                            Reset ke Default (A-H)
+                          </button>
+                          <span className="text-[9px] font-semibold text-muted-foreground">
+                            Total: {matrixColumns.length} Kolom
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2299,143 +2436,6 @@ export default function FormPemeriksaanPage() {
                     </span>
                   </span>
                 </button>
-              </div>
-            </div>
-
-            {/* Konfigurasi Kolom Area Matriks (Dinamis & Fleksibel Tanpa Batas) */}
-            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
-              <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b border-border bg-surface-subtle/50">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-[10px] font-black">
-                    ⊞
-                  </span>
-                  <span className="text-[12px] font-bold truncate text-foreground">
-                    Kolom Area Matriks ({matrixColumns.length})
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMatrixColManager(!showMatrixColManager)}
-                  className="text-[10px] font-bold px-2.5 py-1 rounded-lg border border-border hover:bg-surface-subtle text-muted-foreground transition"
-                >
-                  {showMatrixColManager ? "Tutup" : "Kelola"}
-                </button>
-              </div>
-
-              <div className="p-4 sm:p-5 space-y-3">
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Kolom area inspeksi dinamis. Bebas ditambah tanpa batas (A, B, C... H, I, J, dst.) untuk sarana SPPG,
-                  RS, Puskesmas, Hotel, Restoran, dll.
-                </p>
-
-                {/* Ringkasan Kode Area Pill */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {matrixColumns.map((col, cIdx) => (
-                    <span
-                      key={cIdx}
-                      title={`${col.code}: ${col.label}`}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-subtle border border-border text-[11px] font-bold text-foreground"
-                    >
-                      <strong className="text-primary">{col.code}</strong>
-                      <span className="text-[9px] text-muted-foreground max-w-[90px] truncate hidden sm:inline">
-                        {col.label}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-
-                {/* Mode Detail / Manager */}
-                {showMatrixColManager && (
-                  <div className="pt-2 border-t border-border space-y-2.5">
-                    <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
-                      {matrixColumns.map((col, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-1.5 p-1.5 rounded-lg border border-border bg-surface-subtle/40"
-                        >
-                          <input
-                            type="text"
-                            value={col.code}
-                            onChange={(e) => updateMatrixColumn(idx, "code", e.target.value.toUpperCase())}
-                            className="w-10 h-7 text-center text-[11px] font-black uppercase rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
-                            placeholder="Kode"
-                          />
-                          <input
-                            type="text"
-                            value={col.label}
-                            onChange={(e) => updateMatrixColumn(idx, "label", e.target.value)}
-                            className="flex-1 h-7 px-2 text-[11px] font-medium rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
-                            placeholder="Keterangan area..."
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeMatrixColumn(idx)}
-                            className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
-                            title="Hapus kolom"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Form Tambah Kolom Baru */}
-                    <div className="pt-2 border-t border-dashed border-border space-y-2">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
-                        + Tambah Kolom Baru
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="text"
-                          value={newColumnCode}
-                          onChange={(e) => setNewColumnCode(e.target.value.toUpperCase())}
-                          placeholder={
-                            matrixColumns.length > 0 && matrixColumns[matrixColumns.length - 1].code.length === 1
-                              ? String.fromCharCode(matrixColumns[matrixColumns.length - 1].code.charCodeAt(0) + 1)
-                              : `Area ${matrixColumns.length + 1}`
-                          }
-                          className="w-14 h-8 px-1.5 text-center text-[11px] font-black uppercase rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
-                        />
-                        <input
-                          type="text"
-                          value={newColumnLabel}
-                          onChange={(e) => setNewColumnLabel(e.target.value)}
-                          placeholder="Nama/deskripsi area..."
-                          className="flex-1 h-8 px-2.5 text-[11px] font-medium rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addMatrixColumn();
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => addMatrixColumn()}
-                          className="h-8 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-[11px] font-bold shrink-0 transition shadow-xs"
-                        >
-                          <Plus className="w-3.5 h-3.5 inline mr-1" /> Tambah
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
-                            toast.info("Kolom area direset ke standar A s/d H");
-                          }}
-                          className="text-[10px] text-muted-foreground hover:text-foreground underline"
-                        >
-                          Reset ke Default (A-H)
-                        </button>
-                        <span className="text-[10px] font-semibold text-muted-foreground">
-                          Total: {matrixColumns.length} Kolom
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
