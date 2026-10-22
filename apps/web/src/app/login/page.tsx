@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Suspense, useState } from "react";
@@ -53,8 +54,15 @@ function LoginForm() {
       <div className="w-full max-w-[420px] space-y-6">
         {/* Brand header */}
         <div className="flex items-center justify-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-black text-sm shadow-xs">
-            KC
+          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center shrink-0 overflow-hidden p-1 shadow-xs">
+            <Image
+              src="/logo.png"
+              alt="Kesling Core"
+              width={44}
+              height={44}
+              className="w-full h-full object-contain"
+              priority
+            />
           </div>
           <div className="leading-tight">
             <h1 className="text-sm font-extrabold tracking-tight text-foreground">Kesling Core</h1>

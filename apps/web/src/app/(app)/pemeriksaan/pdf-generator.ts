@@ -35,6 +35,7 @@ export interface InspectionDetailData {
     fieldId: number;
     valueString?: string | null;
     valueNumber?: number | null;
+    valueJson?: any;
     field?: any;
   }>;
 }
@@ -132,6 +133,9 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
   let countActive = 0;
   let countBenar = 0;
   let countSalah = 0;
+  const hasMatrix = fields.some((f: any) => f.tipe === "MATRIX_AREA");
+  let totalPenalty = 0;
+  let maxPenalty = 0;
 
   fields.forEach((f: any) => {
     if (f.grup === "__META__") return;
@@ -139,8 +143,6 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
     if (f.isDisabled || f.status === "DISABLED") return;
 
     const v = values.find((val) => val.fieldId === f.id);
-    const valStr = String(v?.valueString ?? "").toUpperCase();
-    if (valStr === "NA") return; // T/A dikeluarkan
 
     let fConfig = f.config || {};
     if (typeof f.config === "string") {
@@ -150,6 +152,36 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
         fConfig = {};
       }
     }
+
+    if (f.tipe === "MATRIX_AREA") {
+      const areaScores: Record<string, number | string> = fConfig.areaScores || {};
+      let selected: string[] = [];
+      if (Array.isArray(v?.valueJson)) {
+        selected = v.valueJson.map(String);
+      } else if (typeof v?.valueString === "string" && v.valueString.trim()) {
+        try {
+          const p = JSON.parse(v.valueString);
+          selected = Array.isArray(p) ? p.map(String) : v.valueString.split(",").map((s) => s.trim());
+        } catch {
+          selected = v.valueString.split(",").map((s) => s.trim());
+        }
+      }
+      const selectedSet = new Set(selected);
+
+      for (const [code, rawScore] of Object.entries(areaScores)) {
+        if (rawScore === "NA" || rawScore === undefined) continue;
+        const scoreNum = Number(rawScore) || 1;
+        maxPenalty += scoreNum;
+        if (selectedSet.has(code)) {
+          totalPenalty += scoreNum;
+        }
+      }
+      return;
+    }
+
+    const valStr = String(v?.valueString ?? "").toUpperCase();
+    if (valStr === "NA") return; // T/A dikeluarkan
+
     const skorBenar = Number(fConfig.skorBenar ?? fConfig.skor ?? (f.tipe === "BOOLEAN" ? 1 : 0));
     const skorSalah = Number(fConfig.skorSalah ?? 0);
     const itemMax = Math.max(skorBenar, skorSalah);
@@ -174,6 +206,22 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
       gained += skorBenar;
     }
   });
+
+  if (hasMatrix) {
+    const penaltyPercent = maxPenalty > 0 ? (totalPenalty / maxPenalty) * 100 : 0;
+    const finalScore = Math.max(0, Math.round((100 - penaltyPercent) * 10) / 10);
+    const pass = finalScore >= thresh;
+    return {
+      gained: maxPenalty - totalPenalty,
+      max: maxPenalty,
+      percentValue: finalScore,
+      valueText: `${finalScore}%`,
+      pass,
+      statusText: pass ? passText : failText,
+      thresh,
+      op,
+    };
+  }
 
   const percentValue = max > 0 ? (gained / max) * 100 : 0;
   const roundedPercent = Math.round(percentValue * 10) / 10;
@@ -447,7 +495,25 @@ export async function generateInspectionPDF(
     const valObj = (result.values || []).find((v: any) => v.fieldId === f.id);
     let jawaban = "-";
 
-    if (f.tipe === "BOOLEAN") {
+    if (f.tipe === "MATRIX_AREA") {
+      let violated: string[] = [];
+      if (Array.isArray(valObj?.valueJson)) {
+        violated = valObj.valueJson.map(String);
+      } else if (typeof valObj?.valueString === "string" && valObj.valueString.trim()) {
+        try {
+          const p = JSON.parse(valObj.valueString);
+          violated = Array.isArray(p) ? p.map(String) : valObj.valueString.split(",").map((s) => s.trim());
+        } catch {
+          violated = valObj.valueString.split(",").map((s) => s.trim());
+        }
+      }
+      if (violated.length === 0) {
+        jawaban = "100% MEMENUHI (0 TMS)";
+      } else {
+        const areaScores: Record<string, any> = f.config?.areaScores || {};
+        jawaban = `TMS: ${violated.map((c) => `${c} (${areaScores[c] ?? 1})`).join(", ")}`;
+      }
+    } else if (f.tipe === "BOOLEAN") {
       const u = String(valObj?.valueString || "").toUpperCase();
       jawaban = u === "TRUE" ? "YA" : u === "FALSE" ? "TIDAK" : u === "NA" ? "T/A" : "-";
     } else if (f.tipe === "NUMBER") {
@@ -459,7 +525,8 @@ export async function generateInspectionPDF(
       jawaban = valObj.valueString;
     }
 
-    rows.push([itemIndex++, f.pertanyaan, jawaban]);
+    const itemNo = f.config?.subNomor ? `${itemIndex++} (${f.config.subNomor})` : itemIndex++;
+    rows.push([itemNo, f.pertanyaan, jawaban]);
   });
 
   autoTable(doc, {
@@ -481,20 +548,20 @@ export async function generateInspectionPDF(
       fontSize: 8.5,
     },
     columnStyles: {
-      0: { cellWidth: 10, halign: "center", fontStyle: "bold" },
+      0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
       1: { cellWidth: "auto" },
-      2: { cellWidth: 28, halign: "center", fontStyle: "bold" },
+      2: { cellWidth: 38, halign: "center", fontStyle: "bold" },
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
     },
     didParseCell: (data) => {
-      // Highlight warna teks Ya (hijau) dan Tidak (merah)
+      // Highlight warna teks Ya (hijau) dan Tidak / TMS (merah)
       if (data.section === "body" && data.column.index === 2) {
         const val = String(data.cell.raw || "");
-        if (val === "YA") {
+        if (val === "YA" || val.includes("100% MEMENUHI")) {
           data.cell.styles.textColor = [0, 168, 118];
-        } else if (val === "TIDAK") {
+        } else if (val === "TIDAK" || val.startsWith("TMS:")) {
           data.cell.styles.textColor = [225, 90, 79];
         } else if (val === "T/A") {
           data.cell.styles.textColor = [148, 163, 184];

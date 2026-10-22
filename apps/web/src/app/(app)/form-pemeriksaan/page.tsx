@@ -35,8 +35,20 @@ import { ImportFloatingWidget } from "@/components/inspection/import-floating-wi
 import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
 import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
 
+export const DEFAULT_MATRIX_COLUMNS = [
+  { code: "A", label: "Area luar bangunan" },
+  { code: "B", label: "Area fasilitas karyawan" },
+  { code: "C", label: "Area penerimaan bahan baku/kemasan" },
+  { code: "D", label: "Area penyimpanan (bahan baku, ingredien, kemasan)" },
+  { code: "E", label: "Area pengolahan (pemotongan, pencucian, pemasakan)" },
+  { code: "F", label: "Area pengemasan/pemorsian" },
+  { code: "G", label: "Area loading produk jadi" },
+  { code: "H", label: "Area pencucian peralatan" },
+];
+
 const FIELD_TYPES = [
   { value: "BOOLEAN", label: "Ceklis" },
+  { value: "MATRIX_AREA", label: "Matriks Area" },
   { value: "TEXT", label: "Teks" },
   { value: "NUMBER", label: "Angka" },
   { value: "DATE", label: "Tanggal" },
@@ -50,6 +62,7 @@ const RUMUS_OPTIONS = [
   { value: "sum", label: "Jumlah", desc: "Jumlah semua skor langsung" },
   { value: "percentage", label: "Persentase", desc: "(Diperoleh / Maksimal) × 100" },
   { value: "weighted", label: "Rata-rata Tertimbang", desc: "Σ(nilai × bobot) / Σ(bobot)" },
+  { value: "sppg_penalty", label: "Penalti Matriks Area (SPPG)", desc: "100 - (Total Penalti / Max Bobot × 100)" },
   { value: "custom", label: "Kustom", desc: "Rumus manual sesuai kebutuhan" },
 ];
 
@@ -170,6 +183,10 @@ export default function FormPemeriksaanPage() {
   const [paramDiperiksaId, setParamDiperiksaId] = useState<number | null>(null);
   const [paramMsId, setParamMsId] = useState<number | null>(null);
   const [paramTmsId, setParamTmsId] = useState<number | null>(null);
+  const [matrixColumns, setMatrixColumns] = useState<{ code: string; label: string }[]>(DEFAULT_MATRIX_COLUMNS);
+  const [newColumnCode, setNewColumnCode] = useState("");
+  const [newColumnLabel, setNewColumnLabel] = useState("");
+  const [showMatrixColManager, setShowMatrixColManager] = useState(false);
 
   // Pagination & Search state
   const [templateSearch, setTemplateSearch] = useState("");
@@ -247,6 +264,7 @@ export default function FormPemeriksaanPage() {
     deskripsi,
     subCategoryId,
     config: {
+      matrixColumns,
       dataDasarCategoryId,
       rumus,
       customFormula,
@@ -277,6 +295,8 @@ export default function FormPemeriksaanPage() {
       dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
       targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
       allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+      subNomor: f.subNomor || f.config?.subNomor || undefined,
+      areaScores: f.areaScores || f.config?.areaScores || undefined,
       config: {
         ...(typeof f.config === "object" && f.config !== null ? f.config : {}),
         skor: f.skor ?? 0,
@@ -289,6 +309,8 @@ export default function FormPemeriksaanPage() {
         dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
         targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
         allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+        subNomor: f.subNomor || f.config?.subNomor || undefined,
+        areaScores: f.areaScores || f.config?.areaScores || undefined,
       },
     })),
   });
@@ -408,6 +430,7 @@ export default function FormPemeriksaanPage() {
     paramDiperiksaId,
     paramMsId,
     paramTmsId,
+    matrixColumns,
     selectedTemplateId,
     isCreating,
   ]);
@@ -557,6 +580,229 @@ export default function FormPemeriksaanPage() {
     setIsImportWidgetVisible(false);
     setActiveImportJob(null);
     toast.success("Draft template berhasil diterapkan ke form builder!");
+  }
+
+  function addMatrixColumn(customCode?: string, customLabel?: string) {
+    const trimmedCode = (customCode || newColumnCode).trim().toUpperCase();
+    const trimmedLabel = (customLabel || newColumnLabel).trim();
+    let finalCode = trimmedCode;
+    if (!finalCode) {
+      const last = matrixColumns[matrixColumns.length - 1];
+      if (last && last.code.length === 1 && last.code >= "A" && last.code < "Z") {
+        finalCode = String.fromCharCode(last.code.charCodeAt(0) + 1);
+      } else {
+        finalCode = `Area ${matrixColumns.length + 1}`;
+      }
+    }
+    if (matrixColumns.some((c) => c.code === finalCode)) {
+      toast.error(`Kode kolom "${finalCode}" sudah ada`);
+      return;
+    }
+    const finalLabel = trimmedLabel || `Area ${finalCode}`;
+    setMatrixColumns([...matrixColumns, { code: finalCode, label: finalLabel }]);
+    setNewColumnCode("");
+    setNewColumnLabel("");
+    toast.success(`Kolom Area "${finalCode}" berhasil ditambahkan`);
+  }
+
+  function updateMatrixColumn(index: number, key: "code" | "label", val: string) {
+    setMatrixColumns((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [key]: val };
+      return next;
+    });
+  }
+
+  function removeMatrixColumn(index: number) {
+    if (matrixColumns.length <= 1) {
+      toast.error("Minimal harus ada 1 kolom area");
+      return;
+    }
+    const col = matrixColumns[index];
+    setMatrixColumns(matrixColumns.filter((_, i) => i !== index));
+    toast.info(`Kolom Area "${col.code}" dihapus`);
+  }
+
+  function loadContohMatriksSPPG() {
+    setIsCreating(true);
+    setSelectedTemplateId(null);
+    setNama("IKL Satuan Pelayanan Pangan Bergizi (SPPG - Matriks Area)");
+    setDeskripsi(
+      "Inspeksi Kesehatan Lingkungan SPPG / Sentra Pangan / Faskes dengan format penilaian matriks multi-area (Area A-H atau kustom). Nilai dilingkari pada angka bobot jika persyaratan tidak terpenuhi di area terkait.",
+    );
+    setRumus("sppg_penalty");
+    setCustomFormula("");
+    setThresholdOperator(">=");
+    setThresholdValue(80);
+    setThresholdPassText("Memenuhi Syarat (MS)");
+    setThresholdFailText("Tidak Memenuhi Syarat (TMS)");
+    setDefaultYa(false);
+    setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
+    setFields([
+      {
+        pertanyaan: "Nama Sarana / Unit SPPG",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+      },
+      {
+        pertanyaan: "Nama Pengelola / Penanggung Jawab",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "",
+      },
+      {
+        pertanyaan: "Nama Petugas Pemeriksa",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "USER_NAME",
+      },
+      {
+        pertanyaan: "Wilayah Kerja Puskesmas",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi: "",
+        autoFill: "USER_PUSKESMAS",
+      },
+      {
+        pertanyaan:
+          "Lokasi bebas dari pencemaran (antara lain: tempat pembuangan sampah akhir/sementara, limbah, genangan air tercemar, semak belukar)",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "1",
+        areaScores: { A: 1, B: "NA", C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Bangunan kuat, terpelihara dan mudah dibersihkan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "2",
+        areaScores: { A: 1, B: "NA", C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Lantai kedap air, rata, tidak licin, tidak retak dan mudah dibersihkan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "3",
+        areaScores: { A: 1, B: "NA", C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Dinding bersih, terang, tahan air, tidak retak dan mudah dibersihkan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "4",
+        areaScores: { A: 1, B: "NA", C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Langit-langit dengan tinggi yang cukup, bersih, bebas dari lubang, retakan dan mudah dibersihkan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "5",
+        areaScores: { A: 2, B: 3, C: 3, D: 3, E: 3, F: 3, G: 3, H: 3 },
+        skor: 23,
+        skorBenar: 23,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Pintu dan jendela membuka ke arah luar, rapat serangga dan tikus, serta dapat menutup sendiri",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "6",
+        areaScores: { A: 1, B: 1, C: 1, D: 2, E: 2, F: 2, G: 2, H: 1 },
+        skor: 12,
+        skorBenar: 12,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Pencahayaan cukup terang di setiap ruangan dan tidak menyilaukan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan",
+        subNomor: "7",
+        areaScores: { A: 1, B: 1, C: 1, D: 1, E: 2, F: 2, G: 1, H: 1 },
+        skor: 10,
+        skorBenar: 10,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Ventilasi alami/mekanis berfungsi baik untuk menghilangkan uap, panas, asap, dan bau",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan — Penghawaan",
+        subNomor: "8.a",
+        areaScores: { A: "NA", B: 1, C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+      {
+        pertanyaan: "Suhu dan kelembaban ruang terjaga sesuai persyaratan jenis pangan",
+        tipe: "MATRIX_AREA",
+        isRequired: true,
+        grup: "A. Lokasi dan Bangunan — Penghawaan",
+        subNomor: "8.b",
+        areaScores: { A: "NA", B: 1, C: "NA", D: "NA", E: "NA", F: "NA", G: "NA", H: "NA" },
+        skor: 1,
+        skorBenar: 1,
+        skorSalah: 0,
+        opsi: "",
+        allowNA: false,
+      },
+    ]);
+    toast.success("Contoh Template SPPG Matriks Multi-Area berhasil dimuat!");
   }
 
   function loadContohJajananKeliling() {
@@ -805,6 +1051,8 @@ export default function FormPemeriksaanPage() {
     setParamDiperiksaId(null);
     setParamMsId(null);
     setParamTmsId(null);
+    setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
+    setShowMatrixColManager(false);
   }
 
   function addField(grup?: string) {
@@ -1406,6 +1654,14 @@ export default function FormPemeriksaanPage() {
               </label>
               <button
                 type="button"
+                onClick={loadContohMatriksSPPG}
+                title="Muat contoh lembar inspeksi Matriks Multi-Area SPPG (8 Area A-H)"
+                className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/20 transition shadow-xs cursor-pointer"
+              >
+                🍱 Contoh Matriks SPPG
+              </button>
+              <button
+                type="button"
                 onClick={loadContohJajananKeliling}
                 title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
                 className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-[11px] font-bold hover:bg-amber-500/20 transition shadow-xs cursor-pointer"
@@ -1488,6 +1744,11 @@ export default function FormPemeriksaanPage() {
                         setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
                         setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
                         setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
+                        setMatrixColumns(
+                          Array.isArray(tpl.config?.matrixColumns) && tpl.config.matrixColumns.length > 0
+                            ? tpl.config.matrixColumns
+                            : DEFAULT_MATRIX_COLUMNS,
+                        );
                         setFields(
                           (tpl.fields || []).map((f: any) => {
                             let opsiStr = "";
@@ -1513,6 +1774,8 @@ export default function FormPemeriksaanPage() {
                               dependsOn: f.config?.dependsOn || f.dependsOn || null,
                               targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
                               allowNA: f.config?.allowNA ?? f.allowNA ?? false,
+                              subNomor: f.config?.subNomor || f.subNomor || "",
+                              areaScores: f.config?.areaScores || f.areaScores || {},
                               skor: f.config?.skor ?? f.skor ?? 0,
                               skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
                               skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
@@ -1757,6 +2020,14 @@ export default function FormPemeriksaanPage() {
                         : "Auto-simpan aktif"}
               </span>
             )}
+            <button
+              type="button"
+              onClick={loadContohMatriksSPPG}
+              title="Muat contoh lembar inspeksi Matriks Multi-Area SPPG (8 Area A-H)"
+              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors rounded-xl flex-1 sm:flex-initial"
+            >
+              🍱 Contoh Matriks SPPG
+            </button>
             <button
               type="button"
               onClick={loadContohJajananKeliling}
@@ -2028,6 +2299,143 @@ export default function FormPemeriksaanPage() {
                     </span>
                   </span>
                 </button>
+              </div>
+            </div>
+
+            {/* Konfigurasi Kolom Area Matriks (Dinamis & Fleksibel Tanpa Batas) */}
+            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+              <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b border-border bg-surface-subtle/50">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-[10px] font-black">
+                    ⊞
+                  </span>
+                  <span className="text-[12px] font-bold truncate text-foreground">
+                    Kolom Area Matriks ({matrixColumns.length})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMatrixColManager(!showMatrixColManager)}
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-lg border border-border hover:bg-surface-subtle text-muted-foreground transition"
+                >
+                  {showMatrixColManager ? "Tutup" : "Kelola"}
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 space-y-3">
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Kolom area inspeksi dinamis. Bebas ditambah tanpa batas (A, B, C... H, I, J, dst.) untuk sarana SPPG,
+                  RS, Puskesmas, Hotel, Restoran, dll.
+                </p>
+
+                {/* Ringkasan Kode Area Pill */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {matrixColumns.map((col, cIdx) => (
+                    <span
+                      key={cIdx}
+                      title={`${col.code}: ${col.label}`}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-subtle border border-border text-[11px] font-bold text-foreground"
+                    >
+                      <strong className="text-primary">{col.code}</strong>
+                      <span className="text-[9px] text-muted-foreground max-w-[90px] truncate hidden sm:inline">
+                        {col.label}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Mode Detail / Manager */}
+                {showMatrixColManager && (
+                  <div className="pt-2 border-t border-border space-y-2.5">
+                    <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+                      {matrixColumns.map((col, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-1.5 p-1.5 rounded-lg border border-border bg-surface-subtle/40"
+                        >
+                          <input
+                            type="text"
+                            value={col.code}
+                            onChange={(e) => updateMatrixColumn(idx, "code", e.target.value.toUpperCase())}
+                            className="w-10 h-7 text-center text-[11px] font-black uppercase rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                            placeholder="Kode"
+                          />
+                          <input
+                            type="text"
+                            value={col.label}
+                            onChange={(e) => updateMatrixColumn(idx, "label", e.target.value)}
+                            className="flex-1 h-7 px-2 text-[11px] font-medium rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                            placeholder="Keterangan area..."
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeMatrixColumn(idx)}
+                            className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
+                            title="Hapus kolom"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Form Tambah Kolom Baru */}
+                    <div className="pt-2 border-t border-dashed border-border space-y-2">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                        + Tambah Kolom Baru
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={newColumnCode}
+                          onChange={(e) => setNewColumnCode(e.target.value.toUpperCase())}
+                          placeholder={
+                            matrixColumns.length > 0 && matrixColumns[matrixColumns.length - 1].code.length === 1
+                              ? String.fromCharCode(matrixColumns[matrixColumns.length - 1].code.charCodeAt(0) + 1)
+                              : `Area ${matrixColumns.length + 1}`
+                          }
+                          className="w-14 h-8 px-1.5 text-center text-[11px] font-black uppercase rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
+                        />
+                        <input
+                          type="text"
+                          value={newColumnLabel}
+                          onChange={(e) => setNewColumnLabel(e.target.value)}
+                          placeholder="Nama/deskripsi area..."
+                          className="flex-1 h-8 px-2.5 text-[11px] font-medium rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addMatrixColumn();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addMatrixColumn()}
+                          className="h-8 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-[11px] font-bold shrink-0 transition shadow-xs"
+                        >
+                          <Plus className="w-3.5 h-3.5 inline mr-1" /> Tambah
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
+                            toast.info("Kolom area direset ke standar A s/d H");
+                          }}
+                          className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                        >
+                          Reset ke Default (A-H)
+                        </button>
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          Total: {matrixColumns.length} Kolom
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2988,6 +3396,193 @@ export default function FormPemeriksaanPage() {
                                           🔒 Tergantung Butir {field.dependsOn.parentIndex + 1} (
                                           {field.dependsOn.requiredValue === "TRUE" ? "Ya" : "Tidak"})
                                         </span>
+                                      )}
+
+                                      {/* Editor Bobot Matriks Multi-Area Dinamis */}
+                                      {field.tipe === "MATRIX_AREA" && (
+                                        <div className="mt-2 p-2.5 rounded-lg border border-primary/25 bg-primary-subtle/20 space-y-2">
+                                          <div className="flex items-center justify-between flex-wrap gap-1.5">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-[10px] font-black text-primary uppercase tracking-wide">
+                                                📊 Bobot Area
+                                              </span>
+                                              <span className="text-[9px] text-muted-foreground">
+                                                (Sub-nomor & bobot penalti {matrixColumns.length} kolom)
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[9px]">
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const newScores: Record<string, any> = {};
+                                                  matrixColumns.forEach((col) => {
+                                                    newScores[col.code] = 1;
+                                                  });
+                                                  const totalSkor = matrixColumns.reduce((sum, col) => {
+                                                    const s = newScores[col.code];
+                                                    return sum + (typeof s === "number" ? s : 0);
+                                                  }, 0);
+                                                  setFields(
+                                                    fields.map((f, i) =>
+                                                      i === index
+                                                        ? { ...f, areaScores: newScores, skor: totalSkor }
+                                                        : f,
+                                                    ),
+                                                  );
+                                                }}
+                                                className="px-1.5 py-0.5 rounded border border-border bg-surface text-muted-foreground hover:text-foreground font-semibold"
+                                              >
+                                                Semua 1
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const newScores: Record<string, any> = {};
+                                                  matrixColumns.forEach((col) => {
+                                                    newScores[col.code] = 2;
+                                                  });
+                                                  const totalSkor = matrixColumns.reduce((sum, col) => {
+                                                    const s = newScores[col.code];
+                                                    return sum + (typeof s === "number" ? s : 0);
+                                                  }, 0);
+                                                  setFields(
+                                                    fields.map((f, i) =>
+                                                      i === index
+                                                        ? { ...f, areaScores: newScores, skor: totalSkor }
+                                                        : f,
+                                                    ),
+                                                  );
+                                                }}
+                                                className="px-1.5 py-0.5 rounded border border-border bg-surface text-muted-foreground hover:text-foreground font-semibold"
+                                              >
+                                                Semua 2
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const newScores: Record<string, any> = {};
+                                                  matrixColumns.forEach((col) => {
+                                                    newScores[col.code] = 3;
+                                                  });
+                                                  const totalSkor = matrixColumns.reduce((sum, col) => {
+                                                    const s = newScores[col.code];
+                                                    return sum + (typeof s === "number" ? s : 0);
+                                                  }, 0);
+                                                  setFields(
+                                                    fields.map((f, i) =>
+                                                      i === index
+                                                        ? { ...f, areaScores: newScores, skor: totalSkor }
+                                                        : f,
+                                                    ),
+                                                  );
+                                                }}
+                                                className="px-1.5 py-0.5 rounded border border-border bg-surface text-muted-foreground hover:text-foreground font-semibold"
+                                              >
+                                                Semua 3
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const newScores: Record<string, any> = {};
+                                                  matrixColumns.forEach((col) => {
+                                                    newScores[col.code] = "NA";
+                                                  });
+                                                  setFields(
+                                                    fields.map((f, i) =>
+                                                      i === index ? { ...f, areaScores: newScores, skor: 0 } : f,
+                                                    ),
+                                                  );
+                                                }}
+                                                className="px-1.5 py-0.5 rounded border border-border bg-surface text-muted-foreground hover:text-foreground font-semibold"
+                                              >
+                                                Semua NA
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          {/* Sub-Nomor */}
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-muted-foreground shrink-0">
+                                              Sub-Nomor:
+                                            </span>
+                                            <input
+                                              type="text"
+                                              value={field.subNomor || field.config?.subNomor || ""}
+                                              onChange={(e) => updateField(index, "subNomor", e.target.value)}
+                                              placeholder="Misal: 1, 8.a, II.b"
+                                              className="w-24 text-[11px] font-bold bg-surface border border-border px-2 py-0.5 rounded outline-none focus:border-primary text-foreground"
+                                            />
+                                            <span className="text-[9px] text-muted-foreground">
+                                              (Nomor urut kriteria di lembar kertas formulir)
+                                            </span>
+                                          </div>
+
+                                          {/* Grid Kolom Dinamis */}
+                                          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1.5 pt-1">
+                                            {matrixColumns.map((col) => {
+                                              const currentVal =
+                                                field.areaScores?.[col.code] ??
+                                                field.config?.areaScores?.[col.code] ??
+                                                "NA";
+                                              return (
+                                                <div
+                                                  key={col.code}
+                                                  className={`p-1.5 rounded border flex flex-col items-center gap-1 ${
+                                                    currentVal === "NA"
+                                                      ? "bg-surface/50 border-border/60 opacity-75"
+                                                      : "bg-surface border-primary/40 shadow-xs"
+                                                  }`}
+                                                >
+                                                  <div className="flex items-center justify-between w-full">
+                                                    <span className="text-[10px] font-black text-foreground">
+                                                      {col.code}
+                                                    </span>
+                                                    <span
+                                                      className="text-[8px] text-muted-foreground truncate max-w-[60px]"
+                                                      title={col.label}
+                                                    >
+                                                      {col.label.split(" ")[0]}
+                                                    </span>
+                                                  </div>
+                                                  <select
+                                                    value={String(currentVal)}
+                                                    onChange={(e) => {
+                                                      const val =
+                                                        e.target.value === "NA" ? "NA" : Number(e.target.value);
+                                                      const updatedAreaScores = {
+                                                        ...(field.areaScores || field.config?.areaScores || {}),
+                                                        [col.code]: val,
+                                                      };
+                                                      const totalSkor = matrixColumns.reduce((sum, c) => {
+                                                        const s = updatedAreaScores[c.code];
+                                                        return sum + (typeof s === "number" ? s : 0);
+                                                      }, 0);
+                                                      setFields(
+                                                        fields.map((f, i) =>
+                                                          i === index
+                                                            ? { ...f, areaScores: updatedAreaScores, skor: totalSkor }
+                                                            : f,
+                                                        ),
+                                                      );
+                                                    }}
+                                                    className={`w-full text-center text-[10px] font-bold py-0.5 rounded outline-none border transition-colors ${
+                                                      currentVal === "NA"
+                                                        ? "bg-surface-subtle text-muted-foreground border-border"
+                                                        : "bg-primary text-white font-black border-primary"
+                                                    }`}
+                                                  >
+                                                    <option value="NA">NA</option>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                  </select>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
 

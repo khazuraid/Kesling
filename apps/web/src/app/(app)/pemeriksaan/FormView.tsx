@@ -248,6 +248,25 @@ export function FormView({
 }: FormViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
+  const matrixColumns: { code: string; label: string }[] = useMemo(() => {
+    const raw = activeForm?.config?.matrixColumns;
+    if (Array.isArray(raw) && raw.length > 0) return raw;
+    return [
+      { code: "A", label: "Area luar bangunan" },
+      { code: "B", label: "Area fasilitas karyawan" },
+      { code: "C", label: "Area penerimaan bahan baku/kemasan" },
+      { code: "D", label: "Area penyimpanan (bahan baku, ingredien, kemasan)" },
+      { code: "E", label: "Area pengolahan (pemotongan, pencucian, pemasakan)" },
+      { code: "F", label: "Area pengemasan/pemorsian" },
+      { code: "G", label: "Area loading produk jadi" },
+      { code: "H", label: "Area pencucian peralatan" },
+    ];
+  }, [activeForm?.config?.matrixColumns]);
+
+  const hasMatrixField = useMemo(() => {
+    return (activeForm?.fields || []).some((f: any) => f.tipe === "MATRIX_AREA");
+  }, [activeForm?.fields]);
+
   const metaFields = useMemo(
     () => (activeForm?.fields || []).filter((f: any) => f.grup === "__META__"),
     [activeForm?.fields],
@@ -667,6 +686,28 @@ export function FormView({
                   </span>
                 </div>
 
+                {/* Banner Panduan jika terdapat butir MATRIX_AREA */}
+                {hasMatrixField && (
+                  <div className="mx-5 sm:mx-6 mt-5 p-3.5 rounded-xl border border-primary/20 bg-primary-subtle/30 space-y-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-primary font-bold">
+                      <Info className="w-4 h-4 shrink-0" />
+                      <span>Instruksi Penilaian Matriks Multi-Area:</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Lingkari atau sentuh pada angka di kolom area inspeksi jika kriteria/persyaratan{" "}
+                      <strong className="text-rose-600 font-black">TIDAK TERPENUHI</strong>. Area dengan tanda{" "}
+                      <strong>NA</strong> tidak dinilai.
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1 border-t border-primary/10 text-[10px] text-muted-foreground font-medium">
+                      {matrixColumns.map((c) => (
+                        <span key={c.code} className="inline-flex items-center gap-1">
+                          <strong className="text-foreground font-black">{c.code}:</strong> {c.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-5 sm:p-6 space-y-6">
                   {currentStep.areaData.groups.map((group) => (
                     <div key={group.grup} className="space-y-4">
@@ -699,6 +740,7 @@ export function FormView({
                               <FieldInput
                                 index={idx + 1}
                                 field={f}
+                                columns={matrixColumns}
                                 value={formValues[f.id] ?? null}
                                 onChange={(v) => onFieldChange(f.id, v)}
                                 onGPS={() => onGPS(f.id)}
@@ -798,9 +840,148 @@ export function FormView({
 
 // ─── Field Input Component ──────────────────────────────────────────────
 
+function normalizeMatrixSelected(val: any): string[] {
+  if (Array.isArray(val)) return val.map(String);
+  if (typeof val === "string" && val.trim()) {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed.map(String);
+    } catch {}
+    return val
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function MatrixAreaInput({
+  field: f,
+  columns,
+  selectedCodes,
+  onChange,
+  disabled,
+}: {
+  field: any;
+  columns: { code: string; label: string }[];
+  selectedCodes: string[];
+  onChange: (codes: string[]) => void;
+  disabled?: boolean;
+}) {
+  const conf = typeof f.config === "object" && f.config ? f.config : {};
+  const areaScores: Record<string, number | string> = conf.areaScores || {};
+  const selectedSet = new Set(selectedCodes);
+
+  const toggleCode = (code: string) => {
+    if (disabled) return;
+    const score = areaScores[code];
+    if (score === "NA" || score === undefined) return;
+    const next = new Set(selectedSet);
+    if (next.has(code)) {
+      next.delete(code);
+    } else {
+      next.add(code);
+    }
+    onChange(Array.from(next));
+  };
+
+  const clearAll = () => {
+    if (disabled) return;
+    onChange([]);
+  };
+
+  const violatedCount = selectedCodes.length;
+
+  return (
+    <div className="space-y-2 pt-1">
+      {/* Mobile & Desktop Header: SubNomor, Info & Quick Reset */}
+      <div className="flex items-center justify-between flex-wrap gap-2 text-[11px]">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {conf.subNomor && (
+            <span className="px-2 py-0.5 rounded-md bg-muted text-foreground font-black text-[10px] tracking-wide border border-border">
+              Sub #{conf.subNomor}
+            </span>
+          )}
+          <span className="text-muted-foreground text-[10px]">
+            *Sentuh angka jika area <strong className="text-rose-600 font-bold">TIDAK MEMENUHI</strong>
+          </span>
+        </div>
+        {violatedCount > 0 && !disabled && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="text-[10px] font-bold text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border bg-surface transition-colors"
+          >
+            Bersihkan ({violatedCount} Pelanggaran)
+          </button>
+        )}
+      </div>
+
+      {/* Grid Kolom Area */}
+      <div className="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-8 gap-1.5">
+        {columns.map((col) => {
+          const rawScore = areaScores[col.code];
+          const isNA = rawScore === "NA" || rawScore === undefined;
+          const isViolated = selectedSet.has(col.code);
+          const scoreNum = !isNA ? Number(rawScore) || 1 : null;
+
+          return (
+            <button
+              key={col.code}
+              type="button"
+              disabled={disabled || isNA}
+              onClick={() => toggleCode(col.code)}
+              title={`${col.code}: ${col.label}${isNA ? " (Tidak Berlaku)" : ` (Penalti: ${scoreNum})`}`}
+              className={`group/btn relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all select-none ${
+                isNA
+                  ? "bg-muted/40 border-dashed border-border/60 text-muted-foreground/40 cursor-not-allowed opacity-50"
+                  : isViolated
+                    ? "bg-rose-600 border-rose-500 text-white shadow-md ring-2 ring-rose-400/50 scale-[1.02] cursor-pointer"
+                    : "bg-surface border-border hover:border-primary/60 text-foreground cursor-pointer hover:bg-surface-subtle"
+              }`}
+            >
+              {/* Kode Kolom */}
+              <span
+                className={`text-[9px] font-black uppercase tracking-wider ${
+                  isViolated ? "text-rose-100" : isNA ? "text-muted-foreground/50" : "text-muted-foreground"
+                }`}
+              >
+                {col.code}
+              </span>
+
+              {/* Nilai / Lingkaran */}
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-black mt-0.5 transition-transform ${
+                  isNA
+                    ? "text-[10px] text-muted-foreground/40"
+                    : isViolated
+                      ? "bg-white text-rose-700 font-black shadow-inner"
+                      : "border border-border/80 text-foreground group-hover/btn:border-primary"
+                }`}
+              >
+                {isNA ? "NA" : scoreNum}
+              </div>
+
+              {/* Status Ringkas */}
+              <span
+                className={`text-[8px] font-bold mt-0.5 truncate max-w-full px-0.5 ${
+                  isViolated ? "text-rose-100" : "text-muted-foreground/60"
+                }`}
+              >
+                {isViolated ? "TMS" : isNA ? "—" : "MS"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function FieldInput({
   index,
   field: f,
+  columns = [],
   value,
   onChange,
   onGPS,
@@ -809,6 +990,7 @@ function FieldInput({
 }: {
   index?: number;
   field: any;
+  columns?: { code: string; label: string }[];
   value: any;
   onChange: (v: any) => void;
   onGPS: () => void;
@@ -895,6 +1077,16 @@ function FieldInput({
       )}
 
       {/* Input by Type */}
+      {f.tipe === "MATRIX_AREA" && (
+        <MatrixAreaInput
+          field={f}
+          columns={columns}
+          selectedCodes={normalizeMatrixSelected(value)}
+          onChange={(codes) => onChange(codes)}
+          disabled={disabled}
+        />
+      )}
+
       {(f.tipe === "SIGNATURE" || isSignatureField(f)) && (
         <div className="space-y-1 pt-1">
           <SignaturePad

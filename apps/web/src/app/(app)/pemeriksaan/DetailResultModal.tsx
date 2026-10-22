@@ -664,6 +664,61 @@ export function DetailResultModal({
                                     Foto belum diunggah
                                   </span>
                                 )
+                              ) : f.tipe === "MATRIX_AREA" ? (
+                                (() => {
+                                  let violatedCodes: string[] = [];
+                                  if (Array.isArray(valObj?.valueJson)) {
+                                    violatedCodes = valObj.valueJson.map(String);
+                                  } else if (typeof valObj?.valueString === "string" && valObj.valueString.trim()) {
+                                    try {
+                                      const p = JSON.parse(valObj.valueString);
+                                      violatedCodes = Array.isArray(p)
+                                        ? p.map(String)
+                                        : valObj.valueString.split(",").map((s: string) => s.trim());
+                                    } catch {
+                                      violatedCodes = valObj.valueString.split(",").map((s: string) => s.trim());
+                                    }
+                                  }
+                                  const areaScores: Record<string, any> = f.config?.areaScores || {};
+                                  const subNo = f.config?.subNomor;
+
+                                  return (
+                                    <div className="flex flex-col sm:items-end gap-1.5">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        {subNo && (
+                                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-muted text-foreground border border-border">
+                                            #{subNo}
+                                          </span>
+                                        )}
+                                        {violatedCodes.length === 0 ? (
+                                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#00A876]/15 text-[#00A876] text-[11px] font-black border border-[#00A876]/30">
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> 100% Memenuhi (0 TMS)
+                                          </span>
+                                        ) : (
+                                          <div className="flex items-center gap-1 flex-wrap">
+                                            <span className="text-[10px] font-bold text-rose-600 mr-1">
+                                              TMS ({violatedCodes.length} Area):
+                                            </span>
+                                            {violatedCodes.map((code) => {
+                                              const pen =
+                                                areaScores[code] !== undefined && areaScores[code] !== "NA"
+                                                  ? areaScores[code]
+                                                  : "1";
+                                              return (
+                                                <span
+                                                  key={code}
+                                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-600 text-white text-[10px] font-black shadow-xs"
+                                                >
+                                                  {code} ({pen})
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })()
                               ) : f.tipe === "BOOLEAN" ? (
                                 isTrue ? (
                                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#00A876]/15 text-[#00A876] text-[11px] font-black border border-[#00A876]/30">

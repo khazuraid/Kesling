@@ -149,6 +149,13 @@ export const POST = withAuth(async (req: NextRequest) => {
         if (valStr?.startsWith("data:image/") && !valStr.startsWith("data:image/png;base64,iVBORw0KGgo")) {
           valStr = await saveBase64Photo(valStr, "inspections");
         }
+        let valJson = v.valueJson !== undefined ? v.valueJson : null;
+        if (!valJson && Array.isArray(v.value)) {
+          valJson = v.value;
+        }
+        if (Array.isArray(valJson) && !valStr) {
+          valStr = valJson.join(", ");
+        }
         return {
           fieldId: v.fieldId,
           valueString: valStr,
@@ -156,6 +163,7 @@ export const POST = withAuth(async (req: NextRequest) => {
             v.valueNumber !== undefined && v.valueNumber !== null && !Number.isNaN(parseFloat(v.valueNumber))
               ? parseFloat(v.valueNumber)
               : null,
+          valueJson: valJson,
         };
       }),
     );

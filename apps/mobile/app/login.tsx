@@ -1,9 +1,10 @@
-import { AlertTriangle, AtSign, Eye, EyeOff, Fingerprint, KeyRound, Leaf } from "@tamagui/lucide-icons-2";
+import { AlertTriangle, AtSign, Eye, EyeOff, Fingerprint, KeyRound } from "@tamagui/lucide-icons-2";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -124,14 +125,13 @@ export default function Login() {
         <Animated.View style={formStyle}>
           {/* Logo area */}
           <View style={s.logoWrap}>
-            <LinearGradient
-              colors={["#00A876", "#00A876"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={s.appIcon}
-            >
-              <Leaf size={34} color="#fff" strokeWidth={1.5} />
-            </LinearGradient>
+            <View style={s.appIcon}>
+              <Image
+                source={require("../assets/images/icon.png")}
+                style={{ width: "100%", height: "100%", borderRadius: 20 }}
+                resizeMode="contain"
+              />
+            </View>
             <Text style={s.logoName}>Kesling</Text>
             <Text style={s.logoSub}>Sistem Informasi Kesehatan Lingkungan</Text>
             <View style={s.pillRow}>

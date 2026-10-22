@@ -593,6 +593,8 @@ export default function PemeriksaanPage() {
         initVal[f.id] = accountDefault;
       } else if (isDefaultYa && f.tipe === "BOOLEAN") {
         initVal[f.id] = "TRUE";
+      } else if (f.tipe === "MATRIX_AREA") {
+        initVal[f.id] = [];
       } else {
         initVal[f.id] = null;
       }
@@ -715,6 +717,8 @@ export default function PemeriksaanPage() {
         initVal[f.id] = accountDefault;
       } else if (isDefaultYa && f.tipe === "BOOLEAN") {
         initVal[f.id] = "TRUE";
+      } else if (f.tipe === "MATRIX_AREA") {
+        initVal[f.id] = [];
       } else {
         initVal[f.id] = null;
       }
@@ -769,8 +773,31 @@ export default function PemeriksaanPage() {
       const field = template.fields.find((f: any) => f.id === v.fieldId);
       if (field) {
         let val =
-          v.valueString ?? (v.valueNumber !== null && v.valueNumber !== undefined ? String(v.valueNumber) : null);
-        if (field.tipe === "BOOLEAN" && typeof val === "string") {
+          v.valueJson ??
+          v.valueString ??
+          (v.valueNumber !== null && v.valueNumber !== undefined ? String(v.valueNumber) : null);
+        if (field.tipe === "MATRIX_AREA") {
+          if (Array.isArray(v.valueJson)) {
+            val = v.valueJson;
+          } else if (typeof v.valueString === "string" && v.valueString.trim()) {
+            try {
+              const p = JSON.parse(v.valueString);
+              val = Array.isArray(p)
+                ? p
+                : v.valueString
+                    .split(",")
+                    .map((s: string) => s.trim())
+                    .filter(Boolean);
+            } catch {
+              val = v.valueString
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+            }
+          } else {
+            val = [];
+          }
+        } else if (field.tipe === "BOOLEAN" && typeof val === "string") {
           const u = val.toUpperCase();
           if (u === "TRUE" || u === "FALSE" || u === "NA") val = u;
         }
@@ -881,11 +908,25 @@ export default function PemeriksaanPage() {
         if (field?.tipe === "DATE" && val && val !== "") {
           tanggalFinal = String(val);
         }
+        let valueString: string | null = null;
+        let valueJson: any = null;
+        let valueNumber: number | null = null;
+
+        if (field?.tipe === "MATRIX_AREA") {
+          const codes = Array.isArray(val) ? val : [];
+          valueJson = codes;
+          valueString = codes.join(", ");
+        } else if (field?.tipe === "NUMBER") {
+          valueNumber = val !== null && val !== undefined && val !== "" ? parseFloat(val) || 0 : null;
+        } else {
+          valueString = val !== null && val !== undefined && val !== "" ? String(val) : null;
+        }
+
         return {
           fieldId: numId,
-          valueString: field?.tipe !== "NUMBER" && val !== null && val !== undefined && val !== "" ? String(val) : null,
-          valueNumber:
-            field?.tipe === "NUMBER" && val !== null && val !== undefined && val !== "" ? parseFloat(val) || 0 : null,
+          valueString,
+          valueNumber,
+          valueJson,
         };
       })
       .filter((v) => v.fieldId > 0);
@@ -1021,6 +1062,10 @@ export default function PemeriksaanPage() {
     let countSalah = 0;
     let countActive = 0;
 
+    const hasMatrixFields = penilaian.some((f: any) => f.tipe === "MATRIX_AREA");
+    let totalPenalty = 0;
+    let maxPenalty = 0;
+
     for (const f of penilaian) {
       // 1. Lewati field yang bukan butir penilaian scoring (TTD, GPS, PHOTO)
       if (isSignatureField(f) || f.tipe === "GPS" || f.tipe === "PHOTO") continue;
@@ -1028,12 +1073,6 @@ export default function PemeriksaanPage() {
       // 2. Lewati butir yang dinonaktifkan (di template / targetGolongan / dependsOn)
       const disabledInfo = isFieldDisabledInfo(f, formValues, selectedGolongan, activeForm.fields);
       if (disabledInfo.isDisabled) continue;
-
-      const val = formValues[f.id];
-      const upperVal = String(val ?? "").toUpperCase();
-
-      // 3. Abaikan opsi T/A (Tidak Ada / NA) dari gained dan total (max)
-      if (upperVal === "NA") continue;
 
       const conf =
         typeof f.config === "string"
@@ -1045,6 +1084,32 @@ export default function PemeriksaanPage() {
               }
             })()
           : f.config || {};
+
+      if (f.tipe === "MATRIX_AREA") {
+        const areaScores: Record<string, number | string> = conf.areaScores || {};
+        const selected = Array.isArray(formValues[f.id])
+          ? formValues[f.id]
+          : typeof formValues[f.id] === "string" && formValues[f.id].trim()
+            ? formValues[f.id].split(",").map((s: string) => s.trim())
+            : [];
+        const selectedSet = new Set(selected.map(String));
+
+        for (const [code, rawScore] of Object.entries(areaScores)) {
+          if (rawScore === "NA" || rawScore === undefined) continue;
+          const scoreNum = Number(rawScore) || 1;
+          maxPenalty += scoreNum;
+          if (selectedSet.has(code)) {
+            totalPenalty += scoreNum;
+          }
+        }
+        continue;
+      }
+
+      const val = formValues[f.id];
+      const upperVal = String(val ?? "").toUpperCase();
+
+      // 3. Abaikan opsi T/A (Tidak Ada / NA) dari gained dan total (max)
+      if (upperVal === "NA") continue;
 
       const skorBenar = Number(conf.skorBenar ?? conf.skor ?? (f.tipe === "BOOLEAN" ? 1 : 0));
       const skorSalah = Number(conf.skorSalah ?? 0);
@@ -1071,6 +1136,22 @@ export default function PemeriksaanPage() {
       } else if (val) {
         gained += skorBenar;
       }
+    }
+
+    if (hasMatrixFields) {
+      const penaltyPercent = maxPenalty > 0 ? (totalPenalty / maxPenalty) * 100 : 0;
+      const finalScore = Math.max(0, Math.round((100 - penaltyPercent) * 10) / 10);
+      const pass = finalScore >= thresh;
+      return {
+        gained: maxPenalty - totalPenalty,
+        max: maxPenalty,
+        penalty: totalPenalty,
+        finalValue: finalScore,
+        percentValue: finalScore,
+        valueText: `${finalScore}%`,
+        pass,
+        text: pass ? passText : failText,
+      };
     }
     const percentValue = max > 0 ? (gained / max) * 100 : 0;
     const roundedPercent = Math.round(percentValue * 10) / 10;
@@ -1134,6 +1215,9 @@ export default function PemeriksaanPage() {
       })
       .every((f: any) => {
         const val = formValues[f.id];
+        if (f.tipe === "MATRIX_AREA") {
+          return Array.isArray(val) || (typeof val === "string" && val.length > 0) || val !== null;
+        }
         return val !== null && val !== undefined && val !== "";
       }) &&
     (activeForm?.fields || [])

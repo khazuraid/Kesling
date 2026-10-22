@@ -186,6 +186,8 @@ export const POST = withAuth(async (req: NextRequest) => {
             dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
             targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
             allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+            areaScores: f.areaScores ?? f.config?.areaScores ?? undefined,
+            subNomor: f.subNomor ?? f.config?.subNomor ?? undefined,
           },
         };
 
@@ -258,6 +260,8 @@ export const POST = withAuth(async (req: NextRequest) => {
               dependsOn: f.dependsOn ?? f.config?.dependsOn ?? undefined,
               targetGolongan: f.targetGolongan || f.config?.targetGolongan || "ALL",
               allowNA: f.allowNA ?? f.config?.allowNA ?? false,
+              areaScores: f.areaScores ?? f.config?.areaScores ?? undefined,
+              subNomor: f.subNomor ?? f.config?.subNomor ?? undefined,
             },
           })),
         },

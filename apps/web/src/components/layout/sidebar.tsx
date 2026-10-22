@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -175,8 +176,8 @@ export function SideNav() {
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/20 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-black text-primary">KC</span>
+            <div className="w-7 h-7 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0 overflow-hidden p-0.5 shadow-xs">
+              <Image src="/logo.png" alt="Kesling" width={24} height={24} className="w-full h-full object-contain" />
             </div>
             <span className="text-[13px] font-extrabold tracking-tight text-foreground">Kesling</span>
           </Link>
@@ -216,8 +217,8 @@ export function SideNav() {
           }`}
         >
           <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center shrink-0">
-              <span className="text-[11px] font-black text-primary">KC</span>
+            <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0 overflow-hidden p-0.5 shadow-xs">
+              <Image src="/logo.png" alt="Kesling" width={28} height={28} className="w-full h-full object-contain" />
             </div>
             {(!collapsed || mobileOpen) && (
               <div className="leading-none min-w-0">
