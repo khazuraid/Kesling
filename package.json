@@ -21,7 +21,7 @@
     "lefthook": "2.1.10",
     "turbo": "2.10.9"
   },
-  "packageManager": "pnpm@11.1.0",
+  "packageManager": "pnpm@12.14.0",
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
     "metro-runtime": "0.87.0",

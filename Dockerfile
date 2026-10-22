@@ -2,7 +2,7 @@
 FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.1.0
+RUN npm install -g pnpm@12.14.0
 
 # ─── Deps stage ───────────────────────────────────────────────
 FROM base AS deps
