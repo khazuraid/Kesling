@@ -1479,7 +1479,7 @@ export default function FormPemeriksaanPage() {
       const parsed = parseDropdownOptions(targetMeta.opsi || targetMeta.options);
       if (parsed.length > 0) return parsed;
     }
-    return ["Golongan A1", "Golongan A2"];
+    return [];
   }, [fields]);
 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -3328,68 +3328,70 @@ export default function FormPemeriksaanPage() {
                                         )}
                                       </div>
 
-                                      {/* Sasaran untuk non-meta */}
-                                      {group.grup !== "__META__" && availableSasaranOptions.length > 0 && (
-                                        <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-border/50">
-                                          <span className="text-[10px] font-bold text-muted-foreground">
-                                            🎯 Sasaran:
-                                          </span>
-                                          <div className="inline-flex flex-wrap gap-0.5 rounded-md border border-border bg-surface p-0.5 text-[10px]">
-                                            <button
-                                              type="button"
-                                              onClick={() => updateField(index, "targetGolongan", "ALL")}
-                                              className={`px-2 py-0.5 rounded transition-colors ${
-                                                !field.targetGolongan || field.targetGolongan === "ALL"
-                                                  ? "bg-primary text-white font-bold shadow-subtle"
-                                                  : "text-muted-foreground hover:text-foreground"
-                                              }`}
-                                            >
-                                              Semua
-                                            </button>
-                                            {availableSasaranOptions.map((opt, optIdx) => {
-                                              const curVal = field.targetGolongan || "ALL";
-                                              const curClean = curVal.toLowerCase().replace(/[^a-z0-9]/g, "");
-                                              const optClean = opt.toLowerCase().replace(/[^a-z0-9]/g, "");
-                                              const isSelected =
-                                                curVal !== "ALL" &&
-                                                (curClean === optClean ||
-                                                  (curClean === "a1" && optClean.includes("a1")) ||
-                                                  (curClean === "a2" && optClean.includes("a2")) ||
-                                                  curClean === opt.toLowerCase());
-
-                                              const colorClass = [
-                                                "bg-amber-600 text-white font-bold",
-                                                "bg-indigo-600 text-white font-bold",
-                                                "bg-purple-600 text-white font-bold",
-                                                "bg-teal-600 text-white font-bold",
-                                                "bg-rose-600 text-white font-bold",
-                                              ][optIdx % 5];
-
-                                              return (
-                                                <button
-                                                  key={opt}
-                                                  type="button"
-                                                  onClick={() =>
-                                                    updateField(index, "targetGolongan", isSelected ? "ALL" : opt)
-                                                  }
-                                                  className={`px-2 py-0.5 rounded transition-colors ${
-                                                    isSelected
-                                                      ? colorClass
-                                                      : "text-muted-foreground hover:text-foreground"
-                                                  }`}
-                                                >
-                                                  {opt}
-                                                </button>
-                                              );
-                                            })}
-                                          </div>
-                                          {field.targetGolongan && field.targetGolongan !== "ALL" && (
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
-                                              🎯 Khusus {field.targetGolongan}
+                                      {/* Sasaran untuk non-meta (khusus tipe non-matriks karena matriks sudah dinilai per kolom area) */}
+                                      {group.grup !== "__META__" &&
+                                        field.tipe !== "MATRIX_AREA" &&
+                                        availableSasaranOptions.length > 0 && (
+                                          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-border/50">
+                                            <span className="text-[10px] font-bold text-muted-foreground">
+                                              🎯 Sasaran:
                                             </span>
-                                          )}
-                                        </div>
-                                      )}
+                                            <div className="inline-flex flex-wrap gap-0.5 rounded-md border border-border bg-surface p-0.5 text-[10px]">
+                                              <button
+                                                type="button"
+                                                onClick={() => updateField(index, "targetGolongan", "ALL")}
+                                                className={`px-2 py-0.5 rounded transition-colors ${
+                                                  !field.targetGolongan || field.targetGolongan === "ALL"
+                                                    ? "bg-primary text-white font-bold shadow-subtle"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                                }`}
+                                              >
+                                                Semua
+                                              </button>
+                                              {availableSasaranOptions.map((opt, optIdx) => {
+                                                const curVal = field.targetGolongan || "ALL";
+                                                const curClean = curVal.toLowerCase().replace(/[^a-z0-9]/g, "");
+                                                const optClean = opt.toLowerCase().replace(/[^a-z0-9]/g, "");
+                                                const isSelected =
+                                                  curVal !== "ALL" &&
+                                                  (curClean === optClean ||
+                                                    (curClean === "a1" && optClean.includes("a1")) ||
+                                                    (curClean === "a2" && optClean.includes("a2")) ||
+                                                    curClean === opt.toLowerCase());
+
+                                                const colorClass = [
+                                                  "bg-amber-600 text-white font-bold",
+                                                  "bg-indigo-600 text-white font-bold",
+                                                  "bg-purple-600 text-white font-bold",
+                                                  "bg-teal-600 text-white font-bold",
+                                                  "bg-rose-600 text-white font-bold",
+                                                ][optIdx % 5];
+
+                                                return (
+                                                  <button
+                                                    key={opt}
+                                                    type="button"
+                                                    onClick={() =>
+                                                      updateField(index, "targetGolongan", isSelected ? "ALL" : opt)
+                                                    }
+                                                    className={`px-2 py-0.5 rounded transition-colors ${
+                                                      isSelected
+                                                        ? colorClass
+                                                        : "text-muted-foreground hover:text-foreground"
+                                                    }`}
+                                                  >
+                                                    {opt}
+                                                  </button>
+                                                );
+                                              })}
+                                            </div>
+                                            {field.targetGolongan && field.targetGolongan !== "ALL" && (
+                                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
+                                                🎯 Khusus {field.targetGolongan}
+                                              </span>
+                                            )}
+                                          </div>
+                                        )}
 
                                       {field.dependsOn && (
                                         <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
