@@ -286,11 +286,26 @@ export async function generateInspectionPDF(
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
 
   const template = result.template || templateFallback || {};
-  const namaSasaran = result.sasaran?.nama || result.namaSasaran || "Sasaran Tanpa Nama";
-  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || "-";
-  const pengelolaSasaran = result.sasaran?.pemilik || "-";
+  // Nama pengelola/pemilik tersimpan sebagai field kuesioner grup __META__,
+  // bukan di Sasaran.pemilik (yang hanya terisi bila sasaran dibuat manual).
+  const metaPick = (...keys: string[]) => {
+    const fields = template?.fields || [];
+    const hit = (result.values || []).find((v: any) => {
+      const field = v.field || fields.find((f: any) => f.id === v.fieldId);
+      if (field?.grup !== "__META__") return false;
+      const q = String(field?.pertanyaan || "").toLowerCase();
+      const text = String(v.valueString ?? "").trim();
+      return keys.some((k) => q.includes(k)) && text !== "" && !/^(TRUE|FALSE|NA)$/i.test(text);
+    });
+    return hit ? String(hit.valueString).trim() : "";
+  };
+  const namaSasaran =
+    result.sasaran?.nama || metaPick("nama sarana", "unit sppg") || result.namaSasaran || "Sasaran Tanpa Nama";
+  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaPick("alamat", "lokasi") || "-";
+  const pengelolaSasaran = result.sasaran?.pemilik || metaPick("pengelola", "penanggung jawab", "pemilik") || "-";
   const puskesmasNama = result.puskesmas?.nama || "Puskesmas";
-  const petugasNama = result.user?.nama || "Petugas Sanitasi Lingkungan";
+  const petugasNama =
+    result.user?.nama || metaPick("petugas", "pemeriksa", "sanitarian") || "Petugas Sanitasi Lingkungan";
   const tanggalInspeksi = formatTanggalId(result.tanggal || result.createdAt);
   const tanggalCetak = new Date().toLocaleString("id-ID", {
     day: "numeric",

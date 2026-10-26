@@ -329,14 +329,39 @@ export function DetailResultModal({
     return { petugas, pemilik };
   }, [result, template]);
 
+  // Nama pengelola/pemilik sebenarnya disimpan sebagai field kuesioner grup __META__,
+  // bukan di Sasaran.pemilik (yang hanya terisi bila sasaran dibuat manual).
+  // Dibatasi ke grup __META__ agar butir checklist (mis. "Lokasi bebas dari pencemaran")
+  // tidak tersalin sebagai alamat/nama.
+  const metaText = useMemo(() => {
+    const fields = template?.fields || result?.template?.fields || [];
+    const pick = (...keys: string[]) => {
+      const hit = (result?.values || []).find((v: any) => {
+        const field = v.field || fields.find((f: any) => f.id === v.fieldId);
+        if (field?.grup !== "__META__") return false;
+        const q = String(field?.pertanyaan || "").toLowerCase();
+        const text = String(v.valueString ?? "").trim();
+        return keys.some((k) => q.includes(k)) && text !== "" && !/^(TRUE|FALSE|NA)$/i.test(text);
+      });
+      return hit ? String(hit.valueString).trim() : "";
+    };
+    return {
+      pengelola: pick("pengelola", "penanggung jawab", "pemilik"),
+      petugas: pick("petugas", "pemeriksa", "sanitarian"),
+      sarana: pick("nama sarana", "unit sppg"),
+      alamat: pick("alamat", "lokasi", "tempat"),
+      wilayah: pick("wilayah kerja", "puskesmas"),
+    };
+  }, [result, template]);
+
   if (!isOpen || !result) return null;
 
-  const namaSasaran = result.sasaran?.nama || result.namaSasaran || "Sasaran Tanpa Nama";
-  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || "Alamat belum diisi";
-  const pengelolaSasaran = result.sasaran?.pemilik || "-";
+  const namaSasaran = result.sasaran?.nama || metaText.sarana || result.namaSasaran || "Sasaran Tanpa Nama";
+  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaText.alamat || "Alamat belum diisi";
+  const pengelolaSasaran = result.sasaran?.pemilik || metaText.pengelola || "-";
   const kontakSasaran = result.sasaran?.kontak;
   const puskesmasNama = result.puskesmas?.nama || "Puskesmas";
-  const petugasNama = result.user?.nama || "Petugas Pemeriksa";
+  const petugasNama = result.user?.nama || metaText.petugas || "Petugas Pemeriksa";
   const tanggalFormat = result.tanggal
     ? new Date(result.tanggal).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -363,7 +388,7 @@ export function DetailResultModal({
   };
 
   // Kelompokkan pertanyaan kuesioner per bagian/grup
-  const fieldsFromTemplate = (template.fields || []).filter(
+  const fieldsFromTemplate = (template?.fields || []).filter(
     (f: any) => f.grup !== "__META__" && f.tipe !== "SIGNATURE" && f.tipe !== "PHOTO",
   );
 
@@ -532,7 +557,7 @@ export function DetailResultModal({
                 { icon: Calendar, label: "Tanggal", value: tanggalFormat },
                 { icon: Building2, label: "Puskesmas", value: puskesmasNama },
                 { icon: User, label: "Petugas", value: petugasNama },
-                { icon: FileText, label: "Formulir", value: template.nama },
+                { icon: FileText, label: "Formulir", value: template?.nama },
               ].map((meta) => {
                 const MIcon = meta.icon;
                 return (
@@ -617,7 +642,7 @@ export function DetailResultModal({
                   <div>
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Jenis Sarana</span>
                     <span className="text-[hsl(var(--foreground))] font-semibold">
-                      {result.sasaran?.subCategory?.nama || template.subCategory?.nama || "-"}
+                      {result.sasaran?.subCategory?.nama || template?.subCategory?.nama || "-"}
                     </span>
                   </div>
                   {kontakSasaran && (
@@ -628,7 +653,7 @@ export function DetailResultModal({
                       </span>
                     </div>
                   )}
-                  <div className="sm:col-span-2">
+                  <div className="sm:col-span-2 md:col-span-3">
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Alamat</span>
                     <span className="text-[hsl(var(--foreground))] flex items-start gap-1 mt-0.5">
                       <MapPin className="w-3.5 h-3.5 text-[#00A876] shrink-0 mt-0.5" />
