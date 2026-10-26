@@ -696,19 +696,19 @@ export default function PemeriksaanPage() {
         const fromDynamic = parameter?.code ? dynamicSource[parameter.code] : "";
 
         let fallbackSasaran = "";
-        if (
-          q.includes("nama") &&
-          (q.includes("sarana") || q.includes("tempat") || q.includes("usaha") || !q.includes("pemeriksa"))
-        ) {
-          fallbackSasaran = sasaran.nama || "";
-        } else if (q.includes("alamat") || q.includes("lokasi")) {
-          fallbackSasaran = sasaran.alamat || "";
-        } else if (q.includes("pemilik") || q.includes("pengelola") || q.includes("penanggung")) {
+        if (q.includes("pemilik") || q.includes("pengelola") || q.includes("penanggung")) {
           fallbackSasaran = sasaran.pemilik || "";
         } else if (q.includes("kontak") || q.includes("telp") || q.includes("telepon") || q.includes("hp")) {
           fallbackSasaran = sasaran.kontak || "";
+        } else if (q.includes("alamat") || q.includes("lokasi")) {
+          fallbackSasaran = sasaran.alamat || "";
         } else if ((f.tipe === "GPS" || q.includes("gps") || q.includes("koordinat")) && sasaran.lat && sasaran.lng) {
           fallbackSasaran = `${sasaran.lat},${sasaran.lng}`;
+        } else if (
+          q.includes("nama") &&
+          (q.includes("sarana") || q.includes("tempat") || q.includes("usaha") || q.includes("unit"))
+        ) {
+          fallbackSasaran = sasaran.nama || "";
         }
 
         initMeta[f.id] = (fromDynamic || fallbackSasaran || accountDefault) ?? "";
@@ -950,14 +950,24 @@ export default function PemeriksaanPage() {
       };
     });
 
-    const namaMeta = Object.entries(metaValues).find(([fid]) => {
-      const f = activeForm.fields.find((f: any) => f.id === Number(fid));
-      return f?.pertanyaan?.toLowerCase().includes("nama");
-    });
-    const alamatMeta = Object.entries(metaValues).find(([fid]) => {
-      const f = activeForm.fields.find((f: any) => f.id === Number(fid));
-      return f?.pertanyaan?.toLowerCase().includes("tempat") || f?.pertanyaan?.toLowerCase().includes("alamat");
-    });
+    // Cari field meta berdasarkan prioritas kata kunci. Dicek terurut agar
+    // "Nama Tempat / Usaha Jajanan" tidak tertukar dengan field Pengelola, dan
+    // alamat tidak salah cocok ke "tempat" (yang justru bagian dari nama tempat).
+    const findMeta = (...keys: string[]) => {
+      for (const key of keys) {
+        const hit = Object.entries(metaValues).find(([fid]) => {
+          const f = activeForm.fields.find((x: any) => x.id === Number(fid));
+          return String(f?.pertanyaan || "")
+            .toLowerCase()
+            .includes(key);
+        });
+        if (hit) return hit;
+      }
+      return undefined;
+    };
+
+    const namaMeta = findMeta("nama tempat", "nama sarana", "nama usaha", "nama unit", "nama") || findMeta("sarana");
+    const alamatMeta = findMeta("alamat", "lokasi");
 
     const gpsMeta =
       Object.entries(metaValues).find(([fid, val]) => {

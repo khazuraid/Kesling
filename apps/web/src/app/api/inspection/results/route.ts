@@ -217,6 +217,46 @@ export const POST = withAuth(async (req: NextRequest) => {
           where: { puskesmasId: pkmId, sasaranId, bulan: b, tahun: y, status: { not: "SELESAI" } },
           data: { status: "SELESAI" },
         });
+
+        // Sinkronkan identitas sasaran dari field __META__ (penggabungan data dasar
+        // dengan form pemeriksaan). Hanya isi yang masih kosong agar tidak menimpa
+        // data dasar yang sudah diisi operator.
+        const metaSync = await tx.inspectionTemplate.findUnique({
+          where: { id: body.templateId },
+          select: { fields: { select: { id: true, pertanyaan: true, grup: true } } },
+        });
+        const pickMeta = (...keys: string[]) => {
+          for (const key of keys) {
+            const f = (metaSync?.fields || []).find(
+              (x: any) => x.grup === "__META__" && String(x.pertanyaan).toLowerCase().includes(key),
+            );
+            if (!f) continue;
+            const v = processedValues.find((p: any) => p.fieldId === f.id);
+            const text = String(v?.valueString ?? "").trim();
+            if (text) return text;
+          }
+          return "";
+        };
+        const existing = await tx.sasaran.findUnique({
+          where: { id: sasaranId },
+          select: { alamat: true, pemilik: true, kontak: true },
+        });
+        const patch: Record<string, string> = {};
+        if (!existing?.alamat) {
+          const alamat = pickMeta("alamat", "lokasi");
+          if (alamat) patch.alamat = alamat;
+        }
+        if (!existing?.pemilik) {
+          const pemilik = pickMeta("pengelola", "pemilik", "penanggung jawab");
+          if (pemilik) patch.pemilik = pemilik;
+        }
+        if (!existing?.kontak) {
+          const kontak = pickMeta("kontak", "telepon", "telp", "hp");
+          if (kontak) patch.kontak = kontak;
+        }
+        if (Object.keys(patch).length > 0) {
+          await tx.sasaran.update({ where: { id: sasaranId }, data: patch });
+        }
       }
 
       return res;
