@@ -68,7 +68,7 @@
     "@expo/metro-runtime": "~57.0.14",
     "@playwright/test": "^1.62.1",
     "@tamagui/babel-plugin": "^2.7.4",
-    "@types/node": "^26.2.0",
+    "@types/node": "^24.19.2",
     "@types/react": "~19.2.18",
     "serve": "^14.2.6",
     "source-map": "^0.8.0",
