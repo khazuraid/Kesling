@@ -356,6 +356,46 @@ export function DetailResultModal({
 
   if (!isOpen || !result) return null;
 
+  // Nilai field PHOTO bisa berupa satu path, JSON array, atau daftar dipisah koma.
+  // Ambil URL pertama yang valid agar tidak meminta string mentah ke server (HTTP 400).
+  const firstPhotoUrl = (raw: unknown): string | null => {
+    const candidates: string[] = [];
+    const walk = (val: unknown) => {
+      if (!val) return;
+      if (Array.isArray(val)) {
+        val.forEach(walk);
+        return;
+      }
+      if (typeof val === "object") {
+        Object.values(val as Record<string, unknown>).forEach(walk);
+        return;
+      }
+      const s = String(val).trim();
+      if (!s) return;
+      if (s.startsWith("[") && s.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(s);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(walk);
+            return;
+          }
+        } catch {}
+      }
+      for (const part of s.split(",")) candidates.push(part.trim());
+    };
+    walk(raw);
+    const hit = candidates.find((c) => {
+      if (!c || c === "-" || c === "null" || c === "undefined") return false;
+      if (c.startsWith("data:image/")) return true;
+      if (/^https?:\/\//i.test(c)) return true;
+      return /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(c) || c.includes("/uploads/");
+    });
+    if (!hit) return null;
+    if (hit.startsWith("data:image/") || /^https?:\/\//i.test(hit)) return hit;
+    const noPublic = hit.replace(/^\/?public\//, "/");
+    return noPublic.startsWith("/") ? noPublic : `/${noPublic}`;
+  };
+
   const namaSasaran = result.sasaran?.nama || metaText.sarana || result.namaSasaran || "Sasaran Tanpa Nama";
   const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaText.alamat || "Alamat belum diisi";
   const pengelolaSasaran = result.sasaran?.pemilik || metaText.pengelola || "-";
@@ -724,16 +764,19 @@ export function DetailResultModal({
                             {/* Badge Jawaban */}
                             <div className="shrink-0 sm:text-right">
                               {f.tipe === "PHOTO" ? (
-                                valObj?.valueString ? (
+                                firstPhotoUrl(valObj?.valueString) ? (
                                   <div
-                                    onClick={() => setPreviewPhoto(valObj.valueString || null)}
+                                    onClick={() => setPreviewPhoto(firstPhotoUrl(valObj?.valueString))}
                                     className="inline-flex items-center gap-2 p-1.5 rounded-xl border border-border bg-surface hover:border-primary transition-all cursor-pointer shadow-xs group/photo"
                                   >
                                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-black/5">
                                       {/* biome-ignore lint/performance/noImgElement: photo field preview */}
                                       <img
-                                        src={valObj.valueString}
+                                        src={firstPhotoUrl(valObj?.valueString) || ""}
                                         alt={f.pertanyaan || "Foto"}
+                                        onError={(e) => {
+                                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                                        }}
                                         className="w-full h-full object-cover group-hover/photo:scale-105 transition-transform"
                                       />
                                     </div>

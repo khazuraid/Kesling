@@ -81,6 +81,8 @@ export const GET = withAuth(async (req: NextRequest) => {
         nama: true,
         alamat: true,
         pemilik: true,
+        kontak: true,
+        subCategory: { select: { nama: true } },
       },
     },
     user: {
@@ -168,13 +170,62 @@ export const POST = withAuth(async (req: NextRequest) => {
       }),
     );
 
+    // Sambungkan ke Sasaran (data dasar). Bila operator tidak memilih sasaran,
+    // cari berdasarkan nama agar alamat/pengelola tetap tampil di riwayat.
+    let resolvedSasaranId = body.sasaranId ? Number(body.sasaranId) : null;
+    if (!resolvedSasaranId && body.namaSasaran) {
+      const match = await prisma.sasaran.findFirst({
+        where: { puskesmasId: pkmId, nama: String(body.namaSasaran).trim() },
+        select: { id: true },
+        orderBy: { id: "desc" },
+      });
+      resolvedSasaranId = match?.id ?? null;
+    }
+    // Bila sasaran lama tidak punya alamat/pemilik, lengkapi dari field __META__.
+    let sasaranPatch: Record<string, string> = {};
+    if (resolvedSasaranId) {
+      const current = await prisma.sasaran.findUnique({
+        where: { id: resolvedSasaranId },
+        select: { alamat: true, pemilik: true, kontak: true },
+      });
+      const templateFields = await prisma.inspectionTemplate.findUnique({
+        where: { id: body.templateId },
+        select: { fields: { select: { id: true, pertanyaan: true, grup: true } } },
+      });
+      const pickMeta = (...keys: string[]) => {
+        for (const key of keys) {
+          const f = (templateFields?.fields || []).find(
+            (x: any) => x.grup === "__META__" && String(x.pertanyaan).toLowerCase().includes(key),
+          );
+          if (!f) continue;
+          const v = processedValues.find((p: any) => p.fieldId === f.id);
+          const text = String(v?.valueString ?? "").trim();
+          if (text) return text;
+        }
+        return "";
+      };
+      if (!current?.alamat) {
+        const a = pickMeta("alamat", "lokasi");
+        if (a) sasaranPatch.alamat = a;
+      }
+      if (!current?.pemilik) {
+        const p = pickMeta("pengelola", "pemilik", "penanggung jawab");
+        if (p) sasaranPatch.pemilik = p;
+      }
+      if (!current?.kontak) {
+        const k = pickMeta("kontak", "telepon", "telp", "hp");
+        if (k) sasaranPatch.kontak = k;
+      }
+      if (Object.keys(sasaranPatch).length === 0) sasaranPatch = {};
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const res = await tx.inspectionResult.create({
         data: {
           templateId: body.templateId,
           puskesmasId: pkmId,
           userId: userId,
-          sasaranId: body.sasaranId ? Number(body.sasaranId) : null,
+          sasaranId: resolvedSasaranId,
           namaSasaran: body.namaSasaran,
           alamatSasaran: body.alamatSasaran,
           lat:
@@ -209,53 +260,17 @@ export const POST = withAuth(async (req: NextRequest) => {
       });
 
       // Auto-mark rencana bulanan as SELESAI when inspection submitted for that sasaran+periode
-      const sasaranId = body.sasaranId ? Number(body.sasaranId) : null;
       const b = body.bulan || new Date().getMonth() + 1;
       const y = body.tahun || new Date().getFullYear();
-      if (sasaranId) {
+      if (resolvedSasaranId) {
         await tx.rencanaBulanan.updateMany({
-          where: { puskesmasId: pkmId, sasaranId, bulan: b, tahun: y, status: { not: "SELESAI" } },
+          where: { puskesmasId: pkmId, sasaranId: resolvedSasaranId, bulan: b, tahun: y, status: { not: "SELESAI" } },
           data: { status: "SELESAI" },
         });
-
-        // Sinkronkan identitas sasaran dari field __META__ (penggabungan data dasar
-        // dengan form pemeriksaan). Hanya isi yang masih kosong agar tidak menimpa
-        // data dasar yang sudah diisi operator.
-        const metaSync = await tx.inspectionTemplate.findUnique({
-          where: { id: body.templateId },
-          select: { fields: { select: { id: true, pertanyaan: true, grup: true } } },
-        });
-        const pickMeta = (...keys: string[]) => {
-          for (const key of keys) {
-            const f = (metaSync?.fields || []).find(
-              (x: any) => x.grup === "__META__" && String(x.pertanyaan).toLowerCase().includes(key),
-            );
-            if (!f) continue;
-            const v = processedValues.find((p: any) => p.fieldId === f.id);
-            const text = String(v?.valueString ?? "").trim();
-            if (text) return text;
-          }
-          return "";
-        };
-        const existing = await tx.sasaran.findUnique({
-          where: { id: sasaranId },
-          select: { alamat: true, pemilik: true, kontak: true },
-        });
-        const patch: Record<string, string> = {};
-        if (!existing?.alamat) {
-          const alamat = pickMeta("alamat", "lokasi");
-          if (alamat) patch.alamat = alamat;
-        }
-        if (!existing?.pemilik) {
-          const pemilik = pickMeta("pengelola", "pemilik", "penanggung jawab");
-          if (pemilik) patch.pemilik = pemilik;
-        }
-        if (!existing?.kontak) {
-          const kontak = pickMeta("kontak", "telepon", "telp", "hp");
-          if (kontak) patch.kontak = kontak;
-        }
-        if (Object.keys(patch).length > 0) {
-          await tx.sasaran.update({ where: { id: sasaranId }, data: patch });
+        // Lengkapi identitas sasaran dari field __META__ (penggabungan data dasar
+        // dengan form pemeriksaan). Hanya kolom kosong agar tidak menimpa isian operator.
+        if (Object.keys(sasaranPatch).length > 0) {
+          await tx.sasaran.update({ where: { id: resolvedSasaranId }, data: sasaranPatch });
         }
       }
 
