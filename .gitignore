@@ -37,4 +37,10 @@ coba.txt
 .continue/
 *.webp
 *.png
+# Brand assets harus ikut ter-commit (Docker build dari git)
+!apps/web/public/logo.png
+!apps/web/public/logo-white.png
+!apps/web/public/icon-192.png
+!apps/web/public/icon-512.png
+!apps/mobile/assets/images/*.png
 Kesling Mobile/

@@ -20,6 +20,8 @@ docs
 *.png
 *.jpg
 *.jpeg
+# Aset brand tetap ikut ke build context (dipakai sidebar/login/PDF)
+!apps/web/public/*.png
 seed-*.js
 start-local-backend.js
 apps/web/test-*.js
