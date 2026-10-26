@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cate
 
     const { searchParams } = new URL(req.url);
     const rawBulan = searchParams.get("bulan");
-    const bulan = rawBulan !== null && !isNaN(Number(rawBulan)) ? Number(rawBulan) : new Date().getMonth() + 1;
+    const bulan = rawBulan !== null && !Number.isNaN(Number(rawBulan)) ? Number(rawBulan) : new Date().getMonth() + 1;
     const tahun = Number(searchParams.get("tahun")) || new Date().getFullYear();
 
     const cacheKey = `laporan:${categoryCode}:${bulan}:${tahun}:${user.role === "OPERATOR" ? user.puskesmasId : "all"}`;

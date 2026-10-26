@@ -479,14 +479,14 @@ async function main() {
   const staticTargets = await prisma.target.findMany();
   for (const t of staticTargets) {
     const category = await prisma.dynamicCategory.findUnique({ where: { code: t.jenis } });
-    if (!category) continue;
+    if (!category || t.puskesmasId === null) continue;
 
     await prisma.dynamicTarget.upsert({
       where: {
         tahun_categoryId_puskesmasId: {
           tahun: t.tahun,
           categoryId: category.id,
-          puskesmasId: t.puskesmasId!,
+          puskesmasId: t.puskesmasId,
         },
       },
       update: { targetPersen: t.targetPersen },

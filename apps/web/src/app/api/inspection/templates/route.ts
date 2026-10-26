@@ -22,8 +22,6 @@ function normalizeOptions(options: unknown): string[] {
 }
 
 export const GET = withAuth(async (req: NextRequest) => {
-  const pkmId = (req as any).user?.puskesmasId;
-  const role = (req as any).user?.role;
   const subCatId = req.nextUrl.searchParams.get("subCategoryId");
   const pkmFilter = req.nextUrl.searchParams.get("puskesmasId");
 
