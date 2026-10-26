@@ -386,7 +386,7 @@ export default function PemeriksaanPage() {
         [p.code]: next,
       }));
     const baseClass =
-      "w-full h-10 bg-white border border-[hsl(var(--border))] rounded-lg px-3 text-[13px] font-medium focus:ring-0 focus:outline-none focus:border-[#00A876] transition-colors";
+      "w-full h-10 rounded-button border border-border bg-surface text-text-main px-3 text-[13px] font-medium focus:outline-none focus:border-primary transition-colors";
 
     if (p.type === "SELECT") {
       const customOptions = getParamOptions(p);
@@ -1234,9 +1234,9 @@ export default function PemeriksaanPage() {
   if ((session?.user as any)?.role === "ADMIN") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
-        <ShieldAlert className="w-8 h-8 text-[hsl(var(--muted-foreground))]" />
-        <p className="text-[13px] font-bold text-[hsl(var(--foreground))]">Akses Ditolak</p>
-        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">Halaman ini hanya untuk Operator / Puskesmas</p>
+        <ShieldAlert className="w-8 h-8 text-muted-foreground" />
+        <p className="text-[13px] font-bold text-foreground">Akses Ditolak</p>
+        <p className="text-[11px] text-muted-foreground">Halaman ini hanya untuk Operator / Puskesmas</p>
       </div>
     );
   }
@@ -1516,20 +1516,21 @@ export default function PemeriksaanPage() {
 
         {/* ── MODAL: TAMBAH DATA DASAR (FORMAT SESUAI DATA-DASAR) ── */}
         {isNewSasaranModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 fade-in">
-            <div className="w-full max-w-3xl h-[86vh] flex flex-col bg-[hsl(var(--background))] rounded-2xl overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 fade-in">
+            <div className="w-full max-w-3xl h-[86vh] flex flex-col rounded-card bg-surface border border-border shadow-float overflow-hidden">
               {/* Header */}
-              <div className="shrink-0 px-6 py-4 border-b border-[hsl(var(--border))] flex items-center justify-between bg-[hsl(var(--card))]">
+              <div className="shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-surface">
                 <div>
-                  <h2 className="text-[15px] font-extrabold">Tambah Data Dasar</h2>
-                  <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                    {baselineParams.length} field dari builder · {syncedParams.length} tersinkron
+                  <h2 className="text-[15px] font-extrabold text-foreground">Tambah Data Dasar</h2>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <span className="tabular-nums font-semibold">{baselineParams.length}</span> field dari builder ·{" "}
+                    <span className="tabular-nums font-semibold">{syncedParams.length}</span> tersinkron
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsNewSasaranModalOpen(false)}
-                  className="p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:bg-surface-subtle rounded-button transition-colors"
                   title="Tutup"
                 >
                   <X className="w-4 h-4" />
@@ -1537,16 +1538,16 @@ export default function PemeriksaanPage() {
               </div>
 
               {/* Form */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-6 bg-canvas">
                 <form
                   id="new-sasaran-form"
                   onSubmit={handleCreateSasaranSubmit}
                   className="max-w-2xl mx-auto space-y-4"
                 >
                   {baselineParams.length === 0 ? (
-                    <div className="border border-dashed border-[hsl(var(--border))] rounded-xl p-8 text-center space-y-3">
-                      <p className="text-[13px] font-bold">Belum ada schema Data Dasar</p>
-                      <p className="text-[12px] text-[hsl(var(--muted-foreground))] max-w-md mx-auto">
+                    <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-8 text-center space-y-3">
+                      <p className="text-[13px] font-bold text-foreground">Belum ada schema Data Dasar</p>
+                      <p className="text-[12px] text-muted-foreground max-w-md mx-auto">
                         Form mengikuti Laporan Builder → tab Data Dasar. Tambahkan field di builder, atau buat 3 field
                         default (Nama, Alamat, No HP).
                       </p>
@@ -1555,13 +1556,13 @@ export default function PemeriksaanPage() {
                           type="button"
                           onClick={() => seedDefaultMutation.mutate()}
                           disabled={seedDefaultMutation.isPending}
-                          className="inline-flex h-10 px-5 items-center rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50"
+                          className="inline-flex h-10 px-5 items-center rounded-button bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition disabled:opacity-50"
                         >
                           {seedDefaultMutation.isPending ? "Membuat..." : "Buat Field Default"}
                         </button>
                         <Link
                           href="/laporan-builder"
-                          className="inline-flex h-10 px-5 items-center rounded-full bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
+                          className="inline-flex h-10 px-5 items-center rounded-button bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover shadow-subtle transition"
                         >
                           Buka Builder
                         </Link>
@@ -1570,14 +1571,10 @@ export default function PemeriksaanPage() {
                   ) : (
                     <>
                       {/* Jenis entitas */}
-                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
+                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card bg-surface border border-border shadow-subtle">
                         <div>
-                          <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                            Jenis / Tipe Entitas *
-                          </label>
-                          <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                            Skema form & kategori
-                          </p>
+                          <label className="block text-[11px] font-bold text-foreground">Jenis / Tipe Entitas *</label>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Skema form & kategori</p>
                         </div>
                         <select
                           value={newSasaranForm.subCategoryId || ""}
@@ -1585,7 +1582,7 @@ export default function PemeriksaanPage() {
                             setNewSasaranForm((prev) => ({ ...prev, subCategoryId: Number(e.target.value) }))
                           }
                           required
-                          className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                          className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
                         >
                           <option value="">Pilih Jenis</option>
                           {allSubCats.map((sc: any) => (
@@ -1598,14 +1595,10 @@ export default function PemeriksaanPage() {
                       </div>
 
                       {userRole !== "OPERATOR" && (
-                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl bg-[hsl(var(--muted))]/20">
+                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card bg-surface border border-border shadow-subtle">
                           <div>
-                            <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                              Puskesmas Pemilik *
-                            </label>
-                            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
-                              Entitas milik PKM mana
-                            </p>
+                            <label className="block text-[11px] font-bold text-foreground">Puskesmas Pemilik *</label>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Entitas milik PKM mana</p>
                           </div>
                           <select
                             value={newSasaranForm.puskesmasId || ""}
@@ -1613,7 +1606,7 @@ export default function PemeriksaanPage() {
                               setNewSasaranForm((prev) => ({ ...prev, puskesmasId: Number(e.target.value) }))
                             }
                             required
-                            className="w-full h-10 px-3 bg-white border border-[hsl(var(--border))] rounded-lg text-[13px] font-medium outline-none focus:border-[#00A876] transition-colors cursor-pointer"
+                            className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
                           >
                             <option value="">Pilih Puskesmas</option>
                             {puskesmasList.map((p: any) => (
@@ -1628,13 +1621,13 @@ export default function PemeriksaanPage() {
                       {baselineParams.map((p: any) => (
                         <div
                           key={p.code}
-                          className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+                          className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 items-center px-4 py-3 rounded-card border border-border bg-surface shadow-subtle"
                         >
                           <div>
-                            <label className="block text-[11px] font-bold text-[hsl(var(--foreground))]">
-                              {p.nama} {p.required ? <span className="text-[#E15A4F]">*</span> : ""}
+                            <label className="block text-[11px] font-bold text-foreground">
+                              {p.nama} {p.required ? <span className="text-rose-500">*</span> : ""}
                             </label>
-                            <p className="text-[10px] font-mono text-[hsl(var(--muted-foreground))] mt-0.5">
+                            <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
                               {p.code} · {p.type}
                               {p.config?.syncToParamId ? " · sync" : ""}
                             </p>
@@ -1648,15 +1641,15 @@ export default function PemeriksaanPage() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 border-t border-[hsl(var(--border))] px-6 py-4 flex items-center justify-between bg-[hsl(var(--card))]">
-                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                  Lengkapi data wajib (*) · Sasaran akan otomatis terpilih setelah disimpan.
+              <div className="shrink-0 border-t border-border px-6 py-4 flex items-center justify-between bg-surface">
+                <span className="text-[11px] text-muted-foreground">
+                  Lengkapi data wajib (*) · Sasaran otomatis dipilih setelah disimpan.
                 </span>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setIsNewSasaranModalOpen(false)}
-                    className="h-10 px-4 text-[12px] font-bold text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] rounded-lg transition-colors"
+                    className="h-10 px-4 text-[12px] font-bold text-muted-foreground hover:bg-surface-subtle rounded-button transition-colors"
                   >
                     Batal
                   </button>
@@ -1664,7 +1657,7 @@ export default function PemeriksaanPage() {
                     type="submit"
                     form="new-sasaran-form"
                     disabled={createSasaranMut.isPending || baselineParams.length === 0}
-                    className="h-10 px-6 rounded-full bg-[#00A876] text-white text-[12px] font-extrabold hover:brightness-95 transition disabled:opacity-50 inline-flex items-center gap-2"
+                    className="h-10 px-6 rounded-button bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     {createSasaranMut.isPending ? (
                       <>

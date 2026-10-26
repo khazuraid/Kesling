@@ -440,63 +440,120 @@ export function DetailResultModal({
         </div>
 
         {/* ── SCORECARD & SUB-HEADER ── */}
-        <div className="p-4 sm:p-6 bg-gradient-to-b from-[hsl(var(--muted))]/30 to-transparent border-b border-[hsl(var(--border))] shrink-0 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 bg-surface border-b border-border shrink-0 space-y-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-3.5">
             {/* Skor Card */}
-            {scoreData && (
-              <div className="flex items-center gap-4 p-3.5 sm:p-4 rounded-2xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-sm">
-                <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-black leading-none shrink-0 border ${
-                    scoreData.pass
-                      ? "bg-[#00A876]/10 text-[#00A876] border-[#00A876]/25"
-                      : "bg-[#E15A4F]/10 text-[#E15A4F] border-[#E15A4F]/25"
-                  }`}
-                >
-                  <span className="text-[18px] sm:text-[22px] tracking-tight">{scoreData.valueText}</span>
-                  <span className="text-[9px] font-bold uppercase mt-0.5 opacity-80">Skor</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide ${
-                        scoreData.pass ? "bg-[#00A876] text-white" : "bg-[#E15A4F] text-white"
-                      }`}
-                    >
-                      {scoreData.pass ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                      {scoreData.statusText}
-                    </span>
+            {scoreData &&
+              (() => {
+                const pct = Math.min(100, Math.max(0, scoreData.percentValue || 0));
+                const R = 42;
+                const C = 2 * Math.PI * R;
+                const accent = scoreData.pass ? "#00A876" : "#E15A4F";
+                return (
+                  <div className="relative overflow-hidden p-4 rounded-2xl bg-surface border border-border shadow-subtle">
+                    <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: accent }} />
+                    <div className="flex items-center gap-4">
+                      {/* Ring progres */}
+                      <div className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0">
+                        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r={R}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="10"
+                            className="text-muted"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r={R}
+                            fill="none"
+                            stroke={accent}
+                            strokeWidth="10"
+                            strokeLinecap="round"
+                            strokeDasharray={C}
+                            strokeDashoffset={C * (1 - pct / 100)}
+                            style={{ transition: "stroke-dashoffset 700ms cubic-bezier(0.16,1,0.3,1)" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-[17px] sm:text-[20px] font-black tabular-nums leading-none text-foreground">
+                            {scoreData.valueText}
+                          </span>
+                          <span className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground mt-1">
+                            Skor
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="min-w-0 flex-1 space-y-2.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide text-white ${
+                            scoreData.pass ? "bg-[#00A876]" : "bg-[#E15A4F]"
+                          }`}
+                        >
+                          {scoreData.pass ? (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          ) : (
+                            <XCircle className="w-3.5 h-3.5" />
+                          )}
+                          {scoreData.statusText}
+                        </span>
+
+                        {/* Bar perolehan + penanda ambang */}
+                        <div className="space-y-1.5">
+                          <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${pct}%`, backgroundColor: accent }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground">
+                            <span className="tabular-nums">
+                              Perolehan: <strong className="text-foreground font-black">{scoreData.gained}</strong> /{" "}
+                              {scoreData.max} Poin
+                            </span>
+                            <span className="tabular-nums shrink-0 ml-2">
+                              Ambang {scoreData.op} {scoreData.thresh}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-[11px] sm:text-[12px] font-semibold text-[hsl(var(--muted-foreground))] mt-1.5">
-                    Perolehan: <strong className="text-[hsl(var(--foreground))]">{scoreData.gained}</strong> dari{" "}
-                    {scoreData.max} Poin Maksimal
-                    <span className="text-[10px] opacity-75 ml-1.5">
-                      (Standar: {scoreData.op} {scoreData.thresh}%)
-                    </span>
-                  </p>
-                </div>
-              </div>
-            )}
+                );
+              })()}
 
             {/* Quick Metadata Info */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 text-[11px] sm:text-[12px] text-[hsl(var(--muted-foreground))]">
-              <div className="flex items-center gap-2 truncate">
-                <Calendar className="w-4 h-4 text-[#00A876] shrink-0" />
-                <span className="truncate">{tanggalFormat}</span>
-              </div>
-              <div className="flex items-center gap-2 truncate">
-                <Building2 className="w-4 h-4 text-[#00A876] shrink-0" />
-                <span className="truncate font-medium">{puskesmasNama}</span>
-              </div>
-              <div className="flex items-center gap-2 truncate">
-                <User className="w-4 h-4 text-[#00A876] shrink-0" />
-                <span className="truncate">
-                  Petugas: <strong className="text-[hsl(var(--foreground))]">{petugasNama}</strong>
-                </span>
-              </div>
-              <div className="flex items-center gap-2 truncate">
-                <FileText className="w-4 h-4 text-[#00A876] shrink-0" />
-                <span className="truncate">{template.nama}</span>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: Calendar, label: "Tanggal", value: tanggalFormat },
+                { icon: Building2, label: "Puskesmas", value: puskesmasNama },
+                { icon: User, label: "Petugas", value: petugasNama },
+                { icon: FileText, label: "Formulir", value: template.nama },
+              ].map((meta) => {
+                const MIcon = meta.icon;
+                return (
+                  <div
+                    key={meta.label}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-surface-subtle/60 min-w-0"
+                  >
+                    <span className="w-7 h-7 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0">
+                      <MIcon className="w-3.5 h-3.5 text-[#00A876]" />
+                    </span>
+                    <div className="min-w-0">
+                      <span className="block text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                        {meta.label}
+                      </span>
+                      <span className="block text-[11px] sm:text-[12px] font-bold text-foreground truncate">
+                        {meta.value}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
