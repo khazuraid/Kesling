@@ -81,8 +81,12 @@ export function withLaporanAuth(handler: RouteHandler): RouteHandler {
 
     if (req.method === "POST" || req.method === "PUT") {
       const body = await req.clone().json();
-      if (user.role === "OPERATOR" && user.puskesmasId && body.puskesmasId !== user.puskesmasId) {
-        return NextResponse.json({ error: "Forbidden: bukan puskesmas Anda" }, { status: 403 });
+      // Fail closed: operator tanpa puskesmasId tidak punya cakupan tulis sama
+      // sekali, jadi permintaan ditolak — bukan dilewatkan.
+      if (user.role === "OPERATOR") {
+        if (!user.puskesmasId || Number(body.puskesmasId) !== user.puskesmasId) {
+          return NextResponse.json({ error: "Forbidden: bukan puskesmas Anda" }, { status: 403 });
+        }
       }
     }
 

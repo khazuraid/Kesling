@@ -30,7 +30,7 @@ export const GET = withAuth(async (req: NextRequest, context: any) => {
     return NextResponse.json({ error: "Data tidak ditemukan" }, { status: 404 });
   }
 
-  if (role !== "ADMIN" && result.puskesmasId !== pkmId) {
+  if (role !== "ADMIN" && role !== "DINKES" && result.puskesmasId !== pkmId) {
     return NextResponse.json({ error: "Anda tidak punya akses" }, { status: 403 });
   }
 
@@ -58,7 +58,7 @@ export const PUT = withAuth(async (req: NextRequest, context: any) => {
     if (!existing) {
       return NextResponse.json({ error: "Data tidak ditemukan" }, { status: 404 });
     }
-    if (role !== "ADMIN" && existing.puskesmasId !== pkmId) {
+    if (role !== "ADMIN" && role !== "DINKES" && existing.puskesmasId !== pkmId) {
       return NextResponse.json({ error: "Anda tidak punya akses" }, { status: 403 });
     }
 
@@ -202,7 +202,7 @@ export const DELETE = withAuth(async (req: NextRequest, context: any) => {
     if (!existing) {
       return NextResponse.json({ error: "Data tidak ditemukan" }, { status: 404 });
     }
-    if (role !== "ADMIN" && existing.puskesmasId !== pkmId) {
+    if (role !== "ADMIN" && role !== "DINKES" && existing.puskesmasId !== pkmId) {
       return NextResponse.json({ error: "Anda tidak punya akses" }, { status: 403 });
     }
 
