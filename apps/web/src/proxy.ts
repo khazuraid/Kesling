@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { withAuth } from "next-auth/middleware";
 import { clientIp } from "@/lib/request-ip";
 import { logSecurityEvent } from "@/lib/security-logger";
 
@@ -264,15 +263,7 @@ const API_ALLOWED_WHEN_PASSWORD_STALE = (pathname: string) =>
   pathname.startsWith("/api/mobile/v1/auth") ||
   pathname.startsWith("/api/health");
 
-export default withAuth(securityLayer);
-
-/**
- * Middleware khusus /api/** — diekspor sebagai named export sehingga Next
- * menjalankannya untuk jalur API tanpa tabrakan dengan matcher di atas.
- */
-export async function middleware(req: NextRequest) {
-  return securityLayer(req);
-}
+export default securityLayer;
 
 export const config = {
   matcher: [
