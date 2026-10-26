@@ -1,12 +1,24 @@
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@apps-kes/database";
 import { NextResponse } from "next/server";
+
+function secretMatches(provided: string | null, expected: string | undefined) {
+  if (!expected || !provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 // Call this endpoint via cron (e.g., every 1st of month)
 // Coolify: add scheduled job hitting /api/cron/deadline
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const secret = searchParams.get("secret");
-  if (secret !== (process.env.CRON_SECRET || process.env.NEXTAUTH_SECRET)) {
+  // Fail closed: tanpa CRON_SECRET, endpoint ini menolak semua permintaan.
+  // Sebelumnya fallback ke NEXTAUTH_SECRET membuat siapa pun yang tahu secret
+  // sesi bisa memicu pengiriman notifikasi ke seluruh operator.
+  const expected = process.env.CRON_SECRET;
+  const provided = searchParams.get("secret") || req.headers.get("x-cron-secret");
+  if (!secretMatches(provided, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
