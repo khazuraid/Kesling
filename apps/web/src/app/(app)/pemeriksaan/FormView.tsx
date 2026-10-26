@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { photoSrc } from "@/lib/photo-url";
 import { toRoman } from "./helpers";
 
 export function parseDropdownOptions(raw: any): string[] {
@@ -1000,6 +1001,9 @@ function FieldInput({
   const [isCompressing, setIsCompressing] = useState(false);
   const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(null);
   const hasValue = value !== null && value !== undefined && value !== "";
+  // Nilai dari DB bisa berupa URL absolut atau path tanpa garis miring depan;
+  // keduanya dijawab 400 kalau diteruskan apa adanya sebagai src.
+  const photoPreview = f.tipe === "PHOTO" ? photoSrc(value) : null;
 
   return (
     <div className={`space-y-3 ${disabled ? "opacity-60" : ""}`}>
@@ -1228,10 +1232,10 @@ function FieldInput({
               <Loader2 className="w-4 h-4 animate-spin" />
               Mengompresi foto (mengurangi ukuran ke ~200KB)...
             </div>
-          ) : hasValue ? (
+          ) : photoPreview ? (
             <div className="relative inline-block rounded-2xl overflow-hidden border border-border shadow-subtle group">
               {/* biome-ignore lint/performance/noImgElement: user inspection photo preview */}
-              <img src={value} className="w-48 h-36 object-cover" alt="Foto Inspeksi" />
+              <img src={photoPreview} className="w-48 h-36 object-cover" alt="Foto Inspeksi" />
               <button
                 type="button"
                 onClick={() => {

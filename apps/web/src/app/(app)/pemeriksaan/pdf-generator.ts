@@ -3,6 +3,8 @@
  * Terstruktur, modern, menampilkan visual foto dokumentasi & tanda tangan digital (TTD).
  */
 
+import { photoSrc } from "@/lib/photo-url";
+
 export interface InspectionDetailData {
   id: number;
   templateId?: number;
@@ -45,7 +47,7 @@ export interface InspectionDetailData {
  */
 async function getPhotoDataUrl(url: string, maxWidth = 960, maxHeight = 720): Promise<string | null> {
   if (!url || typeof url !== "string") return null;
-  if (url.startsWith("data:image/")) return url;
+  if (url.startsWith("data:")) return url;
 
   return new Promise((resolve) => {
     const img = new Image();
@@ -591,24 +593,6 @@ export async function generateInspectionPDF(
   const photoUrls: string[] = [];
   const seenPhotoUrls = new Set<string>();
 
-  const normalizePhotoUrl = (raw: unknown): string | null => {
-    if (!raw || typeof raw !== "string") return null;
-    let u = raw.trim();
-    if (!u || u === "-" || u === "null" || u === "undefined" || u === "[]" || u === "{}") return null;
-    if (u.startsWith("data:image/")) return u;
-    u = u.replace(/\\/g, "/");
-    if (/^https?:\/\//i.test(u)) return u;
-    if (u.startsWith("/public/uploads/")) {
-      u = u.replace("/public", "");
-    } else if (u.startsWith("public/uploads/")) {
-      u = `/${u.replace("public/", "")}`;
-    }
-    if (!u.startsWith("/")) {
-      u = `/${u}`;
-    }
-    return u;
-  };
-
   const addPdfPhoto = (raw: unknown) => {
     if (!raw) return;
     if (Array.isArray(raw)) {
@@ -630,7 +614,7 @@ export async function generateInspectionPDF(
         }
       } catch {}
     }
-    const normalized = normalizePhotoUrl(trimmed);
+    const normalized = photoSrc(trimmed);
     if (normalized && !seenPhotoUrls.has(normalized)) {
       seenPhotoUrls.add(normalized);
       photoUrls.push(normalized);

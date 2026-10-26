@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { photoSrc } from "@/lib/photo-url";
 import { calculateInspectionScore, generateInspectionPDF, type InspectionDetailData } from "./pdf-generator";
 
 interface DetailResultModalProps {
@@ -42,10 +43,11 @@ function PhotoCard({
   onPreview: (url: string) => void;
 }) {
   const [hasError, setHasError] = useState(false);
+  const src = photoSrc(photo.url);
 
   return (
     <div
-      onClick={() => onPreview(photo.url)}
+      onClick={() => src && onPreview(src)}
       className="group relative flex flex-col rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden shadow-sm hover:border-[#00A876] transition-all cursor-pointer"
     >
       <div
@@ -53,7 +55,7 @@ function PhotoCard({
           single ? "aspect-[16/10] sm:aspect-[4/3]" : "aspect-[4/3]"
         } bg-[hsl(var(--muted))]/30 overflow-hidden flex items-center justify-center`}
       >
-        {hasError ? (
+        {hasError || !src ? (
           <div className="p-4 flex flex-col items-center justify-center text-center space-y-1.5 text-[hsl(var(--muted-foreground))]">
             <ImageIcon className="w-8 h-8 opacity-40" />
             <span className="text-[11px] font-semibold">Foto tidak dapat dimuat</span>
@@ -63,7 +65,7 @@ function PhotoCard({
           <>
             {/* biome-ignore lint/performance/noImgElement: direct img prevents next/image runtime crash on arbitrary inspection uploads */}
             <img
-              src={photo.url}
+              src={src ?? ""}
               alt={photo.label || "Foto Dokumentasi"}
               loading="lazy"
               decoding="async"
@@ -149,26 +151,13 @@ export function DetailResultModal({
 
     const normalizeUrl = (raw: unknown): string | null => {
       if (!raw || typeof raw !== "string") return null;
-      let u = raw.trim();
-      if (!u || u === "-" || u === "null" || u === "undefined" || u === "[]" || u === "{}") return null;
+      const u = raw.trim();
+      if (!u) return null;
 
       // Tolak jika merupakan tanda tangan yang terdaftar
       if (signatureStringSet.has(u)) return null;
 
-      if (u.startsWith("data:image/")) return u;
-      u = u.replace(/\\/g, "/");
-      if (/^https?:\/\//i.test(u)) return u;
-
-      if (u.startsWith("/public/uploads/")) {
-        u = u.replace("/public", "");
-      } else if (u.startsWith("public/uploads/")) {
-        u = `/${u.replace("public/", "")}`;
-      }
-
-      if (!u.startsWith("/")) {
-        u = `/${u}`;
-      }
-      return u;
+      return photoSrc(u);
     };
 
     const getCanonicalKey = (url: string): string => {
@@ -356,45 +345,7 @@ export function DetailResultModal({
 
   if (!isOpen || !result) return null;
 
-  // Nilai field PHOTO bisa berupa satu path, JSON array, atau daftar dipisah koma.
-  // Ambil URL pertama yang valid agar tidak meminta string mentah ke server (HTTP 400).
-  const firstPhotoUrl = (raw: unknown): string | null => {
-    const candidates: string[] = [];
-    const walk = (val: unknown) => {
-      if (!val) return;
-      if (Array.isArray(val)) {
-        val.forEach(walk);
-        return;
-      }
-      if (typeof val === "object") {
-        Object.values(val as Record<string, unknown>).forEach(walk);
-        return;
-      }
-      const s = String(val).trim();
-      if (!s) return;
-      if (s.startsWith("[") && s.endsWith("]")) {
-        try {
-          const parsed = JSON.parse(s);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(walk);
-            return;
-          }
-        } catch {}
-      }
-      for (const part of s.split(",")) candidates.push(part.trim());
-    };
-    walk(raw);
-    const hit = candidates.find((c) => {
-      if (!c || c === "-" || c === "null" || c === "undefined") return false;
-      if (c.startsWith("data:image/")) return true;
-      if (/^https?:\/\//i.test(c)) return true;
-      return /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(c) || c.includes("/uploads/");
-    });
-    if (!hit) return null;
-    if (hit.startsWith("data:image/") || /^https?:\/\//i.test(hit)) return hit;
-    const noPublic = hit.replace(/^\/?public\//, "/");
-    return noPublic.startsWith("/") ? noPublic : `/${noPublic}`;
-  };
+  const firstPhotoUrl = (raw: unknown): string | null => photoSrc(raw);
 
   const namaSasaran = result.sasaran?.nama || metaText.sarana || result.namaSasaran || "Sasaran Tanpa Nama";
   const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaText.alamat || "Alamat belum diisi";
@@ -787,7 +738,7 @@ export function DetailResultModal({
                                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-black/5">
                                       {/* biome-ignore lint/performance/noImgElement: photo field preview */}
                                       <img
-                                        src={firstPhotoUrl(valObj?.valueString) || ""}
+                                        src={firstPhotoUrl(valObj?.valueString) ?? ""}
                                         alt={f.pertanyaan || "Foto"}
                                         onError={(e) => {
                                           (e.currentTarget as HTMLImageElement).style.display = "none";
