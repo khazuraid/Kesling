@@ -80,7 +80,7 @@ export default function RencanaTahunanPage() {
                 <span className="text-[18px] font-black tabular-nums text-primary leading-none">
                   {data.progressTahunan}%
                 </span>
-                <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
                   Progress
                 </span>
               </span>

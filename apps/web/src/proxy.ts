@@ -2,13 +2,18 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
+import { clientIp } from "@/lib/request-ip";
 import { logSecurityEvent } from "@/lib/security-logger";
 
-const LOGIN_RATE_LIMIT = 5;
+const LOGIN_RATE_LIMIT = 10; // per IP per menit
 const LOGIN_WINDOW = 60_000;
-const MAX_ENTRIES = 1000;
+const MAX_ENTRIES = 10_000;
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
-const API_RATE_LIMIT = 100; // max requests per minute per IP
+// Batas ini per IP, dan satu kantor puskesmas biasanya keluar lewat satu NAT.
+// Angkanya sengaja longgar (hanya menahan banjir permintaan otomatis), bukan
+// alat kuota per pengguna.
+const API_RATE_LIMIT = 1200; // GET/HEAD per IP per menit
+const WRITE_RATE_LIMIT = 300; // POST/PUT/PATCH/DELETE per IP per menit
 const API_WINDOW = 60_000;
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -30,27 +35,36 @@ function cleanupApiEntries() {
   }
 }
 
-/** Global API rate limit — 100 requests per minute per IP */
+/**
+
+ * Global API rate limit per IP+metode (lihat konstanta di atas).
+
+ */
+
 function rateLimitApi(req: NextRequest): NextResponse | null {
   if (!req.nextUrl.pathname.startsWith("/api/")) return null;
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = clientIp(req);
+  // Kunci per-IP per-metode, bukan per-path: sebelumnya penyerang cukup
+  // menyebar permintaan ke banyak endpoint untuk menghindari batas ini.
+  const key = `${ip}:${req.method}`;
   const now = Date.now();
-  const entry = apiRateLimit.get(ip);
+  const entry = apiRateLimit.get(key);
 
   if (!entry || now > entry.resetAt) {
-    apiRateLimit.set(ip, { count: 1, resetAt: now + API_WINDOW });
+    apiRateLimit.set(key, { count: 1, resetAt: now + API_WINDOW });
     cleanupApiEntries();
     return null;
   }
 
   entry.count++;
-  if (entry.count > API_RATE_LIMIT) {
+  const limit = req.method === "GET" || req.method === "HEAD" ? API_RATE_LIMIT : WRITE_RATE_LIMIT;
+  if (entry.count > limit) {
     logSecurityEvent({
       eventType: "RATE_LIMIT",
       ip,
       path: req.nextUrl.pathname,
       userAgent: req.headers.get("user-agent") || undefined,
-      detail: `${entry.count} requests in ${API_WINDOW / 1000}s window`,
+      detail: `${entry.count} ${req.method} requests in ${API_WINDOW / 1000}s window (limit ${limit})`,
     });
     return new NextResponse(JSON.stringify({ error: "Too many requests" }), {
       status: 429,
@@ -63,7 +77,7 @@ function rateLimitApi(req: NextRequest): NextResponse | null {
 function rateLimitLogin(req: NextRequest): NextResponse | null {
   if (req.method !== "POST" || !req.nextUrl.pathname.includes("/api/auth/callback")) return null;
 
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = clientIp(req);
   const now = Date.now();
   const entry = loginAttempts.get(ip);
 
@@ -92,7 +106,7 @@ function rateLimitLogin(req: NextRequest): NextResponse | null {
 
 async function logFailedLogin(req: NextRequest) {
   if (req.method !== "POST" || !req.nextUrl.pathname.includes("/api/auth/callback")) return;
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = clientIp(req);
   const entry = loginAttempts.get(ip);
   if (entry && entry.count >= 3) {
     logSecurityEvent({
@@ -151,42 +165,118 @@ const ADMIN_ONLY_PREFIXES = [
   "/audit-log",
 ];
 
-export default withAuth(async function middleware(req) {
-  // Security: body size check
+/**
+ * Rantai keamanan + kontrol akses. Dipanggil dari dua tempat: ekspor default
+ * (navigasi halaman) dan wrapper API di bawah — matcher /api/** tidak pernah
+ * masuk ke ekspor default, jadi tanpa jalur kedua seluruh rate limit dan
+ * pemeriksaan role di sini tidak akan pernah berjalan untuk route API.
+ */
+async function securityLayer(req: NextRequest): Promise<NextResponse> {
   const sizeLimit = checkBodySize(req);
   if (sizeLimit) return applySecurityHeaders(sizeLimit);
 
-  // Security: global API rate limit
   const apiLimited = rateLimitApi(req);
   if (apiLimited) return applySecurityHeaders(apiLimited);
 
-  // Security: rate limit login
   const limited = rateLimitLogin(req);
   if (limited) return applySecurityHeaders(limited);
 
-  // Security: log failed logins
   logFailedLogin(req);
 
-  // Role-based access
-  const token = await getToken({ req });
-  if (!token) return applySecurityHeaders(NextResponse.next());
   const pathname = req.nextUrl.pathname;
+
+  // Route API tidak boleh memakai cookie sesi untuk akses lintas-situs.
+  const isMutation = req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS";
+  if (pathname.startsWith("/api/") && isMutation) {
+    const origin = req.headers.get("origin");
+    if (origin) {
+      const host = req.headers.get("host");
+      let originHost = "";
+      try {
+        originHost = new URL(origin).host;
+      } catch {
+        return applySecurityHeaders(
+          new NextResponse(JSON.stringify({ error: "Origin tidak valid" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+      if (!host || originHost !== host) {
+        logSecurityEvent({
+          eventType: "SUSPICIOUS",
+          ip: clientIp(req),
+          path: pathname,
+          userAgent: req.headers.get("user-agent") || undefined,
+          detail: `Origin ${origin} tidak cocok dengan host ${host || "-"}`,
+        });
+        return applySecurityHeaders(
+          new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+    }
+  }
+
+  const token = await getToken({ req });
+
+  // Ganti password wajib setelah login pertama: sebelum diganti, permintaan
+  // selain halaman profil & endpoint auth ditolak agar password sementara
+  // tidak bisa dipakai untuk mengoperasikan aplikasi.
+  if (token?.mustChangePassword && pathname.startsWith("/api/") && !API_ALLOWED_WHEN_PASSWORD_STALE(pathname)) {
+    return applySecurityHeaders(
+      new NextResponse(JSON.stringify({ error: "Password harus diganti terlebih dahulu" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  }
+
+  if (!token) return applySecurityHeaders(NextResponse.next());
   const role = token.role as string;
 
+  // Daftar blokir hanya berlaku untuk OPERATOR; ADMIN dan DINKES (pengawas)
+  // tetap boleh membaca halaman maupun endpoint tersebut.
   if (role === "OPERATOR") {
     for (const prefix of ADMIN_ONLY_PREFIXES) {
       if (pathname.startsWith(prefix)) {
+        if (pathname.startsWith("/api/")) {
+          return applySecurityHeaders(
+            new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
         return applySecurityHeaders(NextResponse.redirect(new URL("/?error=forbidden", req.url)));
       }
     }
   }
 
-  const res = NextResponse.next();
-  return applySecurityHeaders(res);
-});
+  return applySecurityHeaders(NextResponse.next());
+}
+
+const API_ALLOWED_WHEN_PASSWORD_STALE = (pathname: string) =>
+  pathname.startsWith("/api/auth") ||
+  pathname.startsWith("/api/profile") ||
+  pathname.startsWith("/api/mobile/v1/auth") ||
+  pathname.startsWith("/api/health");
+
+export default withAuth(securityLayer);
+
+/**
+ * Middleware khusus /api/** — diekspor sebagai named export sehingga Next
+ * menjalankannya untuk jalur API tanpa tabrakan dengan matcher di atas.
+ */
+export async function middleware(req: NextRequest) {
+  return securityLayer(req);
+}
 
 export const config = {
   matcher: [
     "/((?!login|api/|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icon-.*|offline.html|workbox-.*).*)",
+    "/api/:path*",
   ],
 };

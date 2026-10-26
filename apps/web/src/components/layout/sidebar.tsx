@@ -223,7 +223,7 @@ export function SideNav() {
             {(!collapsed || mobileOpen) && (
               <div className="leading-none min-w-0">
                 <p className="text-[13px] font-extrabold tracking-tight truncate text-foreground">Kesling</p>
-                <p className="text-[8px] font-bold text-primary uppercase tracking-[0.22em] mt-0.5">Cirebon</p>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-[0.22em] mt-0.5">Cirebon</p>
               </div>
             )}
           </Link>
@@ -248,7 +248,7 @@ export function SideNav() {
               {!collapsed && (
                 <>
                   <span className="text-[12px] font-medium flex-1 text-left">Cari...</span>
-                  <kbd className="text-[9px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-surface">
+                  <kbd className="text-[11px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-surface">
                     ⌘K
                   </kbd>
                 </>
@@ -267,7 +267,7 @@ export function SideNav() {
           {groups.map((group, gi) => (
             <div key={group.title}>
               {gi > 0 && !collapsed && (
-                <p className="px-3 pt-3.5 pb-1 text-[9px] font-extrabold text-muted-foreground/70 uppercase tracking-[0.22em]">
+                <p className="px-3 pt-3.5 pb-1 text-[11px] font-extrabold text-muted-foreground/70 uppercase tracking-[0.22em]">
                   {group.title}
                 </p>
               )}
@@ -313,7 +313,7 @@ export function SideNav() {
               {!collapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-bold truncate text-foreground">{session?.user?.name || "User"}</p>
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.18em]">{userRole}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em]">{userRole}</p>
                 </div>
               )}
             </Link>

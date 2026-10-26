@@ -17,8 +17,11 @@ export const DELETE = withAuth(async (req: NextRequest, ctx: any) => {
       return NextResponse.json({ error: "Template tidak ditemukan" }, { status: 404 });
     }
 
-    // Otorisasi: hanya admin atau puskesmas pembuat yang boleh menghapus
-    if (role !== "ADMIN" && old.puskesmasId && old.puskesmasId !== pkmId) {
+    // Otorisasi: hanya admin/dinkes, atau puskesmas pemilik template itu sendiri.
+    // Template global (puskesmasId = null) milik Dinas, jadi operator TIDAK boleh
+    // menghapusnya — pemeriksaan `old.puskesmasId &&` sebelumnya membuat guard ini
+    // terlewat persis untuk template global.
+    if (role !== "ADMIN" && role !== "DINKES" && old.puskesmasId !== pkmId) {
       return NextResponse.json(
         { error: "Anda tidak memiliki izin menghapus template milik puskesmas lain" },
         { status: 403 },

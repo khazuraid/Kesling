@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { redis } from "./redis";
+import { clientIp } from "./request-ip";
 import { logSecurityEvent } from "./security-logger";
 
 interface RateLimitConfig {
@@ -9,7 +10,7 @@ interface RateLimitConfig {
 
 export async function rateLimit(req: NextRequest, config: RateLimitConfig = {}) {
   const { windowMs = 60_000, max = 60 } = config;
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = clientIp(req);
   const key = `rl:${ip}:${req.nextUrl.pathname}`;
   const windowSec = Math.ceil(windowMs / 1000);
 

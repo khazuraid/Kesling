@@ -72,17 +72,19 @@ export default function LaporanListPage() {
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-primary leading-none">{categories.length}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">Kategori</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
+              Kategori
+            </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalSub}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
               Sub-kategori
             </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
             <span className="text-[13px] font-black text-primary leading-none mt-1">Terintegrasi</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
               Data Dasar
             </span>
           </span>

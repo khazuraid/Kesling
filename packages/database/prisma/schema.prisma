@@ -18,6 +18,8 @@ model User {
   telegramChatId   String?
   telegramUserId   String?    @unique
   telegramUsername String?
+  /// Akun hasil seed wajib mengganti password sebelum memakai aplikasi.
+  mustChangePassword Boolean  @default(false)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 

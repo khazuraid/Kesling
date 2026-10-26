@@ -258,19 +258,19 @@ export default function DashboardPkmPage() {
                 {achievedCount}
                 <span className="text-[11px] font-bold text-primary/60">/{summary.length}</span>
               </span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
                 Tercapai
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-card bg-amber-500/10 border border-amber-500/20 shadow-subtle">
               <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{deficitCount}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
                 Defisit
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-card bg-rose-500/10 border border-rose-500/20 shadow-subtle">
               <span className="text-[18px] font-black tabular-nums text-rose-600 leading-none">{noDataCount}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-rose-600/80 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-rose-600/80 mt-1">
                 Kosong
               </span>
             </span>
@@ -342,7 +342,7 @@ export default function DashboardPkmPage() {
                             <span className={`text-[18px] font-black tabular-nums leading-none ${valColor}`}>
                               {s.hasData ? `${s.persen.toFixed(1)}%` : "—"}
                             </span>
-                            <span className="text-[8px] font-extrabold text-muted-foreground tracking-[0.15em] mt-1 tabular-nums">
+                            <span className="text-[10px] font-extrabold text-muted-foreground tracking-[0.15em] mt-1 tabular-nums">
                               TGT {s.target}%
                             </span>
                           </div>

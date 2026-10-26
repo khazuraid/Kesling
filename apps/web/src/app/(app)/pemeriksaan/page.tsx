@@ -1743,19 +1743,19 @@ export default function PemeriksaanPage() {
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
               <span className="text-[18px] font-black tabular-nums text-primary leading-none">{templates.length}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
                 Formulir
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
               <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalRiwayat}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
                 Riwayat
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
               <span className="text-[18px] font-black tabular-nums text-primary leading-none">{totalVariabel}</span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
                 Variabel
               </span>
             </span>
@@ -1763,7 +1763,7 @@ export default function PemeriksaanPage() {
               <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 {categories.length}
               </span>
-              <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
                 Kategori
               </span>
             </span>
@@ -1826,11 +1826,11 @@ export default function PemeriksaanPage() {
                                   {tpl.nama}
                                 </h4>
                                 {!tpl.puskesmasId ? (
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
                                     🏛️ Dinkes
                                   </span>
                                 ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
                                     🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
                                   </span>
                                 ) : null}
@@ -1848,7 +1848,7 @@ export default function PemeriksaanPage() {
                               <div className="text-[15px] font-black tabular-nums text-primary leading-none">
                                 {fieldCount}
                               </div>
-                              <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
                                 Variabel
                               </div>
                             </div>
@@ -1967,7 +1967,7 @@ export default function PemeriksaanPage() {
                                   {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
                                 </h4>
                                 <span
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shrink-0 ${
                                     isApproved
                                       ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                                       : "bg-amber-500/10 text-amber-600 border border-amber-500/20"

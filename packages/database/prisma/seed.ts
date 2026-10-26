@@ -154,18 +154,24 @@ async function main() {
     });
   }
 
-  // Seed Admin User
-  const hashedPassword = await hash("admin123", 12);
-  await prisma.user.upsert({
-    where: { email: "admin@dinkes.go.id" },
-    update: {},
-    create: {
-      nama: "Administrator",
-      email: "admin@dinkes.go.id",
-      password: hashedPassword,
-      role: "ADMIN",
-    },
-  });
+  // Seed Admin User — password diambil dari env, TIDAK di-hardcode.
+  // Tanpa SEED_ADMIN_PASSWORD, tidak ada admin yang dibuat.
+  const seedAdminEmail = process.env.SEED_ADMIN_EMAIL || "admin@dinkes.go.id";
+  const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (seedAdminPassword) {
+    await prisma.user.upsert({
+      where: { email: seedAdminEmail },
+      update: {},
+      create: {
+        nama: "Administrator",
+        email: seedAdminEmail,
+        password: await hash(seedAdminPassword, 12),
+        role: "ADMIN",
+      },
+    });
+  } else {
+    console.log("⏭️  SEED_ADMIN_PASSWORD kosong — admin tidak dibuat (password default dihapus).");
+  }
 
   // --- SEED PLATFORM DINAMIS ---
   console.log("🌱 Seeding dynamic platform metadata...");

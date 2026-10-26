@@ -57,7 +57,7 @@ function PhotoCard({
           <div className="p-4 flex flex-col items-center justify-center text-center space-y-1.5 text-[hsl(var(--muted-foreground))]">
             <ImageIcon className="w-8 h-8 opacity-40" />
             <span className="text-[11px] font-semibold">Foto tidak dapat dimuat</span>
-            <span className="text-[9px] opacity-70 truncate max-w-[180px]">{photo.url}</span>
+            <span className="text-[10px] opacity-70 truncate max-w-[180px]">{photo.url}</span>
           </div>
         ) : (
           <>
@@ -77,10 +77,10 @@ function PhotoCard({
         )}
       </div>
       <div className="p-3">
-        <p className="text-[12px] font-bold text-[hsl(var(--foreground))] truncate">
+        <p className="text-[13px] font-bold text-[hsl(var(--foreground))] truncate">
           {photo.label || `Foto #${index + 1}`}
         </p>
-        <span className="text-[10px] text-[hsl(var(--muted-foreground))] block mt-0.5">Dokumentasi Hasil Lapangan</span>
+        <span className="text-[11px] text-[hsl(var(--muted-foreground))] block mt-0.5">Dokumentasi Hasil Lapangan</span>
       </div>
     </div>
   );
@@ -465,14 +465,16 @@ export function DetailResultModal({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20">
                   Detail Pemeriksaan
                 </span>
                 <span className="text-[10px] sm:text-[11px] text-muted-foreground truncate hidden sm:inline">
                   No. #{result.id}
                 </span>
               </div>
-              <h2 className="text-[15px] sm:text-[18px] font-black text-foreground truncate mt-0.5">{namaSasaran}</h2>
+              <h2 className="text-[16px] sm:text-[19px] font-black text-foreground truncate mt-0.5" title={namaSasaran}>
+                {namaSasaran}
+              </h2>
             </div>
           </div>
 
@@ -547,7 +549,7 @@ export function DetailResultModal({
                           <span className="text-[17px] sm:text-[20px] font-black tabular-nums leading-none text-foreground">
                             {scoreData.valueText}
                           </span>
-                          <span className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground mt-1">
+                          <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground mt-1">
                             Skor
                           </span>
                         </div>
@@ -575,13 +577,13 @@ export function DetailResultModal({
                               style={{ width: `${pct}%`, backgroundColor: accent }}
                             />
                           </div>
-                          <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground">
+                          <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground gap-2">
                             <span className="tabular-nums">
                               Perolehan: <strong className="text-foreground font-black">{scoreData.gained}</strong> /{" "}
                               {scoreData.max} Poin
                             </span>
-                            <span className="tabular-nums shrink-0 ml-2">
-                              Ambang {scoreData.op} {scoreData.thresh}%
+                            <span className="tabular-nums shrink-0">
+                              Batas kelulusan {scoreData.op} {scoreData.thresh}%
                             </span>
                           </div>
                         </div>
@@ -609,11 +611,14 @@ export function DetailResultModal({
                       <MIcon className="w-3.5 h-3.5 text-[#00A876]" />
                     </span>
                     <div className="min-w-0">
-                      <span className="block text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                         {meta.label}
                       </span>
-                      <span className="block text-[11px] sm:text-[12px] font-bold text-foreground truncate">
-                        {meta.value}
+                      <span
+                        className="block text-[12px] sm:text-[13px] font-bold text-foreground truncate"
+                        title={meta.value ? String(meta.value) : undefined}
+                      >
+                        {meta.value || "-"}
                       </span>
                     </div>
                   </div>
@@ -670,39 +675,49 @@ export function DetailResultModal({
                 <h4 className="text-[12px] font-black uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-[#00A876]" /> Profil Sasaran Pemeriksaan
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-[12px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-4 text-[13px] [&>div]:min-w-0">
                   <div>
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Nama Tempat / Sasaran</span>
-                    <strong className="text-[hsl(var(--foreground))] font-bold">{namaSasaran}</strong>
+                    <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">
+                      Nama Tempat / Sasaran
+                    </span>
+                    <strong className="text-[hsl(var(--foreground))] font-bold break-words">{namaSasaran}</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Pengelola / Pemilik</span>
-                    <span className="text-[hsl(var(--foreground))] font-semibold">{pengelolaSasaran}</span>
+                    <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">
+                      Pengelola / Pemilik
+                    </span>
+                    <span className="text-[hsl(var(--foreground))] font-semibold break-words">{pengelolaSasaran}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Jenis Sarana</span>
+                    <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">
+                      Jenis Sarana
+                    </span>
                     <span className="text-[hsl(var(--foreground))] font-semibold">
                       {result.sasaran?.subCategory?.nama || template?.subCategory?.nama || "-"}
                     </span>
                   </div>
                   {kontakSasaran && (
                     <div>
-                      <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Kontak / Telepon</span>
-                      <span className="text-[hsl(var(--foreground))] font-semibold flex items-center gap-1">
+                      <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">
+                        Kontak / Telepon
+                      </span>
+                      <span className="text-[hsl(var(--foreground))] font-semibold flex items-center gap-1 break-words">
                         <Phone className="w-3 h-3 text-[#00A876]" /> {kontakSasaran}
                       </span>
                     </div>
                   )}
                   <div className="sm:col-span-2 md:col-span-3">
-                    <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Alamat</span>
-                    <span className="text-[hsl(var(--foreground))] flex items-start gap-1 mt-0.5">
+                    <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">Alamat</span>
+                    <span className="text-[hsl(var(--foreground))] flex items-start gap-1 mt-0.5 break-words">
                       <MapPin className="w-3.5 h-3.5 text-[#00A876] shrink-0 mt-0.5" />
                       {alamatSasaran}
                     </span>
                   </div>
                   {(result.lat && result.lng) || (result.sasaran?.lat && result.sasaran?.lng) ? (
                     <div>
-                      <span className="text-[10px] text-[hsl(var(--muted-foreground))] block">Koordinat GPS</span>
+                      <span className="text-[11px] leading-snug text-[hsl(var(--muted-foreground))] block">
+                        Koordinat GPS
+                      </span>
                       <a
                         href={`https://www.google.com/maps?q=${result.lat || result.sasaran?.lat},${result.lng || result.sasaran?.lng}`}
                         target="_blank"

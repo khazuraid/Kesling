@@ -228,7 +228,7 @@ export function ImportInspectionModal({ open, job, onClose, onMinimize, onApplyR
                       {log.timestamp || "--:--:--"}
                     </span>
                     <span
-                      className={`text-[9px] font-extrabold px-1 rounded select-none shrink-0 pt-0.5 ${
+                      className={`text-[11px] font-extrabold px-1 rounded select-none shrink-0 pt-0.5 ${
                         isErr
                           ? "bg-rose-950 text-rose-400 border border-rose-800"
                           : isWarn

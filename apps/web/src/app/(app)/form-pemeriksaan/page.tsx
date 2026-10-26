@@ -1827,12 +1827,12 @@ export default function FormPemeriksaanPage() {
                               {tpl.nama}
                             </h4>
                             {!tpl.puskesmasId ? (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
                                 🏛️ Dinkes
                               </span>
                             ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
                               <span
-                                className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
                                   currentUserRole === "ADMIN" ||
                                   (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)
                                     ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
@@ -1843,7 +1843,7 @@ export default function FormPemeriksaanPage() {
                               </span>
                             ) : null}
                             {currentUserRole !== "ADMIN" && tpl.puskesmasId && tpl.puskesmasId !== currentUserPkmId && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                                 Publik
                               </span>
                             )}
@@ -1867,7 +1867,7 @@ export default function FormPemeriksaanPage() {
                             <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-foreground">
                               {fieldCount}
                             </div>
-                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                            <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
                               Butir
                             </div>
                           </div>
@@ -1875,7 +1875,7 @@ export default function FormPemeriksaanPage() {
                             <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-primary">
                               {grupCount}
                             </div>
-                            <div className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                            <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
                               Grup
                             </div>
                           </div>
@@ -2232,7 +2232,7 @@ export default function FormPemeriksaanPage() {
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-subtle border border-border text-[10px] font-bold text-foreground"
                       >
                         <strong className="text-primary">{col.code}</strong>
-                        <span className="text-[9px] text-muted-foreground max-w-[80px] truncate hidden sm:inline">
+                        <span className="text-[11px] text-muted-foreground max-w-[80px] truncate hidden sm:inline">
                           {col.label}
                         </span>
                       </span>
@@ -2276,7 +2276,7 @@ export default function FormPemeriksaanPage() {
 
                       {/* Form Tambah Kolom Baru */}
                       <div className="pt-2 border-t border-dashed border-border space-y-1.5">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
                           + Tambah Kolom Baru
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -2320,11 +2320,11 @@ export default function FormPemeriksaanPage() {
                               setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
                               toast.info("Kolom area direset ke standar A s/d H");
                             }}
-                            className="text-[9px] text-muted-foreground hover:text-foreground underline"
+                            className="text-[11px] text-muted-foreground hover:text-foreground underline"
                           >
                             Reset ke Default (A-H)
                           </button>
-                          <span className="text-[9px] font-semibold text-muted-foreground">
+                          <span className="text-[11px] font-semibold text-muted-foreground">
                             Total: {matrixColumns.length} Kolom
                           </span>
                         </div>
@@ -2507,7 +2507,7 @@ export default function FormPemeriksaanPage() {
                   <>
                     <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-surface-subtle border border-border text-[11px]">
                       <div className="min-w-0">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
                           Target Laporan
                         </span>
                         <span className="font-bold text-foreground truncate block">
@@ -2579,7 +2579,7 @@ export default function FormPemeriksaanPage() {
                                 <span className="text-[11px] font-bold text-foreground truncate">{item.label}</span>
                               </div>
                               <span
-                                className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border shrink-0 ${item.badgeClass}`}
+                                className={`text-[11px] font-extrabold uppercase px-1.5 py-0.5 rounded border shrink-0 ${item.badgeClass}`}
                               >
                                 {item.badge}
                               </span>
@@ -2638,7 +2638,7 @@ export default function FormPemeriksaanPage() {
                       <span className="max-w-[120px] truncate">
                         {g.grup === "__META__" ? "Metadata" : g.subbagian || g.area}
                       </span>
-                      <span className="text-[9px] opacity-70">{g.fields.length}</span>
+                      <span className="text-[11px] opacity-70">{g.fields.length}</span>
                     </button>
                   ))}
                 </div>
@@ -2985,7 +2985,7 @@ export default function FormPemeriksaanPage() {
                                     demoteBagianToSub(group.grup, e.target.value);
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="text-[9px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                  className="text-[11px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
                                   title="Jadikan Bagian ini sebagai Subbagian di bawah Bagian lain"
                                 >
                                   <option value="">↳ Jadi Subbagian di...</option>
@@ -3242,12 +3242,12 @@ export default function FormPemeriksaanPage() {
                                               <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
                                             </select>
                                             {field.autoFill === "USER_NAME" && (
-                                              <span className="text-[9px] font-bold text-primary bg-primary-subtle border border-primary/20 px-1.5 py-0.5 rounded">
+                                              <span className="text-[11px] font-bold text-primary bg-primary-subtle border border-primary/20 px-1.5 py-0.5 rounded">
                                                 Nama Petugas
                                               </span>
                                             )}
                                             {field.autoFill === "USER_PUSKESMAS" && (
-                                              <span className="text-[9px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                              <span className="text-[11px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
                                                 Puskesmas
                                               </span>
                                             )}
@@ -3331,7 +3331,7 @@ export default function FormPemeriksaanPage() {
                                               type="button"
                                               onClick={() => convertFieldToBagian(index)}
                                               title="Jadikan pertanyaan ini sebagai Bagian Utama baru"
-                                              className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-surface-subtle hover:bg-primary-subtle hover:text-primary text-muted-foreground border border-dashed border-border transition-colors"
+                                              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-surface-subtle hover:bg-primary-subtle hover:text-primary text-muted-foreground border border-dashed border-border transition-colors"
                                             >
                                               <Sparkles className="w-2.5 h-2.5" /> + Bagian
                                             </button>
@@ -3342,7 +3342,7 @@ export default function FormPemeriksaanPage() {
                                                   if (!e.target.value) return;
                                                   convertFieldToSubbagian(index, e.target.value);
                                                 }}
-                                                className="text-[9px] font-bold bg-surface-subtle border border-dashed border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                                className="text-[11px] font-bold bg-surface-subtle border border-dashed border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
                                                 title="Jadikan pertanyaan ini sebagai Subbagian baru di bawah Bagian pilihan"
                                               >
                                                 <option value="">+ Subbagian di...</option>
@@ -3415,7 +3415,7 @@ export default function FormPemeriksaanPage() {
                                               })}
                                             </div>
                                             {field.targetGolongan && field.targetGolongan !== "ALL" && (
-                                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
+                                              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">
                                                 🎯 Khusus {field.targetGolongan}
                                               </span>
                                             )}
@@ -3423,7 +3423,7 @@ export default function FormPemeriksaanPage() {
                                         )}
 
                                       {field.dependsOn && (
-                                        <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                        <span className="inline-block text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
                                           🔒 Tergantung Butir {field.dependsOn.parentIndex + 1} (
                                           {field.dependsOn.requiredValue === "TRUE" ? "Ya" : "Tidak"})
                                         </span>
@@ -3437,11 +3437,11 @@ export default function FormPemeriksaanPage() {
                                               <span className="text-[10px] font-black text-primary uppercase tracking-wide">
                                                 📊 Bobot Area
                                               </span>
-                                              <span className="text-[9px] text-muted-foreground">
+                                              <span className="text-[11px] text-muted-foreground">
                                                 (Sub-nomor & bobot penalti {matrixColumns.length} kolom)
                                               </span>
                                             </div>
-                                            <div className="flex items-center gap-1 text-[9px]">
+                                            <div className="flex items-center gap-1 text-[11px]">
                                               <button
                                                 type="button"
                                                 onClick={() => {
@@ -3543,7 +3543,7 @@ export default function FormPemeriksaanPage() {
                                               placeholder="Misal: 1, 8.a, II.b"
                                               className="w-24 text-[11px] font-bold bg-surface border border-border px-2 py-0.5 rounded outline-none focus:border-primary text-foreground"
                                             />
-                                            <span className="text-[9px] text-muted-foreground">
+                                            <span className="text-[11px] text-muted-foreground">
                                               (Nomor urut kriteria di lembar kertas formulir)
                                             </span>
                                           </div>
@@ -3569,7 +3569,7 @@ export default function FormPemeriksaanPage() {
                                                       {col.code}
                                                     </span>
                                                     <span
-                                                      className="text-[8px] text-muted-foreground truncate max-w-[60px]"
+                                                      className="text-[10px] text-muted-foreground truncate max-w-[60px]"
                                                       title={col.label}
                                                     >
                                                       {col.label.split(" ")[0]}
@@ -3621,7 +3621,7 @@ export default function FormPemeriksaanPage() {
                                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                                       <div className="flex items-center gap-1.5">
                                         <label className="flex flex-col items-center" title="Wajib diisi">
-                                          <span className="text-[8px] font-bold uppercase text-muted-foreground">
+                                          <span className="text-[10px] font-bold uppercase text-muted-foreground">
                                             Wajib
                                           </span>
                                           <input
@@ -3632,7 +3632,7 @@ export default function FormPemeriksaanPage() {
                                           />
                                         </label>
                                         <label className="flex flex-col items-center" title="Skor maksimal">
-                                          <span className="text-[8px] font-bold uppercase text-muted-foreground">
+                                          <span className="text-[10px] font-bold uppercase text-muted-foreground">
                                             Skor
                                           </span>
                                           <input
@@ -3647,7 +3647,9 @@ export default function FormPemeriksaanPage() {
                                         {field.tipe === "BOOLEAN" && (
                                           <>
                                             <label className="flex flex-col items-center" title="Skor jawaban benar">
-                                              <span className="text-[8px] font-bold uppercase text-emerald-600">B</span>
+                                              <span className="text-[10px] font-bold uppercase text-emerald-600">
+                                                B
+                                              </span>
                                               <input
                                                 type="number"
                                                 value={field.skorBenar ?? 1}
@@ -3658,7 +3660,7 @@ export default function FormPemeriksaanPage() {
                                               />
                                             </label>
                                             <label className="flex flex-col items-center" title="Skor jawaban salah">
-                                              <span className="text-[8px] font-bold uppercase text-rose-500">S</span>
+                                              <span className="text-[10px] font-bold uppercase text-rose-500">S</span>
                                               <input
                                                 type="number"
                                                 value={field.skorSalah ?? 0}
@@ -3669,7 +3671,7 @@ export default function FormPemeriksaanPage() {
                                               />
                                             </label>
                                             <label
-                                              className="flex items-center gap-1 text-[9px] text-muted-foreground cursor-pointer select-none"
+                                              className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer select-none"
                                               title="Izinkan jawaban T/A (Tidak Ada / tidak applicable)"
                                             >
                                               <input
@@ -3690,7 +3692,7 @@ export default function FormPemeriksaanPage() {
                                               ? "Butir dinonaktifkan (klik untuk aktifkan)"
                                               : "Nonaktifkan butir"
                                           }
-                                          className={`px-1.5 py-1 rounded text-[9px] font-bold border transition-colors ${
+                                          className={`px-1.5 py-1 rounded text-[11px] font-bold border transition-colors ${
                                             field.isDisabled
                                               ? "bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800"
                                               : "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"

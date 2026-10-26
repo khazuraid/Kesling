@@ -74,21 +74,23 @@ export default function DataDasarIndexPage() {
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-primary leading-none">{categories.length}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">Kategori</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
+              Kategori
+            </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalSubs}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
               Entitas
             </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-primary leading-none">{totalFields}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">Field</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">Field</span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-foreground leading-none">{totalSync}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
               Sync
             </span>
           </span>
@@ -182,7 +184,7 @@ export default function DataDasarIndexPage() {
                             <span className="text-[15px] font-black tabular-nums leading-none text-foreground block">
                               {subCount}
                             </span>
-                            <span className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
                               Entitas
                             </span>
                           </td>
@@ -194,7 +196,7 @@ export default function DataDasarIndexPage() {
                             >
                               {dataDasarFields.length}
                             </span>
-                            <span className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
                               Field
                             </span>
                           </td>
@@ -206,7 +208,7 @@ export default function DataDasarIndexPage() {
                             >
                               {syncFields.length}
                             </span>
-                            <span className="text-[8px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
                               Sync
                             </span>
                           </td>

@@ -34,7 +34,8 @@ const BULAN = [
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  if (user?.role === "OPERATOR") redirect("/dashboard-pkm");
+  if (!user) redirect("/login");
+  if (user.role === "OPERATOR") redirect("/dashboard-pkm");
 
   const now = new Date();
   const bulan = now.getMonth() + 1;

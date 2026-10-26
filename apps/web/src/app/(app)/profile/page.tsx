@@ -100,8 +100,12 @@ export default function ProfilePage() {
       toast.error("Konfirmasi password tidak cocok");
       return;
     }
-    if (newPassword.length < 6) {
-      toast.error("Password minimal 6 karakter");
+    if (newPassword.length < 8) {
+      toast.error("Password minimal 8 karakter");
+      return;
+    }
+    if (!/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      toast.error("Password harus memuat huruf dan angka");
       return;
     }
     setLoading(true);
@@ -113,6 +117,8 @@ export default function ProfilePage() {
     setLoading(false);
     if (res.ok) {
       toast.success("Password berhasil diubah");
+      // Segarkan token agar flag wajib-ganti-password ikut tercabut.
+      await update({});
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -166,7 +172,7 @@ export default function ProfilePage() {
                 {displayName.charAt(0) || "U"}
               </div>
               <h2 className="text-[15px] font-bold tracking-tight text-text-main">{displayName}</h2>
-              <span className="inline-block mt-2 text-[9px] font-bold text-muted-foreground uppercase tracking-[0.15em] border border-border bg-surface-subtle px-2 py-0.5 rounded-button">
+              <span className="inline-block mt-2 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em] border border-border bg-surface-subtle px-2 py-0.5 rounded-button">
                 {displayRole}
               </span>
             </div>
@@ -306,7 +312,7 @@ export default function ProfilePage() {
                               className="flex items-start gap-3 p-3 rounded-button border border-border bg-surface hover:bg-surface-hover transition-colors shadow-subtle"
                             >
                               <div
-                                className={`w-8 h-8 rounded-button flex items-center justify-center text-[9px] font-bold text-white shrink-0 ${
+                                className={`w-8 h-8 rounded-button flex items-center justify-center text-[11px] font-bold text-white shrink-0 ${
                                   a.action === "CREATE" ? "bg-success" : a.action === "UPDATE" ? "bg-info" : "bg-error"
                                 }`}
                               >
@@ -381,15 +387,15 @@ export default function ProfilePage() {
                       <ul className="space-y-2">
                         <li className="flex items-center gap-3 text-[12px] font-medium text-muted-foreground">
                           <div
-                            className={`w-4 h-4 rounded-button flex items-center justify-center text-[8px] ${newPassword.length >= 6 ? "bg-success text-white" : "bg-muted text-transparent"}`}
+                            className={`w-4 h-4 rounded-button flex items-center justify-center text-[10px] ${newPassword.length >= 8 && /[A-Za-z]/.test(newPassword) && /[0-9]/.test(newPassword) ? "bg-success text-white" : "bg-muted text-transparent"}`}
                           >
                             ✓
                           </div>
-                          Minimal 6 karakter
+                          Minimal 8 karakter, huruf + angka
                         </li>
                         <li className="flex items-center gap-3 text-[12px] font-medium text-muted-foreground">
                           <div
-                            className={`w-4 h-4 rounded-button flex items-center justify-center text-[8px] ${newPassword === confirmPassword && newPassword.length > 0 ? "bg-success text-white" : "bg-muted text-transparent"}`}
+                            className={`w-4 h-4 rounded-button flex items-center justify-center text-[10px] ${newPassword === confirmPassword && newPassword.length > 0 ? "bg-success text-white" : "bg-muted text-transparent"}`}
                           >
                             ✓
                           </div>

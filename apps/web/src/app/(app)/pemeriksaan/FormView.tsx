@@ -439,7 +439,7 @@ export function FormView({
               </button>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-widest text-primary px-1.5 sm:px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20 shrink-0">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-primary px-1.5 sm:px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20 shrink-0">
                     {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
                   </span>
                   <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
@@ -463,13 +463,13 @@ export function FormView({
                 }`}
               >
                 <span className="text-[13px] tabular-nums leading-none">{displayPercentage}</span>
-                <span className="text-[9px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
+                <span className="text-[11px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
               </div>
             </div>
           </div>
 
           {/* Mobile Secondary Row: Compact Progress Info */}
-          <div className="flex sm:hidden items-center justify-between text-[9px] xs:text-[10px] text-muted-foreground font-semibold px-0.5">
+          <div className="flex sm:hidden items-center justify-between text-[11px] xs:text-[10px] text-muted-foreground font-semibold px-0.5">
             <span className="truncate max-w-[190px]">
               Langkah {currentStepIndex + 1}/{steps.length} · {currentStep.title}
             </span>
@@ -491,7 +491,7 @@ export function FormView({
                     {displayPercentage}
                   </span>
                 </div>
-                <div className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold tabular-nums">
+                <div className="text-[11px] sm:text-[10px] text-muted-foreground font-semibold tabular-nums">
                   {liveSkor.gained} / {liveSkor.max} Poin
                 </div>
               </div>
@@ -499,7 +499,7 @@ export function FormView({
               {/* Status Badge */}
               <div className="flex flex-col items-start pl-2 border-l border-border">
                 <span
-                  className={`inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  className={`inline-flex items-center gap-1 text-[11px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     liveSkor.pass ? "bg-primary text-white shadow-xs" : "bg-error text-white shadow-xs"
                   }`}
                 >
@@ -510,7 +510,7 @@ export function FormView({
                   )}
                   <span className="truncate max-w-[85px] sm:max-w-none">{liveSkor.text}</span>
                 </span>
-                <span className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 pl-0.5">
+                <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 pl-0.5">
                   {completionStats.answeredQuestions}/{completionStats.totalQuestions} (
                   {completionStats.percentAnswered}%)
                 </span>
@@ -577,7 +577,7 @@ export function FormView({
                   }`}
                 >
                   <span
-                    className={`flex items-center justify-center w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-black shrink-0 ${
+                    className={`flex items-center justify-center w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full text-[11px] sm:text-[10px] font-black shrink-0 ${
                       isActive
                         ? "bg-white text-primary"
                         : isPassed
@@ -942,7 +942,7 @@ function MatrixAreaInput({
             >
               {/* Kode Kolom */}
               <span
-                className={`text-[9px] font-black uppercase tracking-wider ${
+                className={`text-[11px] font-black uppercase tracking-wider ${
                   isViolated ? "text-rose-100" : isNA ? "text-muted-foreground/50" : "text-muted-foreground"
                 }`}
               >
@@ -964,7 +964,7 @@ function MatrixAreaInput({
 
               {/* Status Ringkas */}
               <span
-                className={`text-[8px] font-bold mt-0.5 truncate max-w-full px-0.5 ${
+                className={`text-[10px] font-bold mt-0.5 truncate max-w-full px-0.5 ${
                   isViolated ? "text-rose-100" : "text-muted-foreground/60"
                 }`}
               >

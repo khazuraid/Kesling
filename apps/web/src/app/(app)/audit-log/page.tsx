@@ -223,7 +223,7 @@ export default function AuditLogPage() {
         <div className="space-y-2.5">
           {changed.map((k) => (
             <div key={k}>
-              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] block mb-1">
+              <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] block mb-1">
                 {k}
               </span>
               <div className="flex flex-wrap gap-2 items-center text-[11px] font-mono">
@@ -502,7 +502,7 @@ export default function AuditLogPage() {
                           )}
                         </div>
                       </div>
-                      <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-button bg-error-light text-error border border-error/25 text-[9px] font-extrabold uppercase tracking-wider">
+                      <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-button bg-error-light text-error border border-error/25 text-[11px] font-extrabold uppercase tracking-wider">
                         {log.path || "API"}
                       </span>
                       <ChevronDown
@@ -516,7 +516,7 @@ export default function AuditLogPage() {
                     {expanded && (
                       <div className="px-5 pb-5 pt-4 space-y-4 border-t border-border">
                         <div>
-                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                             Pesan Error
                           </p>
                           <div className="px-4 py-3 rounded-button bg-error-light border border-error/20 font-mono text-[12px] text-error break-all whitespace-pre-wrap">
@@ -525,7 +525,7 @@ export default function AuditLogPage() {
                         </div>
                         {log.stack ? (
                           <div>
-                            <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                               Stack Trace
                             </p>
                             <pre className="px-4 py-3 rounded-xl bg-slate-950 text-emerald-400 border border-border/40 font-mono text-[10px] overflow-x-auto max-h-[280px] overflow-y-auto whitespace-pre leading-relaxed">
@@ -559,31 +559,31 @@ export default function AuditLogPage() {
               <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle">
                 {isAudit ? (
                   <>
-                    <div className="w-[90px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[90px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Aksi
                     </div>
-                    <div className="w-[150px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[150px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Tabel
                     </div>
-                    <div className="flex-1 text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="flex-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       User
                     </div>
-                    <div className="w-[160px] text-right text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[160px] text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Waktu
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="w-[110px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[110px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Event
                     </div>
-                    <div className="w-[140px] text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[140px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       IP
                     </div>
-                    <div className="flex-1 text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="flex-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Detail
                     </div>
-                    <div className="w-[160px] text-right text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                    <div className="w-[160px] text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                       Waktu
                     </div>
                   </>
@@ -607,7 +607,7 @@ export default function AuditLogPage() {
                             <div className="w-[90px]">
                               <span
                                 className={cn(
-                                  "inline-flex items-center h-6 px-2 rounded-button text-[9px] font-extrabold uppercase tracking-wider",
+                                  "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
                                   meta.chip,
                                 )}
                               >
@@ -618,18 +618,18 @@ export default function AuditLogPage() {
                               <Database className="w-3 h-3 text-muted-foreground shrink-0" />
                               <span className="text-[11px] font-bold text-text-main truncate">{item.tableName}</span>
                               {item.recordId ? (
-                                <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
+                                <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
                                   #{item.recordId}
                                 </span>
                               ) : null}
                             </div>
                             <div className="flex-1 flex items-center gap-2 min-w-0">
-                              <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[9px] font-extrabold shrink-0">
+                              <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
                                 {item.user?.nama?.charAt(0) || "U"}
                               </div>
                               <div className="min-w-0">
                                 <p className="text-[11px] font-bold text-text-main truncate">{item.user?.nama}</p>
-                                <p className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider">
+                                <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                                   {item.user?.role}
                                 </p>
                               </div>
@@ -640,7 +640,7 @@ export default function AuditLogPage() {
                             <div className="w-[110px]">
                               <span
                                 className={cn(
-                                  "inline-flex items-center h-6 px-2 rounded-button text-[9px] font-extrabold uppercase tracking-wider",
+                                  "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
                                   meta.chip,
                                 )}
                               >
@@ -666,7 +666,7 @@ export default function AuditLogPage() {
                                 year: "numeric",
                               })}
                             </p>
-                            <p className="text-[9px] font-bold text-muted-foreground tabular-nums">
+                            <p className="text-[11px] font-bold text-muted-foreground tabular-nums">
                               {new Date(item.createdAt).toLocaleTimeString("id-ID", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -686,10 +686,10 @@ export default function AuditLogPage() {
                           {isAudit ? (
                             <>
                               <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                                <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                                   Detail Perubahan
                                 </span>
-                                <span className="text-[9px] font-medium text-muted-foreground">
+                                <span className="text-[11px] font-medium text-muted-foreground">
                                   {item.tableName} • {item.user?.nama} •{" "}
                                   {new Date(item.createdAt).toLocaleString("id-ID")}
                                 </span>
@@ -702,7 +702,7 @@ export default function AuditLogPage() {
                             <>
                               <div className="flex items-center gap-2 mb-2">
                                 <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-                                <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                                <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                                   Detail Event
                                 </span>
                               </div>

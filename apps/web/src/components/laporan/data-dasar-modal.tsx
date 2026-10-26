@@ -128,7 +128,7 @@ export function DataDasarModal({
               <Building2 className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
               <select
                 value={formPuskesmasId}
                 onChange={(e) => {

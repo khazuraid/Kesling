@@ -171,7 +171,7 @@ export default function UsersPage() {
                     <td className="px-4 py-3 text-[12px] font-medium text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${roleMeta.chip}`}
+                        className={`inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider border ${roleMeta.chip}`}
                       >
                         {roleMeta.label || u.role}
                       </span>

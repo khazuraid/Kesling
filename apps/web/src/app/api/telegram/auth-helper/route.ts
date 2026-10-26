@@ -8,14 +8,18 @@ async function getSetting(key: string) {
   return setting?.value || null;
 }
 
-// Secret validation guard
+// Secret validation guard — FAIL CLOSED.
+// Tanpa secret yang terkonfigurasi, endpoint ini menolak SEMUA permintaan.
+// Sebelumnya fail-open: bila secret kosong, validasi dilewati dan siapa pun
+// bisa memakai action "login" untuk membajak pairing telegramUserId.
 async function validateSecret(req: NextRequest) {
   const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
   const expectedSecret = (await getSetting("telegram_webhook_secret")) || process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (expectedSecret && secretHeader !== expectedSecret) {
+  if (!expectedSecret) {
+    console.error("[telegram/auth-helper] telegram_webhook_secret belum diset — permintaan ditolak.");
     return false;
   }
-  return true;
+  return secretHeader === expectedSecret;
 }
 
 /**

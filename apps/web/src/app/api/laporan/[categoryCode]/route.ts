@@ -1,13 +1,16 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { withLaporanAuth } from "@/lib/api-auth";
 import { cacheGet, cacheInvalidate, cacheSet } from "@/lib/redis";
-import { getCurrentUser } from "@/lib/session";
+import type { getCurrentUser } from "@/lib/session";
+
+type SessionUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
 // GET handler to fetch dynamic reports and values
-export async function GET(req: NextRequest, { params }: { params: Promise<{ categoryCode: string }> }) {
+export const GET = withLaporanAuth(async (req: NextRequest, ctx: any) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { params } = ctx;
+    const user = (req as unknown as { user: SessionUser }).user;
 
     const { categoryCode } = await params;
 
@@ -203,13 +206,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cate
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed to fetch reports" }, { status: 500 });
   }
-}
+});
 
 // POST handler to upsert dynamic reports and values
-export async function POST(req: NextRequest, { params }: { params: Promise<{ categoryCode: string }> }) {
+export const POST = withLaporanAuth(async (req: NextRequest, ctx: any) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { params } = ctx;
+    const user = (req as unknown as { user: SessionUser }).user;
 
     const { categoryCode } = await params;
 
@@ -364,4 +367,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cat
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed to save dynamic report" }, { status: 500 });
   }
-}
+});

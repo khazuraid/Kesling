@@ -217,7 +217,7 @@ export default function PerbandinganPage() {
             {/* Ranking cards list */}
             <div className="space-y-2.5">
               {/* Column header */}
-              <div className="flex items-center gap-4 px-5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="flex items-center gap-4 px-5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
                 <span className="w-8 text-center">Rank</span>
                 <span className="w-48 shrink-0">Puskesmas</span>
                 <span className="flex-1">Skor per kategori</span>

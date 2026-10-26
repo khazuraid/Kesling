@@ -26,7 +26,7 @@ type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
 // ── Shared styles ──
 const inputCls =
   "w-full h-9 px-3 rounded-xl border border-border bg-surface text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all";
-const labelCls = "block text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mb-1.5";
+const labelCls = "block text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mb-1.5";
 const addBtnCls =
   "inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-button bg-primary text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition shrink-0";
 
@@ -729,7 +729,7 @@ export default function LaporanBuilderPage() {
             </span>
             <div className="min-w-0">
               <p className="text-[13px] font-extrabold text-foreground leading-tight truncate">{selectedModule.nama}</p>
-              <p className="text-[9px] font-bold text-muted-foreground font-mono mt-1 truncate">
+              <p className="text-[11px] font-bold text-muted-foreground font-mono mt-1 truncate">
                 {selectedModule.code}
               </p>
             </div>
@@ -758,7 +758,7 @@ export default function LaporanBuilderPage() {
                 </span>
                 {t.count !== undefined && (
                   <span
-                    className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
+                    className={`text-[11px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
                       active ? "bg-primary text-white" : "bg-surface-subtle text-muted-foreground"
                     }`}
                   >
@@ -797,7 +797,7 @@ export default function LaporanBuilderPage() {
             </span>
             <div className="min-w-0">
               <p className="text-[12px] font-extrabold text-foreground truncate leading-tight">{selectedModule.nama}</p>
-              <p className="text-[9px] font-mono text-muted-foreground truncate">{selectedModule.code}</p>
+              <p className="text-[11px] font-mono text-muted-foreground truncate">{selectedModule.code}</p>
             </div>
           </div>
           <button
@@ -824,7 +824,7 @@ export default function LaporanBuilderPage() {
                 {t.label}
                 {t.count !== undefined && (
                   <span
-                    className={`text-[9px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
+                    className={`text-[11px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
                       active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -1315,11 +1315,11 @@ export default function LaporanBuilderPage() {
                         <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_140px] gap-3 items-end">
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <label className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
+                              <label className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
                                 Nama Field
                               </label>
                               {localState.syncToEntityField && (
-                                <span className="text-[8px] px-1.5 py-px rounded-full bg-primary-subtle text-primary border border-primary/20 font-extrabold uppercase tracking-wide">
+                                <span className="text-[10px] px-1.5 py-px rounded-full bg-primary-subtle text-primary border border-primary/20 font-extrabold uppercase tracking-wide">
                                   🔗 {localState.syncToEntityField}
                                 </span>
                               )}

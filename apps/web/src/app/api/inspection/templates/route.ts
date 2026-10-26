@@ -118,7 +118,8 @@ export const POST = withAuth(async (req: NextRequest) => {
       if (!existingTemplate) {
         return NextResponse.json({ error: "Template tidak ditemukan" }, { status: 404 });
       }
-      if (role !== "ADMIN" && existingTemplate.puskesmasId && existingTemplate.puskesmasId !== pkmId) {
+      // Template global (puskesmasId = null) milik Dinas — operator tidak boleh mengubahnya.
+      if (role !== "ADMIN" && role !== "DINKES" && existingTemplate.puskesmasId !== pkmId) {
         return NextResponse.json(
           { error: "Anda tidak memiliki izin mengubah template milik puskesmas lain" },
           { status: 403 },

@@ -79,7 +79,7 @@ export function DesktopHeader() {
         >
           <Search className="w-3.5 h-3.5" />
           <span>Cari fitur / sasaran...</span>
-          <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
+          <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[11px] font-bold text-muted-foreground">
             ⌘K
           </kbd>
         </button>
@@ -98,7 +98,7 @@ export function DesktopHeader() {
             <span className="text-xs font-bold text-foreground leading-tight truncate max-w-[120px]">
               {session?.user?.name || "Sanitarian"}
             </span>
-            <span className="text-[9px] font-semibold text-muted-foreground leading-none uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-muted-foreground leading-none uppercase tracking-wider">
               {(session?.user as any)?.role || "Operator"}
             </span>
           </div>

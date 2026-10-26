@@ -199,25 +199,27 @@ export default function RencanaBulananPage() {
             <span className="text-[18px] font-black tabular-nums text-primary leading-none">
               {data?.progress ?? 0}%
             </span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Progress</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+              Progress
+            </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
               {data?.totalSasaran ?? 0}
             </span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
               Sasaran
             </span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-primary leading-none">{selesaiVal}</span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
           </span>
           <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-amber-500/20 shadow-subtle">
             <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
               {data?.totalTerjadwal ?? 0}
             </span>
-            <span className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
               Terjadwal
             </span>
           </span>
@@ -288,7 +290,7 @@ export default function RencanaBulananPage() {
                             hasSelesai ? "bg-emerald-500" : hasTerjadwal ? "bg-primary" : "bg-border"
                           }`}
                         />
-                        <div className="text-[9px] font-bold truncate text-muted-foreground">
+                        <div className="text-[11px] font-bold truncate text-muted-foreground">
                           {items[0].nama}
                           {items.length > 1 && ` +${items.length - 1}`}
                         </div>
@@ -342,7 +344,7 @@ export default function RencanaBulananPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-[13px] font-bold text-foreground truncate">{item.nama}</span>
                             {item.prioritas === 1 && (
-                              <span className="text-[9px] font-extrabold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">
+                              <span className="text-[11px] font-extrabold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">
                                 PRIORITAS
                               </span>
                             )}

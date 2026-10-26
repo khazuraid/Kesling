@@ -179,7 +179,7 @@ export function LaporanFormModal({
               <Building2 className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
               <select
                 value={formPuskesmasId}
                 onChange={(e) => {
@@ -243,7 +243,7 @@ export function LaporanFormModal({
                             <div>
                               <span className="text-[13px] font-bold text-foreground">{sc.nama}</span>
                               {sc.grup && (
-                                <span className="ml-2 text-[9px] font-bold text-primary uppercase bg-primary-subtle px-2 py-0.5 rounded-full">
+                                <span className="ml-2 text-[11px] font-bold text-primary uppercase bg-primary-subtle px-2 py-0.5 rounded-full">
                                   {sc.grup}
                                 </span>
                               )}

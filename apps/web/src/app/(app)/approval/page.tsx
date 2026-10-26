@@ -297,13 +297,13 @@ export default function ApprovalPage() {
                                     <table className="w-full text-left text-[11px] border-collapse">
                                       <thead className="sticky top-0 z-10 bg-surface-subtle shadow-xs">
                                         <tr className="border-b border-border">
-                                          <th className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[9px] bg-surface-subtle">
+                                          <th className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[11px] bg-surface-subtle">
                                             Entitas/Sasaran
                                           </th>
                                           {l.category.parameters?.map((p: any) => (
                                             <th
                                               key={p.id}
-                                              className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[9px] bg-surface-subtle"
+                                              className="px-3 py-2.5 font-extrabold text-muted-foreground uppercase tracking-wider text-[11px] bg-surface-subtle"
                                             >
                                               {p.nama}
                                             </th>
@@ -337,7 +337,7 @@ export default function ApprovalPage() {
                                       const valObj = l.values.find((v: any) => v.parameterId === p.id);
                                       return (
                                         <div key={p.id} className="space-y-1">
-                                          <span className="block text-[9px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
+                                          <span className="block text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
                                             {p.nama}
                                           </span>
                                           <span className="block text-[13px] font-extrabold tabular-nums text-text-main">
@@ -352,7 +352,7 @@ export default function ApprovalPage() {
 
                               {l.catatan && (
                                 <div className="px-4 py-3 rounded-card border border-error/25 bg-error-light">
-                                  <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-error block mb-1">
+                                  <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-error block mb-1">
                                     Catatan Verifikasi
                                   </span>
                                   <p className="text-[12px] text-text-main">{l.catatan}</p>

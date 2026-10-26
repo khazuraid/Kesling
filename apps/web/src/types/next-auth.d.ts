@@ -6,6 +6,7 @@ declare module "next-auth" {
     role: string;
     puskesmasId: number | null;
     puskesmasNama?: string;
+    mustChangePassword?: boolean;
   }
   interface Session {
     user: {
@@ -24,5 +25,11 @@ declare module "next-auth/jwt" {
     role: string;
     puskesmasId: number | null;
     puskesmasNama?: string;
+    /** Wajib ganti password sebelum memakai aplikasi (akun hasil seed). */
+    mustChangePassword?: boolean;
+    /** Sesi dicabut karena user sudah tidak ada. */
+    disabled?: boolean;
+    /** Cap waktu revalidasi role terakhir. */
+    checkedAt?: number;
   }
 }

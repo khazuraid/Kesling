@@ -61,6 +61,15 @@ console.log(urlStr);
 
 echo "🔍 Connection URL configured: $(echo "$PSQL_URL" | sed 's/:[^@]*@/:***@/')"
 
+# Argumen -v untuk seed: password default tidak lagi di-hardcode di SQL.
+# Tanpa SEED_DEFAULT_PASSWORD_HASH, seed-deploy melewatkan seluruh blok user.
+SEED_PSQL_ARGS=""
+if [ -n "${SEED_DEFAULT_PASSWORD_HASH:-}" ]; then
+  SEED_PSQL_ARGS="-v seed_pw_hash=${SEED_DEFAULT_PASSWORD_HASH}"
+else
+  echo "🔐 SEED_DEFAULT_PASSWORD_HASH kosong — user seed dengan password default dilewati."
+fi
+
 # Run migrations via psql (avoids @prisma/config dependency in runner)
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   MIGRATIONS_DIR="/app/packages/database/prisma/migrations"
@@ -83,7 +92,8 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   for SEED_FILE in /app/packages/database/prisma/seed-complete.sql /app/packages/database/prisma/seed-deploy.sql; do
     if [ -f "$SEED_FILE" ]; then
       echo "🌱 Running seed: $(basename "$SEED_FILE")..."
-      psql "$PSQL_URL" -f "$SEED_FILE" 2>&1 || echo "⚠️ $(basename "$SEED_FILE") completed with warnings (expected if data exists)."
+      # shellcheck disable=SC2086 # SEED_PSQL_ARGS sengaja di-split jadi kata
+      psql "$PSQL_URL" $SEED_PSQL_ARGS -f "$SEED_FILE" 2>&1 || echo "⚠️ $(basename "$SEED_FILE") completed with warnings (expected if data exists)."
       echo "✅ $(basename "$SEED_FILE") done!"
     else
       echo "⚠️ No seed file found at $SEED_FILE, skipping."

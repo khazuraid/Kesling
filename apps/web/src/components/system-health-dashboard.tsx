@@ -216,7 +216,7 @@ export function SystemHealthDashboard() {
                     style={{ height: `${pct}%`, backgroundColor: color }}
                     className="w-full rounded-sm transition-all duration-300"
                   />
-                  <div className="absolute -top-6 hidden group-hover:block bg-slate-900 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow z-10 whitespace-nowrap border border-border/40">
+                  <div className="absolute -top-6 hidden group-hover:block bg-slate-900 text-white text-[11px] font-mono px-1.5 py-0.5 rounded shadow z-10 whitespace-nowrap border border-border/40">
                     {val}ms
                   </div>
                 </div>

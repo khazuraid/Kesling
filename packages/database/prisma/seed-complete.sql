@@ -112,10 +112,9 @@ INSERT INTO jenis_ttu (nama, kategori, urutan, "createdAt", "updatedAt") VALUES
   ('TFU Lainnya', 'NON_PRIORITAS', 8, NOW(), NOW())
 ON CONFLICT (nama, kategori) DO NOTHING;
 
--- Admin User (bcrypt hash for 'admin123')
-INSERT INTO "user" (nama, email, password, role, "createdAt", "updatedAt") VALUES
-  ('Administrator', 'admin@dinkes.go.id', '$2b$12$FZeYFvRifBc/FnTgpzQ8LuP1/D9FlTSb7/wGRUtjMziBjf.k57R/a', 'ADMIN', NOW(), NOW())
-ON CONFLICT (email) DO NOTHING;
+-- Admin user sengaja TIDAK di-seed di sini: password default yang ter-commit
+-- adalah kredensial publik. Buat admin lewat seed-deploy.sql dengan
+-- SEED_DEFAULT_PASSWORD_HASH, atau lewat panel Users.
 
 -- ============================================================
 -- 2. DYNAMIC CATEGORIES

@@ -82,7 +82,7 @@ export function CopyTemplateModal({
               <Building2 className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
               <select
                 value={copyPuskesmasId || ""}
                 onChange={(e) => setCopyPuskesmasId(Number(e.target.value))}
@@ -101,7 +101,7 @@ export function CopyTemplateModal({
 
         {/* Source period */}
         <div className="px-4 py-3.5 rounded-card border border-border bg-surface shadow-subtle">
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1.5 mb-2.5">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-1.5 mb-2.5">
             <Calendar className="w-3 h-3 text-primary" /> Periode Asal
           </p>
           <div className="grid grid-cols-2 gap-2.5">

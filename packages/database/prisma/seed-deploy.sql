@@ -80,23 +80,27 @@ ON CONFLICT (key) DO NOTHING;
 
 -- ============================================================
 -- 2. USERS
---    All passwords: admin123
---    bcrypt hash: $2b$12$FZeYFvRifBc/FnTgpzQ8LuP1/D9FlTSb7/wGRUtjMziBjf.k57R/a
+--    Password TIDAK di-hardcode. User hanya dibuat bila variabel psql
+--    :seed_pw_hash tersedia (di-inject docker-entrypoint.sh dari env
+--    SEED_DEFAULT_PASSWORD_HASH). Bila hash tidak di-inject, blok ini
+--    dilewati — tidak ada akun dengan password default yang dibuat.
 -- ============================================================
 
--- DINKES user
-INSERT INTO "user" (nama, email, password, role, "createdAt", "updatedAt") VALUES
-  ('Dinas Kesehatan', 'dinkes@dinkes.go.id', '$2b$12$FZeYFvRifBc/FnTgpzQ8LuP1/D9FlTSb7/wGRUtjMziBjf.k57R/a', 'DINKES', NOW(), NOW())
+\if :{?seed_pw_hash}
+
+INSERT INTO "user" (nama, email, password, role, "mustChangePassword", "createdAt", "updatedAt") VALUES
+  ('Dinas Kesehatan', 'dinkes@dinkes.go.id', :'seed_pw_hash', 'DINKES', true, NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
--- Sample operator for Kesambi
-INSERT INTO "user" (nama, email, password, role, "puskesmasId", "createdAt", "updatedAt")
+INSERT INTO "user" (nama, email, password, role, "puskesmasId", "mustChangePassword", "createdAt", "updatedAt")
 SELECT 'Operator Kesambi', 'operator@kesambi.go.id',
-       '$2b$12$FZeYFvRifBc/FnTgpzQ8LuP1/D9FlTSb7/wGRUtjMziBjf.k57R/a',
-       'OPERATOR', p.id, NOW(), NOW()
+       :'seed_pw_hash',
+       'OPERATOR', p.id, true, NOW(), NOW()
 FROM puskesmas p
 WHERE p.nama = 'Kesambi'
 ON CONFLICT (email) DO NOTHING;
+
+\endif
 
 -- ============================================================
 -- 3. INSPECTION TEMPLATES + FIELDS (global, puskesmasId = NULL)

@@ -494,7 +494,7 @@ export default function DataDasarSubCatPage() {
                     : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
                 }`}
               >
-                {sc.grup && <span className="text-[9px] font-extrabold opacity-60 uppercase">{sc.grup}</span>}
+                {sc.grup && <span className="text-[11px] font-extrabold opacity-60 uppercase">{sc.grup}</span>}
                 <span>{sc.nama}</span>
               </button>
             ))}

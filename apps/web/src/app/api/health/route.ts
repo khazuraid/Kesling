@@ -2,24 +2,22 @@ import { prisma } from "@apps-kes/database";
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 
+// Endpoint liveness untuk probe container, jadi tetap publik. Namun detail
+// infrastruktur (db/redis mana yang mati) TIDAK lagi dikembalikan — cukup
+// up/down, agar tidak membocorkan topologi. Detail lengkap ada di
+// /api/admin/health yang ber-guard admin.
 export async function GET() {
-  const health: { status: string; db: string; redis: string } = { status: "ok", db: "connected", redis: "connected" };
-  let statusCode = 200;
-
   try {
     await prisma.$queryRaw`SELECT 1`;
   } catch {
-    health.status = "error";
-    health.db = "disconnected";
-    statusCode = 503;
+    return NextResponse.json({ status: "unavailable" }, { status: 503 });
   }
 
   try {
     await redis.ping();
   } catch {
-    health.redis = "disconnected";
-    if (health.status === "ok") health.status = "degraded";
+    return NextResponse.json({ status: "degraded" }, { status: 200 });
   }
 
-  return NextResponse.json(health, { status: statusCode });
+  return NextResponse.json({ status: "ok" }, { status: 200 });
 }

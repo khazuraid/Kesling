@@ -53,7 +53,7 @@ export function ModuleSparkChips({ stats }: { stats: CategoryStat[] }) {
               </div>
               {diff !== 0 && (
                 <span
-                  className={`shrink-0 text-[9px] font-extrabold ${diff > 0 ? "text-emerald-600" : "text-rose-600"}`}
+                  className={`shrink-0 text-[11px] font-extrabold ${diff > 0 ? "text-emerald-600" : "text-rose-600"}`}
                 >
                   {diff > 0 ? "+" : ""}
                   {diff}
@@ -64,7 +64,7 @@ export function ModuleSparkChips({ stats }: { stats: CategoryStat[] }) {
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="text-[26px] font-black tabular-nums leading-none text-foreground">{c.count}</p>
-                <p className="text-[9px] font-bold text-muted-foreground mt-1.5 uppercase tracking-[0.12em]">
+                <p className="text-[11px] font-bold text-muted-foreground mt-1.5 uppercase tracking-[0.12em]">
                   <span className="tabular-nums">{pct}%</span> dari <span className="tabular-nums">{c.pkmCount}</span>{" "}
                   PKM
                 </p>

@@ -423,7 +423,7 @@ export function LaporanTable({
                           const val = vm[buildKey(p.id)];
                           return (
                             <div key={p.id} className="text-right">
-                              <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+                              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
                                 {p.nama}
                               </p>
                               <p
