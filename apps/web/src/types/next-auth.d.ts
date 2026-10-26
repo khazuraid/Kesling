@@ -16,6 +16,7 @@ declare module "next-auth" {
       role: string;
       puskesmasId: number | null;
       puskesmasNama?: string;
+      mustChangePassword?: boolean;
     };
   }
 }

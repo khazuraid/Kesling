@@ -10,6 +10,7 @@ export async function getCurrentUser() {
     name: session.user.name,
     role: session.user.role as "ADMIN" | "OPERATOR" | "DINKES",
     puskesmasId: session.user.puskesmasId,
+    mustChangePassword: Boolean(session.user.mustChangePassword),
   };
 }
 
