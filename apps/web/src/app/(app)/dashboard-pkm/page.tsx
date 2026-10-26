@@ -5,7 +5,6 @@ import { AlertCircle, ArrowUpRight, CheckCircle2, Download, Info, TrendingUp } f
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Card } from "tamagui";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { ComplianceBar } from "@/components/ui/compliance-bar";
 import { EmptyState } from "@/components/ui/empty-state";

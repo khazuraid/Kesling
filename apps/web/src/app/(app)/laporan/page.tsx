@@ -1,10 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Building2, ClipboardList, Droplets, Folder, GlassWater, Home, Toilet, UtensilsCrossed } from "lucide-react";
+import { Building2, Droplets, Folder, GlassWater, Home, Toilet, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Card } from "tamagui";
 
 interface Category {
   id: number;

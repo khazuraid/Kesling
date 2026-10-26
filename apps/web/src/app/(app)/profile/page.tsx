@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();

@@ -25,7 +25,6 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 

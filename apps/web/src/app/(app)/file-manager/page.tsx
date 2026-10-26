@@ -5,7 +5,6 @@ import { Activity, ExternalLink, HardDrive, Image as ImageIcon, RefreshCw, Searc
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
 import { EmptyState } from "@/components/ui/empty-state";
 

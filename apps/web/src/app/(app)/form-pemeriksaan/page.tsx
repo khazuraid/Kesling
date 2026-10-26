@@ -30,7 +30,6 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
 import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
 import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";

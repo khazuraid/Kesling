@@ -5,7 +5,6 @@ import { Calendar, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Cloc
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Card } from "tamagui";
 import { Input } from "@/components/ui/input";
 
 const BULAN_FULL = [

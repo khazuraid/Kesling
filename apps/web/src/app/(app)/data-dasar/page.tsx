@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Building2, Database, Droplets, GlassWater, Home, Settings2, Toilet, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
-import { Card } from "tamagui";
 
 interface Category {
   id: number;

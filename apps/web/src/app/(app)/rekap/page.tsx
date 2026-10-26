@@ -5,7 +5,6 @@ import { Building2, Calendar, ChevronDown, ChevronLeft, ChevronRight, Download }
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
-import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];

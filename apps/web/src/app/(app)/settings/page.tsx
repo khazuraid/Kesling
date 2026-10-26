@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { MasterCrud } from "@/components/master-crud";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
 import { EmptyState } from "@/components/ui/empty-state";

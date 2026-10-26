@@ -7,7 +7,6 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 
 interface Parameter {

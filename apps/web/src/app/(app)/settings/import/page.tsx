@@ -5,7 +5,6 @@ import { AlertCircle, CheckCircle2, ChevronLeft, FileText, Upload, X } from "luc
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "tamagui";
 
 const JENIS_OPTIONS = [
   { value: "tpp", label: "TPP (Tempat Pengelolaan Pangan)" },

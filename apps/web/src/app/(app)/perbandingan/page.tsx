@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Crown } from "lucide-react";
-import { Card } from "tamagui";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { PdfExportButton } from "@/components/pdf-export-button";
 import { EmptyState } from "@/components/ui/empty-state";

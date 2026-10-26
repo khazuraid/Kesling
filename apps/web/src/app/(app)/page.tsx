@@ -12,7 +12,6 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModuleSparkChips } from "@/components/module-spark-chips";
-import { TamaguiCard } from "@/components/ui/tamagui-card";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";

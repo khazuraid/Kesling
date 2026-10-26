@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { Card } from "tamagui";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const BULAN_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
