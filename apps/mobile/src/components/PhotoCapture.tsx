@@ -47,9 +47,9 @@ export function PhotoCapture({
         selectionLimit: max - photos.length,
       });
       if (!res.canceled) {
-        const added = res.assets
-          .filter((a) => a.base64)
-          .map((a) => ({ base64: a.base64!, mimeType: a.mimeType || "image/jpeg" }));
+        const added = res.assets.flatMap((a) =>
+          a.base64 ? [{ base64: a.base64, mimeType: a.mimeType || "image/jpeg" }] : [],
+        );
         onChange([...photos, ...added].slice(0, max));
       }
     } finally {

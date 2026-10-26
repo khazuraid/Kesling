@@ -64,8 +64,8 @@ export default function DraftEditScreen() {
 
   const { data: template, isLoading } = useQuery({
     queryKey: ["template", draft?.templateId],
-    queryFn: () => api.templateDetail(draft?.templateId),
-    enabled: !!draft,
+    queryFn: () => api.templateDetail(draft?.templateId as number),
+    enabled: !!draft?.templateId,
   });
 
   const { data: sasarans } = useQuery({
@@ -106,7 +106,7 @@ export default function DraftEditScreen() {
         signaturePetugas,
         sasaranId: selectedSasaranId,
       });
-      await removeDraft(draft?.localId);
+      if (draft?.localId) await removeDraft(draft.localId);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
