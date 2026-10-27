@@ -149,26 +149,36 @@ export const authOptions: NextAuthOptions = {
         // JWT menyimpan role, jadi perubahan role / penghapusan user tidak langsung
         // berlaku. Revalidasi berkala: bila user sudah tidak ada, tandai token mati
         // agar sesi dicabut pada request berikutnya.
-        const freshUser = await prisma.user.findUnique({
-          where: { id: Number(token.sub) },
-          select: {
-            nama: true,
-            role: true,
-            puskesmasId: true,
-            mustChangePassword: true,
-            puskesmas: { select: { nama: true } },
-          },
-        });
-        if (!freshUser) {
-          token.disabled = true;
-        } else {
-          token.disabled = false;
-          token.name = freshUser.nama;
-          token.role = freshUser.role;
-          token.puskesmasId = freshUser.puskesmasId;
-          token.puskesmasNama = freshUser.puskesmas?.nama;
-          token.mustChangePassword = freshUser.mustChangePassword;
-          token.checkedAt = Date.now();
+        //
+        // Query ini dibungkus try/catch dengan sengaja: kalau kolom tambahan
+        // (mis. mustChangePassword) belum ada di database, seluruh callback jwt
+        // melempar error dan SEMUA permintaan sesi gagal — pengguna tidak bisa
+        // login sama sekali. Lebih baik sesi jalan dengan data token yang sudah
+        // ada, dan dicoba lagi pada revalidasi berikutnya.
+        try {
+          const freshUser = await prisma.user.findUnique({
+            where: { id: Number(token.sub) },
+            select: {
+              nama: true,
+              role: true,
+              puskesmasId: true,
+              mustChangePassword: true,
+              puskesmas: { select: { nama: true } },
+            },
+          });
+          if (!freshUser) {
+            token.disabled = true;
+          } else {
+            token.disabled = false;
+            token.name = freshUser.nama;
+            token.role = freshUser.role;
+            token.puskesmasId = freshUser.puskesmasId;
+            token.puskesmasNama = freshUser.puskesmas?.nama;
+            token.mustChangePassword = freshUser.mustChangePassword;
+            token.checkedAt = Date.now();
+          }
+        } catch (err) {
+          console.error("[auth] revalidasi user gagal — memakai data token yang ada:", err);
         }
       }
 

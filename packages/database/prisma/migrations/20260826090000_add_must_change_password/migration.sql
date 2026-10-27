@@ -1,4 +1,6 @@
 -- Akun yang dibuat dari seed memakai password sementara dan wajib menggantinya.
+-- IF NOT EXISTS wajib: sebagian database sudah punya kolom ini, dan migration
+-- yang gagal di sini membuat seluruh query sesi error (aplikasi jadi 401 terus).
 ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "mustChangePassword" BOOLEAN NOT NULL DEFAULT false;
 
 -- Akun seed yang sudah ada (password default ter-commit) ditandai wajib ganti

@@ -75,14 +75,26 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   MIGRATIONS_DIR="/app/packages/database/prisma/migrations"
   if [ -d "$MIGRATIONS_DIR" ]; then
     echo "📦 Running migrations via psql..."
+    MIGRATION_FAILURES=0
     for migration_dir in "$MIGRATIONS_DIR"/*/; do
       migration_file="$migration_dir/migration.sql"
       if [ -f "$migration_file" ]; then
         migration_name=$(basename "$migration_dir")
         echo "  Applying: $migration_name"
-        psql "$PSQL_URL" -f "$migration_file" 2>&1 || echo "  ⚠️  $migration_name had warnings (may already exist)"
+        if ! psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f "$migration_file" 2>&1; then
+          # Kegagalan migration HARUS terlihat. Sebelumnya error di sini
+          # ditelan oleh `|| echo`, sehingga kolom yang gagal dibuat tidak
+          # ketahuan sampai aplikasi menjalankan query dan gagal saat login.
+          echo "  ❌ $migration_name GAGAL — skema database tertinggal dari kode."
+          MIGRATION_FAILURES=$((MIGRATION_FAILURES + 1))
+        fi
       fi
     done
+    if [ "$MIGRATION_FAILURES" -gt 0 ]; then
+      echo "⚠️  $MIGRATION_FAILURES migration gagal. Aplikasi tetap dijalankan, tetapi"
+      echo "    fitur yang bergantung pada kolom/tabel tersebut akan error sampai"
+      echo "    perbaikannya diterapkan. Periksa pesan error di atas."
+    fi
     echo "✅ Migrations done!"
   else
     echo "⚠️ No migrations directory found, skipping."
