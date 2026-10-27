@@ -100,7 +100,10 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
         fi
 
         echo "  Applying: $migration_name"
-        migration_output=$(psql "$PSQL_URL" -v ON_ERROR_STOP=1 -1 -f "$migration_file" 2>&1)
+        # shellcheck disable=SC2086 # SEED_PSQL_ARGS sengaja di-split jadi kata.
+        # Sebagian migrasi memakai \if :{?seed_pw_hash}; psql berhenti dengan
+        # "variable not defined" bila variabelnya tidak diteruskan di sini.
+        migration_output=$(psql "$PSQL_URL" $SEED_PSQL_ARGS -v ON_ERROR_STOP=1 -1 -f "$migration_file" 2>&1)
         migration_status=$?
 
         if [ "$migration_status" -eq 0 ]; then

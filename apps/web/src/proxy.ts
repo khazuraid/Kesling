@@ -247,9 +247,13 @@ async function securityLayer(req: NextRequest): Promise<NextResponse> {
   const role = token.role as string;
 
   // Daftar blokir hanya berlaku untuk OPERATOR; ADMIN dan DINKES (pengawas)
-  // tetap boleh membaca halaman maupun endpoint tersebut.
+  // tetap boleh membaca halaman maupun endpoint tersebut. GET master puskesmas
+  // dikecualikan: daftar puskesmas bukan data sensitif, dan lima halaman
+  // operator membutuhkannya (penyaring, pemilih puskesmas pemilik sasaran).
+  // Menulisnya tetap ADMIN lewat withAdmin di route-nya.
   if (role === "OPERATOR") {
     for (const prefix of ADMIN_ONLY_PREFIXES) {
+      if (prefix === "/api/master/puskesmas" && req.method === "GET") continue;
       if (pathname.startsWith(prefix)) {
         if (pathname.startsWith("/api/")) {
           return applySecurityHeaders(
