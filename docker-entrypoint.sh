@@ -75,27 +75,61 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   MIGRATIONS_DIR="/app/packages/database/prisma/migrations"
   if [ -d "$MIGRATIONS_DIR" ]; then
     echo "📦 Running migrations via psql..."
+
+    # Daftar migrasi yang sudah diterapkan. Tanpa tabel ini, setiap restart
+    # menjalankan ulang SEMUA migrasi; berkas migrasi lama tidak semuanya
+    # idempoten (banyak CREATE/ALTER tanpa IF NOT EXISTS), sehingga restart
+    # pada database yang sudah terisi akan melaporkan kegagalan yang
+    # menyesatkan — dan itu menutupi kegagalan yang sungguhan.
+    psql "$PSQL_URL" -q -c 'CREATE TABLE IF NOT EXISTS "_prisma_migrations" (migration_name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())' >/dev/null
+
     MIGRATION_FAILURES=0
+    MIGRATION_APPLIED=0
     for migration_dir in "$MIGRATIONS_DIR"/*/; do
       migration_file="$migration_dir/migration.sql"
       if [ -f "$migration_file" ]; then
         migration_name=$(basename "$migration_dir")
-        echo "  Applying: $migration_name"
-        if ! psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f "$migration_file" 2>&1; then
-          # Kegagalan migration HARUS terlihat. Sebelumnya error di sini
-          # ditelan oleh `|| echo`, sehingga kolom yang gagal dibuat tidak
-          # ketahuan sampai aplikasi menjalankan query dan gagal saat login.
-          echo "  ❌ $migration_name GAGAL — skema database tertinggal dari kode."
-          MIGRATION_FAILURES=$((MIGRATION_FAILURES + 1))
+
+        already_applied=$(psql "$PSQL_URL" -tAc "SELECT 1 FROM \"_prisma_migrations\" WHERE migration_name = '$migration_name'" 2>/dev/null | tr -d '[:space:]')
+        if [ "$already_applied" = "1" ]; then
+          continue
         fi
+
+        echo "  Applying: $migration_name"
+        migration_output=$(psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f "$migration_file" 2>&1)
+        migration_status=$?
+
+        if [ "$migration_status" -eq 0 ]; then
+          psql "$PSQL_URL" -q -c "INSERT INTO \"_prisma_migrations\" (migration_name) VALUES ('$migration_name') ON CONFLICT DO NOTHING" >/dev/null
+          MIGRATION_APPLIED=$((MIGRATION_APPLIED + 1))
+          continue
+        fi
+
+        # Database yang sudah terisi tetapi belum punya tabel ledger akan
+        # menjalankan migrasi lama sekali lagi. Migrasi lama tidak semuanya
+        # idempoten, jadi "sudah ada" adalah hasil yang wajar — bukan
+        # kegagalan, dan tidak perlu dilaporkan sebagai error.
+        if printf '%s' "$migration_output" | grep -qE 'already exists|duplicate key value|multiple primary keys|already a '; then
+          psql "$PSQL_URL" -q -c "INSERT INTO \"_prisma_migrations\" (migration_name) VALUES ('$migration_name') ON CONFLICT DO NOTHING" >/dev/null
+          echo "    ↷ dilewati (objek sudah ada)"
+          MIGRATION_APPLIED=$((MIGRATION_APPLIED + 1))
+          continue
+        fi
+
+        # Kegagalan sungguhan HARUS terlihat. Sebelumnya error di sini ditelan
+        # oleh pola fallback echo, sehingga kolom yang gagal dibuat tidak
+        # ketahuan sampai aplikasi menjalankan query lalu gagal saat login.
+        echo "  ❌ $migration_name GAGAL — skema database tertinggal dari kode."
+        printf '%s\n' "$migration_output" | sed 's/^/      /' | head -20
+        MIGRATION_FAILURES=$((MIGRATION_FAILURES + 1))
       fi
     done
+    echo "✅ Migrations done! ($MIGRATION_APPLIED baru, $MIGRATION_FAILURES gagal)"
     if [ "$MIGRATION_FAILURES" -gt 0 ]; then
-      echo "⚠️  $MIGRATION_FAILURES migration gagal. Aplikasi tetap dijalankan, tetapi"
-      echo "    fitur yang bergantung pada kolom/tabel tersebut akan error sampai"
-      echo "    perbaikannya diterapkan. Periksa pesan error di atas."
+      echo "⚠️  Ada $MIGRATION_FAILURES migration gagal. Aplikasi tetap dijalankan,"
+      echo "    tetapi fitur yang bergantung pada kolom/tabel tersebut akan error"
+      echo "    sampai perbaikannya diterapkan. Periksa pesan error di atas."
     fi
-    echo "✅ Migrations done!"
   else
     echo "⚠️ No migrations directory found, skipping."
   fi
