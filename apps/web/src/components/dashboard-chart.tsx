@@ -3,11 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { fetchJson } from "@/lib/fetch-json";
 
 export function DashboardChart() {
   const { data: trendData = [], isLoading } = useQuery<any[]>({
     queryKey: ["dashboard-trend"],
-    queryFn: () => fetch("/api/dashboard/trend").then((r) => r.json()),
+    queryFn: () => fetchJson<any[]>("/api/dashboard/trend"),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });

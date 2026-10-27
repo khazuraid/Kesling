@@ -198,6 +198,11 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.puskesmasId = token.puskesmasId;
         session.user.puskesmasNama = token.puskesmasNama;
+        // Tanpa baris ini getCurrentUser() selalu melaporkan false, sehingga
+        // redirect wajib-ganti-password di layout tidak pernah jalan:
+        // pengguna tertahan di dashboard sementara setiap permintaan API-nya
+        // dijawab 403 oleh middleware.
+        session.user.mustChangePassword = Boolean(token.mustChangePassword);
       }
       return session;
     },

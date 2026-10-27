@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import { fetchJson } from "@/lib/fetch-json";
 
 interface CategoryStat {
   id: number;
@@ -18,7 +19,7 @@ interface CategoryStat {
 export function ModuleSparkChips({ stats }: { stats: CategoryStat[] }) {
   const { data: trendData = [] } = useQuery<any[]>({
     queryKey: ["dashboard-trend"],
-    queryFn: () => fetch("/api/dashboard/trend").then((r) => r.json()),
+    queryFn: () => fetchJson<any[]>("/api/dashboard/trend"),
     staleTime: 60_000,
   });
 

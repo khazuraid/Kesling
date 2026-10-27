@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { fetchJsonOr } from "@/lib/fetch-json";
 
 interface Notification {
   id: number;
@@ -29,10 +30,7 @@ export function NotificationBell({ placement = "bottom" }: { placement?: "top" |
   // Lightweight polling: only unread count every 30s
   const { data: countData } = useQuery({
     queryKey: ["notifications-count"],
-    queryFn: async () => {
-      const res = await fetch("/api/notifications/count");
-      return res.json() as Promise<{ count: number }>;
-    },
+    queryFn: () => fetchJsonOr<{ count: number }>("/api/notifications/count", { count: 0 }),
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
@@ -40,7 +38,7 @@ export function NotificationBell({ placement = "bottom" }: { placement?: "top" |
   // Fetch full list only when dropdown is opened
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: ["notifications"],
-    queryFn: () => fetch("/api/notifications").then((r) => r.json()),
+    queryFn: () => fetchJsonOr<Notification[]>("/api/notifications", []),
     enabled: open,
   });
 

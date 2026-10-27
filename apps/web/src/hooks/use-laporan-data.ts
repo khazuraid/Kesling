@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { fetchJsonOr } from "@/lib/fetch-json";
 import { useLaporanFilter } from "./use-laporan-filter";
 
 export function useLaporanData<T>(jenis: string, apiUrl: string) {
@@ -40,10 +41,10 @@ export function useLaporanData<T>(jenis: string, apiUrl: string) {
 export function useMasterList(apiUrl: string) {
   return useQuery<any[]>({
     queryKey: ["master", apiUrl],
-    queryFn: async () => {
-      const res = await fetch(apiUrl);
-      return res.json();
-    },
+    // Fallback array kosong, bukan error: pemanggil langsung memakai
+    // .filter()/.map(), jadi jawaban 403/500 berbentuk objek membuat seluruh
+    // halaman menjadi layar error.
+    queryFn: () => fetchJsonOr<any[]>(apiUrl, []),
     staleTime: 5 * 60 * 1000, // 5 min
   });
 }
