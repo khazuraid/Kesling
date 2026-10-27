@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
+import { type BaselineKey, baselineParamKey } from "@/lib/sasaran-meta";
 
 interface Parameter {
   id: number;
@@ -295,6 +296,31 @@ export default function DataDasarSubCatPage() {
     setSelectedId(null);
   };
 
+  // Isi kolom Sasaran dari field baseline walaupun operator tidak memasang
+  // "Sinkron ke Field Entitas". Field baseline dibuat Laporan Builder dengan
+  // kode data_dasar_<timestamp>, jadi daftar kode hardcoded tidak pernah
+  // cocok dan kolom alamat/pemilik selalu kosong.
+  const fillSasaranColumns = (dynamicValues: Record<string, unknown> | undefined, form: any) => {
+    const pick = (key: BaselineKey, fallback: string) => {
+      for (const p of baselineParams) {
+        if (baselineParamKey(p) !== key) continue;
+        const v = String(dynamicValues?.[p.code] ?? "").trim();
+        if (v) return v;
+      }
+      return fallback;
+    };
+    const lat = pick("lat", form?.lat ? String(form.lat) : "");
+    const lng = pick("lng", form?.lng ? String(form.lng) : "");
+    return {
+      nama: pick("nama", form?.nama || ""),
+      alamat: pick("alamat", form?.alamat || ""),
+      pemilik: pick("pemilik", form?.pemilik || ""),
+      kontak: pick("kontak", form?.kontak || ""),
+      lat: lat ? Number(lat) : null,
+      lng: lng ? Number(lng) : null,
+    };
+  };
+
   const baselineKey = baselineParams.map((p) => p.code).join("|");
   useEffect(() => {
     if (!selectedId) return;
@@ -353,31 +379,13 @@ export default function DataDasarSubCatPage() {
     onError: (err: any) => toast.error(err.message || "Gagal membuat field default"),
   });
 
-  const getMappedEntityValue = (field: string, fallback = "") => {
-    const mappedParam = baselineParams.find((p) => p.config?.syncToEntityField === field);
-    if (!mappedParam) return fallback;
-    const value = formData.dynamicValues?.[mappedParam.code];
-    return value !== undefined && value !== null && String(value).trim() !== "" ? String(value).trim() : fallback;
-  };
-
-  const getCoreValue = (field: string, legacyKeys: string[], fallback = "") => {
-    const mapped = getMappedEntityValue(field, "");
-    if (mapped) return mapped;
-    for (const key of legacyKeys) {
-      const value = formData.dynamicValues?.[key];
-      if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
-    }
-    return fallback;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const dynamicName = getCoreValue("nama", ["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"]);
-    const firstDynamicValue = Object.values(formData.dynamicValues || {}).find(
-      (v) => v !== undefined && v !== null && String(v).trim() !== "",
-    );
-    const displayName =
-      (baselineParams.length > 0 ? dynamicName || String(firstDynamicValue || "") : formData.nama) || "Data Dasar";
+    // Nama entitas dibaca lewat resolusi key, bukan daftar kode, supaya field
+    // yang baru dibuat Laporan Builder (data_dasar_<timestamp>) ikut terbaca
+    // sebagai nama/alamat/pemilik.
+    const sasaranCols = fillSasaranColumns(formData.dynamicValues, formData);
+    const displayName = sasaranCols.nama || String(formData.nama || "") || "Data Dasar";
 
     if (!formData.subCategoryId && !selectedSubCatId) {
       toast.error("Jenis entitas belum dipilih");
@@ -389,20 +397,14 @@ export default function DataDasarSubCatPage() {
       return;
     }
 
-    const dynamicAlamat = getCoreValue("alamat", ["alamat", "alamat_lengkap"], formData.alamat || "");
-    const dynamicPemilik = getCoreValue("pemilik", ["pemilik", "pengelola", "nama_pemilik"], formData.pemilik || "");
-    const dynamicKontak = getCoreValue("kontak", ["kontak", "telepon", "no_hp", "hp"], formData.kontak || "");
-    const dynamicLat = getCoreValue("lat", ["lat", "latitude"], formData.lat || "");
-    const dynamicLng = getCoreValue("lng", ["lng", "longitude"], formData.lng || "");
-
     saveMutation.mutate({
       ...formData,
       nama: displayName,
-      alamat: dynamicAlamat,
-      pemilik: dynamicPemilik,
-      kontak: dynamicKontak,
-      lat: dynamicLat ? parseFloat(dynamicLat) : null,
-      lng: dynamicLng ? parseFloat(dynamicLng) : null,
+      alamat: sasaranCols.alamat || null,
+      pemilik: sasaranCols.pemilik || null,
+      kontak: sasaranCols.kontak || null,
+      lat: sasaranCols.lat,
+      lng: sasaranCols.lng,
       subCategoryId: formData.subCategoryId || selectedSubCatId,
       puskesmasId: targetPkm,
       dataDinamis: formData.dynamicValues,

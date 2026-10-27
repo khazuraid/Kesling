@@ -35,7 +35,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
-import { sasaranMetaValue } from "@/lib/sasaran-meta";
+import { type BaselineKey, baselineParamKey, sasaranMetaValue } from "@/lib/sasaran-meta";
 import { DetailResultModal } from "./DetailResultModal";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 import { generateInspectionPDF } from "./pdf-generator";
@@ -481,19 +481,20 @@ export default function PemeriksaanPage() {
       return;
     }
 
-    const getMappedEntityValue = (field: string, fallback = "") => {
-      const mappedParam = baselineParams.find((p: any) => p.config?.syncToEntityField === field);
-      if (!mappedParam) return fallback;
-      const value = dynamicValues[mappedParam.code];
-      return value !== undefined && value !== null && String(value).trim() !== "" ? String(value).trim() : fallback;
-    };
-
-    const getCoreValue = (field: string, legacyKeys: string[], fallback = "") => {
-      const mapped = getMappedEntityValue(field, "");
-      if (mapped) return mapped;
-      for (const key of legacyKeys) {
-        const value = dynamicValues[key];
-        if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
+    // Nama/alamat/pemilik dibaca lewat resolusi key (nama parameter), bukan
+    // daftar kode hardcoded: field data dasar dibuat Laporan Builder dengan kode
+    // data_dasar_<timestamp> sehingga daftar kode tidak pernah cocok dan kolom
+    // Sasaran selalu kosong.
+    const pickByKey = (key: BaselineKey, fallback: string) => {
+      const mapped = baselineParams.find((p: any) => p.config?.syncToEntityField === key);
+      if (mapped) {
+        const v = dynamicValues[mapped.code];
+        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
+      }
+      for (const p of baselineParams) {
+        if (baselineParamKey(p) !== key) continue;
+        const v = dynamicValues[p.code];
+        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
       }
       return fallback;
     };
@@ -508,36 +509,18 @@ export default function PemeriksaanPage() {
       }
     }
 
-    const dynamicName = getCoreValue("nama", ["nama", "nama_sarana", "nama_tempat", "nama_usaha", "nama_sasaran"]);
-    const firstDynamicValue = Object.values(dynamicValues || {}).find(
-      (v) => v !== undefined && v !== null && String(v).trim() !== "",
-    );
-    const displayName =
-      (baselineParams.length > 0 ? dynamicName || String(firstDynamicValue || "") : newSasaranForm.nama) ||
-      "Data Dasar";
+    const displayName = pickByKey("nama", String(newSasaranForm.nama || "")) || "Data Dasar";
 
     if (!displayName.trim()) {
       toast.error("Nama wajib diisi (minimal satu field terisi)");
       return;
     }
 
-    const dynamicAlamat = getCoreValue("alamat", ["alamat", "alamat_lengkap"], newSasaranForm.alamat || "");
-    const dynamicPemilik = getCoreValue(
-      "pemilik",
-      ["pemilik", "pengelola", "nama_pemilik"],
-      newSasaranForm.pemilik || "",
-    );
-    const dynamicKontak = getCoreValue("kontak", ["kontak", "telepon", "no_hp", "hp"], newSasaranForm.kontak || "");
-    const dynamicLatStr = getCoreValue(
-      "lat",
-      ["lat", "latitude"],
-      newSasaranForm.lat ? String(newSasaranForm.lat) : "",
-    );
-    const dynamicLngStr = getCoreValue(
-      "lng",
-      ["lng", "longitude"],
-      newSasaranForm.lng ? String(newSasaranForm.lng) : "",
-    );
+    const dynamicAlamat = pickByKey("alamat", newSasaranForm.alamat || "");
+    const dynamicPemilik = pickByKey("pemilik", newSasaranForm.pemilik || "");
+    const dynamicKontak = pickByKey("kontak", newSasaranForm.kontak || "");
+    const dynamicLatStr = pickByKey("lat", newSasaranForm.lat ? String(newSasaranForm.lat) : "");
+    const dynamicLngStr = pickByKey("lng", newSasaranForm.lng ? String(newSasaranForm.lng) : "");
 
     const lat = dynamicLatStr ? parseFloat(dynamicLatStr) : newSasaranForm.lat;
     const lng = dynamicLngStr ? parseFloat(dynamicLngStr) : newSasaranForm.lng;
@@ -664,7 +647,6 @@ export default function PemeriksaanPage() {
     setTanggalPemeriksaan(new Date().toISOString().split("T")[0]);
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
-    const dynamicSource = (sasaran?.dataDinamis || {}) as Record<string, unknown>;
     const bParams =
       targetCategory?.parameters ||
       template.dataDasarCategory?.parameters ||
@@ -690,16 +672,10 @@ export default function PemeriksaanPage() {
 
       if (f.grup === "__META__") {
         // Data dasar bisa berada di Sasaran.dataDinamis (kode parameter sebagai
-        // key), di kolom Sasaran, atau lewat parameter yang dipetakan
-        // syncToParamId. Resolver menangani ketiganya.
-        const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
-        const configuredEntityField = f.config?.syncToEntityField;
-        const parameter = bParams.find(
-          (p: any) => p.code === configuredCode || p.config?.syncToEntityField === configuredEntityField,
-        );
-        const fromDynamic = parameter?.code ? String(dynamicSource[parameter.code] ?? "").trim() : "";
-
-        initMeta[f.id] = fromDynamic || sasaranMetaValue(sasaran, f) || accountDefault;
+        // key — tidak selalu bisa ditebak, mis. data_dasar_<timestamp>), di
+        // kolom Sasaran, atau lewat parameter yang dipetakan syncToParamId.
+        // Resolver mencocokkan field dengan parameter kategorinya.
+        initMeta[f.id] = sasaranMetaValue(sasaran, f, bParams) || accountDefault;
         initVal[f.id] = null;
       } else if (f.tipe === "TEXT" && accountDefault) {
         initVal[f.id] = accountDefault;
@@ -757,9 +733,14 @@ export default function PemeriksaanPage() {
     // membuka hasil lama lalu menyimpannya kembali ikut melengkapi
     // identitasnya; jawaban yang sudah tersimpan tetap menang karena
     // menimpanya pada loop di bawah.
+    const editMetaParams =
+      targetCategory?.parameters ||
+      template.dataDasarCategory?.parameters ||
+      template.subCategory?.category?.parameters ||
+      [];
     template.fields.forEach((f: any) => {
       if (f.grup === "__META__") {
-        initMeta[f.id] = sasaranMetaValue(fullResult.sasaran, f);
+        initMeta[f.id] = sasaranMetaValue(fullResult.sasaran, f, editMetaParams);
       }
       initVal[f.id] = null;
     });

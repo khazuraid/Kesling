@@ -82,6 +82,11 @@ export const GET = withAuth(async (req: NextRequest) => {
         alamat: true,
         pemilik: true,
         kontak: true,
+        // Data dasar dinamis. Tanpa ini riwayat lama menampilkan "-" dan
+        // "Alamat belum diisi": nilainya tidak pernah masuk kolom Sasaran
+        // karena kode parameternya (data_dasar_<timestamp>) tidak dikenali
+        // jalur simpan. Ukurannya kecil — satu objek per sasaran.
+        dataDinamis: true,
         subCategory: { select: { nama: true } },
       },
     },

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
+import { defaultDataDasarCode, defaultDataDasarNama } from "@/lib/sasaran-meta";
 
 type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
 
@@ -885,8 +886,8 @@ export default function LaporanBuilderPage() {
                 onClick={() =>
                   addParamMutation.mutate({
                     categoryId: selectedModule.id,
-                    nama: "Field Data Dasar Baru",
-                    code: `data_dasar_${Date.now()}`,
+                    nama: defaultDataDasarNama(dataDasarParams),
+                    code: defaultDataDasarCode(dataDasarParams),
                     type: "TEXT",
                     required: false,
                     isBaseline: true,

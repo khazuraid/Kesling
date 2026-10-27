@@ -384,8 +384,11 @@ export function DetailResultModal({
   const firstPhotoUrl = (raw: unknown): string | null => photoSrc(raw);
 
   // Identitas sasaran untuk hasil lama yang field __META__-nya tidak pernah
-  // terisi: nilainya ada di Sasaran.dataDinamis (data dasar dinamis).
-  const dynMeta = (label: string) => sasaranMetaValue(result?.sasaran, { pertanyaan: label, config: {} });
+  // terisi: nilainya ada di Sasaran.dataDinamis, dengan kode parameter dari
+  // Laporan Builder (data_dasar_<timestamp>) yang hanya bisa dicocokkan lewat
+  // parameter kategorinya.
+  const metaParams = template?.dataDasarCategory?.parameters || template?.subCategory?.category?.parameters || [];
+  const dynMeta = (label: string) => sasaranMetaValue(result?.sasaran, { pertanyaan: label, config: {} }, metaParams);
 
   const namaSasaran =
     result.sasaran?.nama || metaText.sarana || dynMeta("nama sarana") || result.namaSasaran || "Sasaran Tanpa Nama";

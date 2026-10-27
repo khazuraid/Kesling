@@ -4,6 +4,7 @@
  */
 
 import { photoSrc } from "@/lib/photo-url";
+import { sasaranMetaValue } from "@/lib/sasaran-meta";
 
 export interface InspectionDetailData {
   id: number;
@@ -302,9 +303,22 @@ export async function generateInspectionPDF(
     return hit ? String(hit.valueString).trim() : "";
   };
   const namaSasaran =
-    result.sasaran?.nama || metaPick("nama sarana", "unit sppg") || result.namaSasaran || "Sasaran Tanpa Nama";
-  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaPick("alamat", "lokasi") || "-";
-  const pengelolaSasaran = result.sasaran?.pemilik || metaPick("pengelola", "penanggung jawab", "pemilik") || "-";
+    result.sasaran?.nama ||
+    metaPick("nama sarana", "unit sppg") ||
+    sasaranMetaValue(result.sasaran, { pertanyaan: "nama sarana" }, template?.dataDasarCategory?.parameters) ||
+    result.namaSasaran ||
+    "Sasaran Tanpa Nama";
+  const alamatSasaran =
+    result.sasaran?.alamat ||
+    result.alamatSasaran ||
+    metaPick("alamat", "lokasi") ||
+    sasaranMetaValue(result.sasaran, { pertanyaan: "alamat" }, template?.dataDasarCategory?.parameters) ||
+    "-";
+  const pengelolaSasaran =
+    result.sasaran?.pemilik ||
+    metaPick("pengelola", "penanggung jawab", "pemilik") ||
+    sasaranMetaValue(result.sasaran, { pertanyaan: "pengelola" }, template?.dataDasarCategory?.parameters) ||
+    "-";
   const puskesmasNama = result.puskesmas?.nama || "Puskesmas";
   const petugasNama =
     result.user?.nama || metaPick("petugas", "pemeriksa", "sanitarian") || "Petugas Sanitasi Lingkungan";
