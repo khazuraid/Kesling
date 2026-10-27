@@ -35,6 +35,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
+import { sasaranMetaValue } from "@/lib/sasaran-meta";
 import { DetailResultModal } from "./DetailResultModal";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 import { generateInspectionPDF } from "./pdf-generator";
@@ -688,30 +689,17 @@ export default function PemeriksaanPage() {
       else if (isWilayah && accountPuskesmas) accountDefault = accountPuskesmas;
 
       if (f.grup === "__META__") {
+        // Data dasar bisa berada di Sasaran.dataDinamis (kode parameter sebagai
+        // key), di kolom Sasaran, atau lewat parameter yang dipetakan
+        // syncToParamId. Resolver menangani ketiganya.
         const configuredCode = f.config?.dataDasarCode || f.config?.parameterCode;
         const configuredEntityField = f.config?.syncToEntityField;
         const parameter = bParams.find(
           (p: any) => p.code === configuredCode || p.config?.syncToEntityField === configuredEntityField,
         );
-        const fromDynamic = parameter?.code ? dynamicSource[parameter.code] : "";
+        const fromDynamic = parameter?.code ? String(dynamicSource[parameter.code] ?? "").trim() : "";
 
-        let fallbackSasaran = "";
-        if (q.includes("pemilik") || q.includes("pengelola") || q.includes("penanggung")) {
-          fallbackSasaran = sasaran.pemilik || "";
-        } else if (q.includes("kontak") || q.includes("telp") || q.includes("telepon") || q.includes("hp")) {
-          fallbackSasaran = sasaran.kontak || "";
-        } else if (q.includes("alamat") || q.includes("lokasi")) {
-          fallbackSasaran = sasaran.alamat || "";
-        } else if ((f.tipe === "GPS" || q.includes("gps") || q.includes("koordinat")) && sasaran.lat && sasaran.lng) {
-          fallbackSasaran = `${sasaran.lat},${sasaran.lng}`;
-        } else if (
-          q.includes("nama") &&
-          (q.includes("sarana") || q.includes("tempat") || q.includes("usaha") || q.includes("unit"))
-        ) {
-          fallbackSasaran = sasaran.nama || "";
-        }
-
-        initMeta[f.id] = (fromDynamic || fallbackSasaran || accountDefault) ?? "";
+        initMeta[f.id] = fromDynamic || sasaranMetaValue(sasaran, f) || accountDefault;
         initVal[f.id] = null;
       } else if (f.tipe === "TEXT" && accountDefault) {
         initVal[f.id] = accountDefault;
@@ -763,9 +751,15 @@ export default function PemeriksaanPage() {
 
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
+    // Hasil lama sering tidak membawa alamat/pengelola, sebagian bahkan tidak
+    // terhubung ke Sasaran (sasaranId null) — pada modal keduanya tampil "-"
+    // dan "Alamat belum diisi". Nilai dari Sasaran dipakai sebagai awalan agar
+    // membuka hasil lama lalu menyimpannya kembali ikut melengkapi
+    // identitasnya; jawaban yang sudah tersimpan tetap menang karena
+    // menimpanya pada loop di bawah.
     template.fields.forEach((f: any) => {
       if (f.grup === "__META__") {
-        initMeta[f.id] = "";
+        initMeta[f.id] = sasaranMetaValue(fullResult.sasaran, f);
       }
       initVal[f.id] = null;
     });

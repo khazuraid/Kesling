@@ -4,6 +4,8 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   Download,
   Edit3,
@@ -12,15 +14,17 @@ import {
   ImageIcon,
   Loader2,
   MapPin,
+  MinusCircle,
   PenTool,
   Phone,
   User,
   X,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { photoSrc } from "@/lib/photo-url";
+import { sasaranMetaValue } from "@/lib/sasaran-meta";
 import { calculateInspectionScore, generateInspectionPDF, type InspectionDetailData } from "./pdf-generator";
 
 interface DetailResultModalProps {
@@ -98,7 +102,6 @@ export function DetailResultModal({
   const [activeTab, setActiveTab] = useState<"penilaian" | "foto" | "ttd">("penilaian");
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
-
   const template = result?.template || initialTemplate || {};
 
   const scoreData = useMemo(() => {
@@ -271,6 +274,39 @@ export function DetailResultModal({
     return photos;
   }, [result, template]);
 
+  const previewPhotoIndex = previewPhoto
+    ? Math.max(
+        0,
+        allPhotos.findIndex((p) => p.url === previewPhoto),
+      )
+    : -1;
+  const stepPhoto = (dir: number) => {
+    if (allPhotos.length < 2 || !previewPhoto) return;
+    const next = (previewPhotoIndex + dir + allPhotos.length) % allPhotos.length;
+    setPreviewPhoto(allPhotos[next].url);
+  };
+
+  // Esc menutup lightbox lebih dulu, baru modalnya; panah kiri/kanan berpindah
+  // foto saat lightbox terbuka. Tanpa ini pengguna papan ketik harus mencari
+  // tombol dengan tetikus.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (previewPhoto) setPreviewPhoto(null);
+        else onClose();
+        return;
+      }
+      if (!previewPhoto || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+      if (allPhotos.length < 2) return;
+      e.preventDefault();
+      const next = (previewPhotoIndex + (e.key === "ArrowRight" ? 1 : -1) + allPhotos.length) % allPhotos.length;
+      setPreviewPhoto(allPhotos[next].url);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, previewPhoto, previewPhotoIndex, allPhotos, onClose]);
+
   // Kumpulkan tanda tangan secara aman
   const signatures = useMemo(() => {
     if (!result) return { petugas: null, pemilik: null };
@@ -347,10 +383,16 @@ export function DetailResultModal({
 
   const firstPhotoUrl = (raw: unknown): string | null => photoSrc(raw);
 
-  const namaSasaran = result.sasaran?.nama || metaText.sarana || result.namaSasaran || "Sasaran Tanpa Nama";
-  const alamatSasaran = result.sasaran?.alamat || result.alamatSasaran || metaText.alamat || "Alamat belum diisi";
-  const pengelolaSasaran = result.sasaran?.pemilik || metaText.pengelola || "-";
-  const kontakSasaran = result.sasaran?.kontak;
+  // Identitas sasaran untuk hasil lama yang field __META__-nya tidak pernah
+  // terisi: nilainya ada di Sasaran.dataDinamis (data dasar dinamis).
+  const dynMeta = (label: string) => sasaranMetaValue(result?.sasaran, { pertanyaan: label, config: {} });
+
+  const namaSasaran =
+    result.sasaran?.nama || metaText.sarana || dynMeta("nama sarana") || result.namaSasaran || "Sasaran Tanpa Nama";
+  const alamatSasaran =
+    result.sasaran?.alamat || metaText.alamat || dynMeta("alamat") || result.alamatSasaran || "Alamat belum diisi";
+  const pengelolaSasaran = result.sasaran?.pemilik || metaText.pengelola || dynMeta("pengelola") || "-";
+  const kontakSasaran = result.sasaran?.kontak || dynMeta("kontak");
   const puskesmasNama = result.puskesmas?.nama || "Puskesmas";
   const petugasNama = result.user?.nama || metaText.petugas || "Petugas Pemeriksa";
   const tanggalFormat = result.tanggal
@@ -404,6 +446,37 @@ export function DetailResultModal({
     }
     grpObj.items.push(f);
   });
+
+  // Rekap jawaban: sebelumnya untuk mengetahui berapa butir yang Tidak Sesuai
+  // pengguna harus menggulir seluruh daftar.
+  const tally = { sesuai: 0, tidak: 0, na: 0, kosong: 0 };
+  const questionText = new Map<number, string>();
+  const tallyItems = (items: any[]) => {
+    for (const f of items) {
+      const valObj = (result.values || []).find((v: any) => v.fieldId === f.id);
+      const valStr = String(valObj?.valueString ?? "")
+        .trim()
+        .toUpperCase();
+      questionText.set(f.id, String(f.pertanyaan || ""));
+      if (valStr === "TRUE") tally.sesuai++;
+      else if (valStr === "FALSE") tally.tidak++;
+      else if (valStr === "NA") tally.na++;
+      else tally.kosong++;
+    }
+  };
+  for (const g of groupedFields) tallyItems(g.items);
+
+  // Urutan temuan: butir Tidak Sesuai lebih dulu, mengikuti urutan aslinya.
+  const temuanTidakSesuai = groupedFields.flatMap((g) =>
+    g.items.filter((f: any) => {
+      const valObj = (result.values || []).find((v: any) => v.fieldId === f.id);
+      return (
+        String(valObj?.valueString ?? "")
+          .trim()
+          .toUpperCase() === "FALSE"
+      );
+    }),
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-5 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -621,6 +694,69 @@ export function DetailResultModal({
           {/* TAB 1: PENILAIAN */}
           {activeTab === "penilaian" && (
             <div className="space-y-6">
+              {/* Rekap jawaban — membaca hasil tanpa menggulir seluruh daftar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { label: "Sesuai", value: tally.sesuai, accent: "#00A876", Icon: CheckCircle2 },
+                  { label: "Tidak Sesuai", value: tally.tidak, accent: "#E15A4F", Icon: XCircle },
+                  { label: "Tidak Berlaku", value: tally.na, accent: undefined, Icon: MinusCircle },
+                  { label: "Belum Diisi", value: tally.kosong, accent: undefined, Icon: FileText },
+                ].map((s) => {
+                  const SIcon = s.Icon;
+                  return (
+                    <div
+                      key={s.label}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] min-w-0"
+                    >
+                      <span
+                        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          backgroundColor: s.accent ? `${s.accent}22` : "hsl(var(--muted))",
+                          color: s.accent || "hsl(var(--muted-foreground))",
+                        }}
+                      >
+                        <SIcon className="w-3.5 h-3.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <span className="block text-[15px] font-black tabular-nums leading-none text-[hsl(var(--foreground))]">
+                          {s.value}
+                        </span>
+                        <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mt-0.5 truncate">
+                          {s.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Temuan yang perlu ditindaklanjuti, didahulukan dari daftar */}
+              {temuanTidakSesuai.length > 0 && (
+                <div className="rounded-2xl border border-[#E15A4F]/30 bg-[#E15A4F]/5 overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-[#E15A4F]/20 flex items-center gap-2">
+                    <XCircle className="w-3.5 h-3.5 text-[#E15A4F]" />
+                    <h4 className="text-[12px] font-black uppercase tracking-wider text-[#E15A4F]">
+                      Temuan — {temuanTidakSesuai.length} butir tidak sesuai
+                    </h4>
+                  </div>
+                  <ul className="divide-y divide-[#E15A4F]/15">
+                    {temuanTidakSesuai.map((f: any) => (
+                      <li key={f.id} className="px-4 py-2.5 flex items-start gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#E15A4F] shrink-0 mt-1.5" />
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-semibold text-[hsl(var(--foreground))] leading-snug">
+                            {questionText.get(f.id)}
+                          </p>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                            {f.grup || "Komponen Pemeriksaan"}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Profil Sasaran Detail Card */}
               <div className="p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 space-y-3">
                 <h4 className="text-[12px] font-black uppercase tracking-wider text-[hsl(var(--muted-foreground))] flex items-center gap-2">
@@ -1040,8 +1176,34 @@ export function DetailResultModal({
             <div className="w-full flex items-center justify-between mt-3 px-2 text-white/80">
               <span className="text-[12px] font-medium truncate max-w-[70%]">
                 {allPhotos.find((p) => p.url === previewPhoto)?.label || "Foto Dokumentasi"}
+                {allPhotos.length > 1 && (
+                  <span className="tabular-nums text-white/50">
+                    {" "}
+                    · {previewPhotoIndex + 1}/{allPhotos.length}
+                  </span>
+                )}
               </span>
               <div className="flex items-center gap-2">
+                {allPhotos.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => stepPhoto(-1)}
+                      title="Foto sebelumnya (←)"
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stepPhoto(1)}
+                      title="Foto berikutnya (→)"
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
                 <a
                   href={previewPhoto}
                   target="_blank"
