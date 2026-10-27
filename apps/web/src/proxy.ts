@@ -221,16 +221,26 @@ async function securityLayer(req: NextRequest): Promise<NextResponse> {
 
   const token = await getToken({ req });
 
-  // Ganti password wajib setelah login pertama: sebelum diganti, permintaan
-  // selain halaman profil & endpoint auth ditolak agar password sementara
-  // tidak bisa dipakai untuk mengoperasikan aplikasi.
-  if (token?.mustChangePassword && pathname.startsWith("/api/") && !API_ALLOWED_WHEN_PASSWORD_STALE(pathname)) {
-    return applySecurityHeaders(
-      new NextResponse(JSON.stringify({ error: "Password harus diganti terlebih dahulu" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      }),
-    );
+  // Ganti password wajib setelah login pertama. Dijalankan di sini, bukan di
+  // layout (app), karena /profile juga memakai layout itu — mengalihkan dari
+  // sana membuat /profile mengalihkan ke dirinya sendiri tanpa henti.
+  // Halaman yang boleh dibuka saat password masih sementara dikecualikan
+  // lewat prefix "/profile" dan "/api/profile" di bawah.
+  if (token?.mustChangePassword) {
+    const isApi = pathname.startsWith("/api/");
+    const allowed = isApi ? API_ALLOWED_WHEN_PASSWORD_STALE(pathname) : PAGE_ALLOWED_WHEN_PASSWORD_STALE(pathname);
+    if (!allowed) {
+      if (isApi) {
+        return applySecurityHeaders(
+          new NextResponse(JSON.stringify({ error: "Password harus diganti terlebih dahulu" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+      const target = new URL("/profile?wajib-ganti-password=1", req.url);
+      return applySecurityHeaders(NextResponse.redirect(target));
+    }
   }
 
   if (!token) return applySecurityHeaders(NextResponse.next());
@@ -262,6 +272,12 @@ const API_ALLOWED_WHEN_PASSWORD_STALE = (pathname: string) =>
   pathname.startsWith("/api/profile") ||
   pathname.startsWith("/api/mobile/v1/auth") ||
   pathname.startsWith("/api/health");
+
+// Halaman yang boleh dibuka selagi password masih sementara. /profile wajib
+// ada di daftar, kalau tidak pengalihannya menjadi loop; /login ikut walau
+// matcher tidak mengarahkannya ke sini, sebagai jaring pengaman.
+const PAGE_ALLOWED_WHEN_PASSWORD_STALE = (pathname: string) =>
+  pathname === "/profile" || pathname.startsWith("/profile/") || pathname.startsWith("/login");
 
 export default securityLayer;
 

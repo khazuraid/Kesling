@@ -1,20 +1,18 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CommandPalette } from "@/components/command-palette";
 import { KeyboardHints } from "@/components/keyboard-hints";
 import { DesktopHeader } from "@/components/layout/desktop-header";
 import { SideNav } from "@/components/layout/sidebar";
 import { SidebarOffset } from "@/components/layout/sidebar-offset";
-import { getCurrentUser } from "@/lib/session";
 
 /**
- * Akun seed login dengan password sementara dan wajib menggantinya. Server
- * menolak seluruh API dengan 403 sebelum password diganti, jadi tanpa
- * pengalihan ini pengguna hanya melihat dashboard yang gagal memuat data.
+ * Pengalihan wajib-ganti-password TIDAK di sini. Layout ini juga membungkus
+ * halaman /profile, sehingga pengalihan ke /profile akan memicu layout yang
+ * sama untuk mengalihkan lagi — tanpa henti (ERR_TOO_MANY_REDIRECTS).
+ * Pengalihannya ada di proxy.ts, yang memegang pathname sehingga bisa
+ * mengecualikan halaman tujuan itu sendiri.
  */
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
-  if (user?.mustChangePassword) redirect("/profile?wajib-ganti-password=1");
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>;
 }
 
