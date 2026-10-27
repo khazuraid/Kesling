@@ -1,14 +1,18 @@
 #!/bin/sh
 set -e
 
-# Print masked environment variables for debugging
+# Status env untuk debugging. HANYA jumlah karakter yang dicetak, tidak pernah
+# nilainya: log container bisa dibaca siapa pun yang punya akses ke dashboard
+# hosting, dan versi sebelumnya membocorkan NEXTAUTH_SECRET, CRON_SECRET,
+# POSTGRES_PASSWORD, serta REDIS_PASSWORD dalam bentuk polos — cukup untuk
+# memalsukan sesi login siapa pun.
 node -e "
 const envs = process.env;
 for (const key in envs) {
   if (key.includes('URL') || key.includes('PASSWORD') || key.includes('SECRET') || key.includes('POSTGRES') || key.includes('DB')) {
     const val = envs[key];
-    const masked = val ? val.replace(/:[^@]*@/g, ':***@') : 'undefined/empty';
-    console.log('🔍 Env: ' + key + ' = ' + masked);
+    const status = val === undefined ? 'undefined' : val === '' ? 'KOSONG' : 'terisi:' + val.length + ' karakter';
+    console.log('🔍 Env: ' + key + ' = ' + status);
   }
 }
 "
@@ -96,7 +100,7 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
         fi
 
         echo "  Applying: $migration_name"
-        migration_output=$(psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f "$migration_file" 2>&1)
+        migration_output=$(psql "$PSQL_URL" -v ON_ERROR_STOP=1 -1 -f "$migration_file" 2>&1)
         migration_status=$?
 
         if [ "$migration_status" -eq 0 ]; then
