@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
-import { type BaselineKey, baselineParamKey } from "@/lib/sasaran-meta";
+import { sasaranColumnsFromDynamic } from "@/lib/sasaran-meta";
 
 interface Parameter {
   id: number;
@@ -296,31 +296,6 @@ export default function DataDasarSubCatPage() {
     setSelectedId(null);
   };
 
-  // Isi kolom Sasaran dari field baseline walaupun operator tidak memasang
-  // "Sinkron ke Field Entitas". Field baseline dibuat Laporan Builder dengan
-  // kode data_dasar_<timestamp>, jadi daftar kode hardcoded tidak pernah
-  // cocok dan kolom alamat/pemilik selalu kosong.
-  const fillSasaranColumns = (dynamicValues: Record<string, unknown> | undefined, form: any) => {
-    const pick = (key: BaselineKey, fallback: string) => {
-      for (const p of baselineParams) {
-        if (baselineParamKey(p) !== key) continue;
-        const v = String(dynamicValues?.[p.code] ?? "").trim();
-        if (v) return v;
-      }
-      return fallback;
-    };
-    const lat = pick("lat", form?.lat ? String(form.lat) : "");
-    const lng = pick("lng", form?.lng ? String(form.lng) : "");
-    return {
-      nama: pick("nama", form?.nama || ""),
-      alamat: pick("alamat", form?.alamat || ""),
-      pemilik: pick("pemilik", form?.pemilik || ""),
-      kontak: pick("kontak", form?.kontak || ""),
-      lat: lat ? Number(lat) : null,
-      lng: lng ? Number(lng) : null,
-    };
-  };
-
   const baselineKey = baselineParams.map((p) => p.code).join("|");
   useEffect(() => {
     if (!selectedId) return;
@@ -384,7 +359,7 @@ export default function DataDasarSubCatPage() {
     // Nama entitas dibaca lewat resolusi key, bukan daftar kode, supaya field
     // yang baru dibuat Laporan Builder (data_dasar_<timestamp>) ikut terbaca
     // sebagai nama/alamat/pemilik.
-    const sasaranCols = fillSasaranColumns(formData.dynamicValues, formData);
+    const sasaranCols = sasaranColumnsFromDynamic(formData.dynamicValues, baselineParams, formData);
     const displayName = sasaranCols.nama || String(formData.nama || "") || "Data Dasar";
 
     if (!formData.subCategoryId && !selectedSubCatId) {

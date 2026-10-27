@@ -222,3 +222,120 @@ export function defaultDataDasarCode(existing?: any[] | null): string {
   }
   return code;
 }
+
+export type SasaranIdentity = {
+  nama: string;
+  alamat: string;
+  pemilik: string;
+  kontak: string;
+  petugas: string;
+  sarana: string;
+  lat: number | null;
+  lng: number | null;
+};
+
+/**
+ * Nilai identitas dari field kuesioner bergrup __META__.
+ *
+ * Dibatasi ke grup itu agar butir checklist (mis. "Lokasi bebas dari
+ * pencemaran") tidak tersalin jadi alamat. Jawaban boolean juga dibuang karena
+ * field __META__ bisa berpasangan dengan penanda TRUE/FALSE.
+ */
+function pickMeta(values: any[], fields: any[], ...keys: string[]): string {
+  for (const v of values || []) {
+    const field = v?.field || fields.find((f: any) => f?.id === v?.fieldId);
+    if (String(field?.grup ?? "") !== "__META__") continue;
+    const q = String(field?.pertanyaan ?? "").toLowerCase();
+    if (!keys.some((k) => q.includes(k))) continue;
+    const text = String(v?.valueString ?? "").trim();
+    if (!text || /^(TRUE|FALSE|NA)$/i.test(text)) continue;
+    return text;
+  }
+  return "";
+}
+
+/**
+ * Identitas sasaran untuk ditampilkan maupun dicetak, dari semua sumber yang
+ * ada.
+ *
+ * Tiga sumber dipakai berurutan karena masing-masing pernah menjadi
+ * satu-satunya yang terisi: kolom Sasaran, field __META__ template, dan nilai
+ * data dasar di Sasaran.dataDinamis berkode data_dasar_<timestamp> (hasil
+ * Laporan Builder, yang tidak pernah mengalir ke kolom Sasaran). Sebelumnya
+ * urutan ini hidup terpisah di modal detail dan generator PDF, dan keduanya
+ * berbeda — alamat yang sama bisa tampil lain di layar dan di berita acara.
+ */
+export function resolveSasaranIdentity(result: any, template?: any): SasaranIdentity {
+  const fields = template?.fields || result?.template?.fields || [];
+  const values = result?.values || [];
+  const sasaran = result?.sasaran || null;
+  const params = template?.dataDasarCategory?.parameters || template?.subCategory?.category?.parameters || [];
+  const dyn = (label: string) => sasaranMetaValue(sasaran, { pertanyaan: label, config: {} }, params);
+
+  const lat = Number(result?.lat ?? sasaran?.lat);
+  const lng = Number(result?.lng ?? sasaran?.lng);
+
+  return {
+    nama:
+      sasaran?.nama ||
+      pickMeta(values, fields, "nama sarana", "unit sppg") ||
+      dyn("nama sarana") ||
+      result?.namaSasaran ||
+      "",
+    alamat:
+      sasaran?.alamat ||
+      pickMeta(values, fields, "alamat", "lokasi", "tempat") ||
+      dyn("alamat") ||
+      result?.alamatSasaran ||
+      "",
+    pemilik:
+      sasaran?.pemilik ||
+      pickMeta(values, fields, "pengelola", "penanggung jawab", "pemilik") ||
+      dyn("pengelola") ||
+      "",
+    kontak: sasaran?.kontak || pickMeta(values, fields, "kontak", "telepon", "no hp") || dyn("kontak") || "",
+    petugas: result?.user?.nama || pickMeta(values, fields, "petugas", "pemeriksa", "sanitarian") || "",
+    sarana: sasaran?.subCategory?.nama || template?.subCategory?.nama || "",
+    lat: Number.isFinite(lat) && lat !== 0 ? lat : null,
+    lng: Number.isFinite(lng) && lng !== 0 ? lng : null,
+  };
+}
+
+/**
+ * Isi kolom Sasaran dari field data dasar, memakai pemetaan key — bukan daftar
+ * kode hardcoded. Tanpa ini field baseline bernama data_dasar_<timestamp> dari
+ * Laporan Builder tidak pernah mengalir ke Sasaran.alamat/pemilik/pemilik, dan
+ * seluruh tampilan riwayat jatuh ke "-".
+ *
+ * `form` adalah nilai kolom yang sudah ada di form, dipakai sebagai cadangan
+ * agar entri lama tetap dapat disimpan walaupun field dynamicnya kosong.
+ */
+export function sasaranColumnsFromDynamic<T extends Record<string, any>>(
+  dynamicValues: Record<string, unknown> | null | undefined,
+  params: any[] | null | undefined,
+  form?: T | null,
+) {
+  const pick = (key: BaselineKey, fallback = "") => {
+    for (const p of params || []) {
+      const isMapped = String(p?.config?.syncToEntityField ?? p?.syncToEntityField ?? "") === key;
+      if (!isMapped && baselineParamKey(p) !== key) continue;
+      const v = String(dynamicValues?.[p.code] ?? "").trim();
+      if (v) return v;
+    }
+    return fallback;
+  };
+
+  const latRaw = pick("lat", form?.lat !== undefined && form?.lat !== null ? String(form.lat) : "");
+  const lngRaw = pick("lng", form?.lng !== undefined && form?.lng !== null ? String(form.lng) : "");
+  const lat = Number(latRaw);
+  const lng = Number(lngRaw);
+
+  return {
+    nama: pick("nama", String(form?.nama ?? "")),
+    alamat: pick("alamat", String(form?.alamat ?? "")),
+    pemilik: pick("pemilik", String(form?.pemilik ?? "")),
+    kontak: pick("kontak", String(form?.kontak ?? "")),
+    lat: latRaw && Number.isFinite(lat) ? lat : null,
+    lng: lngRaw && Number.isFinite(lng) ? lng : null,
+  };
+}

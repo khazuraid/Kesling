@@ -31,12 +31,12 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
-import { type BaselineKey, baselineParamKey, sasaranMetaValue } from "@/lib/sasaran-meta";
-import { DetailResultModal } from "./DetailResultModal";
+import { sasaranColumnsFromDynamic, sasaranMetaValue } from "@/lib/sasaran-meta";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 import { generateInspectionPDF } from "./pdf-generator";
 
@@ -81,6 +81,7 @@ function getSasaranIcon(subCatName?: string, nama?: string) {
 
 export default function PemeriksaanPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const userRole = (session?.user as any)?.role;
   const userPkmId = (session?.user as any)?.puskesmasId;
   const { data: puskesmasList = [] } = usePuskesmasList();
@@ -90,8 +91,6 @@ export default function PemeriksaanPage() {
   const [sasaranSearch, setSasaranSearch] = useState("");
   const [sasaranCategoryFilter, setSasaranCategoryFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [detailModalResult, setDetailModalResult] = useState<any | null>(null);
-  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [formValues, setFormValues] = useState<Record<number, any>>({});
   const [metaValues, setMetaValues] = useState<Record<number, any>>({});
   const [tanggalPemeriksaan, setTanggalPemeriksaan] = useState<string>(getTodayLocalDate());
@@ -200,6 +199,27 @@ export default function PemeriksaanPage() {
   const paginatedResults = riwayatData.data || [];
   const totalRiwayat = riwayatData.total ?? 0;
   const totalRiwayatPages = Math.max(1, riwayatData.totalPages || 1);
+
+  // Halaman detail berada di rute sendiri, sedangkan form editnya hidup di
+  // sini. Tombol "Edit Pemeriksaan" di sana karena itu kembali ke daftar
+  // membawa ?edit=<id>, dan efek ini yang membuka formnya.
+  const editParam = searchParams.get("edit");
+  const handledEditParam = useRef<string | null>(null);
+  useEffect(() => {
+    if (searchParams.get("tab") !== "riwayat") return;
+    setActiveTab("riwayat");
+  }, [searchParams]);
+  useEffect(() => {
+    if (!editParam || handledEditParam.current === editParam) return;
+    if (isLoadingRiwayat) return;
+    // Nilai detail lengkap tidak ada di proyeksi ringan daftar; handleEditResult
+    // memuatnya sendiri lewat /api/inspection/results/[id].
+    const row = paginatedResults.find((r: any) => String(r.id) === editParam);
+    if (!row) return;
+    handledEditParam.current = editParam;
+    setActiveTab("riwayat");
+    void handleEditResult(row);
+  }, [editParam, isLoadingRiwayat, paginatedResults]);
 
   // Pagination & Filtering
   const filteredTemplates = useMemo(() => {
@@ -485,20 +505,6 @@ export default function PemeriksaanPage() {
     // daftar kode hardcoded: field data dasar dibuat Laporan Builder dengan kode
     // data_dasar_<timestamp> sehingga daftar kode tidak pernah cocok dan kolom
     // Sasaran selalu kosong.
-    const pickByKey = (key: BaselineKey, fallback: string) => {
-      const mapped = baselineParams.find((p: any) => p.config?.syncToEntityField === key);
-      if (mapped) {
-        const v = dynamicValues[mapped.code];
-        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
-      }
-      for (const p of baselineParams) {
-        if (baselineParamKey(p) !== key) continue;
-        const v = dynamicValues[p.code];
-        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
-      }
-      return fallback;
-    };
-
     if (baselineParams.length > 0) {
       const missing = baselineParams
         .filter((p: any) => p.required && (!dynamicValues[p.code] || String(dynamicValues[p.code]).trim() === ""))
@@ -509,31 +515,23 @@ export default function PemeriksaanPage() {
       }
     }
 
-    const displayName = pickByKey("nama", String(newSasaranForm.nama || "")) || "Data Dasar";
+    const cols = sasaranColumnsFromDynamic(dynamicValues, baselineParams, newSasaranForm);
+    const displayName = cols.nama || "Data Dasar";
 
     if (!displayName.trim()) {
       toast.error("Nama wajib diisi (minimal satu field terisi)");
       return;
     }
 
-    const dynamicAlamat = pickByKey("alamat", newSasaranForm.alamat || "");
-    const dynamicPemilik = pickByKey("pemilik", newSasaranForm.pemilik || "");
-    const dynamicKontak = pickByKey("kontak", newSasaranForm.kontak || "");
-    const dynamicLatStr = pickByKey("lat", newSasaranForm.lat ? String(newSasaranForm.lat) : "");
-    const dynamicLngStr = pickByKey("lng", newSasaranForm.lng ? String(newSasaranForm.lng) : "");
-
-    const lat = dynamicLatStr ? parseFloat(dynamicLatStr) : newSasaranForm.lat;
-    const lng = dynamicLngStr ? parseFloat(dynamicLngStr) : newSasaranForm.lng;
-
     createSasaranMut.mutate({
       nama: displayName.trim(),
       subCategoryId: resolvedSubCatId,
       puskesmasId: targetPkm,
-      alamat: dynamicAlamat.trim() || null,
-      pemilik: dynamicPemilik.trim() || null,
-      kontak: dynamicKontak.trim() || null,
-      lat: Number.isFinite(lat) ? lat : null,
-      lng: Number.isFinite(lng) ? lng : null,
+      alamat: cols.alamat.trim() || null,
+      pemilik: cols.pemilik.trim() || null,
+      kontak: cols.kontak.trim() || null,
+      lat: cols.lat,
+      lng: cols.lng,
       dataDinamis: { ...dynamicValues },
     });
   }
@@ -815,29 +813,6 @@ export default function PemeriksaanPage() {
     navigator.geolocation.getCurrentPosition((pos) => {
       handleFieldChange(id, `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
     });
-  }
-
-  async function handleOpenDetail(res: any) {
-    let fullRes = res;
-    if (!res.values || res.values.length === 0 || res.fotoPaths === undefined) {
-      setIsLoadingDetail(true);
-      try {
-        const detailRes = await fetch(`/api/inspection/results/${res.id}`);
-        if (detailRes.ok) {
-          fullRes = await detailRes.json();
-        } else {
-          toast.error("Gagal memuat detail hasil pemeriksaan");
-          return;
-        }
-      } catch (err) {
-        console.error("Gagal memuat detail pemeriksaan:", err);
-        toast.error("Terjadi kesalahan memuat detail pemeriksaan");
-        return;
-      } finally {
-        setIsLoadingDetail(false);
-      }
-    }
-    setDetailModalResult(fullRes);
   }
 
   async function handleExportPDF(res: any) {
@@ -1928,10 +1903,10 @@ export default function PemeriksaanPage() {
                       >
                         <div className="w-1 shrink-0" style={{ background: isApproved ? "#00A876" : "#E8A33D" }} />
                         <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                          <div
-                            onClick={() => handleOpenDetail(res)}
-                            className="flex items-center gap-3.5 min-w-0 cursor-pointer group/title"
-                            title="Klik untuk melihat detail lengkap hasil pemeriksaan"
+                          <Link
+                            href={`/pemeriksaan/${res.id}`}
+                            className="flex items-center gap-3.5 min-w-0 group/title rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
+                            title="Buka halaman detail lengkap hasil pemeriksaan"
                           >
                             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover/title:bg-primary group-hover/title:text-white transition-all">
                               <FileCheck className="w-5 h-5" />
@@ -1961,17 +1936,16 @@ export default function PemeriksaanPage() {
                                 })}
                               </p>
                             </div>
-                          </div>
+                          </Link>
 
                           <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                            <button
+                            <Link
+                              href={`/pemeriksaan/${res.id}`}
                               title="Lihat Detail Pemeriksaan"
-                              onClick={() => handleOpenDetail(res)}
-                              disabled={isLoadingDetail}
-                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
+                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
-                            </button>
+                            </Link>
                             <button
                               title="Export PDF"
                               onClick={() => handleExportPDF(res)}
@@ -2041,19 +2015,6 @@ export default function PemeriksaanPage() {
               )}
             </div>
           )}
-
-          {/* Modal Detail Hasil Pemeriksaan Lengkap */}
-          <DetailResultModal
-            isOpen={Boolean(detailModalResult)}
-            onClose={() => setDetailModalResult(null)}
-            result={detailModalResult}
-            template={
-              detailModalResult
-                ? templates.find((t) => t.id === detailModalResult.templateId) || detailModalResult.template
-                : null
-            }
-            onEdit={handleEditResult}
-          />
         </div>
       </div>
     );
