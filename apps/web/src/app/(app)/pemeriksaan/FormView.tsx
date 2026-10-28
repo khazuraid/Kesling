@@ -206,6 +206,61 @@ export function isFieldDisabledInfo(
   return { isDisabled: false, reason: "" };
 }
 
+/**
+ * Butir wajib yang masih kosong — dipakai untuk memberi tahu petugas APA yang
+ * menahan tombol simpan, bukan sekadar bahwa ada yang kurang.
+ *
+ * Sengaja menghitung ulang dari data dan mencerminkan syarat `canSubmit` di
+ * page.tsx apa adanya. Tanda bintang di label (`f.isRequired && …`) tidak selalu
+ * sepakat dengan aturan itu pada data lama: bila isRequired bernilai null,
+ * butir penilaian tetap divalidasi (`undefined === false` → false) namun
+ * bintangnya tidak tampil — butir seperti itu yang paling membingungkan, dan
+ * hanya bisa ditemukan dengan cara menghitung seperti di bawah.
+ */
+export function collectMissingRequired(
+  activeForm: any,
+  formValues: Record<number, any>,
+  metaValues: Record<number, any>,
+  selectedGolongan?: string | null,
+): { id: number; pertanyaan: string; grup: string; isMeta: boolean }[] {
+  const fields: any[] = activeForm?.fields || [];
+  const missing: { id: number; pertanyaan: string; grup: string; isMeta: boolean }[] = [];
+
+  for (const f of fields) {
+    const isMeta = f.grup === "__META__";
+    // Cermin cabang yang berbeda di canSubmit: meta memakai `!f.isRequired`,
+    // butir penilaian memakai `=== false`.
+    if (isMeta ? !f.isRequired : f.isRequired === false) continue;
+
+    const values = isMeta ? metaValues : formValues;
+    if (isFieldDisabledInfo(f, values, selectedGolongan || "", fields).isDisabled) continue;
+
+    const val = values[f.id];
+    let kosong: boolean;
+    if (isMeta) {
+      kosong = String(val ?? "").trim() === "";
+    } else if (f.tipe === "MATRIX_AREA") {
+      // `canSubmit` menganggap matriks terisi kecuali nilainya benar-benar null
+      // (undefined lolos karena `undefined !== null`). Ditiru apa adanya agar
+      // daftar ini tidak menuduh butir yang sebenarnya tidak menahan simpan.
+      kosong = val === null;
+    } else {
+      kosong = val === null || val === undefined || val === "";
+    }
+
+    if (kosong) {
+      missing.push({
+        id: f.id,
+        pertanyaan: f.pertanyaan || `Butir #${f.id}`,
+        grup: f.grup || "",
+        isMeta,
+      });
+    }
+  }
+
+  return missing;
+}
+
 interface FormViewProps {
   activeForm: any;
   editingId: number | null;
@@ -396,6 +451,44 @@ export function FormView({
     return { totalQuestions, answeredQuestions, percentAnswered };
   }, [penilaianFields, formValues, selectedGolongan, activeForm.fields]);
 
+  // Butir wajib yang masih kosong — sumber penjelasan saat simpan ditolak.
+  const missingRequired = useMemo(
+    () => collectMissingRequired(activeForm, formValues, metaValues, selectedGolongan),
+    [activeForm, formValues, metaValues, selectedGolongan],
+  );
+  const missingIds = useMemo(() => new Set(missingRequired.map((m) => m.id)), [missingRequired]);
+
+  // Langkah yang masih menyimpan butir wajib kosong, agar pil langkah bisa
+  // menandainya dan petugas tak perlu menebak-nebak letaknya.
+  const stepsWithMissing = useMemo(() => {
+    const s = new Set<number>();
+    if (missingRequired.some((m) => m.isMeta)) s.add(steps.findIndex((st) => st.type === "meta"));
+    steps.forEach((st, idx) => {
+      if (st.type !== "area" || !st.areaData) return;
+      const ada = st.areaData.groups.some((g) => g.fields.some((f: any) => missingIds.has(f.id)));
+      if (ada) s.add(idx);
+    });
+    s.delete(-1);
+    return s;
+  }, [missingRequired, missingIds, steps]);
+
+  const [showMissing, setShowMissing] = useState(false);
+
+  /** Pindah ke langkah yang memuat butir wajib kosong. */
+  const gotoStepOf = (fieldId: number) => {
+    const idx = steps.findIndex((st) => {
+      if (st.type === "meta") {
+        return (metaFields as any[]).some((f: any) => f.id === fieldId);
+      }
+      return Boolean(st.areaData?.groups.some((g) => g.fields.some((f: any) => f.id === fieldId)));
+    });
+    if (idx >= 0) {
+      setCurrentStepIndex(idx);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setShowMissing(false);
+  };
+
   // Evaluasi skor persentase tampilan
   const displayPercentage = useMemo(() => {
     if (liveSkor.percentValue !== undefined) {
@@ -423,9 +516,13 @@ export function FormView({
   };
 
   return (
-    <div className="w-full pb-28 sm:pb-20 fade-in">
+    <div className="w-full px-4 sm:px-6 pb-28 sm:pb-20 fade-in">
+      {/* Insets horizontal dipegang root ini (px-4 sm:px-6). Bilah di bawah
+          memakai -mx-4 sm:-mx-6 untuk bleed sampai tepi viewport; tanpa px di
+          root, bleed itu melebar 32px melewati layar dan memicu scroll
+          horizontal di mobile. */}
       {/* ── STICKY TOP SCORE HUD (Clean & Compact) ── */}
-      <div className="sticky top-14 md:top-0 z-20 -mx-4 sm:-mx-6 px-3.5 sm:px-6 py-2 sm:py-2.5 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
+      <div className="sticky top-14 md:top-16 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 sm:py-2.5 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shadow-subtle transition-all">
         <div className="max-w-6xl mx-auto flex flex-col gap-1.5 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
           {/* Main Row */}
           <div className="flex items-center justify-between gap-2.5 sm:gap-3 min-w-0">
@@ -462,15 +559,16 @@ export function FormView({
                 className={`flex items-center gap-1 px-2 py-1 rounded-xl text-white font-extrabold shadow-xs ${
                   liveSkor.pass ? "bg-primary" : "bg-error"
                 }`}
+                title={liveSkor.text}
               >
                 <span className="text-[13px] tabular-nums leading-none">{displayPercentage}</span>
-                <span className="text-[11px] opacity-90 hidden xs:inline">{liveSkor.text}</span>
+                <span className="text-[11px] opacity-90">{liveSkor.pass ? "MS" : "TMS"}</span>
               </div>
             </div>
           </div>
 
           {/* Mobile Secondary Row: Compact Progress Info */}
-          <div className="flex sm:hidden items-center justify-between text-[11px] xs:text-[10px] text-muted-foreground font-semibold px-0.5">
+          <div className="flex sm:hidden items-center justify-between text-[11px] text-muted-foreground font-semibold px-0.5">
             <span className="truncate max-w-[190px]">
               Langkah {currentStepIndex + 1}/{steps.length} · {currentStep.title}
             </span>
@@ -562,14 +660,16 @@ export function FormView({
             {steps.map((step, idx) => {
               const isActive = idx === currentStepIndex;
               const isPassed = idx < currentStepIndex;
+              const hasMissing = stepsWithMissing.has(idx);
               return (
                 <button
                   key={step.id}
+                  type="button"
                   onClick={() => {
                     setCurrentStepIndex(idx);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-card text-[11px] sm:text-[12px] font-bold transition-all border shrink-0 ${
+                  className={`relative flex items-center gap-1.5 sm:gap-2 min-h-[44px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-card text-[12px] font-bold transition-all border shrink-0 ${
                     isActive
                       ? "bg-primary text-white border-primary shadow-subtle ring-2 ring-primary/20"
                       : isPassed
@@ -578,7 +678,7 @@ export function FormView({
                   }`}
                 >
                   <span
-                    className={`flex items-center justify-center w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full text-[11px] sm:text-[10px] font-black shrink-0 ${
+                    className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black shrink-0 ${
                       isActive
                         ? "bg-white text-primary"
                         : isPassed
@@ -586,9 +686,19 @@ export function FormView({
                           : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {isPassed ? <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]" /> : step.badge}
+                    {isPassed ? <Check className="w-3 h-3 stroke-[3]" /> : step.badge}
                   </span>
-                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{step.title}</span>
+                  <span className="truncate max-w-[140px] sm:max-w-[200px]">{step.title}</span>
+                  {hasMissing && (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        title="Ada butir wajib yang belum diisi pada bagian ini"
+                        className="w-2 h-2 rounded-full bg-error shrink-0 ring-2 ring-surface"
+                      />
+                      <span className="sr-only">(ada butir wajib yang belum diisi)</span>
+                    </>
+                  )}
                 </button>
               );
             })}
@@ -761,32 +871,76 @@ export function FormView({
 
           {/* Submit Final Action Card di Langkah Terakhir */}
           {currentStepIndex === steps.length - 1 && (
-            <div className="rounded-card border border-border bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-subtle">
-              <div>
-                <h5 className="text-[14px] font-bold text-foreground">Siap Menyimpan Pemeriksaan?</h5>
-                <p className="text-[12px] text-muted-foreground mt-0.5">
-                  {canSubmit
-                    ? "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
-                    : "Masih terdapat butir bertanda bintang (*) yang belum diisi pada formulir."}
-                </p>
+            <div className="space-y-3">
+              <div className="rounded-card border border-border bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-subtle">
+                <div className="w-full sm:w-auto">
+                  <h5 className="text-[14px] font-bold text-foreground">Siap Menyimpan Pemeriksaan?</h5>
+                  <p className="text-[12px] text-muted-foreground mt-0.5">
+                    {canSubmit ? (
+                      "Seluruh butir wajib telah lengkap. Klik tombol di samping untuk menyimpan hasil ke riwayat."
+                    ) : (
+                      <>
+                        Masih terdapat{" "}
+                        <strong className="text-error font-bold">{missingRequired.length} butir wajib</strong> yang
+                        belum diisi.
+                        <button
+                          type="button"
+                          onClick={() => setShowMissing((v) => !v)}
+                          className="ml-1 text-primary hover:underline font-bold inline-flex items-center gap-0.5"
+                        >
+                          {showMissing ? "Sembunyikan daftar" : "Lihat butir yang kurang"}
+                        </button>
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onSubmit}
+                  disabled={!canSubmit || isPending}
+                  className="w-full sm:w-auto min-h-[44px] px-7 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[13px] font-black transition-all shadow-subtle disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
+                    </>
+                  )}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={!canSubmit || isPending}
-                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[13px] font-black transition-all shadow-subtle disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
-                  </>
-                )}
-              </button>
+              {/* Daftar butir wajib yang belum diisi — bisa diklik untuk langsung loncat ke langkahnya */}
+              {!canSubmit && showMissing && missingRequired.length > 0 && (
+                <div className="rounded-card border border-error/30 bg-error-light/60 p-4 sm:p-5 space-y-2.5">
+                  <div className="flex items-center gap-2 text-error font-bold text-[12px]">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>Lengkapi butir berikut sebelum menyimpan:</span>
+                  </div>
+                  <ul className="divide-y divide-error/15 text-[12px]">
+                    {missingRequired.map((m) => (
+                      <li key={m.id} className="py-2 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-foreground block truncate">{m.pertanyaan}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase font-bold block truncate">
+                            {m.isMeta ? "Identitas Sasaran" : m.grup || "Penilaian"}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => gotoStepOf(m.id)}
+                          className="min-h-[36px] px-3 py-1 rounded-lg bg-surface border border-border text-[11px] font-bold text-primary hover:bg-surface-subtle shrink-0 shadow-xs"
+                        >
+                          Buka Butir →
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
