@@ -27,7 +27,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { XStack, YStack } from "tamagui";
 import { NotificationBell } from "@/components/notification-bell";
 
 type MenuItem = {
@@ -278,7 +277,7 @@ export function SideNav() {
         </nav>
 
         {/* Bottom Dock */}
-        <YStack className="shrink-0 border-t border-border p-2 space-y-1 bg-surface">
+        <div className="shrink-0 flex flex-col border-t border-border p-2 space-y-1 bg-surface">
           {/* Notification */}
           <div className="relative group">
             <div
@@ -325,7 +324,7 @@ export function SideNav() {
           </div>
 
           {/* Action Row */}
-          <XStack className={`items-center ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
+          <div className={`flex items-center ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
             <div className={`relative group ${collapsed ? "w-full" : "flex-1"}`}>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
@@ -366,8 +365,8 @@ export function SideNav() {
                 </span>
               )}
             </div>
-          </XStack>
-        </YStack>
+          </div>
+        </div>
       </aside>
     </>
   );

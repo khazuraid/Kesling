@@ -9,9 +9,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   outputFileTracingRoot: path.join(import.meta.dirname, "../../"),
   experimental: {
-    optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query", "tamagui"],
+    optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query"],
   },
-  transpilePackages: ["@apps-kes/database", "tamagui", "@tamagui/core", "@tamagui/config"],
+  transpilePackages: ["@apps-kes/database"],
   async headers() {
     return [
       {

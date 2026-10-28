@@ -3,7 +3,6 @@
 import { Search, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { XStack } from "tamagui";
 import { NotificationBell } from "@/components/notification-bell";
 
 const ROUTE_TITLES: Record<string, { title: string; subtitle: string }> = {
@@ -70,7 +69,7 @@ export function DesktopHeader() {
         <p className="text-[11px] font-medium text-muted-foreground truncate">{currentMeta.subtitle}</p>
       </div>
 
-      <XStack className="items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-2.5 shrink-0">
         {/* Quick Search */}
         <button
           onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
@@ -103,7 +102,7 @@ export function DesktopHeader() {
             </span>
           </div>
         </div>
-      </XStack>
+      </div>
     </header>
   );
 }
