@@ -1,5 +1,6 @@
 "use client";
 
+import { PenLine } from "lucide-react";
 import { signatureSrc } from "@/lib/inspection-media";
 
 function SignatureCard({
@@ -20,14 +21,15 @@ function SignatureCard({
   emptyText: string;
 }) {
   return (
-    <div className="p-5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col justify-between shadow-subtle space-y-4">
+    <div className="p-5 rounded-2xl border border-border bg-surface flex flex-col justify-between shadow-subtle space-y-4">
       <div>
         <span className={`text-[10px] font-black uppercase tracking-wider block ${eyebrowClass}`}>{eyebrow}</span>
-        <h3 className="text-[14px] font-extrabold text-[hsl(var(--foreground))] mt-0.5 break-words">{nama}</h3>
-        <p className="text-[11px] text-[hsl(var(--muted-foreground))] break-words">{sub}</p>
+        <h3 className="text-[14px] font-extrabold text-foreground mt-0.5 break-words">{nama}</h3>
+        <p className="text-[11px] text-muted-foreground break-words">{sub}</p>
       </div>
 
-      <div className="relative h-36 rounded-xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 flex items-center justify-center p-3 overflow-hidden">
+      {/* Area tanda tangan — rasio tetap, placeholder bergaris putus-putus */}
+      <div className="relative aspect-[3/1.5] rounded-xl border-2 border-dashed border-border bg-surface-subtle flex items-center justify-center p-3 overflow-hidden">
         {signature ? (
           /* biome-ignore lint/performance/noImgElement: direct img prevents next/image runtime crash */
           <img
@@ -36,13 +38,14 @@ function SignatureCard({
             className="max-h-full max-w-full object-contain"
           />
         ) : (
-          <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic text-center">{emptyText}</span>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <PenLine className="w-6 h-6 text-muted-foreground/40" aria-hidden="true" />
+            <span className="text-[11px] text-muted-foreground italic">{emptyText}</span>
+          </div>
         )}
       </div>
 
-      <div className="pt-2 border-t border-[hsl(var(--border))] text-[11px] text-[hsl(var(--muted-foreground))]">
-        {footer}
-      </div>
+      <div className="pt-2 border-t border-border text-[11px] text-muted-foreground">{footer}</div>
     </div>
   );
 }
@@ -68,27 +71,27 @@ export function SignaturePanel({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <SignatureCard
         eyebrow="Petugas Pemeriksa Kesling"
-        eyebrowClass="text-[#00A876]"
+        eyebrowClass="text-success"
         nama={petugas || "Petugas Pemeriksa"}
         sub={`UPT Puskesmas ${puskesmasNama}`}
         signature={petugasSignature}
         emptyText="Tanda tangan digital belum terlampir"
         footer={
           <>
-            Tanggal: <strong className="text-[hsl(var(--foreground))]">{tanggalFormat}</strong>
+            Tanggal: <strong className="text-foreground">{tanggalFormat}</strong>
           </>
         }
       />
       <SignatureCard
         eyebrow="Pengelola / Penanggung Jawab"
-        eyebrowClass="text-[hsl(var(--muted-foreground))]"
+        eyebrowClass="text-muted-foreground"
         nama={pemilik || sasaranNama || "-"}
         sub={`Sasaran: ${sasaranNama || "-"}`}
         signature={pemilikSignature}
         emptyText="Paraf / TTD basah tercantum di berita acara fisik"
         footer={
           <>
-            Status: <strong className="text-[#00A876]">Tersimpan Resmi</strong>
+            Status: <strong className="text-success">Tersimpan Resmi</strong>
           </>
         }
       />

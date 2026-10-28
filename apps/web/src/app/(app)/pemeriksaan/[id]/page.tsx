@@ -2,9 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   ArrowLeft,
   Building2,
   Calendar,
+  CheckCircle2,
+  Clock,
   Download,
   Edit3,
   FileText,
@@ -13,6 +16,7 @@ import {
   PenTool,
   ShieldAlert,
   User,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -22,7 +26,7 @@ import { groupInspectionFields } from "@/lib/inspection-answers";
 import { extractInspectionPhotos, extractInspectionSignatures } from "@/lib/inspection-media";
 import { resolveSasaranIdentity } from "@/lib/sasaran-meta";
 import { calculateInspectionScore, generateInspectionPDF } from "../pdf-generator";
-import { AnswerTally, ChecklistGroups, EmptyChecklist, TemuanList } from "./_components/checklist-panel";
+import { ChecklistGroups, EmptyChecklist, TemuanList } from "./_components/checklist-panel";
 import { PhotoGallery } from "./_components/photo-gallery";
 import { PhotoLightbox } from "./_components/photo-lightbox";
 import { SasaranProfileCard } from "./_components/sasaran-profile-card";
@@ -32,7 +36,7 @@ import { SignaturePanel } from "./_components/signature-panel";
 type DetailTab = "penilaian" | "foto" | "ttd";
 
 const TABS: { id: DetailTab; label: string; Icon: typeof FileText }[] = [
-  { id: "penilaian", label: "Butir", Icon: FileText },
+  { id: "penilaian", label: "Butir Penilaian", Icon: FileText },
   { id: "foto", label: "Foto", Icon: ImageIcon },
   { id: "ttd", label: "Tanda Tangan", Icon: PenTool },
 ];
@@ -143,18 +147,42 @@ export default function DetailPemeriksaanPage() {
     );
   }
 
-  const metaInfo = [
-    { icon: Calendar, label: "Tanggal", value: tanggalFormat },
-    { icon: Building2, label: "Puskesmas", value: result.puskesmas?.nama },
-    { icon: User, label: "Petugas", value: identity.petugas },
-    { icon: FileText, label: "Formulir", value: template?.nama },
+  // Strip metrik: hitung dari tally supaya tidak duplikasi logika
+  const tally = grouped.tally;
+  const stripMetrics = [
+    {
+      label: "Sesuai",
+      value: tally.sesuai,
+      icon: CheckCircle2,
+      colorClass: "text-success",
+      bgClass: "bg-success-light border-success/20",
+    },
+    {
+      label: "Tidak Sesuai",
+      value: tally.tidak,
+      icon: XCircle,
+      colorClass: "text-error",
+      bgClass: "bg-error-light border-error/20",
+    },
+    {
+      label: "T/A",
+      value: tally.na,
+      icon: Clock,
+      colorClass: "text-muted-foreground",
+      bgClass: "bg-surface-subtle border-border",
+    },
+    {
+      label: "Temuan",
+      value: grouped.temuan.length,
+      icon: AlertTriangle,
+      colorClass: tally.tidak > 0 ? "text-warning" : "text-muted-foreground",
+      bgClass: tally.tidak > 0 ? "bg-warning-light border-warning/20" : "bg-surface-subtle border-border",
+    },
   ];
 
   return (
     <div className="w-full min-h-screen bg-canvas fade-in">
-      {/* Bar halaman: menempel di bawah header (mobile 3.5rem / desktop 4rem) dan
-          sengaja z-10 supaya header tetap di atasnya. Padding gulir pada
-          pembungkusnya mencegah header menutupi elemen yang difokuskan. */}
+      {/* ── STICKY ACTION BAR ── */}
       <div className="sticky top-14 md:top-16 z-10 bg-surface/95 backdrop-blur-md border-b border-border">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -172,7 +200,7 @@ export default function DetailPemeriksaanPage() {
                 </span>
                 <span className="text-[11px] text-muted-foreground tabular-nums truncate">#{result.id}</span>
               </div>
-              <h1 className="text-[16px] sm:text-[19px] font-black text-foreground truncate mt-0.5">
+              <h1 className="text-[15px] sm:text-[18px] font-black text-foreground truncate mt-0.5">
                 {identity.nama || "Sasaran Tanpa Nama"}
               </h1>
             </div>
@@ -184,7 +212,7 @@ export default function DetailPemeriksaanPage() {
               onClick={() => router.push(`/pemeriksaan?tab=riwayat&edit=${result.id}`)}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[12px] font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
             >
-              <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Pemeriksaan</span>
+              <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
             </button>
             <button
               type="button"
@@ -207,19 +235,29 @@ export default function DetailPemeriksaanPage() {
         </div>
       </div>
 
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-6 space-y-5 [scroll-padding-top:7rem]">
-        {/* Ringkasan skor + metadata */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-3.5">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-6 space-y-6 [scroll-padding-top:7rem]">
+        {/* ── HERO: skor besar + metadata ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4">
+          {/* Skor */}
           {scoreData && <ScoreCard scoreData={scoreData} />}
-          <div className="grid grid-cols-2 gap-2">
-            {metaInfo.map((meta) => {
+
+          {/* Metadata 2×2 */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {(
+              [
+                { icon: Calendar, label: "Tanggal", value: tanggalFormat },
+                { icon: Building2, label: "Puskesmas", value: result.puskesmas?.nama },
+                { icon: User, label: "Petugas", value: identity.petugas },
+                { icon: FileText, label: "Formulir", value: template?.nama },
+              ] as const
+            ).map((meta) => {
               const MIcon = meta.icon;
               return (
                 <div
                   key={meta.label}
-                  className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-surface-subtle/60 min-w-0"
+                  className="flex items-center gap-2.5 p-3 rounded-xl border border-border bg-surface min-w-0 shadow-subtle"
                 >
-                  <span className="w-7 h-7 rounded-lg bg-surface border border-border flex items-center justify-center shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-primary-subtle border border-primary/15 flex items-center justify-center shrink-0">
                     <MIcon className="w-3.5 h-3.5 text-primary" />
                   </span>
                   <div className="min-w-0">
@@ -239,15 +277,31 @@ export default function DetailPemeriksaanPage() {
           </div>
         </div>
 
-        {/* Tab: segmented control, dapat dijangkau papan ketik dan dibaca layar */}
+        {/* ── STRIP METRIK: 4 pil besar sebelum daftar butir ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {stripMetrics.map(({ label, value, icon: Icon, colorClass, bgClass }) => (
+            <div
+              key={label}
+              className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border shadow-subtle ${bgClass}`}
+            >
+              <Icon className={`w-5 h-5 ${colorClass}`} aria-hidden="true" />
+              <span className={`text-[22px] font-black tabular-nums leading-none ${colorClass}`}>{value}</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground text-center">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* ── TAB: segmented control ── */}
         <div
           role="tablist"
           aria-label="Bagian detail pemeriksaan"
-          className="flex items-center gap-1 p-1 rounded-2xl bg-muted w-full overflow-x-auto"
+          className="flex items-center gap-1 p-1 rounded-2xl bg-surface-subtle border border-border w-full overflow-x-auto"
         >
           {TABS.map(({ id, label, Icon }) => {
             const selected = activeTab === id;
-            const count = id === "penilaian" ? grouped.fields.length : id === "foto" ? photos.length : undefined;
+            const count = id === "foto" ? photos.length : undefined;
             return (
               <button
                 key={id}
@@ -257,8 +311,10 @@ export default function DetailPemeriksaanPage() {
                 aria-selected={selected}
                 aria-controls={`panel-${id}`}
                 onClick={() => setActiveTab(id)}
-                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-[12px] font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-all ${
-                  selected ? "bg-card text-foreground shadow-subtle" : "text-muted-foreground hover:text-foreground"
+                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-all ${
+                  selected
+                    ? "bg-surface text-foreground shadow-subtle border border-border"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {label}
@@ -268,9 +324,9 @@ export default function DetailPemeriksaanPage() {
           })}
         </div>
 
+        {/* ── TAB PENILAIAN ── */}
         {activeTab === "penilaian" && (
-          <div role="tabpanel" id="panel-penilaian" aria-labelledby="tab-penilaian" className="space-y-5">
-            <AnswerTally tally={grouped.tally} />
+          <div role="tabpanel" id="panel-penilaian" aria-labelledby="tab-penilaian" className="space-y-6">
             <TemuanList temuan={grouped.temuan} />
             <SasaranProfileCard identity={identity} />
             {grouped.groups.length === 0 ? (
@@ -288,6 +344,7 @@ export default function DetailPemeriksaanPage() {
           </div>
         )}
 
+        {/* ── TAB FOTO ── */}
         {activeTab === "foto" && (
           <div role="tabpanel" id="panel-foto" aria-labelledby="tab-foto">
             <PhotoGallery
@@ -304,6 +361,7 @@ export default function DetailPemeriksaanPage() {
           </div>
         )}
 
+        {/* ── TAB TANDA TANGAN ── */}
         {activeTab === "ttd" && (
           <div role="tabpanel" id="panel-ttd" aria-labelledby="tab-ttd">
             <SignaturePanel

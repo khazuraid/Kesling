@@ -24,8 +24,7 @@ export function AnswerBadge({
 
   if (tipe === "PHOTO") {
     const src = photoSrc(value?.valueString);
-    if (!src)
-      return <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">Foto belum diunggah</span>;
+    if (!src) return <span className="text-[11px] text-muted-foreground italic">Foto belum diunggah</span>;
     return (
       <button
         type="button"
@@ -68,18 +67,18 @@ export function AnswerBadge({
             </span>
           )}
           {codes.length === 0 ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#00A876]/15 text-[#00A876] text-[11px] font-black border border-[#00A876]/30">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-success-light text-success text-[11px] font-black border border-success/30">
               <CheckCircle2 className="w-3.5 h-3.5" /> 100% Memenuhi (0 TMS)
             </span>
           ) : (
             <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[10px] font-bold text-rose-600 mr-1">TMS ({codes.length} Area):</span>
+              <span className="text-[10px] font-bold text-error mr-1">TMS ({codes.length} Area):</span>
               {codes.map((code) => {
                 const pen = areaScores[code] !== undefined && areaScores[code] !== "NA" ? areaScores[code] : "1";
                 return (
                   <span
                     key={code}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-600 text-white text-[10px] font-black shadow-subtle"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-error text-white text-[10px] font-black shadow-subtle"
                   >
                     {code} ({pen})
                   </span>
@@ -96,30 +95,30 @@ export function AnswerBadge({
     const state = answerState(value?.valueString);
     if (state === "sesuai") {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#00A876]/15 text-[#00A876] text-[11px] font-black border border-[#00A876]/30">
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-success-light text-success text-[11px] font-black border border-success/30">
           <CheckCircle2 className="w-3.5 h-3.5" /> Ya
         </span>
       );
     }
     if (state === "tidak") {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[#E15A4F]/15 text-[#E15A4F] text-[11px] font-black border border-[#E15A4F]/30">
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-error-light text-error text-[11px] font-black border border-error/30">
           <XCircle className="w-3.5 h-3.5" /> Tidak
         </span>
       );
     }
     if (state === "na") {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] text-[11px] font-bold">
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-muted text-muted-foreground text-[11px] font-bold">
           T/A
         </span>
       );
     }
-    return <span className="text-[11px] text-[hsl(var(--muted-foreground))] italic">Belum diisi</span>;
+    return <span className="text-[11px] text-muted-foreground italic">Belum diisi</span>;
   }
 
   return (
-    <span className="inline-block px-3 py-1 rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] text-[12px] font-bold">
+    <span className="inline-block px-3 py-1 rounded-xl bg-muted text-foreground text-[12px] font-bold">
       {value?.valueNumber !== null && value?.valueNumber !== undefined
         ? String(value.valueNumber)
         : value?.valueString || "-"}

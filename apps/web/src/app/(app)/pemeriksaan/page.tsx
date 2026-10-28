@@ -2101,7 +2101,7 @@ export default function PemeriksaanPage() {
                         key={res.id}
                         className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden shadow-subtle"
                       >
-                        <div className="w-1 shrink-0" style={{ background: isApproved ? "#00A876" : "#E8A33D" }} />
+                        <div className={`w-1 shrink-0 ${isApproved ? "bg-success" : "bg-warning"}`} />
                         <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
                           <Link
                             href={`/pemeriksaan/${res.id}`}

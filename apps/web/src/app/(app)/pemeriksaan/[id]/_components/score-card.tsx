@@ -13,27 +13,32 @@ export interface ScoreData {
   op: string;
 }
 
-/** Kartu skor + bar perolehan. Ambang dan teks status datang dari config template. */
+/** Kartu skor + gauge SVG. Accent menggunakan token CSS supaya dark mode konsisten. */
 export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
   const pct = Math.min(100, Math.max(0, scoreData.percentValue || 0));
   const R = 42;
   const C = 2 * Math.PI * R;
-  const accent = scoreData.pass ? "#00A876" : "#E15A4F";
+  const accentClass = scoreData.pass ? "text-success" : "text-error";
+  const accentStroke = scoreData.pass ? "var(--color-success)" : "var(--color-error)";
+  const accentBg = scoreData.pass ? "bg-success" : "bg-error";
 
   return (
-    <div className="relative overflow-hidden p-4 rounded-2xl bg-surface border border-border shadow-subtle">
-      <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: accent }} />
-      <div className="flex items-center gap-4">
-        <div className="relative w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] shrink-0">
+    <div className="relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-surface border border-border shadow-subtle">
+      {/* Rail warna skor di atas */}
+      <span className={`absolute inset-x-0 top-0 h-1.5 ${accentBg}`} aria-hidden="true" />
+
+      <div className="flex items-center gap-5 sm:gap-6">
+        {/* Gauge SVG besar */}
+        <div className="relative w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] shrink-0">
           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90" aria-hidden="true">
-            <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth="10" className="text-muted" />
+            <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth="9" className="text-muted" />
             <circle
               cx="50"
               cy="50"
               r={R}
               fill="none"
-              stroke={accent}
-              strokeWidth="10"
+              stroke={accentStroke}
+              strokeWidth="9"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={C * (1 - pct / 100)}
@@ -41,7 +46,7 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[17px] sm:text-[20px] font-black tabular-nums leading-none text-foreground">
+            <span className={`text-[21px] sm:text-[24px] font-black tabular-nums leading-none ${accentClass}`}>
               {scoreData.valueText}
             </span>
             <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground mt-1">
@@ -50,21 +55,19 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
           </div>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-2.5">
+        <div className="min-w-0 flex-1 space-y-3">
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide text-white ${
-              scoreData.pass ? "bg-[#00A876]" : "bg-[#E15A4F]"
-            }`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide text-white ${accentBg}`}
           >
             {scoreData.pass ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
             {scoreData.statusText}
           </span>
 
           <div className="space-y-1.5">
-            <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+            <div className="relative h-2.5 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${pct}%`, backgroundColor: accent }}
+                style={{ width: `${pct}%`, backgroundColor: accentStroke }}
               />
             </div>
             <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground gap-2">
@@ -73,7 +76,7 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
                 Poin
               </span>
               <span className="tabular-nums shrink-0">
-                Batas kelulusan {scoreData.op} {scoreData.thresh}%
+                Batas {scoreData.op} {scoreData.thresh}%
               </span>
             </div>
           </div>
