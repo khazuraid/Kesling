@@ -28,6 +28,32 @@ export const GET = withAuth(async (req: NextRequest) => {
     ];
   }
 
+  // Filter tambahan untuk daftar riwayat. Semuanya digabung ke where yang sama
+  // supaya penguncian wilayah di atas tidak pernah bisa dilewati oleh satu pun
+  // parameter di bawah ini.
+  const dateFrom = sp.get("dateFrom") || "";
+  const dateTo = sp.get("dateTo") || "";
+  if (dateFrom || dateTo) {
+    where.createdAt = {};
+    if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+    if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+  }
+
+  const templateId = parseInt(sp.get("templateId") || "", 10);
+  if (Number.isInteger(templateId) && templateId > 0) where.templateId = templateId;
+
+  const userId = parseInt(sp.get("userId") || "", 10);
+  if (Number.isInteger(userId) && userId > 0) where.userId = userId;
+
+  // Kategori disaring lewat relasi template, bukan kolom tersendiri di hasil.
+  const categoryId = parseInt(sp.get("categoryId") || "", 10);
+  if (Number.isInteger(categoryId) && categoryId > 0) {
+    where.template = { subCategory: { categoryId } };
+  }
+
+  const status = (sp.get("status") || "").trim();
+  if (status && status !== "all") where.status = status;
+
   if (full) {
     const results = await prisma.inspectionResult.findMany({
       where,
