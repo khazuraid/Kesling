@@ -9,7 +9,6 @@ import {
   BarChart3,
   Check,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
   ClipboardCheck,
   Copy,
@@ -19,7 +18,6 @@ import {
   History,
   Pencil,
   Plus,
-  Search,
   Settings2,
   ShieldAlert,
   Sparkles,
@@ -33,6 +31,9 @@ import { toast } from "sonner";
 import { ImportFloatingWidget } from "@/components/inspection/import-floating-widget";
 import { ImportHistoryModal } from "@/components/inspection/import-history-modal";
 import { ImportInspectionModal, type ImportJobState } from "@/components/inspection/import-inspection-modal";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Pagination } from "@/components/ui/pagination";
+import { Select } from "@/components/ui/select";
 
 export const DEFAULT_MATRIX_COLUMNS = [
   { code: "A", label: "Area luar bangunan" },
@@ -190,7 +191,10 @@ export default function FormPemeriksaanPage() {
   // Pagination & Search state
   const [templateSearch, setTemplateSearch] = useState("");
   const [templatePage, setTemplatePage] = useState(1);
-  const [templateLimit] = useState(10);
+  const [templateLimit, setTemplateLimit] = useState(10);
+  const [templateCategory, setTemplateCategory] = useState("all");
+  // "all" | "dinkes" | "own" | "other"
+  const [templateOwner, setTemplateOwner] = useState("all");
 
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ["dynamic-categories"],
@@ -1607,16 +1611,40 @@ export default function FormPemeriksaanPage() {
   }, [fields]);
   const demoPersentase = totalSkor > 0 ? Math.round((demoSkorTerisi / totalSkor) * 100) : 0;
 
+  // Opsi kategori dari subCategory.category.nama unik
+  const templateCategoryOptions = useMemo(() => {
+    const seen = new Set<string>();
+    for (const t of templates) {
+      const nama = (t as any).subCategory?.category?.nama || (t as any).subCategory?.nama;
+      if (nama) seen.add(nama);
+    }
+    return Array.from(seen).sort();
+  }, [templates]);
+
   const filteredTemplates = useMemo(() => {
+    let list: any[] = templates;
     const q = templateSearch.toLowerCase().trim();
-    if (!q) return templates;
-    return templates.filter(
-      (t: any) =>
-        (t.nama || "").toLowerCase().includes(q) ||
-        (t.deskripsi || "").toLowerCase().includes(q) ||
-        (t.subCategory?.nama || "").toLowerCase().includes(q),
-    );
-  }, [templates, templateSearch]);
+    if (q) {
+      list = list.filter(
+        (t: any) =>
+          (t.nama || "").toLowerCase().includes(q) ||
+          (t.deskripsi || "").toLowerCase().includes(q) ||
+          (t.subCategory?.nama || "").toLowerCase().includes(q),
+      );
+    }
+    if (templateCategory !== "all") {
+      list = list.filter((t: any) => (t.subCategory?.category?.nama || t.subCategory?.nama || "") === templateCategory);
+    }
+    if (templateOwner !== "all") {
+      list = list.filter((t: any) => {
+        if (templateOwner === "dinkes") return !t.puskesmasId;
+        if (templateOwner === "own") return t.puskesmasId === currentUserPkmId;
+        if (templateOwner === "other") return t.puskesmasId && t.puskesmasId !== currentUserPkmId;
+        return true;
+      });
+    }
+    return list;
+  }, [templates, templateSearch, templateCategory, templateOwner, currentUserPkmId]);
 
   const totalTemplatePages = Math.max(1, Math.ceil(filteredTemplates.length / templateLimit));
   const paginatedTemplates = useMemo(() => {
@@ -1730,218 +1758,277 @@ export default function FormPemeriksaanPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={templateSearch}
-                    onChange={(e) => {
-                      setTemplateSearch(e.target.value);
-                      setTemplatePage(1);
-                    }}
-                    placeholder="Cari template pemeriksaan..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground/40 transition-all"
-                  />
+              <FilterBar
+                searchValue={templateSearch}
+                onSearchChange={(v) => {
+                  setTemplateSearch(v);
+                  setTemplatePage(1);
+                }}
+                placeholder="Cari template pemeriksaan..."
+                activeFilters={[
+                  ...(templateCategory !== "all"
+                    ? [
+                        {
+                          key: "cat",
+                          label: `Kategori: ${templateCategory}`,
+                          onRemove: () => {
+                            setTemplateCategory("all");
+                            setTemplatePage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(templateOwner !== "all"
+                    ? [
+                        {
+                          key: "own",
+                          label:
+                            templateOwner === "dinkes"
+                              ? "🏛️ Dinkes"
+                              : templateOwner === "own"
+                                ? "🏥 Puskesmas Saya"
+                                : "🏥 Lainnya",
+                          onRemove: () => {
+                            setTemplateOwner("all");
+                            setTemplatePage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                ]}
+                onReset={() => {
+                  setTemplateSearch("");
+                  setTemplateCategory("all");
+                  setTemplateOwner("all");
+                  setTemplatePage(1);
+                }}
+              >
+                <Select
+                  value={templateCategory}
+                  onChange={(e) => {
+                    setTemplateCategory(e.target.value);
+                    setTemplatePage(1);
+                  }}
+                  aria-label="Saring menurut kategori"
+                  className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                >
+                  <option value="all">Semua Kategori</option>
+                  {templateCategoryOptions.map((nama) => (
+                    <option key={nama} value={nama}>
+                      {nama}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  value={templateOwner}
+                  onChange={(e) => {
+                    setTemplateOwner(e.target.value);
+                    setTemplatePage(1);
+                  }}
+                  aria-label="Saring menurut pemilik"
+                  className="h-10 w-auto max-w-[180px] shrink-0 text-[12px] font-medium"
+                >
+                  <option value="all">Semua Pemilik</option>
+                  <option value="dinkes">🏛️ Dinkes</option>
+                  <option value="own">🏥 Puskesmas Saya</option>
+                  <option value="other">🏥 Puskesmas Lain</option>
+                </Select>
+              </FilterBar>
+
+              {filteredTemplates.length === 0 ? (
+                <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-10 flex flex-col items-center justify-center text-center">
+                  <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
+                  <p className="text-[13px] font-bold text-foreground">
+                    {templateSearch || templateCategory !== "all" || templateOwner !== "all"
+                      ? "Template Tidak Ditemukan"
+                      : "Belum Ada Template"}
+                  </p>
+                  <p className="text-[12px] text-muted-foreground mt-1">
+                    {templateSearch || templateCategory !== "all" || templateOwner !== "all"
+                      ? "Coba ubah kata kunci atau filter."
+                      : "Import PDF/Word atau buat manual."}
+                  </p>
                 </div>
-                <span className="text-[11px] font-bold text-muted-foreground">
-                  Menampilkan {paginatedTemplates.length} dari {filteredTemplates.length} template
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                {paginatedTemplates.map((tpl: any) => {
-                  const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
-                  const grupCount = new Set(
-                    (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
-                  ).size;
-                  return (
-                    <button
-                      key={tpl.id}
-                      onClick={() => {
-                        setSelectedTemplateId(tpl.id);
-                        setIsCreating(false);
-                        setNama(tpl.nama);
-                        setDeskripsi(tpl.deskripsi || "");
-                        setRumus(tpl.config?.rumus || "sum");
-                        setCustomFormula(tpl.config?.customFormula || "");
-                        setThresholdOperator(tpl.config?.thresholdOperator || ">=");
-                        setThresholdValue(tpl.config?.thresholdValue ?? 80);
-                        setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
-                        setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
-                        setDefaultYa(tpl.config?.defaultYa ?? false);
-                        setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
-                        setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
-                        setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
-                        setMatrixColumns(
-                          Array.isArray(tpl.config?.matrixColumns) && tpl.config.matrixColumns.length > 0
-                            ? tpl.config.matrixColumns
-                            : DEFAULT_MATRIX_COLUMNS,
-                        );
-                        setFields(
-                          (tpl.fields || []).map((f: any) => {
-                            let opsiStr = "";
-                            if (f.options) {
-                              if (typeof f.options === "string") {
-                                try {
-                                  const parsed = JSON.parse(f.options);
-                                  opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
-                                } catch {
-                                  opsiStr = f.options;
-                                }
-                              } else if (Array.isArray(f.options)) {
-                                opsiStr = f.options.join(", ");
-                              }
-                            } else if (f.opsi) {
-                              opsiStr = f.opsi;
-                            }
-                            return {
-                              ...f,
-                              opsi: opsiStr,
-                              autoFill: f.config?.autoFill || f.autoFill || "",
-                              isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
-                              dependsOn: f.config?.dependsOn || f.dependsOn || null,
-                              targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
-                              allowNA: f.config?.allowNA ?? f.allowNA ?? false,
-                              subNomor: f.config?.subNomor || f.subNomor || "",
-                              areaScores: f.config?.areaScores || f.areaScores || {},
-                              skor: f.config?.skor ?? f.skor ?? 0,
-                              skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
-                              skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
-                            };
-                          }),
-                        );
-                        setSubCategoryId(tpl.subCategoryId ?? null);
-                        setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
-                      }}
-                      className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden text-left shadow-subtle"
-                    >
-                      <div className="w-1.5 shrink-0 bg-primary" />
-                      <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-4">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
-                              {tpl.nama}
-                            </h4>
-                            {!tpl.puskesmasId ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
-                                🏛️ Dinkes
-                              </span>
-                            ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
-                              <span
-                                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                                  currentUserRole === "ADMIN" ||
-                                  (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)
-                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-                                    : "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20"
-                                }`}
-                              >
-                                🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
-                              </span>
-                            ) : null}
-                            {currentUserRole !== "ADMIN" && tpl.puskesmasId && tpl.puskesmasId !== currentUserPkmId && (
-                              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
-                                Publik
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
-                            <span className="font-semibold">
-                              {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
-                            </span>
-                            {tpl.config?.authorName && (
-                              <>
-                                <span>•</span>
-                                <span className="flex items-center gap-1 font-medium text-foreground/80">
-                                  👤 {tpl.config.authorName}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
-                          <div className="text-center">
-                            <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-foreground">
-                              {fieldCount}
-                            </div>
-                            <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
-                              Butir
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-primary">
-                              {grupCount}
-                            </div>
-                            <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
-                              Grup
-                            </div>
-                          </div>
-                          {(currentUserRole === "ADMIN" ||
-                            (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)) && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (
-                                  confirm(
-                                    `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
-                                  )
-                                ) {
-                                  deleteMutation.mutate(tpl.id);
-                                }
-                              }}
-                              disabled={deleteMutation.isPending}
-                              title="Hapus template"
-                              className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Pagination Controls Template */}
-              {totalTemplatePages > 1 && (
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <button
-                    onClick={() => setTemplatePage((p) => Math.max(1, p - 1))}
-                    disabled={templatePage <= 1}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle shadow-subtle transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Sebelumnya
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalTemplatePages }).map((_, i) => (
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {paginatedTemplates.map((tpl: any) => {
+                    const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                    const grupCount = new Set(
+                      (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
+                    ).size;
+                    return (
                       <button
-                        key={i + 1}
-                        onClick={() => setTemplatePage(i + 1)}
-                        className={`w-8 h-8 rounded-lg text-[12px] font-bold transition-all ${
-                          templatePage === i + 1
-                            ? "bg-primary text-white shadow-subtle"
-                            : "text-muted-foreground hover:bg-surface-subtle"
-                        }`}
+                        key={tpl.id}
+                        onClick={() => {
+                          setSelectedTemplateId(tpl.id);
+                          setIsCreating(false);
+                          setNama(tpl.nama);
+                          setDeskripsi(tpl.deskripsi || "");
+                          setRumus(tpl.config?.rumus || "sum");
+                          setCustomFormula(tpl.config?.customFormula || "");
+                          setThresholdOperator(tpl.config?.thresholdOperator || ">=");
+                          setThresholdValue(tpl.config?.thresholdValue ?? 80);
+                          setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
+                          setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
+                          setDefaultYa(tpl.config?.defaultYa ?? false);
+                          setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
+                          setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
+                          setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
+                          setMatrixColumns(
+                            Array.isArray(tpl.config?.matrixColumns) && tpl.config.matrixColumns.length > 0
+                              ? tpl.config.matrixColumns
+                              : DEFAULT_MATRIX_COLUMNS,
+                          );
+                          setFields(
+                            (tpl.fields || []).map((f: any) => {
+                              let opsiStr = "";
+                              if (f.options) {
+                                if (typeof f.options === "string") {
+                                  try {
+                                    const parsed = JSON.parse(f.options);
+                                    opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
+                                  } catch {
+                                    opsiStr = f.options;
+                                  }
+                                } else if (Array.isArray(f.options)) {
+                                  opsiStr = f.options.join(", ");
+                                }
+                              } else if (f.opsi) {
+                                opsiStr = f.opsi;
+                              }
+                              return {
+                                ...f,
+                                opsi: opsiStr,
+                                autoFill: f.config?.autoFill || f.autoFill || "",
+                                isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
+                                dependsOn: f.config?.dependsOn || f.dependsOn || null,
+                                targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
+                                allowNA: f.config?.allowNA ?? f.allowNA ?? false,
+                                subNomor: f.config?.subNomor || f.subNomor || "",
+                                areaScores: f.config?.areaScores || f.areaScores || {},
+                                skor: f.config?.skor ?? f.skor ?? 0,
+                                skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
+                                skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
+                              };
+                            }),
+                          );
+                          setSubCategoryId(tpl.subCategoryId ?? null);
+                          setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                        }}
+                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden text-left shadow-subtle"
                       >
-                        {i + 1}
+                        <div className="w-1.5 shrink-0 bg-primary" />
+                        <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-4">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                                {tpl.nama}
+                              </h4>
+                              {!tpl.puskesmasId ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                                  🏛️ Dinkes
+                                </span>
+                              ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
+                                <span
+                                  title={tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border shrink-0 max-w-[180px] truncate ${
+                                    currentUserRole === "ADMIN" ||
+                                    (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)
+                                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                                      : "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20"
+                                  }`}
+                                >
+                                  🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                                </span>
+                              ) : null}
+                              {currentUserRole !== "ADMIN" &&
+                                tpl.puskesmasId &&
+                                tpl.puskesmasId !== currentUserPkmId && (
+                                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                    Publik
+                                  </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
+                              <span className="font-semibold">
+                                {tpl.subCategory ? tpl.subCategory.nama : "Tanpa sub kategori"}
+                              </span>
+                              {tpl.config?.authorName && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1 font-medium text-foreground/80">
+                                    👤 {tpl.config.authorName}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-2.5 sm:gap-4">
+                            <div className="text-center">
+                              <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-foreground">
+                                {fieldCount}
+                              </div>
+                              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                                Butir
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-[14px] sm:text-[16px] font-black tabular-nums leading-none text-primary">
+                                {grupCount}
+                              </div>
+                              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                                Grup
+                              </div>
+                            </div>
+                            {(currentUserRole === "ADMIN" ||
+                              (tpl.puskesmasId && tpl.puskesmasId === currentUserPkmId)) && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (
+                                    confirm(
+                                      `Yakin ingin menghapus template "${tpl.nama}"? Tindakan ini tidak dapat dibatalkan.`,
+                                    )
+                                  ) {
+                                    deleteMutation.mutate(tpl.id);
+                                  }
+                                }}
+                                disabled={deleteMutation.isPending}
+                                title="Hapus template"
+                                className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                          </div>
+                        </div>
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setTemplatePage((p) => Math.min(totalTemplatePages, p + 1))}
-                    disabled={templatePage >= totalTemplatePages}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle shadow-subtle transition-colors"
-                  >
-                    Selanjutnya <ChevronRight className="w-4 h-4" />
-                  </button>
+                    );
+                  })}
                 </div>
               )}
+
+              {/* Pagination Controls Template */}
+              <Pagination
+                page={templatePage}
+                totalPages={totalTemplatePages}
+                total={filteredTemplates.length}
+                limit={templateLimit}
+                onPageChange={(p) => {
+                  setTemplatePage(p);
+                }}
+                onLimitChange={(l) => {
+                  setTemplateLimit(l);
+                  setTemplatePage(1);
+                }}
+                noun="template"
+                className="border-t-0"
+              />
             </div>
           )}
         </div>
