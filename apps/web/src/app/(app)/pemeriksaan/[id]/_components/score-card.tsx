@@ -18,6 +18,13 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
   const pct = Math.min(100, Math.max(0, scoreData.percentValue || 0));
   const R = 42;
   const C = 2 * Math.PI * R;
+  const SW = 9;
+  // Ujung bulat (strokeLinecap="round") memperpanjang busur setengah tebal
+  // garis di tiap ujungnya, jadi busur 92,8% tergambar seperti ~96% dan
+  // angkanya tidak cocok dengan bentuknya. Panjang busur dikurangi dulu
+  // sebesar dua ujung itu supaya yang terlihat persis sebesar skornya.
+  const arcLength = pct > 0 ? Math.max(0.5, (pct / 100) * C - SW) : 0;
+  const arcOffset = C - arcLength;
   const accentClass = scoreData.pass ? "text-success" : "text-error";
   const accentStroke = scoreData.pass ? "var(--color-success)" : "var(--color-error)";
   const accentBg = scoreData.pass ? "bg-success" : "bg-error";
@@ -31,17 +38,17 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
         {/* Gauge SVG besar */}
         <div className="relative w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] shrink-0">
           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90" aria-hidden="true">
-            <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth="9" className="text-muted" />
+            <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth={SW} className="text-muted" />
             <circle
               cx="50"
               cy="50"
               r={R}
               fill="none"
               stroke={accentStroke}
-              strokeWidth="9"
+              strokeWidth={SW}
               strokeLinecap="round"
               strokeDasharray={C}
-              strokeDashoffset={C * (1 - pct / 100)}
+              strokeDashoffset={arcOffset}
               style={{ transition: "stroke-dashoffset 700ms cubic-bezier(0.16,1,0.3,1)" }}
             />
           </svg>
@@ -49,7 +56,7 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
             <span className={`text-[21px] sm:text-[24px] font-black tabular-nums leading-none ${accentClass}`}>
               {scoreData.valueText}
             </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground mt-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground mt-1">
               Skor
             </span>
           </div>

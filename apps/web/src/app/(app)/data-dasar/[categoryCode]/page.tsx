@@ -474,18 +474,18 @@ export default function DataDasarSubCatPage() {
             </div>
           </div>
 
-          {/* Sub-category pills, dikelompokkan menurut grup. Sebelumnya grup
-              ditempel di dalam tiap pill sehingga "PRIORITAS" terulang di
-              belasan pill dan tidak terbaca sebagai pengelompokan. */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
+          {/* Pill sub-kategori: dibungkus ke baris berikutnya, bukan digeser
+              mendatar. Kategori bisa belasan, dan yang tergeser ke kanan tidak
+              terlihat sama sekali — tidak ada petunjuk masih ada pilihan lain. */}
+          <div className="flex flex-col gap-2.5 pt-2">
             {subCatGroups.map((group) => (
-              <div key={group.grup} className="flex items-center gap-2 min-w-0">
+              <div key={group.grup} className="flex flex-wrap items-center gap-2">
                 {group.grup !== "Lainnya" && (
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                     {group.grup}
                   </span>
                 )}
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {group.items.map((sc) => {
                     const active = sc.id === selectedSubCatId;
                     return (
@@ -498,7 +498,7 @@ export default function DataDasarSubCatPage() {
                           closeEdit();
                         }}
                         aria-pressed={active}
-                        className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
+                        className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
                           active
                             ? "bg-primary text-white shadow-xs"
                             : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"

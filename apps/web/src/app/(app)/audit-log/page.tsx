@@ -533,7 +533,7 @@ export default function AuditLogPage() {
                   terpotong di layar sempit, bukan bisa digulir. */}
               <div className="overflow-x-auto">
                 {/* Header */}
-                <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle min-w-[640px]">
+                <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle min-w-[720px]">
                   {isAudit ? (
                     <>
                       <div className="w-[90px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
@@ -551,23 +551,26 @@ export default function AuditLogPage() {
                     </>
                   ) : (
                     <>
-                      <div className="w-[110px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                      <div className="w-[110px] shrink-0 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         Event
                       </div>
-                      <div className="w-[140px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                      {/* Alamat IPv6 penuh 39 karakter, jadi kolomnya dilebarkan
+                          dan isinya dipotong dengan tooltip — nilai utuhnya ada
+                          di panel yang terbuka saat baris diklik. */}
+                      <div className="w-[200px] shrink-0 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         IP
                       </div>
-                      <div className="flex-1 truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                      <div className="flex-1 min-w-0 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         Detail
                       </div>
-                      <div className="w-[160px] truncate text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                      <div className="w-[160px] shrink-0 text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         Waktu
                       </div>
                     </>
                   )}
                 </div>
 
-                <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60 min-w-[640px]">
+                <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60 min-w-[720px]">
                   {items.map((item: any) => {
                     const isExpanded = expandedId === item.id;
                     const meta = isAudit
@@ -614,7 +617,7 @@ export default function AuditLogPage() {
                             </>
                           ) : (
                             <>
-                              <div className="w-[110px]">
+                              <div className="w-[110px] shrink-0">
                                 <span
                                   className={cn(
                                     "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
@@ -624,8 +627,13 @@ export default function AuditLogPage() {
                                   {item.eventType.replace("_", " ")}
                                 </span>
                               </div>
-                              <div className="w-[140px]">
-                                <span className="text-[11px] font-bold text-text-main font-mono">{item.ip}</span>
+                              <div className="w-[200px] shrink-0">
+                                <span
+                                  className="block text-[11px] font-bold text-text-main font-mono truncate"
+                                  title={item.ip || "—"}
+                                >
+                                  {item.ip || "—"}
+                                </span>
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] font-medium text-text-main truncate">
@@ -634,7 +642,7 @@ export default function AuditLogPage() {
                               </div>
                             </>
                           )}
-                          <div className="w-[160px] flex items-center justify-end gap-2">
+                          <div className="w-[160px] shrink-0 flex items-center justify-end gap-2">
                             <div className="text-right">
                               <p className="text-[11px] font-medium text-text-main tabular-nums">
                                 {new Date(item.createdAt).toLocaleDateString("id-ID", {

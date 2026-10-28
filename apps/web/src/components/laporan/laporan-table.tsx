@@ -207,10 +207,13 @@ export function LaporanTable({
       {/* ── Toolbar: tabs kiri, aksi kanan ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {isRowBased ? (
-          <div className="inline-flex items-center gap-1 rounded-card border border-border bg-surface p-1 max-w-full overflow-x-auto shadow-subtle">
+          /* Kategori dibiarkan membungkus ke baris berikutnya, bukan digeser
+             mendatar: yang tergeser tidak terlihat sama sekali dan tidak ada
+             petunjuk bahwa masih ada kategori di sebelah kanan. */
+          <div className="flex flex-wrap items-center gap-1 rounded-card border border-border bg-surface p-1 shadow-subtle">
             <button
               onClick={() => setActiveTab("ringkasan")}
-              className={`px-3.5 h-8 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
+              className={`px-3.5 h-8 rounded-button text-[11px] font-bold text-left transition-colors ${
                 activeTab === "ringkasan"
                   ? "bg-primary text-primary-foreground shadow-subtle"
                   : "text-muted-foreground hover:text-foreground"
@@ -222,7 +225,7 @@ export function LaporanTable({
               <button
                 key={sc.id}
                 onClick={() => setActiveTab(String(sc.id))}
-                className={`px-3.5 h-8 rounded-button text-[11px] font-bold whitespace-nowrap transition-colors ${
+                className={`px-3.5 h-8 rounded-button text-[11px] font-bold text-left transition-colors ${
                   activeTab === String(sc.id)
                     ? "bg-primary text-primary-foreground shadow-subtle"
                     : "text-muted-foreground hover:text-foreground"
