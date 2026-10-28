@@ -18,13 +18,17 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
   const pct = Math.min(100, Math.max(0, scoreData.percentValue || 0));
   const R = 42;
   const C = 2 * Math.PI * R;
-  const SW = 9;
+  const SW = 8;
   // Ujung bulat (strokeLinecap="round") memperpanjang busur setengah tebal
   // garis di tiap ujungnya, jadi busur 92,8% tergambar seperti ~96% dan
   // angkanya tidak cocok dengan bentuknya. Panjang busur dikurangi dulu
   // sebesar dua ujung itu supaya yang terlihat persis sebesar skornya.
   const arcLength = pct > 0 ? Math.max(0.5, (pct / 100) * C - SW) : 0;
   const arcOffset = C - arcLength;
+  // Bidang kosong di dalam cincin hanya 100 - 2*SW dari lebar kotak, jadi
+  // teks hidup di kotak yang lebih kecil dari gauge-nya. 0,74 menyisakan
+  // jarak aman dari cincin tanpa membuat angkanya mengecil.
+  const GAUGE_CLEAR = 0.74;
   const accentClass = scoreData.pass ? "text-success" : "text-error";
   const accentStroke = scoreData.pass ? "var(--color-success)" : "var(--color-error)";
   const accentBg = scoreData.pass ? "bg-success" : "bg-error";
@@ -36,7 +40,7 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
 
       <div className="flex items-center gap-5 sm:gap-6">
         {/* Gauge SVG besar */}
-        <div className="relative w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] shrink-0">
+        <div className="relative w-[112px] h-[112px] sm:w-[132px] sm:h-[132px] shrink-0 [container-type:inline-size]">
           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90" aria-hidden="true">
             <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth={SW} className="text-muted" />
             <circle
@@ -52,8 +56,16 @@ export function ScoreCard({ scoreData }: { scoreData: ScoreData }) {
               style={{ transition: "stroke-dashoffset 700ms cubic-bezier(0.16,1,0.3,1)" }}
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-[21px] sm:text-[24px] font-black tabular-nums leading-none ${accentClass}`}>
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ padding: `${((1 - GAUGE_CLEAR) / 2) * 100}%` }}
+          >
+            <span
+              className={`font-black tabular-nums leading-none whitespace-nowrap ${accentClass}`}
+              // 20cqw menyisakan ~15px jarak ke cincin di kotak 112px dan
+              // ~20px di 132px. Di 22cqw sisanya cuma 8px — masih mepet.
+              style={{ fontSize: "clamp(17px, 20cqw, 28px)" }}
+            >
               {scoreData.valueText}
             </span>
             <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground mt-1">
