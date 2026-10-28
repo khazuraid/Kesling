@@ -39,6 +39,13 @@ import { Pagination } from "@/components/ui/pagination";
 import { Select } from "@/components/ui/select";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { sasaranColumnsFromDynamic, sasaranMetaValue } from "@/lib/sasaran-meta";
+import {
+  buildRiwayatParams,
+  matchesTemplateOwner,
+  matchesTemplateSearch,
+  templateCategoryName,
+  templateCategoryOptions,
+} from "@/lib/template-filter";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 
 /** Label dropdown pemilik formulir di tab Formulir. */
@@ -213,17 +220,16 @@ export default function PemeriksaanPage() {
       riwayatUserId,
     ],
     queryFn: async () => {
-      const sp = new URLSearchParams({
-        paginated: "1",
-        page: String(riwayatPage),
-        limit: String(riwayatLimit),
-        search: riwayatSearch.trim(),
+      const sp = buildRiwayatParams({
+        page: riwayatPage,
+        limit: riwayatLimit,
+        search: riwayatSearch,
+        dateFrom: riwayatDateFrom,
+        dateTo: riwayatDateTo,
+        status: riwayatStatus,
+        templateId: riwayatTemplateId,
+        userId: riwayatUserId,
       });
-      if (riwayatDateFrom) sp.set("dateFrom", riwayatDateFrom);
-      if (riwayatDateTo) sp.set("dateTo", riwayatDateTo);
-      if (riwayatStatus && riwayatStatus !== "all") sp.set("status", riwayatStatus);
-      if (riwayatTemplateId && riwayatTemplateId !== "all") sp.set("templateId", riwayatTemplateId);
-      if (riwayatUserId && riwayatUserId !== "all") sp.set("userId", riwayatUserId);
       const res = await fetch(`/api/inspection/results?${sp.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat riwayat");
       return res.json();
@@ -257,39 +263,15 @@ export default function PemeriksaanPage() {
   }, [editParam, isLoadingRiwayat, paginatedResults]);
 
   // Pagination & Filtering
-  // Opsi kategori untuk Select — diambil dari subCategory.category.nama unik.
-  const formulirCategoryOptions = useMemo(() => {
-    const seen = new Set<string>();
-    for (const t of templates) {
-      const nama = (t as any).subCategory?.category?.nama || (t as any).subCategory?.nama;
-      if (nama) seen.add(nama);
-    }
-    return Array.from(seen).sort();
-  }, [templates]);
+  const formulirCategoryOptions = useMemo(() => templateCategoryOptions(templates), [templates]);
 
   const filteredTemplates = useMemo(() => {
-    let list: any[] = templates;
-    const q = formulirSearch.toLowerCase().trim();
-    if (q) {
-      list = list.filter(
-        (t: any) =>
-          (t.nama || "").toLowerCase().includes(q) ||
-          (t.deskripsi || "").toLowerCase().includes(q) ||
-          (t.subCategory?.nama || "").toLowerCase().includes(q),
-      );
-    }
-    if (formulirCategory !== "all") {
-      list = list.filter((t: any) => (t.subCategory?.category?.nama || t.subCategory?.nama || "") === formulirCategory);
-    }
-    if (formulirOwner !== "all") {
-      list = list.filter((t: any) => {
-        if (formulirOwner === "dinkes") return !t.puskesmasId;
-        if (formulirOwner === "own") return t.puskesmasId === userPkmId;
-        if (formulirOwner === "other") return t.puskesmasId && t.puskesmasId !== userPkmId;
-        return true;
-      });
-    }
-    return list;
+    return templates.filter(
+      (t: any) =>
+        matchesTemplateSearch(t, formulirSearch) &&
+        (formulirCategory === "all" || templateCategoryName(t) === formulirCategory) &&
+        matchesTemplateOwner(t, formulirOwner, userPkmId),
+    );
   }, [templates, formulirSearch, formulirCategory, formulirOwner, userPkmId]);
 
   const totalFormulirPages = Math.max(1, Math.ceil(filteredTemplates.length / formulirLimit));

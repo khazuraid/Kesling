@@ -3,12 +3,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Building2, Database, Droplets, GlassWater, Home, Settings2, Toilet, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { FilterBar } from "@/components/ui/filter-bar";
 
 interface Category {
   id: number;
   nama: string;
   code: string;
   icon: string;
+  deskripsi?: string | null;
   isRowBased: boolean;
   urutan: number;
   parameters?: { id: number; nama: string; code: string; type: string; isBaseline: boolean; config?: any }[];
@@ -25,6 +28,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 };
 
 export default function DataDasarIndexPage() {
+  const [search, setSearch] = useState("");
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["laporan-categories", "data-dasar-index"],
     queryFn: async () => {
@@ -36,6 +40,20 @@ export default function DataDasarIndexPage() {
 
   const totalFields = categories.reduce((s, c) => s + (c.parameters || []).filter((p) => p.isBaseline).length, 0);
   const totalSubs = categories.reduce((s, c) => s + (c.subCategories?.length || 0), 0);
+
+  // Kategori hanya segelintir, jadi penyaringan di klien tidak perlu
+  // round-trip dan hasilnya langsung saat mengetik.
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return categories;
+    return categories.filter((c) => {
+      if ((c.nama || "").toLowerCase().includes(q) || (c.code || "").toLowerCase().includes(q)) return true;
+      if ((c.deskripsi || "").toLowerCase().includes(q)) return true;
+      return (c.parameters || []).some(
+        (p) => p.isBaseline && ((p.nama || "").toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q)),
+      );
+    });
+  }, [categories, search]);
   const totalSync = categories.reduce(
     (s, c) => s + (c.parameters || []).filter((p) => p.isBaseline && p.config?.syncToParamId).length,
     0,
@@ -103,20 +121,34 @@ export default function DataDasarIndexPage() {
               Kategori Pemeliharaan
             </h3>
             <span className="text-[11px] font-bold text-muted-foreground">
-              <span className="tabular-nums">{categories.length}</span> modul terdaftar
+              <span className="tabular-nums">{filtered.length}</span> dari{" "}
+              <span className="tabular-nums">{categories.length}</span> modul
             </span>
           </div>
+
+          <FilterBar
+            searchValue={search}
+            onSearchChange={setSearch}
+            placeholder="Cari kategori atau parameter dasar..."
+            debounceMs={150}
+          />
 
           {isLoading ? (
             <div className="rounded-card bg-surface border border-border shadow-subtle p-8 flex flex-col items-center justify-center space-y-3">
               <div className="w-8 h-8 border-2 border-border border-t-primary rounded-full animate-spin" />
               <p className="text-[12px] font-medium text-muted-foreground">Memuat data kategori...</p>
             </div>
-          ) : categories.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="rounded-card bg-surface border border-dashed border-border shadow-subtle p-10 flex flex-col items-center justify-center text-center">
               <Database className="w-8 h-8 text-muted-foreground/40 mb-3" />
-              <p className="text-[13px] font-bold text-foreground">Belum Ada Kategori</p>
-              <p className="text-[12px] text-muted-foreground mt-1">Buat modul dulu di Laporan Builder.</p>
+              <p className="text-[13px] font-bold text-foreground">
+                {categories.length === 0 ? "Belum Ada Kategori" : "Tidak Ada Kategori Cocok"}
+              </p>
+              <p className="text-[12px] text-muted-foreground mt-1">
+                {categories.length === 0
+                  ? "Buat modul dulu di Laporan Builder."
+                  : `Tidak ada yang cocok dengan "${search}".`}
+              </p>
             </div>
           ) : (
             <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
@@ -133,7 +165,7 @@ export default function DataDasarIndexPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
-                    {categories.map((cat) => {
+                    {filtered.map((cat) => {
                       const code = cat.code.toLowerCase();
                       const dataDasarFields = (cat.parameters || []).filter((p) => p.isBaseline);
                       const syncFields = dataDasarFields.filter((p) => p.config?.syncToParamId);

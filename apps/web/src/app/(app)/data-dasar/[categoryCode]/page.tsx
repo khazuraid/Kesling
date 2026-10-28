@@ -1,14 +1,20 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Pencil, Plus, Search, Settings2, Trash, X } from "lucide-react";
+import { Database, Pencil, Plus, Settings2, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Pagination } from "@/components/ui/pagination";
+import { Select } from "@/components/ui/select";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { sasaranColumnsFromDynamic } from "@/lib/sasaran-meta";
+
+/** Harus sama dengan `limit` pada query /api/sasaran di bawah. */
+const PAGE_SIZE = 25;
 
 interface Parameter {
   id: number;
@@ -85,6 +91,19 @@ export default function DataDasarSubCatPage() {
   );
 
   const activeSubCat = allSubCats.find((sc) => sc.id === selectedSubCatId);
+
+  // Dikelompokkan menurut grup supaya "PRIORITAS" jadi satu label bagian,
+  // bukan kata yang terulang di setiap pill.
+  const subCatGroups = useMemo(() => {
+    const groups = new Map<string, typeof allSubCats>();
+    for (const sc of allSubCats) {
+      const key = (sc.grup || "").trim() || "Lainnya";
+      const bucket = groups.get(key);
+      if (bucket) bucket.push(sc);
+      else groups.set(key, [sc]);
+    }
+    return Array.from(groups, ([grup, items]) => ({ grup, items }));
+  }, [allSubCats]);
 
   const baselineParams: Parameter[] = useMemo(
     () =>
@@ -223,7 +242,7 @@ export default function DataDasarSubCatPage() {
         subCategoryId: String(selectedSubCatId),
         paginated: "1",
         page: String(page),
-        limit: "25",
+        limit: String(PAGE_SIZE),
       });
       if (selectedPkmFilter) params.set("puskesmasId", String(selectedPkmFilter));
       if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
@@ -455,25 +474,43 @@ export default function DataDasarSubCatPage() {
             </div>
           </div>
 
-          {/* Sub-category pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-1 no-scrollbar">
-            {allSubCats.map((sc) => (
-              <button
-                key={sc.id}
-                onClick={() => {
-                  setSelectedSubCatId(sc.id);
-                  setSearchTerm("");
-                  closeEdit();
-                }}
-                className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
-                  sc.id === selectedSubCatId
-                    ? "bg-primary text-white shadow-xs"
-                    : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {sc.grup && <span className="text-[11px] font-extrabold opacity-60 uppercase">{sc.grup}</span>}
-                <span>{sc.nama}</span>
-              </button>
+          {/* Sub-category pills, dikelompokkan menurut grup. Sebelumnya grup
+              ditempel di dalam tiap pill sehingga "PRIORITAS" terulang di
+              belasan pill dan tidak terbaca sebagai pengelompokan. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
+            {subCatGroups.map((group) => (
+              <div key={group.grup} className="flex items-center gap-2 min-w-0">
+                {group.grup !== "Lainnya" && (
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">
+                    {group.grup}
+                  </span>
+                )}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {group.items.map((sc) => {
+                    const active = sc.id === selectedSubCatId;
+                    return (
+                      <button
+                        key={sc.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSubCatId(sc.id);
+                          setSearchTerm("");
+                          closeEdit();
+                        }}
+                        aria-pressed={active}
+                        className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
+                          active
+                            ? "bg-primary text-white shadow-xs"
+                            : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {sc.nama}
+                        {active && <span className="tabular-nums opacity-80">({sasaranPage.total})</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -482,30 +519,41 @@ export default function DataDasarSubCatPage() {
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── SEARCH + FILTER ── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Cari nama, pemilik, atau alamat..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-10 pl-10 pr-10 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary shadow-subtle transition-colors"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+        <FilterBar
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          placeholder="Cari nama, pemilik, atau alamat..."
+          isFetching={fetchingSasaran}
+          activeFilters={[
+            ...(selectedSubCatId && activeSubCat
+              ? [
+                  {
+                    key: "subcat",
+                    label: `Sub-kategori: ${activeSubCat.nama}`,
+                  },
+                ]
+              : []),
+            ...(selectedPkmFilter
+              ? [
+                  {
+                    key: "pkm",
+                    label: `Puskesmas: ${puskesmasList.find((p: any) => p.id === selectedPkmFilter)?.nama || selectedPkmFilter}`,
+                    onRemove: () => setSelectedPkmFilter(null),
+                  },
+                ]
+              : []),
+          ]}
+          onReset={() => {
+            setSearchTerm("");
+            setSelectedPkmFilter(null);
+          }}
+        >
           {userRole !== "OPERATOR" && (
-            <select
-              value={selectedPkmFilter || ""}
+            <Select
+              value={selectedPkmFilter ? String(selectedPkmFilter) : ""}
               onChange={(e) => setSelectedPkmFilter(e.target.value ? Number(e.target.value) : null)}
-              className="h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[12px] font-medium outline-none focus:border-primary cursor-pointer shrink-0 max-w-[220px] shadow-subtle"
+              aria-label="Saring menurut puskesmas"
+              className="h-10 w-auto max-w-[220px] shrink-0 text-[12px] font-medium"
             >
               <option value="">Semua Puskesmas</option>
               {puskesmasList.map((p: any) => (
@@ -513,9 +561,9 @@ export default function DataDasarSubCatPage() {
                   {p.nama}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
-        </div>
+        </FilterBar>
 
         {/* ── TABLE CONTAINER ── */}
         <div className="space-y-3 pt-1">
@@ -630,32 +678,18 @@ export default function DataDasarSubCatPage() {
                 </table>
               </div>
 
-              {/* Pagination Controls */}
-              <div className="px-5 py-3.5 border-t border-border bg-surface flex flex-wrap items-center justify-between gap-3 text-[11px] font-bold text-muted-foreground">
-                <span>
-                  <span className="tabular-nums font-semibold">{sasaranPage.total}</span> entitas · halaman{" "}
-                  <span className="tabular-nums font-semibold">{sasaranPage.page}</span>/
-                  <span className="tabular-nums font-semibold">{Math.max(1, sasaranPage.totalPages)}</span>
-                  {fetchingSasaran ? " · sinkronisasi..." : ""}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="h-8 px-3 rounded-button border border-border bg-surface text-text-main text-[11px] font-bold disabled:opacity-40 hover:border-primary hover:text-primary transition-colors shadow-subtle"
-                  >
-                    Prev
-                  </button>
-                  <button
-                    type="button"
-                    disabled={page >= sasaranPage.totalPages}
-                    onClick={() => setPage((p) => Math.min(sasaranPage.totalPages, p + 1))}
-                    className="h-8 px-3 rounded-button border border-border bg-surface text-text-main text-[11px] font-bold disabled:opacity-40 hover:border-primary hover:text-primary transition-colors shadow-subtle"
-                  >
-                    Next
-                  </button>
-                </div>
+              {/* Pagination */}
+              <div className="border-t border-border">
+                <Pagination
+                  page={sasaranPage.page}
+                  totalPages={Math.max(1, sasaranPage.totalPages)}
+                  total={sasaranPage.total}
+                  limit={PAGE_SIZE}
+                  onPageChange={setPage}
+                  isFetching={fetchingSasaran}
+                  noun="entitas"
+                  className="border-t-0"
+                />
               </div>
             </div>
           )}

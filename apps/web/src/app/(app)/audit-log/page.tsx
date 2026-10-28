@@ -8,24 +8,21 @@ import {
   Bug,
   Calendar,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronUp,
   Database,
   Download,
-  Filter,
   Pause,
   Play,
-  Search,
   Shield,
   Trash2,
   User as UserIcon,
-  X,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
+import { DateRangeInputs, FilterBar } from "@/components/ui/filter-bar";
+import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,7 +31,7 @@ interface AuditLog {
   id: number;
   action: string;
   tableName: string;
-  recordId: number | null;
+  recordId: number;
   userId: number;
   user: { id: number; nama: string; email: string; role: string };
   createdAt: string;
@@ -104,7 +101,6 @@ export default function AuditLogPage() {
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
 
   // ── Queries ──
   const { data: auditData, isLoading: auditLoading } = useQuery<PaginatedResponse<AuditLog>>({
@@ -350,104 +346,82 @@ export default function AuditLogPage() {
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── TOOLBAR ── */}
         {!isErrors && (
-          <div className="pt-5 space-y-2">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              {isAudit ? (
-                <>
-                  <div className="relative flex-1">
-                    <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
+          <div className="pt-5">
+            <FilterBar
+              searchValue={search}
+              onSearchChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+              placeholder={isAudit ? "Cari user, tabel, atau aksi..." : "Cari log keamanan..."}
+              isFetching={isLoading}
+              activeFilters={[
+                ...(actionFilter !== "all"
+                  ? [
+                      {
+                        key: "action",
+                        label: `Aksi: ${actionFilter}`,
+                        onRemove: () => {
+                          setActionFilter("all");
+                          setPage(1);
+                        },
+                      },
+                    ]
+                  : []),
+                ...(dateFrom || dateTo
+                  ? [
+                      {
+                        key: "date",
+                        label: `${dateFrom || "awal"} → ${dateTo || "kini"}`,
+                        onRemove: () => {
+                          setDateFrom("");
+                          setDateTo("");
+                          setPage(1);
+                        },
+                      },
+                    ]
+                  : []),
+              ]}
+              onReset={() => {
+                setSearch("");
+                if (isAudit) setActionFilter("all");
+                setDateFrom("");
+                setDateTo("");
+                setPage(1);
+              }}
+            >
+              {isAudit && (
+                <div className="shrink-0 inline-flex items-center gap-1 rounded-button border border-border bg-surface p-1 shadow-subtle">
+                  {["all", "CREATE", "UPDATE", "DELETE"].map((a) => (
+                    <button
+                      key={a}
+                      type="button"
+                      onClick={() => {
+                        setActionFilter(a);
                         setPage(1);
                       }}
-                      placeholder="Cari user, tabel, atau aksi..."
-                      className="w-full h-10 pl-10 pr-3 rounded-button bg-surface border border-border text-[12px] font-medium text-text-main outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div className="inline-flex items-center gap-1 rounded-button border border-border bg-surface p-1 shadow-subtle">
-                    {["all", "CREATE", "UPDATE", "DELETE"].map((a) => (
-                      <button
-                        key={a}
-                        onClick={() => {
-                          setActionFilter(a);
-                          setPage(1);
-                        }}
-                        className={cn(
-                          "h-8 px-3 rounded-button text-[10px] font-extrabold uppercase tracking-wider transition-colors",
-                          actionFilter === a
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        {a === "all" ? "Semua" : a}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1" />
+                      className={cn(
+                        "h-8 px-3 rounded-button text-[10px] font-extrabold uppercase tracking-wider transition-colors",
+                        actionFilter === a
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {a === "all" ? "Semua" : a}
+                    </button>
+                  ))}
+                </div>
               )}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={cn(
-                  "inline-flex items-center gap-2 h-10 px-4 rounded-button border text-[11px] font-extrabold transition-colors shadow-subtle",
-                  showFilters || dateFrom || dateTo
-                    ? "border-primary text-primary bg-primary-subtle"
-                    : "border-border bg-surface text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Filter className="w-3.5 h-3.5" /> Tanggal
-                {(dateFrom || dateTo) && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-              </button>
-            </div>
-
-            {showFilters && (
-              <div className="flex flex-wrap items-center gap-2 p-3 rounded-card border border-border bg-surface shadow-subtle">
-                <div className="flex items-center gap-1.5">
-                  <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                    Dari
-                  </label>
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => {
-                      setDateFrom(e.target.value);
-                      setPage(1);
-                    }}
-                    className="h-9 px-2.5 rounded-button bg-surface-subtle border border-border text-[11px] font-medium text-text-main outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                    Sampai
-                  </label>
-                  <input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => {
-                      setDateTo(e.target.value);
-                      setPage(1);
-                    }}
-                    className="h-9 px-2.5 rounded-button bg-surface-subtle border border-border text-[11px] font-medium text-text-main outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-                {(dateFrom || dateTo) && (
-                  <button
-                    onClick={() => {
-                      setDateFrom("");
-                      setDateTo("");
-                      setPage(1);
-                    }}
-                    className="h-9 px-3 text-[10px] font-extrabold text-error hover:bg-error-light rounded-button transition-colors flex items-center gap-1"
-                  >
-                    <X className="w-3 h-3" /> Reset
-                  </button>
-                )}
-              </div>
-            )}
+              <DateRangeInputs
+                from={dateFrom}
+                to={dateTo}
+                onChange={(f, t) => {
+                  setDateFrom(f);
+                  setDateTo(t);
+                  setPage(1);
+                }}
+              />
+            </FilterBar>
           </div>
         )}
 
@@ -555,216 +529,211 @@ export default function AuditLogPage() {
           ) : (
             /* ── AUDIT / SECURITY TABLE ── */
             <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle">
-                {isAudit ? (
-                  <>
-                    <div className="w-[90px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Aksi
-                    </div>
-                    <div className="w-[150px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Tabel
-                    </div>
-                    <div className="flex-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      User
-                    </div>
-                    <div className="w-[160px] text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Waktu
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-[110px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Event
-                    </div>
-                    <div className="w-[140px] text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      IP
-                    </div>
-                    <div className="flex-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Detail
-                    </div>
-                    <div className="w-[160px] text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                      Waktu
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60">
-                {items.map((item: any) => {
-                  const isExpanded = expandedId === item.id;
-                  const meta = isAudit
-                    ? ACTION_META[item.action] || FALLBACK_META
-                    : SECURITY_META[item.eventType] || FALLBACK_META;
-                  return (
-                    <Fragment key={item.id}>
-                      <div
-                        onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                        className="flex items-center px-5 py-3 hover:bg-surface-hover transition-colors cursor-pointer"
-                      >
-                        {isAudit ? (
-                          <>
-                            <div className="w-[90px]">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
-                                  meta.chip,
-                                )}
-                              >
-                                {item.action}
-                              </span>
-                            </div>
-                            <div className="w-[150px] flex items-center gap-1.5">
-                              <Database className="w-3 h-3 text-muted-foreground shrink-0" />
-                              <span className="text-[11px] font-bold text-text-main truncate">{item.tableName}</span>
-                              {item.recordId ? (
-                                <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
-                                  #{item.recordId}
-                                </span>
-                              ) : null}
-                            </div>
-                            <div className="flex-1 flex items-center gap-2 min-w-0">
-                              <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
-                                {item.user?.nama?.charAt(0) || "U"}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[11px] font-bold text-text-main truncate">{item.user?.nama}</p>
-                                <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                                  {item.user?.role}
-                                </p>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-[110px]">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
-                                  meta.chip,
-                                )}
-                              >
-                                {item.eventType.replace("_", " ")}
-                              </span>
-                            </div>
-                            <div className="w-[140px]">
-                              <span className="text-[11px] font-bold text-text-main font-mono">{item.ip}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[11px] font-medium text-text-main truncate">
-                                {item.detail || item.path || "—"}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                        <div className="w-[160px] flex items-center justify-end gap-2">
-                          <div className="text-right">
-                            <p className="text-[11px] font-medium text-text-main tabular-nums">
-                              {new Date(item.createdAt).toLocaleDateString("id-ID", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
-                            <p className="text-[11px] font-bold text-muted-foreground tabular-nums">
-                              {new Date(item.createdAt).toLocaleTimeString("id-ID", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                second: "2-digit",
-                              })}
-                            </p>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronUp className="w-3 h-3 text-muted-foreground shrink-0" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-                          )}
-                        </div>
+              {/* Baris berkolom lebar tetap: tanpa overflow-x-auto isinya
+                  terpotong di layar sempit, bukan bisa digulir. */}
+              <div className="overflow-x-auto">
+                {/* Header */}
+                <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle min-w-[640px]">
+                  {isAudit ? (
+                    <>
+                      <div className="w-[90px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Aksi
                       </div>
-                      {isExpanded && (
-                        <div className="px-5 py-4 bg-surface-subtle/50">
+                      <div className="w-[150px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Tabel
+                      </div>
+                      <div className="flex-1 truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        User
+                      </div>
+                      <div className="w-[160px] truncate text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Waktu
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-[110px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Event
+                      </div>
+                      <div className="w-[140px] truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        IP
+                      </div>
+                      <div className="flex-1 truncate text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Detail
+                      </div>
+                      <div className="w-[160px] truncate text-right text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                        Waktu
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60 min-w-[640px]">
+                  {items.map((item: any) => {
+                    const isExpanded = expandedId === item.id;
+                    const meta = isAudit
+                      ? ACTION_META[item.action] || FALLBACK_META
+                      : SECURITY_META[item.eventType] || FALLBACK_META;
+                    return (
+                      <Fragment key={item.id}>
+                        <div
+                          onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                          className="flex items-center px-5 py-3 hover:bg-surface-hover transition-colors cursor-pointer"
+                        >
                           {isAudit ? (
                             <>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                                  Detail Perubahan
-                                </span>
-                                <span className="text-[11px] font-medium text-muted-foreground">
-                                  {item.tableName} • {item.user?.nama} •{" "}
-                                  {new Date(item.createdAt).toLocaleString("id-ID")}
+                              <div className="w-[90px]">
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
+                                    meta.chip,
+                                  )}
+                                >
+                                  {item.action}
                                 </span>
                               </div>
-                              <div className="rounded-button bg-surface border border-border p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
-                                {formatChanges(item)}
+                              <div className="w-[150px] flex items-center gap-1.5">
+                                <Database className="w-3 h-3 text-muted-foreground shrink-0" />
+                                <span className="text-[11px] font-bold text-text-main truncate">{item.tableName}</span>
+                                {item.recordId ? (
+                                  <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
+                                    #{item.recordId}
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className="flex-1 flex items-center gap-2 min-w-0">
+                                <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
+                                  {item.user?.nama?.charAt(0) || "U"}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-bold text-text-main truncate">{item.user?.nama}</p>
+                                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
+                                    {item.user?.role}
+                                  </p>
+                                </div>
                               </div>
                             </>
                           ) : (
                             <>
-                              <div className="flex items-center gap-2 mb-2">
-                                <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-                                <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
-                                  Detail Event
+                              <div className="w-[110px]">
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
+                                    meta.chip,
+                                  )}
+                                >
+                                  {item.eventType.replace("_", " ")}
                                 </span>
                               </div>
-                              <div className="space-y-1.5 text-[11px] font-medium text-text-main">
-                                <p>
-                                  <span className="text-muted-foreground">IP:</span> {item.ip}
-                                </p>
-                                {item.path && (
-                                  <p>
-                                    <span className="text-muted-foreground">Path:</span> {item.path}
-                                  </p>
-                                )}
-                                {item.userAgent && (
-                                  <p>
-                                    <span className="text-muted-foreground">User Agent:</span>{" "}
-                                    <span className="text-[10px]">{item.userAgent}</span>
-                                  </p>
-                                )}
-                                {item.detail && (
-                                  <p>
-                                    <span className="text-muted-foreground">Detail:</span> {item.detail}
-                                  </p>
-                                )}
-                                <p>
-                                  <span className="text-muted-foreground">Waktu:</span>{" "}
-                                  {new Date(item.createdAt).toLocaleString("id-ID")}
+                              <div className="w-[140px]">
+                                <span className="text-[11px] font-bold text-text-main font-mono">{item.ip}</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-medium text-text-main truncate">
+                                  {item.detail || item.path || "—"}
                                 </p>
                               </div>
                             </>
                           )}
+                          <div className="w-[160px] flex items-center justify-end gap-2">
+                            <div className="text-right">
+                              <p className="text-[11px] font-medium text-text-main tabular-nums">
+                                {new Date(item.createdAt).toLocaleDateString("id-ID", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </p>
+                              <p className="text-[11px] font-bold text-muted-foreground tabular-nums">
+                                {new Date(item.createdAt).toLocaleTimeString("id-ID", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                            {isExpanded ? (
+                              <ChevronUp className="w-3 h-3 text-muted-foreground shrink-0" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </Fragment>
-                  );
-                })}
+                        {isExpanded && (
+                          <div className="px-5 py-4 bg-surface-subtle/50">
+                            {isAudit ? (
+                              <>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                                    Detail Perubahan
+                                  </span>
+                                  <span className="text-[11px] font-medium text-muted-foreground">
+                                    {item.tableName} • {item.user?.nama} •{" "}
+                                    {new Date(item.createdAt).toLocaleString("id-ID")}
+                                  </span>
+                                </div>
+                                <div className="rounded-button bg-surface border border-border p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
+                                  {formatChanges(item)}
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                                  <span className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                                    Detail Event
+                                  </span>
+                                </div>
+                                <div className="space-y-1.5 text-[11px] font-medium text-text-main">
+                                  <p>
+                                    <span className="text-muted-foreground">IP:</span> {item.ip}
+                                  </p>
+                                  {item.path && (
+                                    <p>
+                                      <span className="text-muted-foreground">Path:</span> {item.path}
+                                    </p>
+                                  )}
+                                  {item.userAgent && (
+                                    <p>
+                                      <span className="text-muted-foreground">User Agent:</span>{" "}
+                                      <span className="text-[10px]">{item.userAgent}</span>
+                                    </p>
+                                  )}
+                                  {item.detail && (
+                                    <p>
+                                      <span className="text-muted-foreground">Detail:</span> {item.detail}
+                                    </p>
+                                  )}
+                                  <p>
+                                    <span className="text-muted-foreground">Waktu:</span>{" "}
+                                    {new Date(item.createdAt).toLocaleString("id-ID")}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
 
         {/* ── PAGINATION ── */}
-        {!isErrors && totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
-              {total} entri • Hal {page} / {totalPages}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary active:scale-[0.98] disabled:opacity-30 transition-all shadow-subtle"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Prev
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary active:scale-[0.98] disabled:opacity-30 transition-all shadow-subtle"
-              >
-                Next <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+        {!isErrors && (
+          <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              limit={PAGE_SIZE}
+              onPageChange={setPage}
+              isFetching={isLoading}
+              noun="entri"
+              className="border-t-0"
+            />
           </div>
         )}
       </div>

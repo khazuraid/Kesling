@@ -34,6 +34,12 @@ import { ImportInspectionModal, type ImportJobState } from "@/components/inspect
 import { FilterBar } from "@/components/ui/filter-bar";
 import { Pagination } from "@/components/ui/pagination";
 import { Select } from "@/components/ui/select";
+import {
+  templateCategoryOptions as buildTemplateCategoryOptions,
+  matchesTemplateOwner,
+  matchesTemplateSearch,
+  templateCategoryName,
+} from "@/lib/template-filter";
 
 export const DEFAULT_MATRIX_COLUMNS = [
   { code: "A", label: "Area luar bangunan" },
@@ -1611,39 +1617,15 @@ export default function FormPemeriksaanPage() {
   }, [fields]);
   const demoPersentase = totalSkor > 0 ? Math.round((demoSkorTerisi / totalSkor) * 100) : 0;
 
-  // Opsi kategori dari subCategory.category.nama unik
-  const templateCategoryOptions = useMemo(() => {
-    const seen = new Set<string>();
-    for (const t of templates) {
-      const nama = (t as any).subCategory?.category?.nama || (t as any).subCategory?.nama;
-      if (nama) seen.add(nama);
-    }
-    return Array.from(seen).sort();
-  }, [templates]);
+  const templateCategoryOptions = useMemo(() => buildTemplateCategoryOptions(templates), [templates]);
 
   const filteredTemplates = useMemo(() => {
-    let list: any[] = templates;
-    const q = templateSearch.toLowerCase().trim();
-    if (q) {
-      list = list.filter(
-        (t: any) =>
-          (t.nama || "").toLowerCase().includes(q) ||
-          (t.deskripsi || "").toLowerCase().includes(q) ||
-          (t.subCategory?.nama || "").toLowerCase().includes(q),
-      );
-    }
-    if (templateCategory !== "all") {
-      list = list.filter((t: any) => (t.subCategory?.category?.nama || t.subCategory?.nama || "") === templateCategory);
-    }
-    if (templateOwner !== "all") {
-      list = list.filter((t: any) => {
-        if (templateOwner === "dinkes") return !t.puskesmasId;
-        if (templateOwner === "own") return t.puskesmasId === currentUserPkmId;
-        if (templateOwner === "other") return t.puskesmasId && t.puskesmasId !== currentUserPkmId;
-        return true;
-      });
-    }
-    return list;
+    return templates.filter(
+      (t: any) =>
+        matchesTemplateSearch(t, templateSearch) &&
+        (templateCategory === "all" || templateCategoryName(t) === templateCategory) &&
+        matchesTemplateOwner(t, templateOwner, currentUserPkmId),
+    );
   }, [templates, templateSearch, templateCategory, templateOwner, currentUserPkmId]);
 
   const totalTemplatePages = Math.max(1, Math.ceil(filteredTemplates.length / templateLimit));
@@ -1856,66 +1838,78 @@ export default function FormPemeriksaanPage() {
                     const grupCount = new Set(
                       (tpl.fields || []).filter((f: any) => f.grup !== "__META__").map((f: any) => f.grup || ""),
                     ).size;
-                    return (
-                      <button
-                        key={tpl.id}
-                        onClick={() => {
-                          setSelectedTemplateId(tpl.id);
-                          setIsCreating(false);
-                          setNama(tpl.nama);
-                          setDeskripsi(tpl.deskripsi || "");
-                          setRumus(tpl.config?.rumus || "sum");
-                          setCustomFormula(tpl.config?.customFormula || "");
-                          setThresholdOperator(tpl.config?.thresholdOperator || ">=");
-                          setThresholdValue(tpl.config?.thresholdValue ?? 80);
-                          setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
-                          setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
-                          setDefaultYa(tpl.config?.defaultYa ?? false);
-                          setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
-                          setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
-                          setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
-                          setMatrixColumns(
-                            Array.isArray(tpl.config?.matrixColumns) && tpl.config.matrixColumns.length > 0
-                              ? tpl.config.matrixColumns
-                              : DEFAULT_MATRIX_COLUMNS,
-                          );
-                          setFields(
-                            (tpl.fields || []).map((f: any) => {
-                              let opsiStr = "";
-                              if (f.options) {
-                                if (typeof f.options === "string") {
-                                  try {
-                                    const parsed = JSON.parse(f.options);
-                                    opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
-                                  } catch {
-                                    opsiStr = f.options;
-                                  }
-                                } else if (Array.isArray(f.options)) {
-                                  opsiStr = f.options.join(", ");
-                                }
-                              } else if (f.opsi) {
-                                opsiStr = f.opsi;
+                    // Handler dipakai onClick sekaligus onKeyDown; versi <button>
+                    // sebelumnya membungkus tombol Hapus di dalamnya sehingga HTML
+                    // tidak valid dan fokus papan ketik terperangkap.
+                    const openTemplate = () => {
+                      setSelectedTemplateId(tpl.id);
+                      setIsCreating(false);
+                      setNama(tpl.nama);
+                      setDeskripsi(tpl.deskripsi || "");
+                      setRumus(tpl.config?.rumus || "sum");
+                      setCustomFormula(tpl.config?.customFormula || "");
+                      setThresholdOperator(tpl.config?.thresholdOperator || ">=");
+                      setThresholdValue(tpl.config?.thresholdValue ?? 80);
+                      setThresholdPassText(tpl.config?.thresholdPassText || "Memenuhi Syarat");
+                      setThresholdFailText(tpl.config?.thresholdFailText || "Tidak Memenuhi Syarat");
+                      setDefaultYa(tpl.config?.defaultYa ?? false);
+                      setParamDiperiksaId(tpl.config?.agregasi?.paramDiperiksaId ?? null);
+                      setParamMsId(tpl.config?.agregasi?.paramMsId ?? null);
+                      setParamTmsId(tpl.config?.agregasi?.paramTmsId ?? null);
+                      setMatrixColumns(
+                        Array.isArray(tpl.config?.matrixColumns) && tpl.config.matrixColumns.length > 0
+                          ? tpl.config.matrixColumns
+                          : DEFAULT_MATRIX_COLUMNS,
+                      );
+                      setFields(
+                        (tpl.fields || []).map((f: any) => {
+                          let opsiStr = "";
+                          if (f.options) {
+                            if (typeof f.options === "string") {
+                              try {
+                                const parsed = JSON.parse(f.options);
+                                opsiStr = Array.isArray(parsed) ? parsed.join(", ") : f.options;
+                              } catch {
+                                opsiStr = f.options;
                               }
-                              return {
-                                ...f,
-                                opsi: opsiStr,
-                                autoFill: f.config?.autoFill || f.autoFill || "",
-                                isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
-                                dependsOn: f.config?.dependsOn || f.dependsOn || null,
-                                targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
-                                allowNA: f.config?.allowNA ?? f.allowNA ?? false,
-                                subNomor: f.config?.subNomor || f.subNomor || "",
-                                areaScores: f.config?.areaScores || f.areaScores || {},
-                                skor: f.config?.skor ?? f.skor ?? 0,
-                                skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
-                                skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
-                              };
-                            }),
-                          );
-                          setSubCategoryId(tpl.subCategoryId ?? null);
-                          setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                            } else if (Array.isArray(f.options)) {
+                              opsiStr = f.options.join(", ");
+                            }
+                          } else if (f.opsi) {
+                            opsiStr = f.opsi;
+                          }
+                          return {
+                            ...f,
+                            opsi: opsiStr,
+                            autoFill: f.config?.autoFill || f.autoFill || "",
+                            isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
+                            dependsOn: f.config?.dependsOn || f.dependsOn || null,
+                            targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
+                            allowNA: f.config?.allowNA ?? f.allowNA ?? false,
+                            subNomor: f.config?.subNomor || f.subNomor || "",
+                            areaScores: f.config?.areaScores || f.areaScores || {},
+                            skor: f.config?.skor ?? f.skor ?? 0,
+                            skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
+                            skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
+                          };
+                        }),
+                      );
+                      setSubCategoryId(tpl.subCategoryId ?? null);
+                      setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                    };
+                    return (
+                      <div
+                        key={tpl.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={openTemplate}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            openTemplate();
+                          }
                         }}
-                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden text-left shadow-subtle"
+                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-all overflow-hidden text-left shadow-subtle cursor-pointer"
                       >
                         <div className="w-1.5 shrink-0 bg-primary" />
                         <div className="flex-1 flex items-center gap-3 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-4">
@@ -2007,7 +2001,7 @@ export default function FormPemeriksaanPage() {
                             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                           </div>
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
