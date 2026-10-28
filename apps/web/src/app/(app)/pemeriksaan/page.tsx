@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
   Compass,
   Database,
@@ -35,9 +34,21 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { DateRangeInputs, FilterBar } from "@/components/ui/filter-bar";
+import { Pagination } from "@/components/ui/pagination";
+import { Select } from "@/components/ui/select";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { sasaranColumnsFromDynamic, sasaranMetaValue } from "@/lib/sasaran-meta";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
+
+/** Label dropdown pemilik formulir di tab Formulir. */
+const TEMPLATE_OWNER_LABEL: Record<string, string> = {
+  all: "Semua Pemilik",
+  dinkes: "🏛️ Dinkes",
+  own: "🏥 Puskesmas Saya",
+  other: "🏥 Puskesmas Lain",
+};
+
 import { generateInspectionPDF } from "./pdf-generator";
 
 function getTodayLocalDate(): string {
@@ -99,12 +110,21 @@ export default function PemeriksaanPage() {
 
   // Pagination & Search states
   const [riwayatPage, setRiwayatPage] = useState(1);
-  const [riwayatLimit] = useState(10);
   const [riwayatSearch, setRiwayatSearch] = useState("");
-
   const [formulirPage, setFormulirPage] = useState(1);
-  const [formulirLimit] = useState(10);
+  const [formulirLimit, setFormulirLimit] = useState(10);
   const [formulirSearch, setFormulirSearch] = useState("");
+  const [formulirCategory, setFormulirCategory] = useState("all");
+  // Dinkes | own | other | public — lihat TEMPLATE_OWNER_LABEL.
+  const [formulirOwner, setFormulirOwner] = useState("all");
+
+  // Filter riwayat (server-side; semuanya diteruskan sebagai query param).
+  const [riwayatDateFrom, setRiwayatDateFrom] = useState("");
+  const [riwayatDateTo, setRiwayatDateTo] = useState("");
+  const [riwayatStatus, setRiwayatStatus] = useState("all");
+  const [riwayatTemplateId, setRiwayatTemplateId] = useState("all");
+  const [riwayatUserId, setRiwayatUserId] = useState("all");
+  const [riwayatLimit, setRiwayatLimit] = useState(10);
 
   // Modal tambah sasaran baru langsung dari form (format identik Data Dasar)
   const [isNewSasaranModalOpen, setIsNewSasaranModalOpen] = useState(false);
@@ -181,7 +201,17 @@ export default function PemeriksaanPage() {
   });
 
   const { data: riwayatData = { data: [], total: 0, page: 1, totalPages: 1 }, isLoading: isLoadingRiwayat } = useQuery({
-    queryKey: ["inspection-results", riwayatPage, riwayatLimit, riwayatSearch],
+    queryKey: [
+      "inspection-results",
+      riwayatPage,
+      riwayatLimit,
+      riwayatSearch,
+      riwayatDateFrom,
+      riwayatDateTo,
+      riwayatStatus,
+      riwayatTemplateId,
+      riwayatUserId,
+    ],
     queryFn: async () => {
       const sp = new URLSearchParams({
         paginated: "1",
@@ -189,6 +219,11 @@ export default function PemeriksaanPage() {
         limit: String(riwayatLimit),
         search: riwayatSearch.trim(),
       });
+      if (riwayatDateFrom) sp.set("dateFrom", riwayatDateFrom);
+      if (riwayatDateTo) sp.set("dateTo", riwayatDateTo);
+      if (riwayatStatus && riwayatStatus !== "all") sp.set("status", riwayatStatus);
+      if (riwayatTemplateId && riwayatTemplateId !== "all") sp.set("templateId", riwayatTemplateId);
+      if (riwayatUserId && riwayatUserId !== "all") sp.set("userId", riwayatUserId);
       const res = await fetch(`/api/inspection/results?${sp.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat riwayat");
       return res.json();
@@ -222,16 +257,40 @@ export default function PemeriksaanPage() {
   }, [editParam, isLoadingRiwayat, paginatedResults]);
 
   // Pagination & Filtering
+  // Opsi kategori untuk Select — diambil dari subCategory.category.nama unik.
+  const formulirCategoryOptions = useMemo(() => {
+    const seen = new Set<string>();
+    for (const t of templates) {
+      const nama = (t as any).subCategory?.category?.nama || (t as any).subCategory?.nama;
+      if (nama) seen.add(nama);
+    }
+    return Array.from(seen).sort();
+  }, [templates]);
+
   const filteredTemplates = useMemo(() => {
+    let list: any[] = templates;
     const q = formulirSearch.toLowerCase().trim();
-    if (!q) return templates;
-    return templates.filter(
-      (t: any) =>
-        (t.nama || "").toLowerCase().includes(q) ||
-        (t.deskripsi || "").toLowerCase().includes(q) ||
-        (t.subCategory?.nama || "").toLowerCase().includes(q),
-    );
-  }, [templates, formulirSearch]);
+    if (q) {
+      list = list.filter(
+        (t: any) =>
+          (t.nama || "").toLowerCase().includes(q) ||
+          (t.deskripsi || "").toLowerCase().includes(q) ||
+          (t.subCategory?.nama || "").toLowerCase().includes(q),
+      );
+    }
+    if (formulirCategory !== "all") {
+      list = list.filter((t: any) => (t.subCategory?.category?.nama || t.subCategory?.nama || "") === formulirCategory);
+    }
+    if (formulirOwner !== "all") {
+      list = list.filter((t: any) => {
+        if (formulirOwner === "dinkes") return !t.puskesmasId;
+        if (formulirOwner === "own") return t.puskesmasId === userPkmId;
+        if (formulirOwner === "other") return t.puskesmasId && t.puskesmasId !== userPkmId;
+        return true;
+      });
+    }
+    return list;
+  }, [templates, formulirSearch, formulirCategory, formulirOwner, userPkmId]);
 
   const totalFormulirPages = Math.max(1, Math.ceil(filteredTemplates.length / formulirLimit));
   const paginatedTemplates = useMemo(() => {
@@ -1722,35 +1781,90 @@ export default function PemeriksaanPage() {
           {/* ── TAB FORMULIR ── */}
           {activeTab === "formulir" && (
             <div className="pt-6 space-y-4">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={formulirSearch}
-                    onChange={(e) => {
-                      setFormulirSearch(e.target.value);
-                      setFormulirPage(1);
-                    }}
-                    placeholder="Cari nama formulir atau jenis..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
-                  />
-                </div>
-                <span className="text-[11px] font-bold text-muted-foreground">
-                  Menampilkan <span className="tabular-nums">{paginatedTemplates.length}</span> dari{" "}
-                  <span className="tabular-nums">{filteredTemplates.length}</span> formulir
-                </span>
-              </div>
+              <FilterBar
+                searchValue={formulirSearch}
+                onSearchChange={(v) => {
+                  setFormulirSearch(v);
+                  setFormulirPage(1);
+                }}
+                placeholder="Cari nama formulir atau jenis..."
+                activeFilters={[
+                  ...(formulirCategory !== "all"
+                    ? [
+                        {
+                          key: "cat",
+                          label: `Kategori: ${formulirCategory}`,
+                          onRemove: () => {
+                            setFormulirCategory("all");
+                            setFormulirPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(formulirOwner !== "all"
+                    ? [
+                        {
+                          key: "owner",
+                          label: `Pemilik: ${TEMPLATE_OWNER_LABEL[formulirOwner]}`,
+                          onRemove: () => {
+                            setFormulirOwner("all");
+                            setFormulirPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                ]}
+                onReset={() => {
+                  setFormulirSearch("");
+                  setFormulirCategory("all");
+                  setFormulirOwner("all");
+                  setFormulirPage(1);
+                }}
+              >
+                <Select
+                  value={formulirCategory}
+                  onChange={(e) => {
+                    setFormulirCategory(e.target.value);
+                    setFormulirPage(1);
+                  }}
+                  aria-label="Saring menurut kategori"
+                  className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                >
+                  <option value="all">Semua Kategori</option>
+                  {formulirCategoryOptions.map((nama) => (
+                    <option key={nama} value={nama}>
+                      {nama}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  value={formulirOwner}
+                  onChange={(e) => {
+                    setFormulirOwner(e.target.value);
+                    setFormulirPage(1);
+                  }}
+                  aria-label="Saring menurut pemilik formulir"
+                  className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                >
+                  {Object.entries(TEMPLATE_OWNER_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </Select>
+              </FilterBar>
 
               {filteredTemplates.length === 0 ? (
                 <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
                   <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
                   <p className="text-[13px] font-bold text-foreground">
-                    {formulirSearch ? "Formulir Tidak Ditemukan" : "Belum Ada Template"}
+                    {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
+                      ? "Formulir Tidak Ditemukan"
+                      : "Belum Ada Template"}
                   </p>
                   <p className="text-[12px] text-muted-foreground mt-1">
-                    {formulirSearch
-                      ? "Coba kata kunci pencarian lain."
+                    {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
+                      ? "Coba ubah kata kunci atau filter."
                       : "Import template lewat halaman Form Pemeriksaan."}
                   </p>
                 </div>
@@ -1818,64 +1932,138 @@ export default function PemeriksaanPage() {
               )}
 
               {/* Pagination Controls Formulir */}
-              {totalFormulirPages > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
-                  <button
-                    onClick={() => setFormulirPage((p) => Math.max(1, p - 1))}
-                    disabled={formulirPage <= 1}
-                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Prev
-                  </button>
-                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
-                    {Array.from({ length: totalFormulirPages }).map((_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setFormulirPage(i + 1)}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
-                          formulirPage === i + 1
-                            ? "bg-primary text-white shadow-subtle"
-                            : "text-muted-foreground hover:bg-surface-subtle"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setFormulirPage((p) => Math.min(totalFormulirPages, p + 1))}
-                    disabled={formulirPage >= totalFormulirPages}
-                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                  >
-                    Next <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+              <Pagination
+                page={formulirPage}
+                totalPages={totalFormulirPages}
+                total={filteredTemplates.length}
+                limit={formulirLimit}
+                onPageChange={(p) => {
+                  setFormulirPage(p);
+                }}
+                onLimitChange={(l) => {
+                  setFormulirLimit(l);
+                  setFormulirPage(1);
+                }}
+                noun="formulir"
+                className="border-t-0"
+              />
             </div>
           )}
 
           {/* ── TAB RIWAYAT ── */}
           {activeTab === "riwayat" && (
             <div className="pt-6 space-y-4">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={riwayatSearch}
+              <FilterBar
+                searchValue={riwayatSearch}
+                onSearchChange={(v) => {
+                  setRiwayatSearch(v);
+                  setRiwayatPage(1);
+                }}
+                placeholder="Cari nama sasaran, puskesmas, formulir..."
+                isFetching={isLoadingRiwayat}
+                activeFilters={[
+                  ...(riwayatStatus !== "all"
+                    ? [
+                        {
+                          key: "status",
+                          label: `Status: ${riwayatStatus}`,
+                          onRemove: () => {
+                            setRiwayatStatus("all");
+                            setRiwayatPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(riwayatTemplateId !== "all"
+                    ? [
+                        {
+                          key: "tpl",
+                          label: `Formulir: ${templates.find((t: any) => String(t.id) === riwayatTemplateId)?.nama || riwayatTemplateId}`,
+                          onRemove: () => {
+                            setRiwayatTemplateId("all");
+                            setRiwayatPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(riwayatUserId !== "all"
+                    ? [
+                        {
+                          key: "usr",
+                          label: `Petugas: ${riwayatUserId}`,
+                          onRemove: () => {
+                            setRiwayatUserId("all");
+                            setRiwayatPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(riwayatDateFrom || riwayatDateTo
+                    ? [
+                        {
+                          key: "date",
+                          label: `${riwayatDateFrom || "…"} – ${riwayatDateTo || "…"}`,
+                          onRemove: () => {
+                            setRiwayatDateFrom("");
+                            setRiwayatDateTo("");
+                            setRiwayatPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                ]}
+                onReset={() => {
+                  setRiwayatSearch("");
+                  setRiwayatDateFrom("");
+                  setRiwayatDateTo("");
+                  setRiwayatStatus("all");
+                  setRiwayatTemplateId("all");
+                  setRiwayatUserId("all");
+                  setRiwayatPage(1);
+                }}
+              >
+                <DateRangeInputs
+                  from={riwayatDateFrom}
+                  to={riwayatDateTo}
+                  onChange={(f, t) => {
+                    setRiwayatDateFrom(f);
+                    setRiwayatDateTo(t);
+                    setRiwayatPage(1);
+                  }}
+                />
+                <Select
+                  value={riwayatStatus}
+                  onChange={(e) => {
+                    setRiwayatStatus(e.target.value);
+                    setRiwayatPage(1);
+                  }}
+                  aria-label="Filter status pemeriksaan"
+                  className="h-10 w-auto max-w-[160px] shrink-0 text-[12px] font-medium"
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="APPROVED">Disetujui</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="PENDING">Menunggu</option>
+                </Select>
+                {userRole !== "OPERATOR" && (
+                  <Select
+                    value={riwayatTemplateId}
                     onChange={(e) => {
-                      setRiwayatSearch(e.target.value);
+                      setRiwayatTemplateId(e.target.value);
                       setRiwayatPage(1);
                     }}
-                    placeholder="Cari nama sasaran, puskesmas, formulir..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-surface text-[12px] font-medium outline-none focus:border-primary transition-colors shadow-subtle"
-                  />
-                </div>
-                <span className="text-[11px] font-bold text-muted-foreground">
-                  Menampilkan <span className="tabular-nums">{paginatedResults.length}</span> dari{" "}
-                  <span className="tabular-nums">{totalRiwayat}</span> riwayat
-                </span>
-              </div>
+                    aria-label="Filter formulir"
+                    className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                  >
+                    <option value="all">Semua Formulir</option>
+                    {templates.map((t: any) => (
+                      <option key={t.id} value={String(t.id)}>
+                        {t.nama}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </FilterBar>
 
               {isLoadingRiwayat ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center">
@@ -1886,10 +2074,22 @@ export default function PemeriksaanPage() {
                 <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
                   <ShieldAlert className="w-8 h-8 text-muted-foreground/40 mb-3" />
                   <p className="text-[13px] font-bold text-foreground">
-                    {riwayatSearch ? "Data Tidak Ditemukan" : "Belum Ada Riwayat"}
+                    {riwayatSearch ||
+                    riwayatStatus !== "all" ||
+                    riwayatTemplateId !== "all" ||
+                    riwayatDateFrom ||
+                    riwayatDateTo
+                      ? "Data Tidak Ditemukan"
+                      : "Belum Ada Riwayat"}
                   </p>
                   <p className="text-[12px] text-muted-foreground mt-1">
-                    {riwayatSearch ? "Gunakan kata kunci pencarian lain." : "Hasil pemeriksaan akan tampil di sini."}
+                    {riwayatSearch ||
+                    riwayatStatus !== "all" ||
+                    riwayatTemplateId !== "all" ||
+                    riwayatDateFrom ||
+                    riwayatDateTo
+                      ? "Coba ubah kata kunci atau filter."
+                      : "Hasil pemeriksaan akan tampil di sini."}
                   </p>
                 </div>
               ) : (
@@ -1980,39 +2180,22 @@ export default function PemeriksaanPage() {
               )}
 
               {/* Pagination Controls Riwayat */}
-              {totalRiwayatPages > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-border">
-                  <button
-                    onClick={() => setRiwayatPage((p) => Math.max(1, p - 1))}
-                    disabled={riwayatPage <= 1}
-                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Prev
-                  </button>
-                  <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
-                    {Array.from({ length: totalRiwayatPages }).map((_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setRiwayatPage(i + 1)}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[11px] sm:text-[12px] font-bold transition-colors ${
-                          riwayatPage === i + 1
-                            ? "bg-primary text-white shadow-subtle"
-                            : "text-muted-foreground hover:bg-surface-subtle"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setRiwayatPage((p) => Math.min(totalRiwayatPages, p + 1))}
-                    disabled={riwayatPage >= totalRiwayatPages}
-                    className="flex items-center gap-1 px-3 py-2 rounded-xl border border-border bg-surface text-[12px] font-bold disabled:opacity-30 disabled:pointer-events-none hover:bg-surface-subtle transition-colors shadow-subtle"
-                  >
-                    Next <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+              <Pagination
+                page={riwayatPage}
+                totalPages={totalRiwayatPages}
+                total={totalRiwayat}
+                limit={riwayatLimit}
+                onPageChange={(p) => {
+                  setRiwayatPage(p);
+                }}
+                onLimitChange={(l) => {
+                  setRiwayatLimit(l);
+                  setRiwayatPage(1);
+                }}
+                isFetching={isLoadingRiwayat}
+                noun="riwayat"
+                className="border-t-0"
+              />
             </div>
           )}
         </div>
