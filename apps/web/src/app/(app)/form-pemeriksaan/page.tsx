@@ -1429,6 +1429,8 @@ export default function FormPemeriksaanPage() {
             ? `Butir dipindahkan ke "${tgtGrup}"`
             : "Butir dikeluarkan dari grup",
       );
+    } else {
+      toast.success("Urutan nomor butir diperbarui");
     }
   }
 
@@ -3759,23 +3761,46 @@ export default function FormPemeriksaanPage() {
                                     }
                                     resetDrag();
                                   }}
-                                  className={`rounded-xl border bg-surface p-3 transition-all cursor-grab active:cursor-grabbing ${
+                                  className={`relative rounded-xl border bg-surface p-3 transition-all cursor-grab active:cursor-grabbing ${
                                     field.isDisabled
                                       ? "border-rose-200 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/20 opacity-75"
                                       : "border-border hover:border-primary/40 shadow-subtle"
                                   } ${
                                     (dragItemRef.current?.type === "field" || dragState?.type === "field") &&
                                     dropTarget === `field:${index}:before`
-                                      ? "border-t-2 border-t-primary ring-1 ring-primary/40"
+                                      ? "border-t-2 border-t-primary ring-2 ring-primary/40"
                                       : (dragItemRef.current?.type === "field" || dragState?.type === "field") &&
                                           dropTarget === `field:${index}:after`
-                                        ? "border-b-2 border-b-primary ring-1 ring-primary/40"
+                                        ? "border-b-2 border-b-primary ring-2 ring-primary/40"
                                         : (dragItemRef.current?.type === "group" || dragState?.type === "group") &&
                                             dropTarget === `field-group:${index}`
                                           ? "ring-2 ring-purple-500 bg-purple-500/10"
                                           : ""
                                   } ${dragItemRef.current?.index === index || dragState?.index === index ? "opacity-40" : ""}`}
                                 >
+                                  {/* Indikator Garis Sisip Atas (sebelum nomor ini) */}
+                                  {(dragItemRef.current?.type === "field" || dragState?.type === "field") &&
+                                    dropTarget === `field:${index}:before` && (
+                                      <div className="absolute -top-3 left-4 right-4 flex items-center justify-center z-20 pointer-events-none">
+                                        <div className="h-0.5 flex-1 bg-primary rounded-full shadow-sm" />
+                                        <span className="px-2.5 py-0.5 text-[10px] font-bold bg-primary text-white rounded-full shadow-md shrink-0">
+                                          Sisipkan sebelum No. {localIdx + 1}
+                                        </span>
+                                        <div className="h-0.5 flex-1 bg-primary rounded-full shadow-sm" />
+                                      </div>
+                                    )}
+
+                                  {/* Indikator Garis Sisip Bawah (setelah nomor ini) */}
+                                  {(dragItemRef.current?.type === "field" || dragState?.type === "field") &&
+                                    dropTarget === `field:${index}:after` && (
+                                      <div className="absolute -bottom-3 left-4 right-4 flex items-center justify-center z-20 pointer-events-none">
+                                        <div className="h-0.5 flex-1 bg-primary rounded-full shadow-sm" />
+                                        <span className="px-2.5 py-0.5 text-[10px] font-bold bg-primary text-white rounded-full shadow-md shrink-0">
+                                          Sisipkan setelah No. {localIdx + 1}
+                                        </span>
+                                        <div className="h-0.5 flex-1 bg-primary rounded-full shadow-sm" />
+                                      </div>
+                                    )}
                                   {/* Baris utama: nomor + pertanyaan + aksi */}
                                   <div className="flex items-start gap-3">
                                     <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
