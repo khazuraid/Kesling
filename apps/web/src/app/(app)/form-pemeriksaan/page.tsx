@@ -312,7 +312,8 @@ export default function FormPemeriksaanPage() {
         skor: f.skor ?? 0,
         skorBenar: f.skorBenar ?? 1,
         skorSalah: f.skorSalah ?? 0,
-        dataDasarCode: f.config?.dataDasarCode,
+        dataDasarCode:
+          f.config?.dataDasarCode || (f.autoFill?.startsWith("DD:") ? f.autoFill.replace("DD:", "") : undefined),
         syncToEntityField: f.config?.syncToEntityField,
         autoFill: f.autoFill || f.config?.autoFill || undefined,
         isDisabled: f.isDisabled ?? f.config?.isDisabled ?? false,
@@ -1096,24 +1097,43 @@ export default function FormPemeriksaanPage() {
   }
 
   function addField(grup?: string) {
-    setFields([
-      ...fields,
-      {
-        pertanyaan: "",
-        tipe: "BOOLEAN",
-        isRequired: false,
-        grup: grup || "",
-        skor: 1,
-        skorBenar: 1,
-        skorSalah: 0,
-        opsi: "",
-        isDisabled: false,
-        dependsOn: null,
-        targetGolongan: "ALL",
-        allowNA: false,
-        autoFill: "",
-      },
-    ]);
+    const targetGrup = grup || "";
+    const newField = {
+      pertanyaan: "",
+      tipe: "BOOLEAN",
+      isRequired: false,
+      grup: targetGrup,
+      skor: 1,
+      skorBenar: 1,
+      skorSalah: 0,
+      opsi: "",
+      isDisabled: false,
+      dependsOn: null,
+      targetGolongan: "ALL",
+      allowNA: false,
+      autoFill: "",
+    };
+
+    if (!targetGrup) {
+      setFields([...fields, newField]);
+      return;
+    }
+
+    let lastIdx = -1;
+    for (let i = fields.length - 1; i >= 0; i--) {
+      if ((fields[i].grup || "") === targetGrup) {
+        lastIdx = i;
+        break;
+      }
+    }
+
+    if (lastIdx >= 0) {
+      const next = [...fields];
+      next.splice(lastIdx + 1, 0, newField);
+      setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    } else {
+      setFields([...fields, newField]);
+    }
   }
 
   function addFieldAt(grup: string, afterIndex: number) {
@@ -1204,7 +1224,10 @@ export default function FormPemeriksaanPage() {
       DECIMAL: "NUMBER",
       DATE: "DATE",
       SELECT: "DROPDOWN",
+      DROPDOWN: "DROPDOWN",
       BOOLEAN: "BOOLEAN",
+      GPS: "GPS",
+      PHOTO: "PHOTO",
     };
 
     // autoFill otomatis berdasarkan baseline key
@@ -1227,8 +1250,11 @@ export default function FormPemeriksaanPage() {
       if (key && existingKeys.has(key)) continue;
       if (existingLabels.has(labelLower)) continue;
 
-      const tipe = tipeMap[param.type] || "TEXT";
-      const autoFill = key ? autoFillMap[key] || "" : "";
+      let tipe = tipeMap[param.type] || "TEXT";
+      if (param.type === "GPS" || labelLower.includes("gps") || labelLower.includes("koordinat")) {
+        tipe = "GPS";
+      }
+      const autoFill = key && autoFillMap[key] ? autoFillMap[key] : param.code ? `DD:${param.code}` : "";
       let opsi = "";
       if (tipe === "DROPDOWN" && param.config?.options) {
         const opts = param.config.options;
@@ -1352,40 +1378,61 @@ export default function FormPemeriksaanPage() {
     if (target < 0 || target >= next.length) return;
     const currentItem = next[index];
     const targetItem = next[target];
-    if (currentItem.grup !== targetItem.grup) {
+    const isGroupChange = currentItem.grup !== targetItem.grup;
+    if (isGroupChange) {
       next[index] = { ...currentItem, grup: targetItem.grup };
     }
     [next[index], next[target]] = [next[target], next[index]];
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    if (isGroupChange) {
+      toast.success(
+        targetItem.grup === "__META__" ? "Butir dipindahkan ke Metadata" : `Butir dipindahkan ke "${targetItem.grup}"`,
+      );
+    }
   }
 
   // ---- Drag & Drop Engine ----
   const [dragState, setDragState] = useState<{ type: "field" | "group"; index?: number; grup?: string } | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const dragArmedRef = useRef<string | null>(null);
+  const dragItemRef = useRef<{ type: "field" | "group"; index?: number; grup?: string } | null>(null);
+  const dropTargetRef = useRef<string | null>(null);
+  const justDraggedGroupRef = useRef<boolean>(false);
 
-  function moveFieldTo(from: number, to: number) {
+  function moveFieldTo(from: number, to: number, position: "before" | "after" = "before") {
     if (from === to) return;
     const item = fields[from];
     const targetItem = fields[to];
     if (!item || !targetItem) return;
-    const srcGrup = item.grup || "Tanpa Grup";
-    const tgtGrup = targetItem.grup || "Tanpa Grup";
+    const srcGrup = item.grup || "";
+    const tgtGrup = targetItem.grup || "";
 
     // Adopsi grup tujuan jika berbeda (otomatis pindah bagian/sub/metadata)
     const updatedItem = { ...item, grup: tgtGrup };
     const next = [...fields];
     next.splice(from, 1);
-    // Setelah item sumber dihapus: saat turun (from < to) target bergeser -1 agar mendarat SEBELUM target
-    const insertAt = from < to ? to - 1 : to;
+
+    let insertAt: number;
+    if (position === "after") {
+      insertAt = from < to ? to : to + 1;
+    } else {
+      insertAt = from < to ? to - 1 : to;
+    }
+    insertAt = Math.max(0, Math.min(next.length, insertAt));
+
     next.splice(insertAt, 0, updatedItem);
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
     if (srcGrup !== tgtGrup) {
-      toast.success(`Butir dipindahkan ke "${tgtGrup === "__META__" ? "Metadata" : tgtGrup}"`);
+      toast.success(
+        tgtGrup === "__META__"
+          ? "Butir dipindahkan ke Metadata"
+          : tgtGrup
+            ? `Butir dipindahkan ke "${tgtGrup}"`
+            : "Butir dikeluarkan dari grup",
+      );
     }
   }
 
-  function moveFieldToGroup(from: number, targetGrup: string) {
+  function moveFieldToGroup(from: number, targetGrup: string, position: "start" | "end" = "end") {
     const item = fields[from];
     if (!item) return;
     const srcGrup = item.grup || "Tanpa Grup";
@@ -1393,16 +1440,37 @@ export default function FormPemeriksaanPage() {
 
     const updatedItem = { ...item, grup: targetGrup };
     const remaining = fields.filter((_, i) => i !== from);
-    let insertAt = remaining.length;
-    for (let i = 0; i < remaining.length; i++) {
-      if ((remaining[i].grup || "Tanpa Grup") === targetGrup) {
-        insertAt = i;
-        break;
+
+    let insertAt = -1;
+    if (position === "start") {
+      insertAt = remaining.findIndex((f) => (f.grup || "Tanpa Grup") === targetGrup);
+    } else {
+      for (let i = remaining.length - 1; i >= 0; i--) {
+        if ((remaining[i].grup || "Tanpa Grup") === targetGrup) {
+          insertAt = i + 1;
+          break;
+        }
       }
     }
-    remaining.splice(insertAt, 0, updatedItem);
-    setFields(remaining.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success(`Butir dipindahkan ke "${targetGrup === "__META__" ? "Metadata" : targetGrup}"`);
+
+    if (insertAt === -1) {
+      const gOrder = groupedFields.map((g) => g.grup);
+      const targetGrupIdx = gOrder.indexOf(targetGrup);
+      for (let gi = targetGrupIdx + 1; gi < gOrder.length; gi++) {
+        const nextGrupName = gOrder[gi];
+        const nextFieldIdx = remaining.findIndex((f) => (f.grup || "Tanpa Grup") === nextGrupName);
+        if (nextFieldIdx !== -1) {
+          insertAt = nextFieldIdx;
+          break;
+        }
+      }
+      if (insertAt === -1) insertAt = remaining.length;
+    }
+
+    const next = [...remaining];
+    next.splice(insertAt, 0, updatedItem);
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success(targetGrup === "__META__" ? "Butir dipindahkan ke Metadata" : `Butir dipindahkan ke "${targetGrup}"`);
   }
 
   function convertFieldToBagian(fromIndex: number) {
@@ -1417,11 +1485,11 @@ export default function FormPemeriksaanPage() {
     next[fromIndex] = {
       ...item,
       grup: groupName,
-      pertanyaan: "",
-      tipe: "BOOLEAN",
+      pertanyaan: item.pertanyaan ? item.pertanyaan : "Butir pemeriksaan...",
+      tipe: item.tipe || "BOOLEAN",
     };
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success(`Butir dijadikan Bagian Utama "${groupName}"`);
+    toast.success(`Bagian Utama "${groupName}" dibuat`);
   }
 
   function convertFieldToSubbagian(fromIndex: number, parentArea: string) {
@@ -1437,11 +1505,11 @@ export default function FormPemeriksaanPage() {
     next[fromIndex] = {
       ...item,
       grup: newGrup,
-      pertanyaan: "",
-      tipe: "BOOLEAN",
+      pertanyaan: item.pertanyaan ? item.pertanyaan : "Butir pemeriksaan...",
+      tipe: item.tipe || "BOOLEAN",
     };
     setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
-    toast.success(`Butir dijadikan Subbagian di bawah "${parentArea}"`);
+    toast.success(`Subbagian "${subName}" dibuat di bawah "${parentArea}"`);
   }
 
   function promoteSubToBagian(grup: string) {
@@ -1460,12 +1528,106 @@ export default function FormPemeriksaanPage() {
     toast.success(`Bagian "${grup}" diubah menjadi Subbagian di bawah "${targetParentArea}"`);
   }
 
+  function changeSubbagianParent(oldGrup: string, targetParentArea: string) {
+    if (!oldGrup.includes(" — ")) return;
+    const parts = oldGrup.split(" — ");
+    const subName = parts.slice(1).join(" — ").trim();
+    const newGrup = `${targetParentArea} — ${subName}`;
+    if (fields.some((f) => (f.grup || "Tanpa Grup") === newGrup)) {
+      toast.error(`Subbagian "${subName}" sudah ada di ${targetParentArea}`);
+      return;
+    }
+
+    const subFields = fields.filter((f) => (f.grup || "Tanpa Grup") === oldGrup).map((f) => ({ ...f, grup: newGrup }));
+    const remaining = fields.filter((f) => (f.grup || "Tanpa Grup") !== oldGrup);
+
+    let insertAt = -1;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      const g = remaining[i].grup || "Tanpa Grup";
+      if (g === targetParentArea || g.startsWith(`${targetParentArea} — `)) {
+        insertAt = i + 1;
+        break;
+      }
+    }
+    if (insertAt === -1) insertAt = remaining.length;
+
+    const next = [...remaining];
+    next.splice(insertAt, 0, ...subFields);
+    setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success(`Subbagian "${subName}" dipindahkan ke bawah "${targetParentArea}"`);
+  }
+
   function moveGroupTo(fromGrup: string, toGrup: string) {
     if (fromGrup === toGrup) return;
+
+    const fromIsSub = fromGrup.includes(" — ");
+    const toIsSub = toGrup.includes(" — ");
+
+    const fromArea = fromIsSub ? fromGrup.split(" — ")[0].trim() : fromGrup;
+    const fromSubName = fromIsSub ? fromGrup.split(" — ").slice(1).join(" — ").trim() : null;
+
+    const toArea = toIsSub ? toGrup.split(" — ")[0].trim() : toGrup;
+
+    // KASUS 1: Memindahkan Subbagian ke Bagian lain
+    if (fromIsSub && toArea !== fromArea && toGrup !== "__META__") {
+      const newGrup = `${toArea} — ${fromSubName}`;
+      if (fields.some((f) => (f.grup || "Tanpa Grup") === newGrup)) {
+        toast.error(`Subbagian "${fromSubName}" sudah ada di ${toArea}`);
+        return;
+      }
+      const subFields = fields
+        .filter((f) => (f.grup || "Tanpa Grup") === fromGrup)
+        .map((f) => ({ ...f, grup: newGrup }));
+      const remaining = fields.filter((f) => (f.grup || "Tanpa Grup") !== fromGrup);
+
+      let insertAt = -1;
+      for (let i = remaining.length - 1; i >= 0; i--) {
+        const g = remaining[i].grup || "Tanpa Grup";
+        if (g === toGrup || (toIsSub ? g === toGrup : g === toArea || g.startsWith(`${toArea} — `))) {
+          insertAt = i + 1;
+          break;
+        }
+      }
+      if (insertAt === -1) insertAt = remaining.length;
+
+      const next = [...remaining];
+      next.splice(insertAt, 0, ...subFields);
+      setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+      toast.success(`Subbagian "${fromSubName}" dipindahkan ke bawah "${toArea}"`);
+      return;
+    }
+
+    // KASUS 2: Memindahkan Bagian Utama yang memiliki anak subbagian
+    if (!fromIsSub && fromGrup !== "__META__") {
+      const familyGroups = groupedFields
+        .map((g) => g.grup)
+        .filter((g) => g === fromGrup || g.startsWith(`${fromGrup} — `));
+
+      const familyFields = fields.filter((f) => familyGroups.includes(f.grup || "Tanpa Grup"));
+      const remaining = fields.filter((f) => !familyGroups.includes(f.grup || "Tanpa Grup"));
+
+      let insertAt = remaining.length;
+      for (let i = 0; i < remaining.length; i++) {
+        const g = remaining[i].grup || "Tanpa Grup";
+        if (g === toGrup) {
+          insertAt = i;
+          break;
+        }
+      }
+
+      const next = [...remaining];
+      next.splice(insertAt, 0, ...familyFields);
+      setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+      toast.success(`Bagian "${fromGrup}" beserta seluruh subbagiannya dipindahkan`);
+      return;
+    }
+
+    // KASUS 3: Reorder grup standar (misal antar subbagian di dalam bagian yang sama, atau __META__)
     const groupKeys = groupedFields.map((g) => g.grup);
     const fromIdx = groupKeys.indexOf(fromGrup);
     const toIdx = groupKeys.indexOf(toGrup);
     if (fromIdx < 0 || toIdx < 0) return;
+
     const newKeys = groupKeys.filter((k) => k !== fromGrup);
     const adjustedTo = newKeys.indexOf(toGrup);
     newKeys.splice(adjustedTo, 0, fromGrup);
@@ -1480,15 +1642,64 @@ export default function FormPemeriksaanPage() {
       if (!handled.has(g)) nextFields.push(f);
     });
     setFields(nextFields.map((f, i) => ({ ...f, urutan: i + 1 })));
+    toast.success("Urutan bagian diperbarui");
   }
 
   function resetDrag() {
+    dragItemRef.current = null;
+    dropTargetRef.current = null;
     setDragState(null);
     setDropTarget(null);
-    dragArmedRef.current = null;
+    setTimeout(() => {
+      justDraggedGroupRef.current = false;
+    }, 150);
   }
 
   function moveGroup(grupName: string, direction: "up" | "down") {
+    const isSub = grupName.includes(" — ");
+    if (!isSub && grupName !== "__META__") {
+      const areas: string[] = [];
+      groupedFields.forEach((g) => {
+        const a = g.area || g.grup;
+        if (!areas.includes(a)) areas.push(a);
+      });
+      const curAreaIdx = areas.indexOf(grupName);
+      if (curAreaIdx < 0) return;
+      const targetAreaIdx = direction === "up" ? curAreaIdx - 1 : curAreaIdx + 1;
+      if (targetAreaIdx < 0 || targetAreaIdx >= areas.length) return;
+      const targetArea = areas[targetAreaIdx];
+
+      const familyGroups = groupedFields
+        .map((g) => g.grup)
+        .filter((g) => g === grupName || g.startsWith(`${grupName} — `));
+      const targetFamily = groupedFields
+        .map((g) => g.grup)
+        .filter((g) => g === targetArea || g.startsWith(`${targetArea} — `));
+
+      const familyFields = fields.filter((f) => familyGroups.includes(f.grup || "Tanpa Grup"));
+      const remaining = fields.filter((f) => !familyGroups.includes(f.grup || "Tanpa Grup"));
+
+      let insertAt =
+        direction === "up"
+          ? remaining.findIndex((f) => targetFamily.includes(f.grup || "Tanpa Grup"))
+          : (() => {
+              let last = -1;
+              remaining.forEach((f, i) => {
+                if (targetFamily.includes(f.grup || "Tanpa Grup")) last = i;
+              });
+              return last + 1;
+            })();
+
+      if (insertAt < 0) insertAt = direction === "up" ? 0 : remaining.length;
+      const next = [...remaining];
+      next.splice(insertAt, 0, ...familyFields);
+      setFields(next.map((f, i) => ({ ...f, urutan: i + 1 })));
+      toast.success(
+        direction === "up" ? `Bagian "${grupName}" digeser ke atas` : `Bagian "${grupName}" digeser ke bawah`,
+      );
+      return;
+    }
+
     const groupKeys = groupedFields.map((g) => g.grup);
     const curIdx = groupKeys.indexOf(grupName);
     if (curIdx < 0) return;
@@ -1660,6 +1871,20 @@ export default function FormPemeriksaanPage() {
     if (!subCategoryId || !Array.isArray(categories)) return null;
     return categories.find((c: any) => c.subCategories?.some((sc: any) => sc.id === subCategoryId));
   }, [categories, subCategoryId]);
+
+  const effectiveDataDasarCategoryId = useMemo(() => {
+    return dataDasarCategoryId || selectedLaporanCategory?.id || null;
+  }, [dataDasarCategoryId, selectedLaporanCategory]);
+
+  // Kategori data dasar yang aktif untuk autofill dinamis
+  const activeDataDasarCategory = useMemo(() => {
+    if (!effectiveDataDasarCategoryId || !Array.isArray(categories)) return null;
+    return categories.find((c: any) => c.id === effectiveDataDasarCategoryId) || null;
+  }, [categories, effectiveDataDasarCategoryId]);
+
+  const activeDataDasarBaselineParams = useMemo(() => {
+    return (activeDataDasarCategory?.parameters || []).filter((p: any) => p.isBaseline);
+  }, [activeDataDasarCategory]);
 
   const selectedSubCategory = useMemo(() => {
     if (!selectedLaporanCategory || !subCategoryId) return null;
@@ -1992,7 +2217,10 @@ export default function FormPemeriksaanPage() {
                           return {
                             ...f,
                             opsi: opsiStr,
-                            autoFill: f.config?.autoFill || f.autoFill || "",
+                            autoFill:
+                              f.config?.autoFill ||
+                              f.autoFill ||
+                              (f.config?.dataDasarCode ? `DD:${f.config.dataDasarCode}` : ""),
                             isDisabled: f.config?.isDisabled ?? f.isDisabled ?? false,
                             dependsOn: f.config?.dependsOn || f.dependsOn || null,
                             targetGolongan: f.config?.targetGolongan || f.targetGolongan || "ALL",
@@ -2005,8 +2233,18 @@ export default function FormPemeriksaanPage() {
                           };
                         }),
                       );
+                      const resolvedCatId =
+                        tpl.config?.dataDasarCategoryId ??
+                        tpl.dataDasarCategory?.id ??
+                        tpl.subCategory?.categoryId ??
+                        tpl.subCategory?.category?.id ??
+                        (tpl.subCategoryId
+                          ? categories.find((c: any) => c.subCategories?.some((sc: any) => sc.id === tpl.subCategoryId))
+                              ?.id
+                          : null) ??
+                        null;
                       setSubCategoryId(tpl.subCategoryId ?? null);
-                      setDataDasarCategoryId(tpl.config?.dataDasarCategoryId ?? null);
+                      setDataDasarCategoryId(resolvedCatId);
                     };
                     return (
                       <div
@@ -2376,7 +2614,16 @@ export default function FormPemeriksaanPage() {
                   </label>
                   <select
                     value={subCategoryId || ""}
-                    onChange={(e) => setSubCategoryId(e.target.value ? Number(e.target.value) : null)}
+                    onChange={(e) => {
+                      const val = e.target.value ? Number(e.target.value) : null;
+                      setSubCategoryId(val);
+                      if (val && !dataDasarCategoryId) {
+                        const parentCat = categories.find((c: any) =>
+                          c.subCategories?.some((sc: any) => sc.id === val),
+                        );
+                        if (parentCat) setDataDasarCategoryId(parentCat.id);
+                      }
+                    }}
                     className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
                   >
                     <option value="">— Pilih Sub Kategori —</option>
@@ -2925,15 +3172,29 @@ export default function FormPemeriksaanPage() {
               ) : (
                 <div className="divide-y divide-border">
                   {/* Dropzone: Jadikan Bagian Utama Baru dari Drag Butir */}
-                  {dragState?.type === "field" && dragState.index != null && (
+                  {((dragItemRef.current?.type === "field" && dragItemRef.current.index != null) ||
+                    (dragState?.type === "field" && dragState.index != null)) && (
                     <div
                       onDragOver={(e) => {
                         e.preventDefault();
-                        setDropTarget("drop-new-bagian-top");
+                        e.dataTransfer.dropEffect = "move";
+                        if (dropTargetRef.current !== "drop-new-bagian-top") {
+                          dropTargetRef.current = "drop-new-bagian-top";
+                          setDropTarget("drop-new-bagian-top");
+                        }
                       }}
                       onDrop={(e) => {
                         e.preventDefault();
-                        if (dragState.index != null) convertFieldToBagian(dragState.index);
+                        e.stopPropagation();
+                        const activeItem = dragItemRef.current || dragState;
+                        let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                        if (srcIndex === undefined) {
+                          const raw = e.dataTransfer.getData("text/plain");
+                          if (raw && !Number.isNaN(Number(raw))) {
+                            srcIndex = Number(raw);
+                          }
+                        }
+                        if (srcIndex != null) convertFieldToBagian(srcIndex);
                         resetDrag();
                       }}
                       className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${
@@ -2955,30 +3216,53 @@ export default function FormPemeriksaanPage() {
                         <div
                           role="button"
                           tabIndex={0}
-                          onClick={() => toggleGroup(group.grup)}
+                          onClick={() => {
+                            if (justDraggedGroupRef.current) return;
+                            toggleGroup(group.grup);
+                          }}
                           onKeyDown={(e) => e.key === "Enter" && toggleGroup(group.grup)}
                           onDragOver={(e) => {
+                            const activeItem = dragItemRef.current || dragState;
                             if (
-                              (dragState?.type === "field" && dragState.index != null) ||
-                              (dragState?.type === "group" && dragState.grup && dragState.grup !== group.grup)
+                              (activeItem?.type === "field" && activeItem.index != null) ||
+                              (activeItem?.type === "group" && activeItem.grup && activeItem.grup !== group.grup)
                             ) {
                               e.preventDefault();
-                              setDropTarget(`group:${group.grup}`);
+                              e.dataTransfer.dropEffect = "move";
+                              const nextTarget = `group:${group.grup}`;
+                              if (dropTargetRef.current !== nextTarget) {
+                                dropTargetRef.current = nextTarget;
+                                setDropTarget(nextTarget);
+                              }
                             }
                           }}
                           onDrop={(e) => {
                             e.preventDefault();
-                            if (dragState?.type === "field" && dragState.index != null) {
-                              moveFieldToGroup(dragState.index, group.grup);
-                            } else if (dragState?.type === "group" && dragState.grup) {
-                              moveGroupTo(dragState.grup, group.grup);
+                            e.stopPropagation();
+                            const activeItem = dragItemRef.current || dragState;
+                            let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                            if (srcIndex === undefined) {
+                              const raw = e.dataTransfer.getData("text/plain");
+                              if (raw && !Number.isNaN(Number(raw))) {
+                                srcIndex = Number(raw);
+                              }
+                            }
+                            let srcGrup = activeItem?.type === "group" ? activeItem.grup : undefined;
+                            if (!srcGrup && srcIndex === undefined) {
+                              srcGrup = e.dataTransfer.getData("text/plain") || undefined;
+                            }
+
+                            if (srcIndex != null) {
+                              moveFieldToGroup(srcIndex, group.grup);
+                            } else if (srcGrup) {
+                              moveGroupTo(srcGrup, group.grup);
                             }
                             resetDrag();
                           }}
                           className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors hover:bg-surface-subtle ${
                             group.subbagian ? "pl-10 bg-surface-subtle/70" : "bg-surface-subtle/40"
                           } ${
-                            dragState?.type === "field" && dropTarget === `group:${group.grup}`
+                            dropTarget === `group:${group.grup}`
                               ? "ring-2 ring-inset ring-primary bg-primary-subtle"
                               : ""
                           }`}
@@ -2986,8 +3270,15 @@ export default function FormPemeriksaanPage() {
                           <span
                             draggable
                             onDragStart={(e) => {
+                              e.stopPropagation();
+                              justDraggedGroupRef.current = true;
+                              dragItemRef.current = { type: "group", grup: group.grup };
                               setDragState({ type: "group", grup: group.grup });
                               e.dataTransfer.effectAllowed = "move";
+                              e.dataTransfer.setData(
+                                "application/json",
+                                JSON.stringify({ type: "group", grup: group.grup }),
+                              );
                               e.dataTransfer.setData("text/plain", group.grup);
                             }}
                             onDragEnd={resetDrag}
@@ -3208,6 +3499,27 @@ export default function FormPemeriksaanPage() {
                           )}
                           {group.subbagian && (
                             <>
+                              {mainAreaOptions.filter((a) => a !== group.area).length > 0 && (
+                                <select
+                                  value=""
+                                  onChange={(e) => {
+                                    if (!e.target.value) return;
+                                    changeSubbagianParent(group.grup, e.target.value);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[11px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                  title="Pindahkan Subbagian ini ke Bagian lain"
+                                >
+                                  <option value="">↳ Pindah ke Bagian...</option>
+                                  {mainAreaOptions
+                                    .filter((a) => a !== group.area)
+                                    .map((a) => (
+                                      <option key={a} value={a}>
+                                        ↳ Pindah ke {a}
+                                      </option>
+                                    ))}
+                                </select>
+                              )}
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -3288,21 +3600,34 @@ export default function FormPemeriksaanPage() {
                           </div>
                         )}
                         {/* Dropzone: Jadikan Subbagian di bawah Bagian ini */}
-                        {dragState?.type === "field" &&
-                          dragState.index != null &&
+                        {((dragItemRef.current?.type === "field" && dragItemRef.current.index != null) ||
+                          (dragState?.type === "field" && dragState.index != null)) &&
                           !group.subbagian &&
                           group.grup !== "__META__" && (
                             <div
                               onDragOver={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setDropTarget(`drop-subbagian:${group.area}`);
+                                e.dataTransfer.dropEffect = "move";
+                                const nextTarget = `drop-subbagian:${group.area}`;
+                                if (dropTargetRef.current !== nextTarget) {
+                                  dropTargetRef.current = nextTarget;
+                                  setDropTarget(nextTarget);
+                                }
                               }}
                               onDrop={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if (dragState.index != null) {
-                                  convertFieldToSubbagian(dragState.index, group.area);
+                                const activeItem = dragItemRef.current || dragState;
+                                let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                                if (srcIndex === undefined) {
+                                  const raw = e.dataTransfer.getData("text/plain");
+                                  if (raw && !Number.isNaN(Number(raw))) {
+                                    srcIndex = Number(raw);
+                                  }
+                                }
+                                if (srcIndex != null) {
+                                  convertFieldToSubbagian(srcIndex, group.area);
                                 }
                                 resetDrag();
                               }}
@@ -3319,6 +3644,48 @@ export default function FormPemeriksaanPage() {
 
                         {!isCollapsed && (
                           <div className="border-t border-border bg-surface-subtle/30 p-3 space-y-2.5">
+                            {group.fields.length === 0 && (
+                              <div
+                                onDragOver={(e) => {
+                                  const activeItem = dragItemRef.current || dragState;
+                                  if (activeItem?.type === "field" && activeItem.index != null) {
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = "move";
+                                    const nextTarget = `group-empty:${group.grup}`;
+                                    if (dropTargetRef.current !== nextTarget) {
+                                      dropTargetRef.current = nextTarget;
+                                      setDropTarget(nextTarget);
+                                    }
+                                  }
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const activeItem = dragItemRef.current || dragState;
+                                  let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                                  if (srcIndex === undefined) {
+                                    const raw = e.dataTransfer.getData("text/plain");
+                                    if (raw && !Number.isNaN(Number(raw))) {
+                                      srcIndex = Number(raw);
+                                    }
+                                  }
+                                  if (srcIndex != null) {
+                                    moveFieldToGroup(srcIndex, group.grup);
+                                  }
+                                  resetDrag();
+                                }}
+                                className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1.5 text-center text-muted-foreground transition-all ${
+                                  dropTarget === `group-empty:${group.grup}`
+                                    ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/40 scale-[1.01]"
+                                    : "border-border/60 hover:border-primary/40"
+                                }`}
+                              >
+                                <p className="text-xs font-semibold">Grup ini masih kosong</p>
+                                <p className="text-[11px] text-muted-foreground/80">
+                                  Tarik butir pertanyaan ke sini atau klik &quot;+ Butir&quot;
+                                </p>
+                              </div>
+                            )}
                             {group.fields.map(({ field, index }: { field: any; index: number }, localIdx: number) => {
                               return (
                                 <div
@@ -3327,28 +3694,68 @@ export default function FormPemeriksaanPage() {
                                   onDragStart={(e) => {
                                     // Jangan drag kalau mulai dari kontrol interaktif (tetap bisa edit)
                                     const el = e.target as HTMLElement;
-                                    if (el.closest("input, select, textarea, button, label")) {
+                                    if (el.closest("input, select, textarea, button, label, a")) {
                                       e.preventDefault();
                                       return;
                                     }
-                                    // Set dragState di sini untuk SEMUA jalur (grip & badan kartu);
-                                    // handler grip juga set sama — dobel tidak masalah, nilainya identik.
+                                    dragItemRef.current = { type: "field", index };
                                     setDragState({ type: "field", index });
                                     e.dataTransfer.effectAllowed = "move";
+                                    e.dataTransfer.setData(
+                                      "application/json",
+                                      JSON.stringify({ type: "field", index }),
+                                    );
                                     e.dataTransfer.setData("text/plain", String(index));
                                   }}
                                   onDragEnd={resetDrag}
                                   onDragOver={(e) => {
-                                    if (dragState?.type === "field" && dragState.index !== index) {
+                                    const activeItem = dragItemRef.current || dragState;
+                                    if (activeItem?.type === "field" && activeItem.index !== index) {
                                       e.preventDefault();
-                                      setDropTarget(`field:${index}`);
+                                      e.dataTransfer.dropEffect = "move";
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const isAfter = e.clientY - rect.top > rect.height / 2;
+                                      const nextTarget = `field:${index}:${isAfter ? "after" : "before"}`;
+                                      if (dropTargetRef.current !== nextTarget) {
+                                        dropTargetRef.current = nextTarget;
+                                        setDropTarget(nextTarget);
+                                      }
+                                    } else if (
+                                      activeItem?.type === "group" &&
+                                      activeItem.grup &&
+                                      activeItem.grup !== (field.grup || "Tanpa Grup")
+                                    ) {
+                                      e.preventDefault();
+                                      e.dataTransfer.dropEffect = "move";
+                                      const nextTarget = `field-group:${index}`;
+                                      if (dropTargetRef.current !== nextTarget) {
+                                        dropTargetRef.current = nextTarget;
+                                        setDropTarget(nextTarget);
+                                      }
                                     }
                                   }}
                                   onDrop={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    if (dragState?.type === "field" && dragState.index != null) {
-                                      moveFieldTo(dragState.index, index);
+                                    const activeItem = dragItemRef.current || dragState;
+                                    let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                                    if (srcIndex === undefined) {
+                                      const raw = e.dataTransfer.getData("text/plain");
+                                      if (raw && !Number.isNaN(Number(raw))) {
+                                        srcIndex = Number(raw);
+                                      }
+                                    }
+                                    let srcGrup = activeItem?.type === "group" ? activeItem.grup : undefined;
+                                    if (!srcGrup && srcIndex === undefined) {
+                                      srcGrup = e.dataTransfer.getData("text/plain") || undefined;
+                                    }
+
+                                    if (srcIndex !== undefined && srcIndex !== index) {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const isAfter = e.clientY - rect.top > rect.height / 2;
+                                      moveFieldTo(srcIndex, index, isAfter ? "after" : "before");
+                                    } else if (srcGrup) {
+                                      moveGroupTo(srcGrup, field.grup || "Tanpa Grup");
                                     }
                                     resetDrag();
                                   }}
@@ -3357,24 +3764,24 @@ export default function FormPemeriksaanPage() {
                                       ? "border-rose-200 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/20 opacity-75"
                                       : "border-border hover:border-primary/40 shadow-subtle"
                                   } ${
-                                    dragState?.type === "field" && dropTarget === `field:${index}`
+                                    (dragItemRef.current?.type === "field" || dragState?.type === "field") &&
+                                    dropTarget === `field:${index}:before`
                                       ? "border-t-2 border-t-primary ring-1 ring-primary/40"
-                                      : ""
-                                  } ${dragState?.index === index ? "opacity-40" : ""}`}
+                                      : (dragItemRef.current?.type === "field" || dragState?.type === "field") &&
+                                          dropTarget === `field:${index}:after`
+                                        ? "border-b-2 border-b-primary ring-1 ring-primary/40"
+                                        : (dragItemRef.current?.type === "group" || dragState?.type === "group") &&
+                                            dropTarget === `field-group:${index}`
+                                          ? "ring-2 ring-purple-500 bg-purple-500/10"
+                                          : ""
+                                  } ${dragItemRef.current?.index === index || dragState?.index === index ? "opacity-40" : ""}`}
                                 >
                                   {/* Baris utama: nomor + pertanyaan + aksi */}
                                   <div className="flex items-start gap-3">
                                     <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
                                       <span
-                                        draggable
-                                        onDragStart={(e) => {
-                                          setDragState({ type: "field", index });
-                                          e.dataTransfer.effectAllowed = "move";
-                                          e.dataTransfer.setData("text/plain", String(index));
-                                        }}
-                                        onDragEnd={resetDrag}
                                         title="Tarik untuk memindahkan butir (atau tarik kartu ini)"
-                                        className="cursor-grab active:cursor-grabbing"
+                                        className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-surface-subtle"
                                       >
                                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-primary transition-colors" />
                                       </span>
@@ -3440,15 +3847,54 @@ export default function FormPemeriksaanPage() {
                                           <>
                                             <select
                                               value={field.autoFill || ""}
-                                              onChange={(e) => updateField(index, "autoFill", e.target.value || "")}
-                                              className="text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-foreground"
+                                              onChange={(e) => {
+                                                const val = e.target.value || "";
+                                                // Jika memilih parameter dinamis data dasar (berformat DD:<codeParam>)
+                                                if (val.startsWith("DD:")) {
+                                                  const pCode = val.replace("DD:", "");
+                                                  const matchedParam = activeDataDasarBaselineParams.find(
+                                                    (p: any) => p.code === pCode,
+                                                  );
+                                                  const key = baselineParamKey(matchedParam);
+                                                  setFields(
+                                                    fields.map((f, i) =>
+                                                      i === index
+                                                        ? {
+                                                            ...f,
+                                                            autoFill: val,
+                                                            config: {
+                                                              ...(f.config || {}),
+                                                              dataDasarCode: pCode,
+                                                              syncToEntityField: key || undefined,
+                                                            },
+                                                          }
+                                                        : f,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  updateField(index, "autoFill", val);
+                                                }
+                                              }}
+                                              className="text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-foreground max-w-[200px]"
                                             >
                                               <option value="">Manual (Diisi Saat Input)</option>
                                               <optgroup label="Dari Akun Petugas">
                                                 <option value="USER_NAME">👤 Otomatis Nama Akun</option>
                                                 <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
                                               </optgroup>
-                                              <optgroup label="Dari Data Sasaran">
+                                              {/* Parameter Dinamis dari Kategori Sasaran yang dipilih */}
+                                              {activeDataDasarBaselineParams.length > 0 && (
+                                                <optgroup
+                                                  label={`Dari ${activeDataDasarCategory?.nama || "Data Dasar"} (Dinamis)`}
+                                                >
+                                                  {activeDataDasarBaselineParams.map((p: any) => (
+                                                    <option key={p.code} value={`DD:${p.code}`}>
+                                                      📋 {p.nama} ({p.code})
+                                                    </option>
+                                                  ))}
+                                                </optgroup>
+                                              )}
+                                              <optgroup label="Entitas Sasaran Standar">
                                                 <option value="SASARAN_NAMA">📛 Nama Sasaran</option>
                                                 <option value="SASARAN_ALAMAT">📍 Alamat Sasaran</option>
                                                 <option value="SASARAN_PEMILIK">👥 Pemilik / Penanggung Jawab</option>
@@ -3465,6 +3911,11 @@ export default function FormPemeriksaanPage() {
                                             {field.autoFill === "USER_PUSKESMAS" && (
                                               <span className="text-[11px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
                                                 Puskesmas
+                                              </span>
+                                            )}
+                                            {field.autoFill?.startsWith("DD:") && (
+                                              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                                                ↖ {field.autoFill.replace("DD:", "")}
                                               </span>
                                             )}
                                             {field.autoFill?.startsWith("SASARAN_") && (
@@ -3523,14 +3974,7 @@ export default function FormPemeriksaanPage() {
                                             onChange={(e) => {
                                               const newGrup = e.target.value;
                                               if (!newGrup || newGrup === (field.grup || "")) return;
-                                              setFields(
-                                                fields.map((f, i) => (i === index ? { ...f, grup: newGrup } : f)),
-                                              );
-                                              toast.success(
-                                                newGrup === "__META__"
-                                                  ? "Dipindahkan ke Metadata"
-                                                  : `Butir dipindahkan ke "${newGrup}"`,
-                                              );
+                                              moveFieldToGroup(index, newGrup);
                                             }}
                                             className="text-[10px] max-w-[180px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-muted-foreground"
                                             title="Pindahkan butir ke bagian/metadata lain"
@@ -3937,31 +4381,51 @@ export default function FormPemeriksaanPage() {
                             })}
 
                             {/* Dropzone untuk memasukkan butir ke grup ini saat drag */}
-                            {dragState?.type === "field" && dragState.index != null && (
-                              <div
-                                onDragOver={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setDropTarget(`drop-into-group:${group.grup}`);
-                                }}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  if (dragState.index != null) {
-                                    moveFieldToGroup(dragState.index, group.grup);
-                                  }
-                                  resetDrag();
-                                }}
-                                className={`p-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-150 cursor-pointer ${
-                                  dropTarget === `drop-into-group:${group.grup}`
-                                    ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/30 scale-[1.01]"
-                                    : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary"
-                                }`}
-                              >
-                                📥 Lepaskan di sini untuk MASUKKAN KE{" "}
-                                {group.subbagian ? `Subbagian "${group.subbagian}"` : `Bagian "${group.area}"`}
-                              </div>
-                            )}
+                            {(() => {
+                              const activeIdx = dragItemRef.current?.index ?? dragState?.index;
+                              const isField =
+                                (dragItemRef.current?.type === "field" && dragItemRef.current.index != null) ||
+                                (dragState?.type === "field" && dragState.index != null);
+                              if (!isField || activeIdx == null || fields[activeIdx]?.grup === group.grup) return null;
+                              return (
+                                <div
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.dataTransfer.dropEffect = "move";
+                                    const nextTarget = `drop-into-group:${group.grup}`;
+                                    if (dropTargetRef.current !== nextTarget) {
+                                      dropTargetRef.current = nextTarget;
+                                      setDropTarget(nextTarget);
+                                    }
+                                  }}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const activeItem = dragItemRef.current || dragState;
+                                    let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                                    if (srcIndex === undefined) {
+                                      const raw = e.dataTransfer.getData("text/plain");
+                                      if (raw && !Number.isNaN(Number(raw))) {
+                                        srcIndex = Number(raw);
+                                      }
+                                    }
+                                    if (srcIndex != null) {
+                                      moveFieldToGroup(srcIndex, group.grup);
+                                    }
+                                    resetDrag();
+                                  }}
+                                  className={`p-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+                                    dropTarget === `drop-into-group:${group.grup}`
+                                      ? "border-primary bg-primary-subtle text-primary ring-2 ring-primary/30 scale-[1.01]"
+                                      : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary"
+                                  }`}
+                                >
+                                  📥 Lepaskan di sini untuk MASUKKAN KE{" "}
+                                  {group.subbagian ? `Subbagian "${group.subbagian}"` : `Bagian "${group.area}"`}
+                                </div>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
@@ -3969,15 +4433,29 @@ export default function FormPemeriksaanPage() {
                   })}
 
                   {/* Dropzone: Jadikan Bagian Utama Baru dari Drag Butir (di bawah) */}
-                  {dragState?.type === "field" && dragState.index != null && (
+                  {((dragItemRef.current?.type === "field" && dragItemRef.current.index != null) ||
+                    (dragState?.type === "field" && dragState.index != null)) && (
                     <div
                       onDragOver={(e) => {
                         e.preventDefault();
-                        setDropTarget("drop-new-bagian-bottom");
+                        e.dataTransfer.dropEffect = "move";
+                        if (dropTargetRef.current !== "drop-new-bagian-bottom") {
+                          dropTargetRef.current = "drop-new-bagian-bottom";
+                          setDropTarget("drop-new-bagian-bottom");
+                        }
                       }}
                       onDrop={(e) => {
                         e.preventDefault();
-                        if (dragState.index != null) convertFieldToBagian(dragState.index);
+                        e.stopPropagation();
+                        const activeItem = dragItemRef.current || dragState;
+                        let srcIndex = activeItem?.type === "field" ? activeItem.index : undefined;
+                        if (srcIndex === undefined) {
+                          const raw = e.dataTransfer.getData("text/plain");
+                          if (raw && !Number.isNaN(Number(raw))) {
+                            srcIndex = Number(raw);
+                          }
+                        }
+                        if (srcIndex != null) convertFieldToBagian(srcIndex);
                         resetDrag();
                       }}
                       className={`m-3 p-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all duration-150 cursor-pointer ${

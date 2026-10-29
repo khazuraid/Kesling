@@ -139,7 +139,14 @@ export function matchBaselineParam(field: any, params: any[] | undefined | null)
 export function sasaranMetaValue(sasaran: SasaranLike, field: any, params?: any[] | null): string {
   if (!sasaran) return "";
 
-  const dyn = (sasaran.dataDinamis ?? sasaran.dynamicValues ?? {}) as Record<string, unknown>;
+  let dyn = (sasaran.dataDinamis ?? sasaran.dynamicValues ?? {}) as Record<string, unknown>;
+  if (typeof dyn === "string") {
+    try {
+      dyn = JSON.parse(dyn);
+    } catch {
+      dyn = {};
+    }
+  }
   const fromDyn = (...codes: string[]) => {
     for (const code of codes) {
       const v = String(dyn?.[code] ?? "").trim();
@@ -156,8 +163,10 @@ export function sasaranMetaValue(sasaran: SasaranLike, field: any, params?: any[
   //    lalu kode yang ditunjuk eksplisit, lalu penanda autoFill, lalu kode
   //    lazim menurut key. Semuanya dicari sekaligus.
   const matched = matchBaselineParams(field, params).map((p: any) => String(p?.code ?? "").trim());
+  const ddCode = autoFill.startsWith("DD:") ? autoFill.replace("DD:", "").trim() : "";
   const codes = [
     ...matched,
+    ddCode,
     cfg.dataDasarCode,
     cfg.parameterCode,
     ...(AUTOFILL_CODES[autoFill] || []),
@@ -315,11 +324,19 @@ export function sasaranColumnsFromDynamic<T extends Record<string, any>>(
   params: any[] | null | undefined,
   form?: T | null,
 ) {
+  let dyn = dynamicValues;
+  if (typeof dyn === "string") {
+    try {
+      dyn = JSON.parse(dyn);
+    } catch {
+      dyn = {};
+    }
+  }
   const pick = (key: BaselineKey, fallback = "") => {
     for (const p of params || []) {
       const isMapped = String(p?.config?.syncToEntityField ?? p?.syncToEntityField ?? "") === key;
       if (!isMapped && baselineParamKey(p) !== key) continue;
-      const v = String(dynamicValues?.[p.code] ?? "").trim();
+      const v = String(dyn?.[p.code] ?? "").trim();
       if (v) return v;
     }
     return fallback;

@@ -61,6 +61,27 @@ describe("sasaranMetaValue", () => {
   it("menerima dynamicValues sebagai alias dataDinamis", () => {
     expect(sasaranMetaValue({ dynamicValues: { alamat: "Jl. Alias" } }, field("Alamat"))).toBe("Jl. Alias");
   });
+
+  it("mengambil nilai via prefix autoFill dinamis DD:<codeParam>", () => {
+    const s = {
+      dataDinamis: {
+        kapasitas_air: "5000 Liter",
+        izin_usaha: "Ada (No. 123)",
+      },
+    };
+    expect(
+      sasaranMetaValue(s, {
+        pertanyaan: "Kapasitas Harian",
+        autoFill: "DD:kapasitas_air",
+      }),
+    ).toBe("5000 Liter");
+    expect(
+      sasaranMetaValue(s, {
+        pertanyaan: "Surat Izin Operasional",
+        autoFill: "DD:izin_usaha",
+      }),
+    ).toBe("Ada (No. 123)");
+  });
 });
 
 describe("sasaranMetaValue dengan parameter data dasar dari Laporan Builder", () => {

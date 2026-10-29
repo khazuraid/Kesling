@@ -686,7 +686,15 @@ export default function PemeriksaanPage() {
     setTanggalPemeriksaan(new Date().toISOString().split("T")[0]);
     const initVal: Record<number, any> = {};
     const initMeta: Record<number, any> = {};
+    const resolvedCatId = Number(
+      template.config?.dataDasarCategoryId ??
+        template.dataDasarCategory?.id ??
+        targetCategory?.id ??
+        template.subCategory?.category?.id,
+    );
+    const resolvedCatFromAll = categories.find((c: any) => c.id === resolvedCatId);
     const bParams =
+      resolvedCatFromAll?.parameters ||
       targetCategory?.parameters ||
       template.dataDasarCategory?.parameters ||
       template.subCategory?.category?.parameters ||
@@ -772,7 +780,12 @@ export default function PemeriksaanPage() {
     // membuka hasil lama lalu menyimpannya kembali ikut melengkapi
     // identitasnya; jawaban yang sudah tersimpan tetap menang karena
     // menimpanya pada loop di bawah.
+    const editCatId = Number(
+      template.config?.dataDasarCategoryId ?? template.dataDasarCategory?.id ?? template.subCategory?.category?.id,
+    );
+    const editCatFromAll = categories.find((c: any) => c.id === editCatId);
     const editMetaParams =
+      editCatFromAll?.parameters ||
       targetCategory?.parameters ||
       template.dataDasarCategory?.parameters ||
       template.subCategory?.category?.parameters ||
@@ -850,10 +863,38 @@ export default function PemeriksaanPage() {
   }
 
   function handleGPS(id: number) {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      handleFieldChange(id, `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
-    });
+    if (!navigator.geolocation) {
+      toast.error("Browser tidak mendukung geolokasi GPS");
+      return;
+    }
+    const tId = toast.loading("Mengambil titik koordinat GPS lokasi...");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        toast.dismiss(tId);
+        const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+        const field = activeForm?.fields?.find((f: any) => f.id === id);
+        if (field?.grup === "__META__") {
+          handleMetaChange(id, coords);
+        } else {
+          handleFieldChange(id, coords);
+        }
+        const acc = pos.coords.accuracy ? ` (akurasi ±${Math.round(pos.coords.accuracy)}m)` : "";
+        toast.success(`Koordinat GPS diperoleh${acc}`);
+      },
+      (err) => {
+        toast.dismiss(tId);
+        let msg = "Gagal mengambil lokasi GPS";
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = "Izin lokasi GPS ditolak oleh browser. Mohon aktifkan izin lokasi di pengaturan browser.";
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          msg = "Sinyal GPS tidak tersedia. Pastikan fitur lokasi perangkat aktif.";
+        } else if (err.code === err.TIMEOUT) {
+          msg = "Waktu pencarian sinyal GPS habis. Silakan coba lagi.";
+        }
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
+    );
   }
 
   async function handleExportPDF(res: any) {
@@ -983,12 +1024,15 @@ export default function PemeriksaanPage() {
     let lat: number | null = null;
     let lng: number | null = null;
     if (gpsMeta?.[1] && typeof gpsMeta[1] === "string" && gpsMeta[1].includes(",")) {
-      const parts = gpsMeta[1].split(",");
+      const parts = gpsMeta[1].split(",").map((p) => p.trim());
       const pLat = parseFloat(parts[0]);
       const pLng = parseFloat(parts[1]);
       if (!Number.isNaN(pLat)) lat = pLat;
       if (!Number.isNaN(pLng)) lng = pLng;
     }
+    const currentSasaran = sasarans.find((s: any) => s.id === sasaranId);
+    const latFinal = lat ?? (currentSasaran?.lat ? Number(currentSasaran.lat) : null);
+    const lngFinal = lng ?? (currentSasaran?.lng ? Number(currentSasaran.lng) : null);
 
     let bulan = new Date().getMonth() + 1;
     let tahun = new Date().getFullYear();
@@ -1006,8 +1050,8 @@ export default function PemeriksaanPage() {
       sasaranId: sasaranId,
       namaSasaran: namaMeta?.[1] || "Tanpa Nama",
       alamatSasaran: alamatMeta?.[1] || "",
-      lat,
-      lng,
+      lat: latFinal,
+      lng: lngFinal,
       bulan,
       tahun,
       tanggalPemeriksaan: tanggalFinal,

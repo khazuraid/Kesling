@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   FileText,
   Info,
   Loader2,
@@ -1360,23 +1361,69 @@ function FieldInput({
         </select>
       )}
 
-      {f.tipe === "GPS" && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
-            type="button"
-            onClick={onGPS}
-            className="h-11 px-4 rounded-xl border border-border bg-surface hover:border-primary text-[12px] font-bold text-foreground transition-colors flex items-center gap-2 shadow-subtle active:scale-[0.98]"
-          >
-            <MapPin className="w-4 h-4 text-primary" />
-            {hasValue ? "Perbarui Koordinat" : "Ambil Lokasi GPS"}
-          </button>
-          {hasValue && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary font-mono text-[11px] font-bold">
-              <Check className="w-3.5 h-3.5" /> {value}
+      {f.tipe === "GPS" &&
+        (() => {
+          const coords = String(value || "").trim();
+          const parts = coords.split(",").map((p) => p.trim());
+          const lat = parts[0] ? Number.parseFloat(parts[0]) : Number.NaN;
+          const lng = parts[1] ? Number.parseFloat(parts[1]) : Number.NaN;
+          const validCoords =
+            !Number.isNaN(lat) &&
+            !Number.isNaN(lng) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            lng >= -180 &&
+            lng <= 180 &&
+            !(lat === 0 && lng === 0);
+          const mapsUrl = validCoords ? `https://www.google.com/maps?q=${lat},${lng}` : null;
+          const osmUrl = validCoords
+            ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.002},${lat - 0.002},${lng + 0.002},${lat + 0.002}&layer=mapnik&marker=${lat},${lng}`
+            : null;
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={onGPS}
+                  className="h-11 px-4 rounded-xl border border-border bg-surface hover:border-primary text-[12px] font-bold text-foreground transition-colors flex items-center gap-2 shadow-subtle active:scale-[0.98]"
+                >
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {hasValue ? "Perbarui Koordinat" : "Ambil Lokasi GPS"}
+                </button>
+                {validCoords && (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary font-mono text-[11px] font-bold">
+                    <Check className="w-3.5 h-3.5" /> {coords}
+                  </div>
+                )}
+                {mapsUrl && (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-9 px-3 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Buka di Maps
+                  </a>
+                )}
+              </div>
+              {/* Map preview, muncul setelah koordinat valid */}
+              {osmUrl && (
+                <div className="relative rounded-xl overflow-hidden border border-border shadow-subtle">
+                  <iframe
+                    title={`Peta lokasi: ${coords}`}
+                    src={osmUrl}
+                    className="w-full h-44 border-0"
+                    loading="lazy"
+                    allow="geolocation"
+                  />
+                  <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold flex items-center gap-1">
+                    <MapPin className="w-3 h-3" /> {lat.toFixed(5)}, {lng.toFixed(5)}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          );
+        })()}
 
       {/* Mandatory Client-Side Compressed Photo */}
       {f.tipe === "PHOTO" && (
