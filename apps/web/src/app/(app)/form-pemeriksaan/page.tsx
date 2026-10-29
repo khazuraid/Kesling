@@ -34,6 +34,7 @@ import { ImportInspectionModal, type ImportJobState } from "@/components/inspect
 import { FilterBar } from "@/components/ui/filter-bar";
 import { Pagination } from "@/components/ui/pagination";
 import { Select } from "@/components/ui/select";
+import { baselineParamKey } from "@/lib/sasaran-meta";
 import {
   templateCategoryOptions as buildTemplateCategoryOptions,
   matchesTemplateOwner,
@@ -1166,6 +1167,116 @@ export default function FormPemeriksaanPage() {
       setFields([newField, ...fields]);
     }
     toast.success(pertanyaan ? `Metadata "${pertanyaan}" ditambahkan` : "Field metadata ditambahkan");
+  }
+
+  /**
+   * Tarik parameter baseline dari kategori sasaran yang dipilih → field meta.
+   * Field yang sudah ada dilewati (cek via baselineParamKey atau pertanyaan persis sama)
+   * agar tidak terjadi duplikasi.
+   */
+  function importMetaFromDataDasar() {
+    const dataDasarCat = categories.find((c: any) => c.id === dataDasarCategoryId);
+    const baselineParams: any[] = (dataDasarCat?.parameters || []).filter((p: any) => p.isBaseline);
+    if (baselineParams.length === 0) {
+      toast.error(
+        dataDasarCategoryId
+          ? "Kategori sasaran ini belum punya parameter baseline. Tambahkan dulu di Data Dasar."
+          : "Pilih Kategori Sasaran (Data Dasar) terlebih dahulu.",
+      );
+      return;
+    }
+
+    const existingMetaFields = fields.filter((f: any) => f.grup === "__META__");
+    const existingKeys = new Set(existingMetaFields.map((f: any) => baselineParamKey(f)).filter(Boolean));
+    const existingLabels = new Set(
+      existingMetaFields.map((f: any) =>
+        String(f.pertanyaan || "")
+          .trim()
+          .toLowerCase(),
+      ),
+    );
+
+    // Map tipe parameter data dasar → tipe field form
+    const tipeMap: Record<string, string> = {
+      TEXT: "TEXT",
+      TEXTAREA: "TEXT",
+      NUMBER: "NUMBER",
+      DECIMAL: "NUMBER",
+      DATE: "DATE",
+      SELECT: "DROPDOWN",
+      BOOLEAN: "BOOLEAN",
+    };
+
+    // autoFill otomatis berdasarkan baseline key
+    const autoFillMap: Record<string, string> = {
+      nama: "SASARAN_NAMA",
+      alamat: "SASARAN_ALAMAT",
+      pemilik: "SASARAN_PEMILIK",
+      kontak: "SASARAN_KONTAK",
+      lat: "SASARAN_LAT",
+      lng: "SASARAN_LNG",
+    };
+
+    const toAdd: any[] = [];
+    for (const param of baselineParams) {
+      const key = baselineParamKey(param);
+      const label = String(param.nama || "").trim();
+      const labelLower = label.toLowerCase();
+
+      // Skip duplikat: sudah ada field dengan baseline key sama, atau label persis sama
+      if (key && existingKeys.has(key)) continue;
+      if (existingLabels.has(labelLower)) continue;
+
+      const tipe = tipeMap[param.type] || "TEXT";
+      const autoFill = key ? autoFillMap[key] || "" : "";
+      let opsi = "";
+      if (tipe === "DROPDOWN" && param.config?.options) {
+        const opts = param.config.options;
+        opsi = Array.isArray(opts) ? opts.join(", ") : String(opts);
+      }
+
+      toAdd.push({
+        pertanyaan: label || param.code,
+        tipe,
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        skorBenar: 0,
+        skorSalah: 0,
+        opsi,
+        isDisabled: false,
+        dependsOn: null,
+        targetGolongan: "ALL",
+        allowNA: false,
+        autoFill,
+        config: { dataDasarCode: param.code, syncToEntityField: key || undefined },
+      });
+
+      if (key) existingKeys.add(key);
+      existingLabels.add(labelLower);
+    }
+
+    if (toAdd.length === 0) {
+      toast.info("Semua parameter baseline kategori ini sudah ada di Metadata — tidak ada yang perlu ditambahkan.");
+      return;
+    }
+
+    // Sisipkan setelah field meta terakhir
+    let lastMetaIdx = -1;
+    for (let i = fields.length - 1; i >= 0; i--) {
+      if (fields[i].grup === "__META__") {
+        lastMetaIdx = i;
+        break;
+      }
+    }
+    const next = [...fields];
+    if (lastMetaIdx >= 0) {
+      next.splice(lastMetaIdx + 1, 0, ...toAdd);
+    } else {
+      next.unshift(...toAdd);
+    }
+    setFields(next);
+    toast.success(`${toAdd.length} field meta ditarik dari "${dataDasarCat?.nama || "Data Dasar"}"`);
   }
 
   // Inline add form state: { type: "bagian" } untuk bagian baru di bawah list,
@@ -3034,6 +3145,20 @@ export default function FormPemeriksaanPage() {
                               >
                                 <Plus className="w-3 h-3" /> Tambah Metadata
                               </button>
+                              {/* Tarik parameter baseline dari kategori sasaran yang dipilih */}
+                              {dataDasarCategoryId && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    importMetaFromDataDasar();
+                                  }}
+                                  className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors rounded-md"
+                                  title="Tarik parameter baseline dari Kategori Sasaran yang dipilih di panel kiri"
+                                >
+                                  📥 Tarik dari Data Dasar
+                                </button>
+                              )}
                             </div>
                           )}
                           {!group.subbagian && group.grup !== "__META__" && (
@@ -3319,8 +3444,18 @@ export default function FormPemeriksaanPage() {
                                               className="text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-foreground"
                                             >
                                               <option value="">Manual (Diisi Saat Input)</option>
-                                              <option value="USER_NAME">👤 Otomatis Nama Akun</option>
-                                              <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
+                                              <optgroup label="Dari Akun Petugas">
+                                                <option value="USER_NAME">👤 Otomatis Nama Akun</option>
+                                                <option value="USER_PUSKESMAS">🏥 Otomatis Puskesmas</option>
+                                              </optgroup>
+                                              <optgroup label="Dari Data Sasaran">
+                                                <option value="SASARAN_NAMA">📛 Nama Sasaran</option>
+                                                <option value="SASARAN_ALAMAT">📍 Alamat Sasaran</option>
+                                                <option value="SASARAN_PEMILIK">👥 Pemilik / Penanggung Jawab</option>
+                                                <option value="SASARAN_KONTAK">📞 Kontak / Telepon</option>
+                                                <option value="SASARAN_LAT">🌐 Latitude GPS</option>
+                                                <option value="SASARAN_LNG">🌐 Longitude GPS</option>
+                                              </optgroup>
                                             </select>
                                             {field.autoFill === "USER_NAME" && (
                                               <span className="text-[11px] font-bold text-primary bg-primary-subtle border border-primary/20 px-1.5 py-0.5 rounded">
@@ -3330,6 +3465,11 @@ export default function FormPemeriksaanPage() {
                                             {field.autoFill === "USER_PUSKESMAS" && (
                                               <span className="text-[11px] font-bold text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded">
                                                 Puskesmas
+                                              </span>
+                                            )}
+                                            {field.autoFill?.startsWith("SASARAN_") && (
+                                              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                                                ↖ Data Dasar
                                               </span>
                                             )}
                                           </>
