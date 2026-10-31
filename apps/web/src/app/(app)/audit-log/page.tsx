@@ -304,14 +304,17 @@ export default function AuditLogPage() {
           {/* Tabs — bottom edge masthead */}
           <div className="inline-flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
             {TABS.map((t) => (
-              <button
+              <Button
                 key={t.key}
+                type="button"
+                variant={tab === t.key ? "default" : "ghost"}
+                size="sm"
                 onClick={() => {
                   setTab(t.key);
                   setPage(1);
                   setExpandedId(null);
                 }}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                className={`h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap gap-1.5 ${
                   tab === t.key ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -325,7 +328,7 @@ export default function AuditLogPage() {
                     {t.count}
                   </span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

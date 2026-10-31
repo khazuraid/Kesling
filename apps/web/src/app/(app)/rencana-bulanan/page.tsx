@@ -175,20 +175,24 @@ export default function RencanaBulananPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={prevMonth}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
+                className="w-8 h-8 p-0 text-muted-foreground hover:bg-surface hover:text-foreground rounded-full"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={nextMonth}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
+                className="w-8 h-8 p-0 text-muted-foreground hover:bg-surface hover:text-foreground rounded-full"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
             <Button
               size="sm"

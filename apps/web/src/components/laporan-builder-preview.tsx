@@ -1,6 +1,9 @@
 import { Layers } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 function parseOptions(raw: any): string[] {
   if (!raw) return [];
@@ -100,8 +103,8 @@ export function LaporanBuilderPreview({
                               return (
                                 <td key={p.id} className="p-4 border-b border-[hsl(var(--border))] min-w-[150px]">
                                   {p.type === "SELECT" && p.config?.options ? (
-                                    <select
-                                      className="w-full h-9 px-3 border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-xs font-medium focus:border-[hsl(var(--ring))] outline-none"
+                                    <Select
+                                      className="w-full h-9 px-3 text-xs font-medium"
                                       value={dummyValues[key] || ""}
                                       onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                                     >
@@ -111,14 +114,14 @@ export function LaporanBuilderPreview({
                                           {opt}
                                         </option>
                                       ))}
-                                    </select>
+                                    </Select>
                                   ) : (
-                                    <input
+                                    <Input
                                       type={p.type === "NUMBER" || p.type === "DECIMAL" ? "number" : "text"}
                                       min={p.config?.min}
                                       max={p.config?.max}
                                       placeholder={p.type === "NUMBER" ? "0" : "Isi nilai..."}
-                                      className="w-full h-9 px-3 border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-xs font-medium focus:border-[hsl(var(--ring))] outline-none transition-colors"
+                                      className="w-full h-9 px-3 text-xs font-medium"
                                       value={dummyValues[key] || ""}
                                       onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                                     />
@@ -140,12 +143,12 @@ export function LaporanBuilderPreview({
                   const key = `null-${p.id}`;
                   return (
                     <div key={p.id} className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                         {p.nama} {p.required && <span className="text-rose-500">*</span>}
-                      </label>
+                      </Label>
                       {p.type === "SELECT" && p.config?.options ? (
-                        <select
-                          className="w-full h-10 px-3 border border-border bg-surface text-foreground text-xs font-medium rounded-xl focus:border-primary outline-none transition-all"
+                        <Select
+                          className="w-full text-xs font-medium"
                           value={dummyValues[key] || ""}
                           onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                         >
@@ -155,14 +158,14 @@ export function LaporanBuilderPreview({
                               {opt}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       ) : (
-                        <input
+                        <Input
                           type={p.type === "NUMBER" || p.type === "DECIMAL" ? "number" : "text"}
                           min={p.config?.min}
                           max={p.config?.max}
                           placeholder={p.type === "NUMBER" ? "0" : "Isi nilai..."}
-                          className="w-full h-10 px-3 border border-border bg-surface text-foreground text-xs font-medium rounded-xl focus:border-primary outline-none transition-all"
+                          className="w-full text-xs font-medium"
                           value={dummyValues[key] || ""}
                           onChange={(e) => setDummyValues({ ...dummyValues, [key]: e.target.value })}
                         />

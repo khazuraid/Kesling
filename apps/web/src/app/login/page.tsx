@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -93,9 +94,9 @@ function LoginForm() {
             )}
 
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Email
-              </label>
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -109,9 +110,9 @@ function LoginForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Kata Sandi
-              </label>
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -123,14 +124,16 @@ function LoginForm() {
                   placeholder="••••••••"
                   className="h-11 pr-11"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-colors"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-surface-subtle"
                   tabIndex={-1}
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                </Button>
               </div>
             </div>
 

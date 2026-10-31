@@ -5,6 +5,7 @@ import { CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NumberFlow } from "@/components/ui/number-flow";
@@ -101,21 +102,25 @@ export default function RencanaTahunanPage() {
               </Card>
             )}
             <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setTahun(tahun - 1)}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
+                className="w-8 h-8 p-0 text-muted-foreground hover:bg-surface hover:text-foreground rounded-full"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
+              </Button>
               <span className="w-14 text-[13px] font-black text-foreground text-center tabular-nums">{tahun}</span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setTahun(tahun + 1)}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
+                className="w-8 h-8 p-0 text-muted-foreground hover:bg-surface hover:text-foreground rounded-full"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>

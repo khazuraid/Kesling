@@ -2600,10 +2600,10 @@ export default function FormPemeriksaanPage() {
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                     Kategori Sasaran (Data Dasar)
                   </label>
-                  <select
+                  <Select
                     value={dataDasarCategoryId || ""}
                     onChange={(e) => setDataDasarCategoryId(e.target.value ? Number(e.target.value) : null)}
-                    className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
+                    className="w-full h-10 px-3 text-[13px] font-medium"
                   >
                     <option value="">— Pilih Kategori Sasaran —</option>
                     {categories
@@ -2613,7 +2613,7 @@ export default function FormPemeriksaanPage() {
                           {c.nama}
                         </option>
                       ))}
-                  </select>
+                  </Select>
                   <p className="text-[11px] text-muted-foreground mt-2">
                     Sumber master data objek/lokasi sasaran (SPPG, RS, Restoran, dll)
                   </p>
@@ -2622,7 +2622,7 @@ export default function FormPemeriksaanPage() {
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                     Sub Kategori Laporan
                   </label>
-                  <select
+                  <Select
                     value={subCategoryId || ""}
                     onChange={(e) => {
                       const val = e.target.value ? Number(e.target.value) : null;
@@ -2634,7 +2634,7 @@ export default function FormPemeriksaanPage() {
                         if (parentCat) setDataDasarCategoryId(parentCat.id);
                       }
                     }}
-                    className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
+                    className="w-full h-10 px-3 text-[13px] font-medium"
                   >
                     <option value="">— Pilih Sub Kategori —</option>
                     {categories.map((cat: any) =>
@@ -2644,7 +2644,7 @@ export default function FormPemeriksaanPage() {
                         </option>
                       )),
                     )}
-                  </select>
+                  </Select>
                   <p className="text-[11px] text-muted-foreground mt-2">Referensi input untuk agregasi laporan</p>
                 </div>
 
@@ -2795,17 +2795,17 @@ export default function FormPemeriksaanPage() {
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                     Metode
                   </label>
-                  <select
+                  <Select
                     value={rumus}
                     onChange={(e) => setRumus(e.target.value)}
-                    className="w-full h-10 px-3 text-[13px] font-medium border border-border rounded-xl outline-none bg-surface hover:bg-surface-subtle/50 focus:border-primary focus:ring-1 focus:ring-primary/20 text-foreground transition-all cursor-pointer appearance-none"
+                    className="w-full h-10 px-3 text-[13px] font-medium"
                   >
                     {RUMUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label} — {opt.desc}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
                 {rumus === "custom" && (
                   <div>
@@ -2853,16 +2853,16 @@ export default function FormPemeriksaanPage() {
               <div className="p-5 space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] font-bold text-muted-foreground">Jika Akhir</span>
-                  <select
+                  <Select
                     value={thresholdOperator}
                     onChange={(e) => setThresholdOperator(e.target.value)}
-                    className="h-9 px-3 text-[12px] font-bold border border-border bg-surface rounded-xl outline-none focus:border-primary text-foreground"
+                    className="h-9 px-3 text-[12px] font-bold w-24"
                   >
                     <option value=">=">&ge;</option>
                     <option value=">">&gt;</option>
                     <option value="<=">&le;</option>
                     <option value="<">&lt;</option>
-                  </select>
+                  </Select>
                   <input
                     type="number"
                     value={thresholdValue}
@@ -3033,10 +3033,10 @@ export default function FormPemeriksaanPage() {
                                 {item.badge}
                               </span>
                             </div>
-                            <select
+                            <Select
                               value={item.value || ""}
                               onChange={(e) => item.setter(e.target.value ? Number(e.target.value) : null)}
-                              className="w-full h-9 px-2.5 text-[11px] font-bold border border-border rounded-lg bg-surface text-foreground outline-none hover:bg-surface-subtle transition-colors cursor-pointer"
+                              className="w-full h-9 px-2.5 text-[11px] font-bold"
                             >
                               <option value="">— Belum Dipetakan —</option>
                               {availableParameters.map((p: any) => (
@@ -3044,7 +3044,7 @@ export default function FormPemeriksaanPage() {
                                   {p.nama} {p.code ? `(${p.code})` : ""}
                                 </option>
                               ))}
-                            </select>
+                            </Select>
                             <p className="text-[10px] text-muted-foreground mt-1 leading-tight">{item.desc}</p>
                           </div>
                         );
@@ -3485,14 +3485,14 @@ export default function FormPemeriksaanPage() {
                                 <FolderPlus className="w-3 h-3" /> Subbagian
                               </button>
                               {mainAreaOptions.filter((a) => a !== group.area).length > 0 && (
-                                <select
+                                <Select
                                   value=""
                                   onChange={(e) => {
                                     if (!e.target.value) return;
                                     demoteBagianToSub(group.grup, e.target.value);
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="text-[11px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                  className="text-[11px] font-bold h-7 px-1 py-0 w-auto"
                                   title="Jadikan Bagian ini sebagai Subbagian di bawah Bagian lain"
                                 >
                                   <option value="">↳ Jadi Subbagian di...</option>
@@ -3503,21 +3503,21 @@ export default function FormPemeriksaanPage() {
                                         ↳ Di bawah {a}
                                       </option>
                                     ))}
-                                </select>
+                                </Select>
                               )}
                             </>
                           )}
                           {group.subbagian && (
                             <>
                               {mainAreaOptions.filter((a) => a !== group.area).length > 0 && (
-                                <select
+                                <Select
                                   value=""
                                   onChange={(e) => {
                                     if (!e.target.value) return;
                                     changeSubbagianParent(group.grup, e.target.value);
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="text-[11px] font-bold bg-surface border border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                  className="text-[11px] font-bold h-7 px-1 py-0 w-auto"
                                   title="Pindahkan Subbagian ini ke Bagian lain"
                                 >
                                   <option value="">↳ Pindah ke Bagian...</option>
@@ -3528,7 +3528,7 @@ export default function FormPemeriksaanPage() {
                                         ↳ Pindah ke {a}
                                       </option>
                                     ))}
-                                </select>
+                                </Select>
                               )}
                               <button
                                 type="button"
@@ -3854,17 +3854,17 @@ export default function FormPemeriksaanPage() {
 
                                       {/* Baris kontrol: tipe, opsi, kondisional, sasaran */}
                                       <div className="flex items-center gap-1.5 flex-wrap">
-                                        <select
+                                        <Select
                                           value={field.tipe}
                                           onChange={(e) => updateField(index, "tipe", e.target.value)}
-                                          className="text-[10px] font-bold bg-surface-subtle border border-border px-1.5 py-1 outline-none rounded-md text-foreground"
+                                          className="text-[10px] font-bold h-7 py-0 px-2 w-auto"
                                         >
                                           {FIELD_TYPES.map((t) => (
                                             <option key={t.value} value={t.value}>
                                               {t.label}
                                             </option>
                                           ))}
-                                        </select>
+                                        </Select>
 
                                         {(field.tipe === "SELECT" || field.tipe === "DROPDOWN") && (
                                           <input
@@ -3878,7 +3878,7 @@ export default function FormPemeriksaanPage() {
 
                                         {group.grup === "__META__" ? (
                                           <>
-                                            <select
+                                            <Select
                                               value={field.autoFill || ""}
                                               onChange={(e) => {
                                                 const val = e.target.value || "";
@@ -3908,7 +3908,7 @@ export default function FormPemeriksaanPage() {
                                                   updateField(index, "autoFill", val);
                                                 }
                                               }}
-                                              className="text-[10px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-foreground max-w-[200px]"
+                                              className="text-[10px] h-7 py-0 px-2 w-auto max-w-[200px]"
                                             >
                                               <option value="">Manual (Diisi Saat Input)</option>
                                               <optgroup label="Dari Akun Petugas">
@@ -3935,7 +3935,7 @@ export default function FormPemeriksaanPage() {
                                                 <option value="SASARAN_LAT">🌐 Latitude GPS</option>
                                                 <option value="SASARAN_LNG">🌐 Longitude GPS</option>
                                               </optgroup>
-                                            </select>
+                                            </Select>
                                             {field.autoFill === "USER_NAME" && (
                                               <span className="text-[11px] font-bold text-primary bg-primary-subtle border border-primary/20 px-1.5 py-0.5 rounded">
                                                 Nama Petugas
@@ -3958,7 +3958,7 @@ export default function FormPemeriksaanPage() {
                                             )}
                                           </>
                                         ) : (
-                                          <select
+                                          <Select
                                             value={
                                               field.dependsOn
                                                 ? `${field.dependsOn.parentIndex ?? ""}:${field.dependsOn.requiredValue ?? "TRUE"}`
@@ -3978,7 +3978,7 @@ export default function FormPemeriksaanPage() {
                                                 });
                                               }
                                             }}
-                                            className="text-[10px] max-w-[220px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-muted-foreground"
+                                            className="text-[10px] max-w-[220px] h-7 py-0 px-2 w-auto"
                                           >
                                             <option value="">⚙️ Syarat: Selalu Aktif</option>
                                             {fields
@@ -3997,19 +3997,19 @@ export default function FormPemeriksaanPage() {
                                                   </option>
                                                 </optgroup>
                                               ))}
-                                          </select>
+                                          </Select>
                                         )}
 
                                         {/* Pindah bagian/subbagian/metadata */}
                                         {allAvailableGroupOptions.length > 1 && (
-                                          <select
+                                          <Select
                                             value={field.grup || ""}
                                             onChange={(e) => {
                                               const newGrup = e.target.value;
                                               if (!newGrup || newGrup === (field.grup || "")) return;
                                               moveFieldToGroup(index, newGrup);
                                             }}
-                                            className="text-[10px] max-w-[180px] bg-surface-subtle/50 border border-dashed border-border px-1.5 py-1 outline-none rounded-md text-muted-foreground"
+                                            className="text-[10px] max-w-[180px] h-7 py-0 px-2 w-auto"
                                             title="Pindahkan butir ke bagian/metadata lain"
                                           >
                                             {allAvailableGroupOptions.map((g) => (
@@ -4019,7 +4019,7 @@ export default function FormPemeriksaanPage() {
                                                   : `📦 ${g.length > 28 ? `${g.substring(0, 28)}...` : g}`}
                                               </option>
                                             ))}
-                                          </select>
+                                          </Select>
                                         )}
 
                                         {/* Ubah jadi Bagian atau Subbagian */}
@@ -4034,13 +4034,13 @@ export default function FormPemeriksaanPage() {
                                               <Sparkles className="w-2.5 h-2.5" /> + Bagian
                                             </button>
                                             {mainAreaOptions.length > 0 && (
-                                              <select
+                                              <Select
                                                 value=""
                                                 onChange={(e) => {
                                                   if (!e.target.value) return;
                                                   convertFieldToSubbagian(index, e.target.value);
                                                 }}
-                                                className="text-[11px] font-bold bg-surface-subtle border border-dashed border-border px-1 py-1 outline-none rounded-md text-muted-foreground hover:border-purple-400"
+                                                className="text-[11px] font-bold h-7 py-0 px-1 w-auto"
                                                 title="Jadikan pertanyaan ini sebagai Subbagian baru di bawah Bagian pilihan"
                                               >
                                                 <option value="">+ Subbagian di...</option>
@@ -4049,7 +4049,7 @@ export default function FormPemeriksaanPage() {
                                                     ↳ Di {area.length > 20 ? `${area.substring(0, 20)}...` : area}
                                                   </option>
                                                 ))}
-                                              </select>
+                                              </Select>
                                             )}
                                           </div>
                                         )}
@@ -4273,7 +4273,7 @@ export default function FormPemeriksaanPage() {
                                                       {col.label.split(" ")[0]}
                                                     </span>
                                                   </div>
-                                                  <select
+                                                  <Select
                                                     value={String(currentVal)}
                                                     onChange={(e) => {
                                                       const val =
@@ -4294,7 +4294,7 @@ export default function FormPemeriksaanPage() {
                                                         ),
                                                       );
                                                     }}
-                                                    className={`w-full text-center text-[10px] font-bold py-0.5 rounded outline-none border transition-colors ${
+                                                    className={`w-full text-center text-[10px] font-bold h-7 py-0 px-1 border transition-colors ${
                                                       currentVal === "NA"
                                                         ? "bg-surface-subtle text-muted-foreground border-border"
                                                         : "bg-primary text-white font-black border-primary"
@@ -4306,7 +4306,7 @@ export default function FormPemeriksaanPage() {
                                                     <option value="3">3</option>
                                                     <option value="4">4</option>
                                                     <option value="5">5</option>
-                                                  </select>
+                                                  </Select>
                                                 </div>
                                               );
                                             })}

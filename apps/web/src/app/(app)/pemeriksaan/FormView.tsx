@@ -18,8 +18,13 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { MapPicker } from "@/components/ui/map-picker";
+import { Select } from "@/components/ui/select";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { Textarea } from "@/components/ui/textarea";
 import { useInspectionDraft } from "@/hooks/use-inspection-draft";
 import { photoSrc } from "@/lib/photo-url";
 import { toRoman } from "./helpers";
@@ -539,18 +544,23 @@ export function FormView({
           <div className="flex items-center justify-between gap-2.5 sm:gap-3 min-w-0">
             {/* Back & Form Name */}
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-              <button
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={onBack}
-                className="p-1.5 sm:p-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl shrink-0"
                 title="Kembali"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </button>
+              </Button>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-primary px-1.5 sm:px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20 shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-primary px-1.5 sm:px-2 py-0.5 bg-primary-subtle border-primary/20 shrink-0"
+                  >
                     {editingId ? "Mode Edit" : "Inspeksi Lapangan"}
-                  </span>
+                  </Badge>
                   <span className="text-[11px] text-muted-foreground hidden md:inline truncate">{activeForm.nama}</span>
                 </div>
                 <h2 className="text-[13px] sm:text-[17px] font-black tracking-tight truncate mt-0.5 text-foreground max-w-[200px] sm:max-w-sm">
@@ -951,11 +961,11 @@ export function FormView({
                   </p>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={onSubmit}
                   disabled={!canSubmit || isPending}
-                  className="w-full sm:w-auto min-h-[44px] px-7 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[13px] font-black transition-all shadow-subtle disabled:opacity-40 flex items-center justify-center gap-2 shrink-0"
+                  className="w-full sm:w-auto h-11 px-7 rounded-xl text-[13px] font-black shrink-0"
                 >
                   {isPending ? (
                     <>
@@ -966,7 +976,7 @@ export function FormView({
                       <Save className="w-4 h-4" /> {editingId ? "Update Pemeriksaan" : "Simpan Pemeriksaan"}
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
               {/* Daftar butir wajib yang belum diisi — bisa diklik untuk langsung loncat ke langkahnya */}
@@ -985,13 +995,15 @@ export function FormView({
                             {m.isMeta ? "Identitas Sasaran" : m.grup || "Penilaian"}
                           </span>
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => gotoStepOf(m.id)}
-                          className="min-h-[36px] px-3 py-1 rounded-lg bg-surface border border-border text-[11px] font-bold text-primary hover:bg-surface-subtle shrink-0 shadow-xs"
+                          className="h-8 px-3 text-[11px] font-bold text-primary shrink-0"
                         >
                           Buka Butir →
-                        </button>
+                        </Button>
                       </li>
                     ))}
                   </ul>
@@ -1003,14 +1015,15 @@ export function FormView({
 
         {/* ── BOTTOM STICKY NAVIGATION BAR ── */}
         <div className="fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto bg-surface/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:p-0 sm:pt-5 sm:mt-8 flex items-center justify-between gap-3 shadow-lg sm:shadow-none">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={handlePrev}
             disabled={currentStepIndex === 0}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-2.5 rounded-xl border border-border bg-surface text-[12px] font-bold text-foreground hover:bg-surface-subtle transition-colors disabled:opacity-30 disabled:pointer-events-none shadow-subtle"
+            className="flex-1 sm:flex-initial h-11 sm:h-10 px-4 sm:px-5 rounded-xl text-[12px] font-bold"
           >
             <ChevronLeft className="w-4 h-4" /> Sebelumnya
-          </button>
+          </Button>
 
           <div className="text-[11px] font-semibold text-muted-foreground hidden md:block text-center truncate max-w-xs">
             Langkah {currentStepIndex + 1} dari {steps.length} ·{" "}
@@ -1018,19 +1031,19 @@ export function FormView({
           </div>
 
           {currentStepIndex < steps.length - 1 ? (
-            <button
+            <Button
               type="button"
               onClick={handleNext}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-2.5 rounded-xl bg-primary text-white text-[12px] font-extrabold hover:bg-primary-hover transition-colors shadow-subtle cursor-pointer"
+              className="flex-1 sm:flex-initial h-11 sm:h-10 px-5 sm:px-6 rounded-xl text-[12px] font-extrabold"
             >
               Selanjutnya <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={onSubmit}
               disabled={!canSubmit || isPending}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-2.5 rounded-xl bg-primary text-white text-[12px] font-black hover:bg-primary-hover transition-all shadow-subtle disabled:opacity-40"
+              className="flex-1 sm:flex-initial h-11 sm:h-10 px-5 sm:px-7 rounded-xl text-[12px] font-black"
             >
               {isPending ? (
                 <>
@@ -1041,7 +1054,7 @@ export function FormView({
                   <Check className="w-4 h-4 stroke-[3]" /> Selesai & Simpan
                 </>
               )}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -1238,22 +1251,23 @@ function FieldInput({
             {/* Badges / Pill Contexts */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
               {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+                <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary">
                   👤 Akun Pemeriksa
-                </span>
+                </Badge>
               )}
               {(f.config?.autoFill === "USER_PUSKESMAS" ||
                 f.pertanyaan?.toLowerCase().includes("wilayah") ||
                 f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">
+                <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-600">
                   🏥 Wilayah Kerja
-                </span>
+                </Badge>
               )}
               {f.config?.targetGolongan &&
                 f.config?.targetGolongan !== "ALL" &&
                 f.config?.targetGolongan !== "SEMUA" && (
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] px-2 py-0.5 font-bold ${
                       f.config.targetGolongan === "A1" || f.config.targetGolongan === "Golongan A1"
                         ? "bg-amber-500/10 text-amber-800 border-amber-300"
                         : "bg-indigo-500/10 text-indigo-800 border-indigo-300"
@@ -1265,21 +1279,24 @@ function FieldInput({
                       : f.config.targetGolongan === "A2"
                         ? "Golongan A2"
                         : f.config.targetGolongan}
-                  </span>
+                  </Badge>
                 )}
               {disabled && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 font-bold border border-amber-300">
+                <Badge variant="warning" className="text-[10px] px-2 py-0.5 font-bold">
                   🚫 Tidak Dinilai
-                </span>
+                </Badge>
               )}
             </div>
           </div>
         </div>
 
         {(f.config?.skor ?? 0) > 0 && !disabled && (
-          <span className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl bg-primary/10 text-primary whitespace-nowrap shrink-0">
+          <Badge
+            variant="outline"
+            className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 text-primary whitespace-nowrap shrink-0 border-primary/20"
+          >
             Bobot: {f.config.skor}
-          </span>
+          </Badge>
         )}
       </div>
 
@@ -1363,49 +1380,49 @@ function FieldInput({
       {f.tipe === "TEXT" &&
         !isSignatureField(f) &&
         (isSingleLineField(f) ? (
-          <input
+          <Input
             type="text"
             disabled={disabled}
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={f.pertanyaan ? `Masukkan ${f.pertanyaan.toLowerCase()}...` : "Masukkan data..."}
-            className="w-full h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle disabled:bg-muted/40 disabled:cursor-not-allowed"
+            className="h-11 rounded-xl text-[13px] font-medium"
           />
         ) : (
-          <textarea
+          <Textarea
             rows={3}
             disabled={disabled}
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Tuliskan keterangan / uraian temuan..."
-            className="w-full border border-border bg-surface rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y disabled:bg-muted/40 disabled:cursor-not-allowed shadow-subtle"
+            className="rounded-xl text-[13px] leading-relaxed resize-y"
           />
         ))}
 
       {f.tipe === "NUMBER" && (
-        <input
+        <Input
           type="number"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="w-full max-w-[200px] h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium tabular-nums outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle"
+          className="max-w-[200px] h-11 rounded-xl text-[13px] font-medium tabular-nums"
         />
       )}
 
       {f.tipe === "DATE" && (
-        <input
+        <Input
           type="date"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full max-w-[220px] h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle"
+          className="max-w-[220px] h-11 rounded-xl text-[13px] font-medium"
         />
       )}
 
       {(f.tipe === "DROPDOWN" || f.tipe === "SELECT") && (
-        <select
+        <Select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-11 border border-border bg-surface rounded-xl px-3.5 text-[13px] font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-subtle cursor-pointer text-foreground"
+          className="h-11 rounded-xl text-[13px] font-medium"
         >
           <option value="">— Pilih Opsi —</option>
           {parseDropdownOptions(f.options || f.opsi || f.config?.options).map((opt: string) => (
@@ -1413,7 +1430,7 @@ function FieldInput({
               {opt}
             </option>
           ))}
-        </select>
+        </Select>
       )}
 
       {f.tipe === "GPS" &&
@@ -1434,28 +1451,34 @@ function FieldInput({
           return (
             <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={onGPS}
-                  className="h-11 px-4 rounded-xl border border-border bg-surface hover:border-primary text-[12px] font-bold text-foreground transition-colors flex items-center gap-2 shadow-subtle active:scale-[0.98]"
+                  className="h-11 px-4 rounded-xl text-[12px] font-bold"
                 >
                   <MapPin className="w-4 h-4 text-primary" />
                   {hasValue ? "Perbarui Koordinat" : "Ambil Lokasi GPS"}
-                </button>
+                </Button>
                 {validCoords && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary font-mono text-[11px] font-bold">
+                  <Badge
+                    variant="secondary"
+                    className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary font-mono text-[11px] font-bold gap-1.5"
+                  >
                     <Check className="w-3.5 h-3.5" /> {coords}
-                  </div>
+                  </Badge>
                 )}
                 {mapsUrl && (
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="h-9 px-3 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3 rounded-xl text-[11px] font-bold text-muted-foreground hover:text-foreground"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> Buka di Maps
-                  </a>
+                    <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                      <ExternalLink className="w-3.5 h-3.5" /> Buka di Maps
+                    </a>
+                  </Button>
                 )}
               </div>
               {/* Interaktif WebGL Vector MapPicker (MapLibre GL) */}

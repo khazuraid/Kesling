@@ -17,6 +17,7 @@ import {
   FileText,
   Loader2,
   MapPin,
+  MoreVertical,
   Phone,
   Plus,
   Search,
@@ -34,10 +35,20 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DateRangeInputs, FilterBar } from "@/components/ui/filter-bar";
 import { NumberFlow } from "@/components/ui/number-flow";
 import { Pagination } from "@/components/ui/pagination";
 import { Select } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { sasaranColumnsFromDynamic, sasaranMetaValue } from "@/lib/sasaran-meta";
 import {
@@ -483,24 +494,24 @@ export default function PemeriksaanPage() {
       }
 
       return (
-        <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
+        <Select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
           <option value="">Pilih...</option>
           {optionsList.map((opt: string) => (
             <option key={opt} value={opt}>
               {opt}
             </option>
           ))}
-        </select>
+        </Select>
       );
     }
 
     if (p.type === "BOOLEAN") {
       return (
-        <select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
+        <Select required={!!p.required} value={value} onChange={(e) => setValue(e.target.value)} className={baseClass}>
           <option value="">Pilih...</option>
           <option value="TRUE">Ya</option>
           <option value="FALSE">Tidak</option>
-        </select>
+        </Select>
       );
     }
 
@@ -1624,13 +1635,13 @@ export default function PemeriksaanPage() {
                           <label className="block text-[11px] font-bold text-foreground">Jenis / Tipe Entitas *</label>
                           <p className="text-[10px] text-muted-foreground mt-0.5">Skema form & kategori</p>
                         </div>
-                        <select
+                        <Select
                           value={newSasaranForm.subCategoryId || ""}
                           onChange={(e) =>
                             setNewSasaranForm((prev) => ({ ...prev, subCategoryId: Number(e.target.value) }))
                           }
                           required
-                          className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
+                          className="w-full h-10 px-3 text-[13px] font-medium"
                         >
                           <option value="">Pilih Jenis</option>
                           {allSubCats.map((sc: any) => (
@@ -1639,7 +1650,7 @@ export default function PemeriksaanPage() {
                               {sc.nama}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
 
                       {userRole !== "OPERATOR" && (
@@ -1648,13 +1659,13 @@ export default function PemeriksaanPage() {
                             <label className="block text-[11px] font-bold text-foreground">Puskesmas Pemilik *</label>
                             <p className="text-[10px] text-muted-foreground mt-0.5">Entitas milik PKM mana</p>
                           </div>
-                          <select
+                          <Select
                             value={newSasaranForm.puskesmasId || ""}
                             onChange={(e) =>
                               setNewSasaranForm((prev) => ({ ...prev, puskesmasId: Number(e.target.value) }))
                             }
                             required
-                            className="w-full h-10 px-3 rounded-button border border-border bg-surface text-text-main text-[13px] font-medium outline-none focus:border-primary transition-colors cursor-pointer"
+                            className="w-full h-10 px-3 text-[13px] font-medium"
                           >
                             <option value="">Pilih Puskesmas</option>
                             {puskesmasList.map((p: any) => (
@@ -1662,7 +1673,7 @@ export default function PemeriksaanPage() {
                                 {p.nama}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                         </div>
                       )}
 
@@ -1727,513 +1738,520 @@ export default function PemeriksaanPage() {
   if (!activeForm) {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">
-        {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-        <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
-          <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-                Pemeriksaan
-              </p>
-              <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
-                Inspeksi Lapangan
-              </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-                <span className="tabular-nums font-bold text-foreground">{templates.length}</span> formulir ·{" "}
-                <span className="tabular-nums font-bold text-foreground">{totalRiwayat}</span> riwayat pemeriksaan
-              </p>
-            </div>
-            <div className="flex items-center gap-1 rounded-full bg-muted/80 border border-border p-1 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("formulir");
-                  setFormulirPage(1);
-                }}
-                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center cursor-pointer ${
-                  activeTab === "formulir"
-                    ? "bg-primary text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Formulir ({templates.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("riwayat");
-                  setRiwayatPage(1);
-                }}
-                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2 text-[12px] font-bold rounded-full transition-all text-center cursor-pointer ${
-                  activeTab === "riwayat"
-                    ? "bg-primary text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Riwayat ({totalRiwayat})
-              </button>
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => {
+            setActiveTab(val as "formulir" | "riwayat");
+            if (val === "formulir") setFormulirPage(1);
+            else setRiwayatPage(1);
+          }}
+          className="w-full"
+        >
+          <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
+            <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
+                  Pemeriksaan
+                </p>
+                <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+                  Inspeksi Lapangan
+                </h1>
+                <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
+                  <span className="tabular-nums font-bold text-foreground">{templates.length}</span> formulir ·{" "}
+                  <span className="tabular-nums font-bold text-foreground">{totalRiwayat}</span> riwayat pemeriksaan
+                </p>
+              </div>
+              <TabsList className="h-10 rounded-full p-1 w-full sm:w-auto bg-muted/80 border border-border">
+                <TabsTrigger
+                  value="formulir"
+                  className="flex-1 sm:flex-initial px-4 sm:px-5 py-1.5 text-[12px] font-bold rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xs"
+                >
+                  Formulir ({templates.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="riwayat"
+                  className="flex-1 sm:flex-initial px-4 sm:px-5 py-1.5 text-[12px] font-bold rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xs"
+                >
+                  Riwayat ({totalRiwayat})
+                </TabsTrigger>
+              </TabsList>
             </div>
           </div>
-        </div>
 
-        {/* ── CONTENT BODY (CANVAS) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-          {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
-            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
-                <NumberFlow value={templates.length} />
+          {/* ── CONTENT BODY (CANVAS) ── */}
+          <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+            {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
+              <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
+                <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
+                  <NumberFlow value={templates.length} />
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
+                  Formulir
+                </span>
               </span>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
-                Formulir
+              <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
+                <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-amber-600 leading-none">
+                  <NumberFlow value={totalRiwayat} />
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-amber-600/70 mt-1">
+                  Riwayat
+                </span>
               </span>
-            </span>
-            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
-              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-amber-600 leading-none">
-                <NumberFlow value={totalRiwayat} />
+              <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
+                <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
+                  <NumberFlow value={totalVariabel} />
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
+                  Variabel
+                </span>
               </span>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-amber-600/70 mt-1">
-                Riwayat
+              <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-surface border border-border shadow-subtle">
+                <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-foreground leading-none">
+                  <NumberFlow value={categories.length} />
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-muted-foreground mt-1">
+                  Kategori
+                </span>
               </span>
-            </span>
-            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
-                <NumberFlow value={totalVariabel} />
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
-                Variabel
-              </span>
-            </span>
-            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-surface border border-border shadow-subtle">
-              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-foreground leading-none">
-                <NumberFlow value={categories.length} />
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-muted-foreground mt-1">
-                Kategori
-              </span>
-            </span>
-          </div>
-
-          {/* ── TAB FORMULIR ── */}
-          {activeTab === "formulir" && (
-            <div className="pt-6 space-y-4">
-              <FilterBar
-                searchValue={formulirSearch}
-                onSearchChange={(v) => {
-                  setFormulirSearch(v);
-                  setFormulirPage(1);
-                }}
-                placeholder="Cari nama formulir atau jenis..."
-                activeFilters={[
-                  ...(formulirCategory !== "all"
-                    ? [
-                        {
-                          key: "cat",
-                          label: `Kategori: ${formulirCategory}`,
-                          onRemove: () => {
-                            setFormulirCategory("all");
-                            setFormulirPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  ...(formulirOwner !== "all"
-                    ? [
-                        {
-                          key: "owner",
-                          label: `Pemilik: ${TEMPLATE_OWNER_LABEL[formulirOwner]}`,
-                          onRemove: () => {
-                            setFormulirOwner("all");
-                            setFormulirPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                ]}
-                onReset={() => {
-                  setFormulirSearch("");
-                  setFormulirCategory("all");
-                  setFormulirOwner("all");
-                  setFormulirPage(1);
-                }}
-              >
-                <Select
-                  value={formulirCategory}
-                  onChange={(e) => {
-                    setFormulirCategory(e.target.value);
-                    setFormulirPage(1);
-                  }}
-                  aria-label="Saring menurut kategori"
-                  className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
-                >
-                  <option value="all">Semua Kategori</option>
-                  {formulirCategoryOptions.map((nama) => (
-                    <option key={nama} value={nama}>
-                      {nama}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  value={formulirOwner}
-                  onChange={(e) => {
-                    setFormulirOwner(e.target.value);
-                    setFormulirPage(1);
-                  }}
-                  aria-label="Saring menurut pemilik formulir"
-                  className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
-                >
-                  {Object.entries(TEMPLATE_OWNER_LABEL).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </Select>
-              </FilterBar>
-
-              {filteredTemplates.length === 0 ? (
-                <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
-                  <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
-                  <p className="text-[13px] font-bold text-foreground">
-                    {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
-                      ? "Formulir Tidak Ditemukan"
-                      : "Belum Ada Template"}
-                  </p>
-                  <p className="text-[12px] text-muted-foreground mt-1">
-                    {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
-                      ? "Coba ubah kata kunci atau filter."
-                      : "Import template lewat halaman Form Pemeriksaan."}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2.5">
-                  {paginatedTemplates.map((tpl: any) => {
-                    const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
-                    return (
-                      <div
-                        key={tpl.id}
-                        onClick={() => handleOpenForm(tpl)}
-                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden cursor-pointer shadow-subtle"
-                      >
-                        <div className="w-1 shrink-0 bg-primary" />
-                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all">
-                              <FileText className="w-5 h-5" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
-                                  {tpl.nama}
-                                </h4>
-                                {!tpl.puskesmasId ? (
-                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
-                                    🏛️ Dinkes
-                                  </span>
-                                ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
-                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
-                                    🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
-                                  </span>
-                                ) : null}
-                              </div>
-                              <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
-                                {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
-                                {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
-                                {tpl.config?.authorName ? ` (oleh: ${tpl.config.authorName})` : ""}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                            <div className="text-left sm:text-center">
-                              <div className="text-[15px] font-black tabular-nums text-primary leading-none">
-                                {fieldCount}
-                              </div>
-                              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
-                                Variabel
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-primary text-white text-[11px] font-bold group-hover:bg-primary-hover transition-all shadow-subtle"
-                            >
-                              <span>Mulai</span>
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Pagination Controls Formulir */}
-              <Pagination
-                page={formulirPage}
-                totalPages={totalFormulirPages}
-                total={filteredTemplates.length}
-                limit={formulirLimit}
-                onPageChange={(p) => {
-                  setFormulirPage(p);
-                }}
-                onLimitChange={(l) => {
-                  setFormulirLimit(l);
-                  setFormulirPage(1);
-                }}
-                noun="formulir"
-                className="border-t-0"
-              />
             </div>
-          )}
 
-          {/* ── TAB RIWAYAT ── */}
-          {activeTab === "riwayat" && (
-            <div className="pt-6 space-y-4">
-              <FilterBar
-                searchValue={riwayatSearch}
-                onSearchChange={(v) => {
-                  setRiwayatSearch(v);
-                  setRiwayatPage(1);
-                }}
-                placeholder="Cari nama sasaran, puskesmas, formulir..."
-                isFetching={isLoadingRiwayat}
-                activeFilters={[
-                  ...(riwayatStatus !== "all"
-                    ? [
-                        {
-                          key: "status",
-                          label: `Status: ${riwayatStatus}`,
-                          onRemove: () => {
-                            setRiwayatStatus("all");
-                            setRiwayatPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  ...(riwayatTemplateId !== "all"
-                    ? [
-                        {
-                          key: "tpl",
-                          label: `Formulir: ${templates.find((t: any) => String(t.id) === riwayatTemplateId)?.nama || riwayatTemplateId}`,
-                          onRemove: () => {
-                            setRiwayatTemplateId("all");
-                            setRiwayatPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  ...(riwayatUserId !== "all"
-                    ? [
-                        {
-                          key: "usr",
-                          label: `Petugas: ${riwayatUserId}`,
-                          onRemove: () => {
-                            setRiwayatUserId("all");
-                            setRiwayatPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  ...(riwayatDateFrom || riwayatDateTo
-                    ? [
-                        {
-                          key: "date",
-                          label: `${riwayatDateFrom || "…"} – ${riwayatDateTo || "…"}`,
-                          onRemove: () => {
-                            setRiwayatDateFrom("");
-                            setRiwayatDateTo("");
-                            setRiwayatPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                ]}
-                onReset={() => {
-                  setRiwayatSearch("");
-                  setRiwayatDateFrom("");
-                  setRiwayatDateTo("");
-                  setRiwayatStatus("all");
-                  setRiwayatTemplateId("all");
-                  setRiwayatUserId("all");
-                  setRiwayatPage(1);
-                }}
-              >
-                <DateRangeInputs
-                  from={riwayatDateFrom}
-                  to={riwayatDateTo}
-                  onChange={(f, t) => {
-                    setRiwayatDateFrom(f);
-                    setRiwayatDateTo(t);
-                    setRiwayatPage(1);
+            {/* ── TAB FORMULIR ── */}
+            <TabsContent value="formulir" className="mt-0">
+              <div className="pt-6 space-y-4">
+                <FilterBar
+                  searchValue={formulirSearch}
+                  onSearchChange={(v) => {
+                    setFormulirSearch(v);
+                    setFormulirPage(1);
                   }}
-                />
-                <Select
-                  value={riwayatStatus}
-                  onChange={(e) => {
-                    setRiwayatStatus(e.target.value);
-                    setRiwayatPage(1);
+                  placeholder="Cari nama formulir atau jenis..."
+                  activeFilters={[
+                    ...(formulirCategory !== "all"
+                      ? [
+                          {
+                            key: "cat",
+                            label: `Kategori: ${formulirCategory}`,
+                            onRemove: () => {
+                              setFormulirCategory("all");
+                              setFormulirPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(formulirOwner !== "all"
+                      ? [
+                          {
+                            key: "owner",
+                            label: `Pemilik: ${TEMPLATE_OWNER_LABEL[formulirOwner]}`,
+                            onRemove: () => {
+                              setFormulirOwner("all");
+                              setFormulirPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onReset={() => {
+                    setFormulirSearch("");
+                    setFormulirCategory("all");
+                    setFormulirOwner("all");
+                    setFormulirPage(1);
                   }}
-                  aria-label="Filter status pemeriksaan"
-                  className="h-10 w-auto max-w-[160px] shrink-0 text-[12px] font-medium"
                 >
-                  <option value="all">Semua Status</option>
-                  <option value="APPROVED">Disetujui</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="PENDING">Menunggu</option>
-                </Select>
-                {userRole !== "OPERATOR" && (
                   <Select
-                    value={riwayatTemplateId}
+                    value={formulirCategory}
                     onChange={(e) => {
-                      setRiwayatTemplateId(e.target.value);
-                      setRiwayatPage(1);
+                      setFormulirCategory(e.target.value);
+                      setFormulirPage(1);
                     }}
-                    aria-label="Filter formulir"
+                    aria-label="Saring menurut kategori"
                     className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
                   >
-                    <option value="all">Semua Formulir</option>
-                    {templates.map((t: any) => (
-                      <option key={t.id} value={String(t.id)}>
-                        {t.nama}
+                    <option value="all">Semua Kategori</option>
+                    {formulirCategoryOptions.map((nama) => (
+                      <option key={nama} value={nama}>
+                        {nama}
                       </option>
                     ))}
                   </Select>
-                )}
-              </FilterBar>
+                  <Select
+                    value={formulirOwner}
+                    onChange={(e) => {
+                      setFormulirOwner(e.target.value);
+                      setFormulirPage(1);
+                    }}
+                    aria-label="Saring menurut pemilik formulir"
+                    className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                  >
+                    {Object.entries(TEMPLATE_OWNER_LABEL).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </Select>
+                </FilterBar>
 
-              {isLoadingRiwayat ? (
-                <div className="py-12 flex flex-col items-center justify-center text-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                  <p className="text-[12px] font-medium text-muted-foreground">Memuat data riwayat...</p>
-                </div>
-              ) : paginatedResults.length === 0 ? (
-                <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
-                  <ShieldAlert className="w-8 h-8 text-muted-foreground/40 mb-3" />
-                  <p className="text-[13px] font-bold text-foreground">
-                    {riwayatSearch ||
-                    riwayatStatus !== "all" ||
-                    riwayatTemplateId !== "all" ||
-                    riwayatDateFrom ||
-                    riwayatDateTo
-                      ? "Data Tidak Ditemukan"
-                      : "Belum Ada Riwayat"}
-                  </p>
-                  <p className="text-[12px] text-muted-foreground mt-1">
-                    {riwayatSearch ||
-                    riwayatStatus !== "all" ||
-                    riwayatTemplateId !== "all" ||
-                    riwayatDateFrom ||
-                    riwayatDateTo
-                      ? "Coba ubah kata kunci atau filter."
-                      : "Hasil pemeriksaan akan tampil di sini."}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2.5">
-                  {paginatedResults.map((res: any) => {
-                    const isApproved = res.status === "APPROVED";
-                    return (
-                      <div
-                        key={res.id}
-                        className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden shadow-subtle"
-                      >
-                        <div className={`w-1 shrink-0 ${isApproved ? "bg-success" : "bg-warning"}`} />
-                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-                          <Link
-                            href={`/pemeriksaan/${res.id}`}
-                            className="flex items-center gap-3.5 min-w-0 group/title rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
-                            title="Buka halaman detail lengkap hasil pemeriksaan"
-                          >
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover/title:bg-primary group-hover/title:text-white transition-all">
-                              <FileCheck className="w-5 h-5" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground group-hover/title:text-primary transition-colors truncate">
-                                  {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
-                                </h4>
-                                <span
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shrink-0 ${
-                                    isApproved
-                                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                                      : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                                  }`}
-                                >
-                                  <CheckCircle2 className="w-2.5 h-2.5" />
-                                  {isApproved ? "Disetujui" : res.status || "Selesai"}
-                                </span>
+                {filteredTemplates.length === 0 ? (
+                  <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
+                    <FileText className="w-8 h-8 text-muted-foreground/40 mb-3" />
+                    <p className="text-[13px] font-bold text-foreground">
+                      {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
+                        ? "Formulir Tidak Ditemukan"
+                        : "Belum Ada Template"}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      {formulirSearch || formulirCategory !== "all" || formulirOwner !== "all"
+                        ? "Coba ubah kata kunci atau filter."
+                        : "Import template lewat halaman Form Pemeriksaan."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {paginatedTemplates.map((tpl: any) => {
+                      const fieldCount = tpl.fields?.filter((f: any) => f.grup !== "__META__").length || 0;
+                      return (
+                        <div
+                          key={tpl.id}
+                          onClick={() => handleOpenForm(tpl)}
+                          className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden cursor-pointer shadow-subtle"
+                        >
+                          <div className="w-1 shrink-0 bg-primary" />
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                            <div className="flex items-center gap-3.5 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all">
+                                <FileText className="w-5 h-5" />
                               </div>
-                              <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
-                                {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
-                                {new Date(res.createdAt).toLocaleDateString("id-ID", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                              </p>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                                    {tpl.nama}
+                                  </h4>
+                                  {!tpl.puskesmasId ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                                      🏛️ Dinkes
+                                    </span>
+                                  ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
+                                      🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
+                                  {tpl.subCategory?.nama ? `${tpl.subCategory.nama} · ` : ""}
+                                  {tpl.deskripsi || "Formulir inspeksi standar sanitasi lingkungan"}
+                                  {tpl.config?.authorName ? ` (oleh: ${tpl.config.authorName})` : ""}
+                                </p>
+                              </div>
                             </div>
-                          </Link>
 
-                          <div className="grid grid-cols-4 sm:flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                            <Link
-                              href={`/pemeriksaan/${res.id}`}
-                              title="Lihat Detail Pemeriksaan"
-                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
-                            >
-                              <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
-                            </Link>
-                            <button
-                              title="Export PDF"
-                              onClick={() => handleExportPDF(res)}
-                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
-                            >
-                              <Download className="w-3.5 h-3.5" /> <span>PDF</span>
-                            </button>
-                            <button
-                              title="Edit Pemeriksaan"
-                              onClick={() => handleEditResult(res)}
-                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-foreground hover:bg-surface-subtle rounded-lg transition-colors"
-                            >
-                              <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> <span>Edit</span>
-                            </button>
-                            <button
-                              title="Hapus"
-                              onClick={() => {
-                                if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
-                                  deleteMut.mutate(res.id);
-                                }
-                              }}
-                              className="inline-flex items-center justify-center h-8 w-full sm:w-8 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                              <div className="text-left sm:text-center">
+                                <div className="text-[15px] font-black tabular-nums text-primary leading-none">
+                                  {fieldCount}
+                                </div>
+                                <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5">
+                                  Variabel
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-primary text-white text-[11px] font-bold group-hover:bg-primary-hover transition-all shadow-subtle"
+                              >
+                                <span>Mulai</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
 
-              {/* Pagination Controls Riwayat */}
-              <Pagination
-                page={riwayatPage}
-                totalPages={totalRiwayatPages}
-                total={totalRiwayat}
-                limit={riwayatLimit}
-                onPageChange={(p) => {
-                  setRiwayatPage(p);
-                }}
-                onLimitChange={(l) => {
-                  setRiwayatLimit(l);
-                  setRiwayatPage(1);
-                }}
-                isFetching={isLoadingRiwayat}
-                noun="riwayat"
-                className="border-t-0"
-              />
-            </div>
-          )}
-        </div>
+                {/* Pagination Controls Formulir */}
+                <Pagination
+                  page={formulirPage}
+                  totalPages={totalFormulirPages}
+                  total={filteredTemplates.length}
+                  limit={formulirLimit}
+                  onPageChange={(p) => {
+                    setFormulirPage(p);
+                  }}
+                  onLimitChange={(l) => {
+                    setFormulirLimit(l);
+                    setFormulirPage(1);
+                  }}
+                  noun="formulir"
+                  className="border-t-0"
+                />
+              </div>
+            </TabsContent>
+
+            {/* ── TAB RIWAYAT ── */}
+            <TabsContent value="riwayat" className="mt-0">
+              <div className="pt-6 space-y-4">
+                <FilterBar
+                  searchValue={riwayatSearch}
+                  onSearchChange={(v) => {
+                    setRiwayatSearch(v);
+                    setRiwayatPage(1);
+                  }}
+                  placeholder="Cari nama sasaran, puskesmas, formulir..."
+                  isFetching={isLoadingRiwayat}
+                  activeFilters={[
+                    ...(riwayatStatus !== "all"
+                      ? [
+                          {
+                            key: "status",
+                            label: `Status: ${riwayatStatus}`,
+                            onRemove: () => {
+                              setRiwayatStatus("all");
+                              setRiwayatPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(riwayatTemplateId !== "all"
+                      ? [
+                          {
+                            key: "tpl",
+                            label: `Formulir: ${templates.find((t: any) => String(t.id) === riwayatTemplateId)?.nama || riwayatTemplateId}`,
+                            onRemove: () => {
+                              setRiwayatTemplateId("all");
+                              setRiwayatPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(riwayatUserId !== "all"
+                      ? [
+                          {
+                            key: "usr",
+                            label: `Petugas: ${riwayatUserId}`,
+                            onRemove: () => {
+                              setRiwayatUserId("all");
+                              setRiwayatPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(riwayatDateFrom || riwayatDateTo
+                      ? [
+                          {
+                            key: "date",
+                            label: `${riwayatDateFrom || "…"} – ${riwayatDateTo || "…"}`,
+                            onRemove: () => {
+                              setRiwayatDateFrom("");
+                              setRiwayatDateTo("");
+                              setRiwayatPage(1);
+                            },
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onReset={() => {
+                    setRiwayatSearch("");
+                    setRiwayatDateFrom("");
+                    setRiwayatDateTo("");
+                    setRiwayatStatus("all");
+                    setRiwayatTemplateId("all");
+                    setRiwayatUserId("all");
+                    setRiwayatPage(1);
+                  }}
+                >
+                  <DateRangeInputs
+                    from={riwayatDateFrom}
+                    to={riwayatDateTo}
+                    onChange={(f, t) => {
+                      setRiwayatDateFrom(f);
+                      setRiwayatDateTo(t);
+                      setRiwayatPage(1);
+                    }}
+                  />
+                  <Select
+                    value={riwayatStatus}
+                    onChange={(e) => {
+                      setRiwayatStatus(e.target.value);
+                      setRiwayatPage(1);
+                    }}
+                    aria-label="Filter status pemeriksaan"
+                    className="h-10 w-auto max-w-[160px] shrink-0 text-[12px] font-medium"
+                  >
+                    <option value="all">Semua Status</option>
+                    <option value="APPROVED">Disetujui</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="PENDING">Menunggu</option>
+                  </Select>
+                  {userRole !== "OPERATOR" && (
+                    <Select
+                      value={riwayatTemplateId}
+                      onChange={(e) => {
+                        setRiwayatTemplateId(e.target.value);
+                        setRiwayatPage(1);
+                      }}
+                      aria-label="Filter formulir"
+                      className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                    >
+                      <option value="all">Semua Formulir</option>
+                      {templates.map((t: any) => (
+                        <option key={t.id} value={String(t.id)}>
+                          {t.nama}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FilterBar>
+
+                {isLoadingRiwayat ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+                    <p className="text-[12px] font-medium text-muted-foreground">Memuat data riwayat...</p>
+                  </div>
+                ) : paginatedResults.length === 0 ? (
+                  <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">
+                    <ShieldAlert className="w-8 h-8 text-muted-foreground/40 mb-3" />
+                    <p className="text-[13px] font-bold text-foreground">
+                      {riwayatSearch ||
+                      riwayatStatus !== "all" ||
+                      riwayatTemplateId !== "all" ||
+                      riwayatDateFrom ||
+                      riwayatDateTo
+                        ? "Data Tidak Ditemukan"
+                        : "Belum Ada Riwayat"}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      {riwayatSearch ||
+                      riwayatStatus !== "all" ||
+                      riwayatTemplateId !== "all" ||
+                      riwayatDateFrom ||
+                      riwayatDateTo
+                        ? "Coba ubah kata kunci atau filter."
+                        : "Hasil pemeriksaan akan tampil di sini."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {paginatedResults.map((res: any) => {
+                      const isApproved = res.status === "APPROVED";
+                      return (
+                        <div
+                          key={res.id}
+                          className="group flex items-stretch rounded-card border border-border bg-surface hover:border-primary/40 hover:shadow-subtle transition-all overflow-hidden shadow-subtle"
+                        >
+                          <div className={`w-1 shrink-0 ${isApproved ? "bg-success" : "bg-warning"}`} />
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
+                            <Link
+                              href={`/pemeriksaan/${res.id}`}
+                              className="flex items-center gap-3.5 min-w-0 group/title rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
+                              title="Buka halaman detail lengkap hasil pemeriksaan"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover/title:bg-primary group-hover/title:text-white transition-all">
+                                <FileCheck className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-[13px] sm:text-[14px] font-extrabold text-foreground group-hover/title:text-primary transition-colors truncate">
+                                    {res.sasaran?.nama || res.namaSasaran || "Tanpa Nama"}
+                                  </h4>
+                                  <Badge
+                                    variant={isApproved ? "success" : "warning"}
+                                    className="gap-1 text-[10px] font-extrabold uppercase shrink-0"
+                                  >
+                                    <CheckCircle2 className="w-2.5 h-2.5" />
+                                    {isApproved ? "Disetujui" : res.status || "Selesai"}
+                                  </Badge>
+                                </div>
+                                <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
+                                  {res.template?.nama} · {res.puskesmas?.nama} ·{" "}
+                                  {new Date(res.createdAt).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                </p>
+                              </div>
+                            </Link>
+
+                            <div className="flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                              <Link
+                                href={`/pemeriksaan/${res.id}`}
+                                title="Lihat Detail Pemeriksaan"
+                                className="inline-flex items-center justify-center gap-1 h-8 px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
+                              </Link>
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                                    title="Aksi Lainnya"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                    <span className="sr-only">Aksi</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem
+                                    onClick={() => handleExportPDF(res)}
+                                    className="gap-2 cursor-pointer"
+                                  >
+                                    <Download className="w-3.5 h-3.5 text-primary" />
+                                    <span>Export PDF</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditResult(res)}
+                                    className="gap-2 cursor-pointer"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <span>Edit Form</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (window.confirm("Yakin ingin menghapus hasil pemeriksaan ini?")) {
+                                        deleteMut.mutate(res.id);
+                                      }
+                                    }}
+                                    className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Hapus</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Pagination Controls Riwayat */}
+                <Pagination
+                  page={riwayatPage}
+                  totalPages={totalRiwayatPages}
+                  total={totalRiwayat}
+                  limit={riwayatLimit}
+                  onPageChange={(p) => {
+                    setRiwayatPage(p);
+                  }}
+                  onLimitChange={(l) => {
+                    setRiwayatLimit(l);
+                    setRiwayatPage(1);
+                  }}
+                  isFetching={isLoadingRiwayat}
+                  noun="riwayat"
+                  className="border-t-0"
+                />
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     );
   }

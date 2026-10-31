@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const labelCls = "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5";
@@ -234,12 +236,12 @@ export default function UsersPage() {
         }
       >
         <div className="space-y-4">
-          <div>
-            <label className={labelCls}>Nama</label>
+          <div className="space-y-1.5">
+            <Label className={labelCls}>Nama</Label>
             <Input value={form.nama} onChange={(e) => setForm({ ...form, nama: e.target.value })} required />
           </div>
-          <div>
-            <label className={labelCls}>Email</label>
+          <div className="space-y-1.5">
+            <Label className={labelCls}>Email</Label>
             <Input
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -247,10 +249,10 @@ export default function UsersPage() {
               required
             />
           </div>
-          <div>
-            <label className={labelCls}>
+          <div className="space-y-1.5">
+            <Label className={labelCls}>
               Password {editId && <span className="font-medium normal-case">(kosongkan jika tetap)</span>}
-            </label>
+            </Label>
             <Input
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -259,25 +261,25 @@ export default function UsersPage() {
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Role</label>
-              <select
+            <div className="space-y-1.5">
+              <Label className={labelCls}>Role</Label>
+              <Select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full h-10 px-3.5 rounded-card bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer [&>option]:bg-surface [&>option]:text-foreground"
+                className="text-[12px] font-medium"
               >
                 <option value="ADMIN">Admin</option>
                 <option value="OPERATOR">Operator</option>
                 <option value="DINKES">Dinkes</option>
-              </select>
+              </Select>
             </div>
             {form.role === "OPERATOR" && (
-              <div>
-                <label className={labelCls}>Puskesmas</label>
-                <select
+              <div className="space-y-1.5">
+                <Label className={labelCls}>Puskesmas</Label>
+                <Select
                   value={form.puskesmasId}
                   onChange={(e) => setForm({ ...form, puskesmasId: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-card bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer [&>option]:bg-surface [&>option]:text-foreground"
+                  className="text-[12px] font-medium"
                 >
                   <option value="">— Pilih —</option>
                   {puskesmasList.map((p: any) => (
@@ -285,14 +287,14 @@ export default function UsersPage() {
                       {p.nama}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
           </div>
-          <div>
-            <label className={labelCls}>
+          <div className="space-y-1.5">
+            <Label className={labelCls}>
               Telegram Chat ID <span className="font-medium normal-case">(opsional)</span>
-            </label>
+            </Label>
             <Input
               value={form.telegramChatId}
               onChange={(e) => setForm({ ...form, telegramChatId: e.target.value })}

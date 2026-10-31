@@ -17,14 +17,17 @@ import {
   PenTool,
   ShieldAlert,
   User,
-  X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PdfViewer } from "@/components/ui/pdf-viewer";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { groupInspectionFields } from "@/lib/inspection-answers";
 import { extractInspectionPhotos, extractInspectionSignatures } from "@/lib/inspection-media";
 import { resolveSasaranIdentity } from "@/lib/sasaran-meta";
@@ -216,9 +219,12 @@ export default function DetailPemeriksaanPage() {
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary px-2 py-0.5 rounded-full bg-primary-subtle border border-primary/20 shrink-0">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] font-extrabold uppercase tracking-wider text-primary bg-primary-subtle border-primary/20 shrink-0"
+                >
                   Detail Pemeriksaan
-                </span>
+                </Badge>
                 <span className="text-[11px] text-muted-foreground tabular-nums truncate">#{result.id}</span>
               </div>
               <h1 className="text-[15px] sm:text-[18px] font-black text-foreground truncate mt-0.5">
@@ -228,27 +234,32 @@ export default function DetailPemeriksaanPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => router.push(`/pemeriksaan?tab=riwayat&edit=${result.id}`)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[12px] font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
+              className="gap-1.5 text-[12px] font-bold h-9 rounded-xl"
             >
               <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handlePreviewPDF}
               disabled={isPreviewingPdf}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[12px] font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors disabled:opacity-50"
+              className="gap-1.5 text-[12px] font-bold h-9 rounded-xl"
             >
               {isPreviewingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
               <span className="hidden sm:inline">Pratinjau PDF</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={handleDownloadPDF}
               disabled={isExportingPDF}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-all shadow-subtle disabled:opacity-50"
+              className="gap-2 text-[12px] font-extrabold h-9 rounded-xl bg-primary text-white hover:bg-primary-hover shadow-subtle"
             >
               {isExportingPDF ? (
                 <>
@@ -260,7 +271,7 @@ export default function DetailPemeriksaanPage() {
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Unduh PDF</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -324,35 +335,23 @@ export default function DetailPemeriksaanPage() {
         </div>
 
         {/* ── TAB: segmented control ── */}
-        <div
-          role="tablist"
-          aria-label="Bagian detail pemeriksaan"
-          className="flex items-center gap-1 p-1 rounded-2xl bg-surface-subtle border border-border w-full overflow-x-auto"
-        >
-          {TABS.map(({ id, label, Icon }) => {
-            const selected = activeTab === id;
-            const count = id === "foto" ? photos.length : undefined;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                id={`tab-${id}`}
-                aria-selected={selected}
-                aria-controls={`panel-${id}`}
-                onClick={() => setActiveTab(id)}
-                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-all ${
-                  selected
-                    ? "bg-surface text-foreground shadow-subtle border border-border"
-                    : "text-muted-foreground hover:text-foreground hover:bg-surface"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {label}
-                {count !== undefined && <span className="tabular-nums">({count})</span>}
-              </button>
-            );
-          })}
-        </div>
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as DetailTab)} className="w-full">
+          <TabsList className="flex items-center gap-1 p-1 rounded-2xl bg-surface-subtle border border-border w-full justify-start h-auto">
+            {TABS.map(({ id, label, Icon }) => {
+              const count = id === "foto" ? photos.length : undefined;
+              return (
+                <TabsTrigger
+                  key={id}
+                  value={id}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl text-[12px] font-bold whitespace-nowrap data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-subtle data-[state=active]:border data-[state=active]:border-border"
+                >
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {label}
+                  {count !== undefined && <span className="tabular-nums">({count})</span>}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
         {/* ── TAB PENILAIAN ── */}
         {activeTab === "penilaian" && (
@@ -416,35 +415,33 @@ export default function DetailPemeriksaanPage() {
         />
       )}
 
-      {previewPdfUrl && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 fade-in">
-          <div className="w-full max-w-4xl h-[88vh] flex flex-col rounded-card bg-surface border border-border shadow-float overflow-hidden">
-            <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-surface shrink-0">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-extrabold text-foreground">Pratinjau Berita Acara IKL</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  URL.revokeObjectURL(previewPdfUrl);
-                  setPreviewPdfUrl(null);
-                }}
-                className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <Dialog
+        open={!!previewPdfUrl}
+        onOpenChange={(open) => {
+          if (!open && previewPdfUrl) {
+            URL.revokeObjectURL(previewPdfUrl);
+            setPreviewPdfUrl(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl h-[88vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="px-5 py-3 border-b border-border shrink-0">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              <DialogTitle className="text-sm font-extrabold text-foreground">Pratinjau Berita Acara IKL</DialogTitle>
             </div>
-            <div className="flex-1 min-h-0 bg-muted/30">
+          </DialogHeader>
+          <div className="flex-1 min-h-0 bg-muted/30">
+            {previewPdfUrl && (
               <PdfViewer
                 url={previewPdfUrl}
                 title="Berita Acara IKL"
                 className="h-full border-0 rounded-none shadow-none"
               />
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

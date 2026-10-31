@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 const JENIS_OPTIONS = [
   { value: "tpp", label: "TPP (Tempat Pengelolaan Pangan)" },
@@ -146,9 +148,9 @@ export default function ImportSettingsPage() {
 
               {/* Mode */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   Mode Import
-                </label>
+                </Label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="button"
@@ -177,62 +179,58 @@ export default function ImportSettingsPage() {
               {/* Dynamic category select */}
               {dynamicCatCode && (
                 <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     Kategori Dynamic
-                  </label>
-                  <select
+                  </Label>
+                  <Select
                     value={dynamicCatCode}
                     onChange={(e) => setDynamicCatCode(e.target.value)}
-                    className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
+                    className="text-[12px] font-medium"
                   >
                     {dynamicCategories.map((c: any) => (
                       <option key={c.code} value={c.code}>
                         {c.icon} {c.nama}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
 
               {/* Static jenis select */}
               {!dynamicCatCode && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     Jenis Data
-                  </label>
-                  <select
-                    value={jenis}
-                    onChange={(e) => setJenis(e.target.value)}
-                    className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
-                  >
+                  </Label>
+                  <Select value={jenis} onChange={(e) => setJenis(e.target.value)} className="text-[12px] font-medium">
                     {JENIS_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>
                         {o.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
 
               {/* Bulan */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Bulan</label>
-                <select
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Bulan</Label>
+                <Select
                   value={bulan}
                   onChange={(e) => setBulan(Number(e.target.value))}
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
+                  className="text-[12px] font-medium"
                 >
                   {BULAN_NAMES.slice(1).map((nama, i) => (
                     <option key={i + 1} value={i + 1}>
                       {nama}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* Tahun */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tahun</label>
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tahun</Label>
                 <Input
                   type="number"
                   value={tahun}

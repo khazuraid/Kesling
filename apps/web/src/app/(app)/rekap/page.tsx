@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Calendar, ChevronDown, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Building2, Calendar, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -174,36 +176,42 @@ export default function RekapPage() {
 
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center rounded-full bg-surface-subtle border border-border overflow-hidden">
-              <button
+            <div className="flex items-center rounded-button bg-surface-subtle border border-border overflow-hidden">
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setTahun((t) => t - 1)}
-                className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
+                className="w-9 h-10 rounded-none p-0 text-muted-foreground hover:bg-surface hover:text-foreground"
+                aria-label="Tahun sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
-              <input
+              </Button>
+              <Input
                 type="number"
                 value={tahun}
                 onChange={(e) => setTahun(Number(e.target.value))}
-                className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-foreground text-center outline-none tabular-nums"
+                className="w-[72px] h-10 px-1 border-0 bg-transparent text-[14px] font-black text-foreground text-center outline-none tabular-nums focus:ring-0 focus:border-0 rounded-none shadow-none"
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setTahun((t) => t + 1)}
-                className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
+                className="w-9 h-10 rounded-none p-0 text-muted-foreground hover:bg-surface hover:text-foreground"
+                aria-label="Tahun berikutnya"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
 
             {user?.role === "ADMIN" && data?.puskesmasList && (
               <div className="relative">
                 <Building2 className="w-3.5 h-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
-                <select
+                <Select
                   value={puskesmasId}
                   onChange={(e) => setPuskesmasId(e.target.value)}
-                  className="h-10 pl-9 pr-8 rounded-full bg-surface-subtle border border-border text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer [&>option]:text-foreground [&>option]:bg-surface"
+                  className="h-10 pl-9 pr-8 rounded-button text-[12px] font-bold"
                 >
                   <option value="">Semua Puskesmas</option>
                   {data.puskesmasList.map((p) => (
@@ -211,8 +219,7 @@ export default function RekapPage() {
                       {p.nama}
                     </option>
                   ))}
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </Select>
               </div>
             )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Pencil, Plus, Settings2, Trash } from "lucide-react";
+import { Database, MoreVertical, Pencil, Plus, Settings2, Trash } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,6 +18,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { Input } from "@/components/ui/input";
 import { NumberFlow } from "@/components/ui/number-flow";
@@ -498,24 +505,22 @@ export default function DataDasarSubCatPage() {
                   {group.items.map((sc) => {
                     const active = sc.id === selectedSubCatId;
                     return (
-                      <button
+                      <Button
                         key={sc.id}
                         type="button"
+                        variant={active ? "default" : "outline"}
+                        size="sm"
                         onClick={() => {
                           setSelectedSubCatId(sc.id);
                           setSearchTerm("");
                           closeEdit();
                         }}
                         aria-pressed={active}
-                        className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all ${
-                          active
-                            ? "bg-primary text-white shadow-xs"
-                            : "bg-surface text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
-                        }`}
+                        className="h-8 px-3.5 rounded-full text-[11px] font-bold gap-1.5"
                       >
                         {sc.nama}
                         {active && <span className="tabular-nums opacity-80">({sasaranPage.total})</span>}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -662,25 +667,43 @@ export default function DataDasarSubCatPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleSelect(s)}
-                                className="h-8 w-8 p-0"
+                                className="h-8 px-2.5 text-[11px] font-semibold gap-1"
                                 title="Edit Data Dasar"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Edit</span>
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (confirm(`Hapus permanen "${s.nama}"? Data IKL terkait dapat terdampak.`)) {
-                                    deleteMutation.mutate(s.id);
-                                  }
-                                }}
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                                title="Hapus Data Dasar"
-                              >
-                                <Trash className="w-3.5 h-3.5" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                    title="Aksi Lainnya"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                    <span className="sr-only">Aksi</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem onClick={() => handleSelect(s)} className="gap-2 cursor-pointer">
+                                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <span>Edit Entitas</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (confirm(`Hapus permanen "${s.nama}"? Data IKL terkait dapat terdampak.`)) {
+                                        deleteMutation.mutate(s.id);
+                                      }
+                                    }}
+                                    className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                  >
+                                    <Trash className="w-3.5 h-3.5" />
+                                    <span>Hapus</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>

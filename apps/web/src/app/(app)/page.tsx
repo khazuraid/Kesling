@@ -13,8 +13,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModuleSparkChips } from "@/components/module-spark-chips";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Progress } from "@/components/ui/progress";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -148,20 +150,22 @@ export default async function DashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row md:flex-col gap-2">
-              <a
-                href="/api/export/all"
-                className="h-9 sm:h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-[0.98] transition shadow-xs shrink-0"
+              <Button
+                asChild
+                size="default"
+                className="rounded-full shadow-xs gap-2 px-4 sm:px-5 text-[12px] font-black"
               >
-                <Download className="w-4 h-4 shrink-0" />
-                <span>Export Data</span>
-              </a>
-              <Link
-                href="/laporan"
-                className="h-8 sm:h-9 px-3.5 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-surface text-foreground text-[11px] font-bold hover:bg-muted active:scale-[0.98] transition border border-border shrink-0"
-              >
-                <span>Semua Laporan</span>
-                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-              </Link>
+                <a href="/api/export/all">
+                  <Download className="w-4 h-4 shrink-0" />
+                  <span>Export Data</span>
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full gap-1.5 text-[11px] font-bold">
+                <Link href="/laporan">
+                  <span>Semua Laporan</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -191,11 +195,8 @@ export default async function DashboardPage() {
                   <NumberFlow value={completionRate} suffix="%" />
                 </span>
               </div>
-              <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
-                />
+              <div className="mt-3">
+                <Progress value={Math.min(Math.max(completionRate, 3), 100)} className="h-2" />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 <span className="tabular-nums font-bold text-foreground">
@@ -221,10 +222,10 @@ export default async function DashboardPage() {
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
               </div>
-              <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                  style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
+              <div className="mt-3">
+                <Progress
+                  value={pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}
+                  className="h-2 [&>div]:bg-emerald-500"
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
@@ -250,11 +251,8 @@ export default async function DashboardPage() {
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
               </div>
-              <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                  style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
-                />
+              <div className="mt-3">
+                <Progress value={pkmCount > 0 ? (partial / pkmCount) * 100 : 0} className="h-2 [&>div]:bg-amber-500" />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 Capaian 50% &ndash; 79% (
@@ -279,11 +277,8 @@ export default async function DashboardPage() {
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
               </div>
-              <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-rose-500 transition-all duration-500"
-                  style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
-                />
+              <div className="mt-3">
+                <Progress value={pkmCount > 0 ? (low / pkmCount) * 100 : 0} className="h-2 [&>div]:bg-rose-500" />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 Capaian &lt; 50% target bulanan

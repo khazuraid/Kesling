@@ -21,7 +21,9 @@ import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import { defaultDataDasarCode, defaultDataDasarNama } from "@/lib/sasaran-meta";
 
 type Tab = "umum" | "parameter" | "entitas" | "dataDasar" | "formula";
@@ -957,8 +959,8 @@ export default function LaporanBuilderPage() {
                       />
                     </div>
                     <div>
-                      <label className={labelCls}>Format Input Data</label>
-                      <select
+                      <Label className={labelCls}>Format Input Data</Label>
+                      <Select
                         value={modForm.isRowBased ? "true" : "false"}
                         onChange={(e) => {
                           const nextVal = e.target.value === "true";
@@ -969,7 +971,7 @@ export default function LaporanBuilderPage() {
                       >
                         <option value="false">Formulir Kolom Tunggal</option>
                         <option value="true">Formulir Tabel (Matrix)</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -1056,8 +1058,8 @@ export default function LaporanBuilderPage() {
                           </div>
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className={labelCls}>Tipe Input</label>
-                              <select
+                              <Label className={labelCls}>Tipe Input</Label>
+                              <Select
                                 className={inputCls}
                                 value={localState.type}
                                 onChange={(e) => {
@@ -1072,7 +1074,7 @@ export default function LaporanBuilderPage() {
                                 <option value="TEXTAREA">Teks Panjang</option>
                                 <option value="SELECT">Pilihan (Dropdown)</option>
                                 <option value="DATE">Tanggal</option>
-                              </select>
+                              </Select>
                             </div>
                             <button
                               onClick={() => setDeleteConfirm({ type: "PARAM", id: p.id, text: p.nama })}
@@ -1200,9 +1202,9 @@ export default function LaporanBuilderPage() {
                           />
                         </div>
                         <div>
-                          <label className={labelCls}>Kategori / Grup</label>
+                          <Label className={labelCls}>Kategori / Grup</Label>
                           {availableJenisList.length > 0 ? (
-                            <select
+                            <Select
                               className={inputCls}
                               value={localState.grup || ""}
                               onChange={(e) => {
@@ -1219,7 +1221,7 @@ export default function LaporanBuilderPage() {
                                   {String(kat)}
                                 </option>
                               ))}
-                            </select>
+                            </Select>
                           ) : (
                             <input
                               list={`entity-groups-${selectedModule.id}`}
@@ -1348,8 +1350,8 @@ export default function LaporanBuilderPage() {
                             />
                           </div>
                           <div>
-                            <label className={labelCls}>Tipe</label>
-                            <select
+                            <Label className={labelCls}>Tipe</Label>
+                            <Select
                               className={inputCls}
                               value={localState.type || "TEXT"}
                               onChange={(e) => {
@@ -1364,7 +1366,7 @@ export default function LaporanBuilderPage() {
                               <option value="DATE">Tanggal</option>
                               <option value="NUMBER">Angka</option>
                               <option value="DECIMAL">Desimal</option>
-                            </select>
+                            </Select>
                           </div>
                         </div>
 
@@ -1384,8 +1386,8 @@ export default function LaporanBuilderPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 rounded-xl border border-border bg-surface-subtle/50">
                           <div>
-                            <label className={labelCls}>Sinkron ke Parameter</label>
-                            <select
+                            <Label className={labelCls}>Sinkron ke Parameter</Label>
+                            <Select
                               className={inputCls}
                               value={localState.syncToParamId || ""}
                               onChange={(e) => {
@@ -1402,11 +1404,11 @@ export default function LaporanBuilderPage() {
                                     {tp.nama} ({tp.code})
                                   </option>
                                 ))}
-                            </select>
+                            </Select>
                           </div>
                           <div>
-                            <label className={labelCls}>Sinkron ke Field Entitas</label>
-                            <select
+                            <Label className={labelCls}>Sinkron ke Field Entitas</Label>
+                            <Select
                               className={inputCls}
                               value={localState.syncToEntityField || ""}
                               onChange={(e) => {
@@ -1422,13 +1424,13 @@ export default function LaporanBuilderPage() {
                               <option value="kontak">Kontak / Telepon</option>
                               <option value="lat">Latitude (Y)</option>
                               <option value="lng">Longitude (X)</option>
-                            </select>
+                            </Select>
                           </div>
                           <div>
                             {localState.syncToParamId && (
                               <>
-                                <label className={labelCls}>Metode Hitung</label>
-                                <select
+                                <Label className={labelCls}>Metode Hitung</Label>
+                                <Select
                                   className={inputCls}
                                   value={localState.syncMode || "COUNT"}
                                   onChange={(e) => {
@@ -1441,7 +1443,7 @@ export default function LaporanBuilderPage() {
                                   {(localState.type === "NUMBER" || localState.type === "DECIMAL") && (
                                     <option value="SUM">Jumlahkan nilai</option>
                                   )}
-                                </select>
+                                </Select>
                               </>
                             )}
                           </div>
@@ -1450,8 +1452,8 @@ export default function LaporanBuilderPage() {
                         {localState.type === "SELECT" && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
-                              <label className={labelCls}>Sumber Pilihan</label>
-                              <select
+                              <Label className={labelCls}>Sumber Pilihan</Label>
+                              <Select
                                 className={inputCls}
                                 value={localState.optionsSource || "manual"}
                                 onChange={(e) => {
@@ -1470,7 +1472,7 @@ export default function LaporanBuilderPage() {
                                 <option value="master_tpp">Master Jenis TPP</option>
                                 <option value="master_ttu">Master Jenis TTU</option>
                                 <option value="master_sarana">Master Jenis Sarana</option>
-                              </select>
+                              </Select>
                             </div>
                             <div>
                               {(!localState.optionsSource || localState.optionsSource === "manual") && (
@@ -1570,8 +1572,8 @@ export default function LaporanBuilderPage() {
                           <span className="text-2xl sm:text-3xl font-light text-muted-foreground/40 hidden xs:inline">
                             (
                           </span>
-                          <select
-                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-primary/30 bg-primary-subtle text-primary font-extrabold text-[11px] sm:text-[12px] outline-none focus:border-primary cursor-pointer max-w-[140px] sm:max-w-none truncate"
+                          <Select
+                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-primary/30 bg-primary-subtle text-primary font-extrabold text-[11px] sm:text-[12px] max-w-[140px] sm:max-w-none truncate"
                             value={localState.numeratorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, numeratorCode: e.target.value };
@@ -1585,10 +1587,10 @@ export default function LaporanBuilderPage() {
                                 {dp.nama}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                           <span className="text-lg sm:text-xl font-black text-muted-foreground">/</span>
-                          <select
-                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] sm:text-[12px] outline-none focus:border-amber-500 cursor-pointer max-w-[140px] sm:max-w-none truncate"
+                          <Select
+                            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-button border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold text-[11px] sm:text-[12px] max-w-[140px] sm:max-w-none truncate"
                             value={localState.denominatorCode || ""}
                             onChange={(e) => {
                               const u = { ...localState, denominatorCode: e.target.value };
@@ -1602,7 +1604,7 @@ export default function LaporanBuilderPage() {
                                 {dp.nama}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                           <span className="text-2xl sm:text-3xl font-light text-muted-foreground/40 hidden xs:inline">
                             )
                           </span>

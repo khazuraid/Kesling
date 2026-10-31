@@ -6,6 +6,9 @@ import { ExportButton } from "@/components/export-button";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { PdfExportButton } from "@/components/pdf-export-button";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { useLaporanData, useMasterList } from "@/hooks/use-laporan-data";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -182,22 +185,22 @@ export function LaporanSaranaPage({ title, jenis, apiUrl, kategori }: Props) {
           >
             <h2 className="text-lg font-bold mb-4">Input {title}</h2>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1.5 text-slate-700">Puskesmas</label>
-                <select
+              <div className="mb-4 space-y-1.5">
+                <Label className="block text-sm font-medium text-foreground">Puskesmas</Label>
+                <Select
                   value={formPkmId}
                   onChange={(e) => {
                     setFormPkmId(Number(e.target.value));
                     openForm(Number(e.target.value));
                   }}
-                  className="w-full h-10 px-4 pr-10 text-sm rounded-lg border border-[hsl(220,13%,82%)] bg-white appearance-none hover:border-[hsl(220,13%,70%)] focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat"
+                  className="w-full text-sm font-medium"
                 >
                   {puskesmasList.map((p: any) => (
                     <option key={p.id} value={p.id}>
                       {p.nama}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="overflow-x-auto rounded-lg border border-[hsl(220,13%,82%)]">
                 <table className="w-full text-sm">
@@ -219,7 +222,7 @@ export function LaporanSaranaPage({ title, jenis, apiUrl, kategori }: Props) {
                         </td>
                         {FIELDS.map((f) => (
                           <td key={f} className="px-1 py-1.5">
-                            <input
+                            <Input
                               type="number"
                               min={0}
                               value={item[f]}
@@ -228,7 +231,7 @@ export function LaporanSaranaPage({ title, jenis, apiUrl, kategori }: Props) {
                                   prev.map((it, i) => (i === idx ? { ...it, [f]: Number(e.target.value) } : it)),
                                 )
                               }
-                              className="w-full px-2 py-1.5 border border-[hsl(220,13%,82%)] bg-white rounded-md text-center text-xs hover:border-[hsl(220,13%,70%)] focus:outline-none focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/15 transition-all"
+                              className="w-full h-8 px-1 text-center text-xs font-bold tabular-nums"
                             />
                           </td>
                         ))}

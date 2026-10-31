@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 interface AISettings {
@@ -131,9 +133,9 @@ export default function AISettingsPage() {
 
         {isAiEnabled && (
           <>
-            <div>
-              <label className={labelCls}>Penyedia AI (Provider)</label>
-              <select
+            <div className="space-y-1.5">
+              <Label className={labelCls}>Penyedia AI (Provider)</Label>
+              <Select
                 value={provider}
                 onChange={(e) => {
                   const newProv = e.target.value;
@@ -142,23 +144,23 @@ export default function AISettingsPage() {
                     setModel(modelOptions[newProv][0]);
                   }
                 }}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
+                className="text-[12px] font-medium"
               >
                 <option value="openrouter">OpenRouter (Direkomendasikan — Banyak Model)</option>
                 <option value="openai">OpenAI (ChatGPT API)</option>
                 <option value="gemini">Google Gemini API</option>
-              </select>
+              </Select>
             </div>
 
-            <div>
-              <label className={labelCls}>
+            <div className="space-y-1.5">
+              <Label className={labelCls}>
                 API Key
                 {settings?.hasKey && (
                   <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold text-primary normal-case tracking-normal">
                     <Check className="w-3 h-3" /> Tersimpan
                   </span>
                 )}
-              </label>
+              </Label>
               <div className="relative">
                 <Key className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
@@ -176,16 +178,16 @@ export default function AISettingsPage() {
               </p>
             </div>
 
-            <div>
-              <label className={labelCls}>Model AI</label>
-              <select
+            <div className="space-y-1.5">
+              <Label className={labelCls}>Model AI</Label>
+              <Select
                 value={modelOptions[provider]?.includes(model) ? model : "custom"}
                 onChange={(e) => {
                   if (e.target.value !== "custom") {
                     setModel(e.target.value);
                   }
                 }}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
+                className="text-[12px] font-medium"
               >
                 {modelOptions[provider]?.map((m) => (
                   <option key={m} value={m}>
@@ -193,7 +195,7 @@ export default function AISettingsPage() {
                   </option>
                 ))}
                 <option value="custom">-- Ketik Model Lainnya --</option>
-              </select>
+              </Select>
               <Input
                 type="text"
                 value={model}

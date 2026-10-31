@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -192,10 +193,10 @@ export default function ApprovalPage() {
             </div>
 
             <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
-              <select
+              <Select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="h-9 sm:h-10 px-3.5 rounded-full bg-surface-subtle hover:bg-surface border border-border text-[11px] sm:text-[12px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer shadow-xs"
+                className="h-9 sm:h-10 px-3.5 rounded-button text-[11px] sm:text-[12px] font-bold shadow-xs max-w-[220px]"
               >
                 <option value="all">Semua Kategori</option>
                 {categories.map((c) => (
@@ -203,7 +204,7 @@ export default function ApprovalPage() {
                     {c.icon} {c.nama}
                   </option>
                 ))}
-              </select>
+              </Select>
               <LaporanFilter />
             </div>
           </div>

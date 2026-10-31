@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Select } from "@/components/ui/select";
 import AISettingsPage from "./ai/page";
 import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
@@ -135,10 +137,10 @@ function TargetManagement() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Fasilitas:</span>
-          <select
+          <Select
             value={selectedPkmId}
             onChange={(e) => setSelectedPkmId(e.target.value)}
-            className="h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-semibold text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
+            className="h-10 px-3.5 rounded-button text-[12px] font-semibold"
           >
             <option value="global">Target Global (Semua Puskesmas)</option>
             {puskesmasList.map((p) => (
@@ -146,7 +148,7 @@ function TargetManagement() {
                 {p.nama}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         {selectedPkmId === "global" && (
           <Button
@@ -194,12 +196,7 @@ function TargetManagement() {
                   </p>
                 </div>
                 <div className="hidden sm:block w-36 shrink-0">
-                  <div className="h-2 bg-surface-subtle rounded-full overflow-hidden border border-border/40">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(currentTarget, 100)}%`, background: t.bar }}
-                    />
-                  </div>
+                  <Progress value={Math.min(currentTarget, 100)} className="h-2" />
                 </div>
                 {isEditing ? (
                   <div className="flex items-center gap-1.5 shrink-0">

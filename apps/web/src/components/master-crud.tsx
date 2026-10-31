@@ -7,7 +7,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const masterSchema = z.object({
   nama: z.string().min(1, "Nama wajib diisi"),
@@ -105,133 +111,124 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <input
+          <Input
             placeholder="Cari nama data..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
+            className="pl-10"
           />
         </div>
-        <button
-          onClick={openAdd}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover active:scale-95 transition shadow-subtle"
-        >
+        <Button onClick={openAdd} className="gap-2 shadow-subtle">
           <Plus className="w-3.5 h-3.5" /> Tambah
-        </button>
+        </Button>
       </div>
 
       {/* Filter tabs */}
       {hasKategori && kategoriOptions && (
         <div className="flex items-center gap-1 overflow-x-auto p-1 bg-surface-subtle border border-border rounded-xl">
-          <button
+          <Button
+            type="button"
+            variant={!filterKategori ? "default" : "ghost"}
+            size="sm"
             onClick={() => setFilterKategori("")}
-            className={`shrink-0 px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
-              !filterKategori
-                ? "bg-primary text-white shadow-subtle"
-                : "text-muted-foreground hover:bg-surface hover:text-foreground"
-            }`}
+            className="shrink-0 h-8 px-3.5 text-[10px] font-extrabold uppercase tracking-wider"
           >
             Semua
-          </button>
+          </Button>
           {kategoriOptions.map((o) => (
-            <button
+            <Button
               key={o.value}
+              type="button"
+              variant={filterKategori === o.value ? "default" : "ghost"}
+              size="sm"
               onClick={() => setFilterKategori(o.value)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
-                filterKategori === o.value
-                  ? "bg-primary text-white shadow-subtle"
-                  : "text-muted-foreground hover:bg-surface hover:text-foreground"
-              }`}
+              className="shrink-0 h-8 px-3.5 text-[10px] font-extrabold uppercase tracking-wider"
             >
               {o.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-card border border-border bg-surface overflow-hidden overflow-x-auto shadow-subtle">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-surface-subtle">
-              <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-10 text-center">
-                No
-              </th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                Nama
-              </th>
-              {hasKategori && (
-                <th className="text-left px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                  Kategori
-                </th>
-              )}
-              <th className="text-right px-4 py-2.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider w-24">
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+      <Card className="overflow-hidden overflow-x-auto shadow-subtle">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12 text-center text-[10px] uppercase font-extrabold">No</TableHead>
+              <TableHead className="text-[10px] uppercase font-extrabold">Nama</TableHead>
+              {hasKategori && <TableHead className="text-[10px] uppercase font-extrabold">Kategori</TableHead>}
+              <TableHead className="text-right text-[10px] uppercase font-extrabold w-24">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-border/50">
-                  <td colSpan={hasKategori ? 4 : 3} className="px-4 py-3">
+                <TableRow key={i}>
+                  <TableCell colSpan={hasKategori ? 4 : 3} className="px-4 py-3">
                     <div className="h-5 w-3/4 bg-surface-subtle animate-pulse rounded" />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={hasKategori ? 4 : 3} className="px-4 py-16 text-center">
+              <TableRow>
+                <TableCell colSpan={hasKategori ? 4 : 3} className="px-4 py-16 text-center">
                   <Building2 className="w-8 h-8 mx-auto mb-3 text-muted-foreground opacity-30" />
                   <p className="text-[13px] font-bold text-foreground">
                     {search ? "Tidak ada data yang cocok" : "Belum ada data terdaftar"}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1">Klik Tambah untuk menambahkan data baru</p>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               filtered.map((item, i) => (
-                <tr key={item.id} className="border-b border-border/50 hover:bg-surface-subtle/40 transition-colors">
-                  <td className="px-4 py-3 text-center text-[11px] font-medium text-muted-foreground">{i + 1}</td>
-                  <td className="px-4 py-3">
+                <TableRow key={item.id} className="hover:bg-surface-subtle/40 transition-colors">
+                  <TableCell className="text-center text-[11px] font-medium text-muted-foreground">{i + 1}</TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
                         {item.nama.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-[12px] font-bold text-foreground">{item.nama}</span>
                     </div>
-                  </td>
+                  </TableCell>
                   {hasKategori && (
-                    <td className="px-4 py-3">
+                    <TableCell>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                         {item.kategori || "—"}
                       </span>
-                    </td>
+                    </TableCell>
                   )}
-                  <td className="px-4 py-3 text-right">
+                  <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <button
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => openEdit(item)}
-                        className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors rounded-lg"
+                        className="w-7 h-7 p-0 text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           if (confirm(`Hapus "${item.nama}"?`)) deleteMutation.mutate(item.id);
                         }}
-                        className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors rounded-lg"
+                        className="w-7 h-7 p-0 text-muted-foreground hover:bg-red-500/10 hover:text-red-600"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
         Menampilkan {filtered.length} dari {items.length} data
@@ -240,53 +237,36 @@ export function MasterCrud({ apiUrl, hasKategori, kategoriOptions }: Props) {
       {/* Add/Edit Modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editId ? "Edit Data" : "Tambah Data"}>
         <form onSubmit={form.handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4 pt-2">
-          <div>
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-              Nama
-            </label>
-            <input
-              {...form.register("nama")}
-              placeholder="Contoh: Puskesmas Sukajadi"
-              className="w-full h-10 px-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
-            />
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Nama</Label>
+            <Input {...form.register("nama")} placeholder="Contoh: Puskesmas Sukajadi" />
             {form.formState.errors.nama && (
               <p className="text-[10px] text-red-600 mt-1">{form.formState.errors.nama.message}</p>
             )}
           </div>
 
           {hasKategori && kategoriOptions && (
-            <div>
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
                 Kategori
-              </label>
-              <select
-                {...form.register("kategori")}
-                className="w-full h-10 px-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
-              >
+              </Label>
+              <Select {...form.register("kategori")} className="text-[12px] font-medium">
                 {kategoriOptions.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              className="h-10 px-4 rounded-xl text-[11px] font-bold text-muted-foreground hover:bg-surface-subtle transition-colors"
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowModal(false)}>
               Batal
-            </button>
-            <button
-              type="submit"
-              disabled={saveMutation.isPending}
-              className="h-10 px-5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover active:scale-95 transition shadow-subtle disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" size="sm" disabled={saveMutation.isPending}>
               {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

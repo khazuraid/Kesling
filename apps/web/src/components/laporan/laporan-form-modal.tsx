@@ -1,7 +1,11 @@
 "use client";
 
-import { Building2, FilePenLine, Send, ShieldCheck } from "lucide-react";
+import { Building2, FilePenLine, Loader2, Send, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -96,63 +100,61 @@ export function LaporanFormModal({
   const footer =
     !isOperator && existingStatus === "SUBMITTED" ? (
       <>
-        <button
-          type="button"
-          onClick={onClose}
-          className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onClose} className="rounded-full">
           Batal
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={(e) => handleSubmit(e, false, "REJECTED")}
           disabled={submitMutation.isPending}
-          className="h-10 px-5 rounded-full border border-[#E15A4F]/40 text-[#E15A4F] text-[11px] font-extrabold uppercase tracking-wider hover:bg-[#E15A4F]/10 transition-colors disabled:opacity-50"
+          className="rounded-full border-[#E15A4F]/40 text-[#E15A4F] hover:bg-[#E15A4F]/10 hover:text-[#E15A4F]"
         >
           Tolak
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          size="sm"
           onClick={(e) => handleSubmit(e, false, "APPROVED")}
           disabled={submitMutation.isPending}
-          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover transition shadow-subtle disabled:opacity-50 cursor-pointer"
+          className="rounded-full gap-2 shadow-subtle"
         >
           <ShieldCheck className="w-4 h-4" /> Setujui
-        </button>
+        </Button>
       </>
     ) : (
       <>
-        <div className="mr-auto text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-[0.15em] tabular-nums">
+        <div className="mr-auto text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] tabular-nums">
           {filledCount} / {totalCells} sel terisi
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onClose} className="rounded-full">
           Batal
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={(e) => handleSubmit(e, false, "DRAFT")}
           disabled={submitMutation.isPending}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-full border border-border text-foreground text-[11px] font-extrabold uppercase tracking-wider hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+          className="rounded-full gap-2"
         >
           <FilePenLine className="w-3.5 h-3.5" /> Draft
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           form="laporan-form"
+          size="sm"
           disabled={submitMutation.isPending}
-          className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover transition shadow-subtle disabled:opacity-50 cursor-pointer"
+          className="rounded-full gap-2 shadow-subtle"
         >
           {submitMutation.isPending ? (
-            <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <Send className="w-3.5 h-3.5" />
           )}
           {submitMutation.isPending ? "Mengirim..." : "Kirim"}
-        </button>
+        </Button>
       </>
     );
 
@@ -179,8 +181,10 @@ export function LaporanFormModal({
               <Building2 className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
-              <select
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-1">
+                Puskesmas
+              </p>
+              <Select
                 value={formPuskesmasId}
                 onChange={(e) => {
                   const id = Number(e.target.value);
@@ -188,19 +192,22 @@ export function LaporanFormModal({
                   const existing = laporanList.find((l) => l.puskesmasId === id);
                   setFormValues(existing ? buildValueMap(existing.values) : {});
                 }}
-                className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-foreground outline-none appearance-none cursor-pointer"
+                className="w-full text-[13px] font-bold"
               >
                 {puskesmasList.map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.nama}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             {existingStatus && (
-              <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-full bg-primary-subtle text-primary text-[10px] font-extrabold uppercase tracking-wider">
+              <Badge
+                variant="outline"
+                className="shrink-0 text-[10px] font-extrabold uppercase tracking-wider bg-primary-subtle text-primary border-primary/20"
+              >
                 {existingStatus}
-              </span>
+              </Badge>
             )}
           </div>
         )}
@@ -255,7 +262,7 @@ export function LaporanFormModal({
                           const val = formValues[key] ?? "";
                           return (
                             <td key={p.id} className="px-4 py-2 border-b border-border/50">
-                              <input
+                              <Input
                                 type={p.type === "NUMBER" ? "number" : "text"}
                                 min={p.type === "NUMBER" ? 0 : undefined}
                                 value={val}
@@ -263,10 +270,10 @@ export function LaporanFormModal({
                                   setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))
                                 }
                                 placeholder="—"
-                                className={`w-full h-10 px-3 text-[13px] font-bold text-center tabular-nums rounded-button outline-none transition-all ${
+                                className={`w-full h-10 px-3 text-[13px] font-bold text-center tabular-nums rounded-button ${
                                   val !== ""
-                                    ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                    : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
+                                    ? "bg-surface border-primary/40 text-foreground"
+                                    : "bg-surface-subtle text-muted-foreground"
                                 }`}
                               />
                             </td>
@@ -311,17 +318,17 @@ export function LaporanFormModal({
                       {p.required && <span className="text-[#E15A4F] ml-1">*</span>}
                     </span>
                   </div>
-                  <input
+                  <Input
                     type={p.type === "NUMBER" ? "number" : "text"}
                     min={p.type === "NUMBER" ? 0 : undefined}
                     required={p.required}
                     value={val}
                     onChange={(e) => setFormValues((prev: ValueMap) => ({ ...prev, [key]: e.target.value }))}
                     placeholder="0"
-                    className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-button outline-none transition-all ${
+                    className={`w-36 h-10 px-3 text-[15px] font-extrabold text-right tabular-nums rounded-button ${
                       val !== ""
-                        ? "bg-surface border border-primary/40 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
-                        : "bg-transparent border border-transparent text-muted-foreground hover:border-border focus:border-primary focus:bg-surface focus:ring-2 focus:ring-primary/20"
+                        ? "bg-surface border-primary/40 text-foreground"
+                        : "bg-surface-subtle text-muted-foreground"
                     }`}
                   />
                 </div>

@@ -50,5 +50,18 @@ export const POST = withAuth(async (req: NextRequest) => {
     }
   }
 
+  // Notifikasi in-app
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        title: "Rencana Bulanan Terbuat",
+        message: `Rencana bulanan periode ${bulan}/${tahun} berhasil dibuat (${sasarans.length} sasaran dijadwalkan).`,
+      },
+    });
+  } catch (notifErr) {
+    console.error("[Notification] Gagal membuat notifikasi rencana:", notifErr);
+  }
+
   return NextResponse.json({ success: true, count: sasarans.length, bulan, tahun, hariKerja: workingDays.length });
 });

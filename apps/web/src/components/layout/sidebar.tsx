@@ -29,6 +29,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useAppAbility } from "@/components/ability-provider";
 import { NotificationBell } from "@/components/notification-bell";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type MenuItem = {
   label: string;
@@ -162,33 +163,43 @@ export function SideNav() {
 
   const renderItem = (item: MenuItem) => {
     const active = isActive(item.href);
-    return (
-      <div key={item.href} className="relative group">
-        <Link
-          href={item.href}
-          onClick={() => setMobileOpen(false)}
-          className={`flex items-center rounded-lg h-9 text-[12px] font-semibold transition-all duration-150 ${
-            collapsed ? "md:justify-center px-3 md:px-0" : "gap-2.5 px-3"
-          } ${
-            active
-              ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
-          }`}
-        >
-          <span className={`shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`}>{item.icon}</span>
-          {(!collapsed || mobileOpen) && <span className="truncate">{item.label}</span>}
-        </Link>
-        {collapsed && (
-          <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+    const linkElement = (
+      <Link
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        className={`flex items-center rounded-lg h-9 text-[12px] font-semibold transition-all duration-150 ${
+          collapsed ? "md:justify-center px-3 md:px-0" : "gap-2.5 px-3"
+        } ${
+          active
+            ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
+        }`}
+      >
+        <span className={`shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`}>{item.icon}</span>
+        {(!collapsed || mobileOpen) && <span className="truncate">{item.label}</span>}
+      </Link>
+    );
+
+    if (collapsed) {
+      return (
+        <Tooltip key={item.href}>
+          <TooltipTrigger asChild>{linkElement}</TooltipTrigger>
+          <TooltipContent side="right" className="text-[11px] font-medium">
             {item.label}
-          </span>
-        )}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <div key={item.href} className="relative">
+        {linkElement}
       </div>
     );
   };
 
   return (
-    <>
+    <TooltipProvider delayDuration={150}>
       {/* Mobile Top Navbar */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-surface/95 backdrop-blur-md text-foreground border-b border-border shrink-0">
         <div className="flex items-center gap-3">
@@ -261,29 +272,33 @@ export function SideNav() {
 
         {/* Quick Search Trigger */}
         <div className="shrink-0 pt-3 pb-1 px-3">
-          <div className="relative group">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
+                  aria-label="Cari (⌘K)"
+                  className="flex items-center justify-center rounded-lg bg-muted/60 border border-border hover:border-primary/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all h-9 w-full"
+                >
+                  <Search className="w-4 h-4 shrink-0" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-[11px] font-medium">
+                Cari (⌘K)
+              </TooltipContent>
+            </Tooltip>
+          ) : (
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
-              className={`flex items-center rounded-lg bg-muted/60 border border-border hover:border-primary/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all h-9 w-full ${
-                collapsed ? "justify-center" : "gap-2 px-3"
-              }`}
+              className="flex items-center rounded-lg bg-muted/60 border border-border hover:border-primary/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all h-9 w-full gap-2 px-3"
             >
               <Search className="w-4 h-4 shrink-0" />
-              {!collapsed && (
-                <>
-                  <span className="text-[12px] font-medium flex-1 text-left">Cari...</span>
-                  <kbd className="text-[11px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-surface">
-                    ⌘K
-                  </kbd>
-                </>
-              )}
+              <span className="text-[12px] font-medium flex-1 text-left">Cari...</span>
+              <kbd className="text-[11px] font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-surface">
+                ⌘K
+              </kbd>
             </button>
-            {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                Cari (⌘K)
-              </span>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Nav Items */}
@@ -304,70 +319,110 @@ export function SideNav() {
         {/* Bottom Dock */}
         <div className="shrink-0 flex flex-col border-t border-border p-2 space-y-1 bg-surface">
           {/* Notification */}
-          <div className="relative group">
-            <div
-              className={`flex items-center rounded-lg transition-colors ${
-                collapsed ? "justify-center p-1" : "px-2 py-1 gap-2 hover:bg-muted/60"
-              }`}
-            >
-              <NotificationBell placement={collapsed ? "side" : "top"} />
-              {!collapsed && (
-                <span className="text-[12px] font-semibold text-muted-foreground select-none">Notifikasi</span>
-              )}
-            </div>
-            {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center p-1 rounded-lg hover:bg-muted/60 transition-colors">
+                  <NotificationBell placement="side" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-[11px] font-medium">
                 Notifikasi
-              </span>
-            )}
-          </div>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex items-center rounded-lg px-2 py-1 gap-2 hover:bg-muted/60 transition-colors">
+              <NotificationBell placement="top" />
+              <span className="text-[12px] font-semibold text-muted-foreground select-none">Notifikasi</span>
+            </div>
+          )}
 
           {/* User Profile */}
-          <div className="relative group">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center rounded-lg hover:bg-muted/60 transition-colors h-11 px-0"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center text-[11px] font-black text-primary shrink-0">
+                    {session?.user?.name?.charAt(0) || "U"}
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-[11px] font-medium">
+                {session?.user?.name || "Profil"} ({userRole})
+              </TooltipContent>
+            </Tooltip>
+          ) : (
             <Link
               href="/profile"
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center rounded-lg hover:bg-muted/60 transition-colors h-11 ${
-                collapsed ? "justify-center px-0" : "gap-2.5 px-2"
-              }`}
+              className="flex items-center rounded-lg hover:bg-muted/60 transition-colors h-11 gap-2.5 px-2"
             >
               <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center text-[11px] font-black text-primary shrink-0">
                 {session?.user?.name?.charAt(0) || "U"}
               </div>
-              {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold truncate text-foreground">{session?.user?.name || "User"}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em]">{userRole}</p>
-                </div>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold truncate text-foreground">{session?.user?.name || "User"}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em]">{userRole}</p>
+              </div>
             </Link>
-            {collapsed && (
-              <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                {session?.user?.name || "Profil"} ({userRole})
-              </span>
-            )}
-          </div>
+          )}
 
           {/* Action Row */}
           <div className={`flex items-center ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
-            <div className={`relative group ${collapsed ? "w-full" : "flex-1"}`}>
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    aria-label="Keluar"
+                    className="flex items-center justify-center rounded-lg text-muted-foreground hover:text-error hover:bg-error-light/50 transition-colors h-9 w-full"
+                  >
+                    <LogOut className="w-4 h-4 shrink-0" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-[11px] font-medium">
+                  Keluar
+                </TooltipContent>
+              </Tooltip>
+            ) : (
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className={`flex items-center rounded-lg text-muted-foreground hover:text-error hover:bg-error-light/50 transition-colors h-9 w-full ${
-                  collapsed ? "justify-center" : "gap-2.5 px-2.5"
-                }`}
+                className="flex-1 flex items-center rounded-lg text-muted-foreground hover:text-error hover:bg-error-light/50 transition-colors h-9 gap-2.5 px-2.5"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
-                {!collapsed && <span className="text-[12px] font-semibold">Keluar</span>}
+                <span className="text-[12px] font-semibold">Keluar</span>
               </button>
-              {collapsed && (
-                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                  Keluar
-                </span>
-              )}
-            </div>
+            )}
 
-            <div className="relative group">
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      const next = !collapsed;
+                      setCollapsed(next);
+                      try {
+                        localStorage.setItem(LS_KEY, next ? "1" : "0");
+                      } catch {}
+                      document.dispatchEvent(
+                        new CustomEvent("kesling:toggle-sidebar", { detail: { collapsed: next } }),
+                      );
+                    }}
+                    aria-label="Buka sidebar"
+                    className="flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors h-9 w-full"
+                  >
+                    <PanelLeftOpen className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-[11px] font-medium">
+                  Buka sidebar
+                </TooltipContent>
+              </Tooltip>
+            ) : (
               <button
                 onClick={() => {
                   const next = !collapsed;
@@ -377,22 +432,15 @@ export function SideNav() {
                   } catch {}
                   document.dispatchEvent(new CustomEvent("kesling:toggle-sidebar", { detail: { collapsed: next } }));
                 }}
-                aria-label={collapsed ? "Buka sidebar" : "Sembunyikan sidebar"}
-                className={`flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors h-9 ${
-                  collapsed ? "w-full" : "w-9"
-                }`}
+                aria-label="Sembunyikan sidebar"
+                className="flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors h-9 w-9"
               >
-                {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+                <PanelLeftClose className="w-4 h-4" />
               </button>
-              {collapsed && (
-                <span className="hidden md:group-hover:flex absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-surface border border-border text-foreground text-[11px] font-medium rounded-md shadow-float whitespace-nowrap z-50 pointer-events-none items-center">
-                  Buka sidebar
-                </span>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </aside>
-    </>
+    </TooltipProvider>
   );
 }

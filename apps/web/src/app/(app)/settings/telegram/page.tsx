@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const labelCls = "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5";
@@ -79,7 +80,8 @@ export default function TelegramSettingsPage() {
       if (data.ok) {
         if (action === "setWebhook") toast.success(`Webhook aktif: ${data.webhookUrl}`);
         else if (action === "deleteWebhook") toast.success("Webhook berhasil dihapus");
-        else if (action === "testAdmin") toast.success("Pesan test berhasil dikirim!");
+        else if (action === "testAdmin") toast.success("Pesan test ke Admin berhasil dikirim!");
+        else if (action === "testDinkes") toast.success("Pesan test ke Dinkes berhasil dikirim!");
       } else {
         toast.error(data.error || "Aksi gagal");
       }
@@ -125,7 +127,7 @@ export default function TelegramSettingsPage() {
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Kredensial Bot</p>
 
         <div>
-          <label className={labelCls}>Bot Token</label>
+          <Label className={labelCls}>Bot Token</Label>
           <div className="relative">
             <Input
               type={showToken ? "text" : "password"}
@@ -134,14 +136,16 @@ export default function TelegramSettingsPage() {
               placeholder="Dapatkan dari @BotFather di Telegram"
               className="pr-11 font-mono h-10"
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowToken(!showToken)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-muted-foreground hover:text-primary"
               title={showToken ? "Sembunyikan token" : "Tampilkan token"}
             >
               {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            </Button>
           </div>
           <p className={hintCls}>Buat bot baru via @BotFather → /newbot → salin token-nya ke sini</p>
         </div>
@@ -154,7 +158,7 @@ export default function TelegramSettingsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Admin Chat ID</label>
+            <Label className={labelCls}>Admin Chat ID</Label>
             <Input
               value={form.telegramAdminChatId}
               onChange={(e) => setForm({ ...form, telegramAdminChatId: e.target.value })}
@@ -164,7 +168,7 @@ export default function TelegramSettingsPage() {
             <p className={hintCls}>Untuk alert error sistem (developer/IT)</p>
           </div>
           <div>
-            <label className={labelCls}>Dinkes Chat ID</label>
+            <Label className={labelCls}>Dinkes Chat ID</Label>
             <Input
               value={form.telegramDinkesChatId}
               onChange={(e) => setForm({ ...form, telegramDinkesChatId: e.target.value })}
@@ -176,9 +180,9 @@ export default function TelegramSettingsPage() {
         </div>
 
         <div>
-          <label className={labelCls}>
+          <Label className={labelCls}>
             Webhook Secret <span className="font-normal normal-case">(opsional)</span>
-          </label>
+          </Label>
           <Input
             value={form.telegramWebhookSecret}
             onChange={(e) => setForm({ ...form, telegramWebhookSecret: e.target.value })}
@@ -233,7 +237,16 @@ export default function TelegramSettingsPage() {
             disabled={actionMutation.isPending || !settings?.hasToken}
             className="gap-2 h-10 px-5 rounded-full uppercase tracking-wider text-[11px] font-bold shadow-subtle"
           >
-            <Send className="w-3.5 h-3.5" /> Test Kirim Pesan
+            <Send className="w-3.5 h-3.5" /> Test Admin
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => actionMutation.mutate("testDinkes")}
+            disabled={actionMutation.isPending || !settings?.hasToken}
+            className="gap-2 h-10 px-5 rounded-full uppercase tracking-wider text-[11px] font-bold shadow-subtle"
+          >
+            <Send className="w-3.5 h-3.5" /> Test Dinkes
           </Button>
           <Button
             type="button"

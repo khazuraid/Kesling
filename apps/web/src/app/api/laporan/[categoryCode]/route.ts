@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { withLaporanAuth } from "@/lib/api-auth";
 import { cacheGet, cacheInvalidate, cacheSet } from "@/lib/redis";
 import type { getCurrentUser } from "@/lib/session";
+import { notifyDinkesNewLaporan } from "@/lib/telegram/notify";
 
 type SessionUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
@@ -362,6 +363,47 @@ export const POST = withLaporanAuth(async (req: NextRequest, ctx: any) => {
     await cacheInvalidate(`laporan:${categoryCode}:*`);
     await cacheInvalidate(`dashboard:*`);
     await cacheInvalidate(`trend:*`);
+
+    // Notifikasi ke Dinkes & Admin jika laporan dikirim untuk approval
+    if (status === "SUBMITTED") {
+      try {
+        const pkm = await prisma.puskesmas.findUnique({
+          where: { id: Number(puskesmasId) },
+          select: { nama: true },
+        });
+        const pkmNama = pkm?.nama || `Puskesmas #${puskesmasId}`;
+        const BULAN_NAMES = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        const bulanStr = BULAN_NAMES[Number(bulan)] || String(bulan);
+
+        const dinkesUsers = await prisma.user.findMany({
+          where: { role: { in: ["ADMIN", "DINKES"] } },
+          select: { id: true },
+        });
+
+        if (dinkesUsers.length > 0) {
+          await prisma.notification.createMany({
+            data: dinkesUsers.map((u) => ({
+              userId: u.id,
+              title: "Laporan Menunggu Approval",
+              message: `${pkmNama} telah mengirim laporan ${category.nama} periode ${bulanStr} ${tahun} untuk ditinjau.`,
+            })),
+          });
+          for (const u of dinkesUsers) {
+            await cacheInvalidate(`notif:count:${u.id}`).catch(() => null);
+          }
+        }
+
+        // Kirim Telegram ke Dinkes Chat ID jika ada
+        notifyDinkesNewLaporan({
+          puskesmasName: pkmNama,
+          bulan: bulanStr,
+          tahun: Number(tahun),
+          categoryName: category.nama,
+        }).catch(() => null);
+      } catch (notifErr) {
+        console.error("[Notification] Gagal membuat notifikasi laporan:", notifErr);
+      }
+    }
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {

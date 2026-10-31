@@ -313,6 +313,40 @@ export const POST = withAuth(async (req: NextRequest) => {
       console.error("Failed to aggregate inspection to laporan:", aggErr);
     });
 
+    // Kirim notifikasi in-app
+    try {
+      const sasaranTitle = body.namaSasaran || "Sasaran Inspeksi";
+      if (userId) {
+        await prisma.notification.create({
+          data: {
+            userId,
+            title: "Inspeksi Berhasil Disimpan",
+            message: `Pemeriksaan ${sasaranTitle} berhasil disimpan dan dicatat dalam sistem.`,
+          },
+        });
+      }
+
+      // Jika ada temuan tidak memenuhi syarat (TMS), beri notifikasi alert ke Dinkes/Admin
+      const isTMS = body.status === "TMS" || body.kesimpulan === "TMS";
+      if (isTMS) {
+        const dinkesUsers = await prisma.user.findMany({
+          where: { role: { in: ["ADMIN", "DINKES"] } },
+          select: { id: true },
+        });
+        if (dinkesUsers.length > 0) {
+          await prisma.notification.createMany({
+            data: dinkesUsers.map((d) => ({
+              userId: d.id,
+              title: "Temuan Tidak Memenuhi Syarat (TMS)",
+              message: `Pemeriksaan pada ${sasaranTitle} berstatus Tidak Memenuhi Syarat (TMS). Perlu pemantauan tindak lanjut.`,
+            })),
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error("[Notification] Gagal membuat notifikasi inspeksi:", notifErr);
+    }
+
     return NextResponse.json(result);
   } catch (err: any) {
     console.error("POST /api/inspection/results error:", err);

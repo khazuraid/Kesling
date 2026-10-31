@@ -83,7 +83,14 @@ export const PUT = withAdmin(async (req: NextRequest) => {
   if (action === "testAdmin") {
     const chatId = data.telegram_admin_chat_id;
     if (!chatId) return NextResponse.json({ error: "Admin Chat ID belum diisi" }, { status: 400 });
-    await bot.api.sendMessage(chatId, "✅ Test notifikasi Telegram Kesling Cirebon berhasil.");
+    await bot.api.sendMessage(chatId, "✅ Test notifikasi Telegram Kesling Cirebon (Admin) berhasil.");
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "testDinkes") {
+    const chatId = data.telegram_dinkes_chat_id;
+    if (!chatId) return NextResponse.json({ error: "Dinkes Chat ID belum diisi" }, { status: 400 });
+    await bot.api.sendMessage(chatId, "✅ Test notifikasi Telegram Kesling Cirebon (Dinkes) berhasil.");
     return NextResponse.json({ ok: true });
   }
 

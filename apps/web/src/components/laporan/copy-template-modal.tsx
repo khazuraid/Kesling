@@ -1,7 +1,10 @@
 "use client";
 
-import { ArrowDown, Building2, Calendar, Copy } from "lucide-react";
+import { ArrowDown, Building2, Calendar, Copy, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 
 // ─── Component Props ───────────────────────────────────────────────────
 
@@ -54,24 +57,23 @@ export function CopyTemplateModal({
       variant="hero"
       footer={
         <>
-          <button
-            onClick={onClose}
-            className="h-10 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onClose} className="rounded-full">
             Batal
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            size="sm"
             onClick={() => copyMutation.mutate()}
             disabled={copyMutation.isPending || (!isOperator && !copyPuskesmasId)}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-extrabold uppercase tracking-wider hover:bg-primary-hover transition shadow-subtle disabled:opacity-50 cursor-pointer"
+            className="rounded-full gap-2 shadow-subtle"
           >
             {copyMutation.isPending ? (
-              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
             {copyMutation.isPending ? "Menyalin..." : "Salin Data"}
-          </button>
+          </Button>
         </>
       }
     >
@@ -82,11 +84,13 @@ export function CopyTemplateModal({
               <Building2 className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">Puskesmas</p>
-              <select
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-1">
+                Puskesmas
+              </p>
+              <Select
                 value={copyPuskesmasId || ""}
                 onChange={(e) => setCopyPuskesmasId(Number(e.target.value))}
-                className="w-full h-7 bg-transparent border-0 text-[14px] font-bold text-foreground outline-none appearance-none cursor-pointer"
+                className="w-full text-[13px] font-bold"
               >
                 <option value="">Pilih Puskesmas</option>
                 {puskesmasList.map((p: any) => (
@@ -94,7 +98,7 @@ export function CopyTemplateModal({
                     {p.nama}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
         )}
@@ -105,22 +109,22 @@ export function CopyTemplateModal({
             <Calendar className="w-3 h-3 text-primary" /> Periode Asal
           </p>
           <div className="grid grid-cols-2 gap-2.5">
-            <select
+            <Select
               value={copyBulanFrom}
               onChange={(e) => setCopyBulanFrom(Number(e.target.value))}
-              className="w-full h-10 px-3 rounded-button bg-surface-subtle border border-border text-[13px] font-bold text-foreground outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+              className="w-full text-[13px] font-bold"
             >
               {BULAN_NAMES.map((b, i) => (
                 <option key={i + 1} value={i + 1}>
                   {b}
                 </option>
               ))}
-            </select>
-            <input
+            </Select>
+            <Input
               type="number"
               value={copyTahunFrom}
               onChange={(e) => setCopyTahunFrom(Number(e.target.value))}
-              className="w-full h-10 px-3 rounded-button bg-surface-subtle border border-border text-[13px] font-bold text-foreground outline-none focus:border-primary transition-colors tabular-nums"
+              className="w-full text-[13px] font-bold tabular-nums"
               min={2020}
               max={2100}
             />
