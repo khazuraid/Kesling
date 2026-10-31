@@ -4,17 +4,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Plus, Search, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const inputCls =
-  "w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground";
 const labelCls = "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5";
 
-const ROLE_META: Record<string, { chip: string; label: string }> = {
-  ADMIN: { chip: "bg-error-light text-error border-error/25", label: "Admin" },
-  DINKES: { chip: "bg-info-light text-info border-info/25", label: "Dinkes" },
-  OPERATOR: { chip: "bg-primary-subtle text-primary border-primary/25", label: "Operator" },
+const ROLE_META: Record<string, { variant: "destructive" | "secondary" | "default"; label: string }> = {
+  ADMIN: { variant: "destructive", label: "Admin" },
+  DINKES: { variant: "secondary", label: "Dinkes" },
+  OPERATOR: { variant: "default", label: "Operator" },
 };
 
 export default function UsersPage() {
@@ -102,26 +106,23 @@ export default function UsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
+          <Input
             placeholder="Cari nama atau email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground"
+            className="pl-10"
           />
         </div>
-        <button
-          onClick={openAdd}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
-        >
+        <Button onClick={openAdd} className="rounded-full gap-2 shadow-xs">
           <Plus className="w-3.5 h-3.5" /> Tambah Operator
-        </button>
+        </Button>
       </div>
 
       {/* Table */}
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-card bg-surface border border-border animate-pulse" />
+            <Card key={i} className="h-16 animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -131,80 +132,73 @@ export default function UsersPage() {
           description="Klik Tambah Operator untuk menambahkan akun staf atau administrator baru."
         />
       ) : (
-        <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-border bg-surface-subtle">
-                <th className="text-left px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Puskesmas
-                </th>
-                <th className="text-right px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-24">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((u: any) => {
-                const roleMeta = ROLE_META[u.role] || ROLE_META.OPERATOR;
-                return (
-                  <tr
-                    key={u.id}
-                    className="border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
-                  >
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center text-[11px] font-extrabold shrink-0">
-                          {u.nama.charAt(0).toUpperCase()}
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[280px]">Nama</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Puskesmas</TableHead>
+                  <TableHead className="text-right w-24">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((u: any) => {
+                  const roleMeta = ROLE_META[u.role] || ROLE_META.OPERATOR;
+                  return (
+                    <TableRow key={u.id} className="hover:bg-surface-subtle transition-colors">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 bg-primary-subtle text-primary border border-primary/20">
+                            <AvatarFallback className="font-bold text-xs bg-primary-subtle text-primary">
+                              {u.nama.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-[12px] font-bold text-foreground">{u.nama}</span>
                         </div>
-                        <span className="text-[12px] font-bold text-foreground">{u.nama}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[12px] font-medium text-muted-foreground">{u.email}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider border ${roleMeta.chip}`}
-                      >
-                        {roleMeta.label || u.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[12px] font-medium text-muted-foreground">
-                      {u.puskesmas ? u.puskesmas.nama : "—"}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <div className="flex justify-end gap-1">
-                        <button
-                          onClick={() => openEdit(u)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-primary-subtle hover:text-primary transition-colors cursor-pointer"
-                          title="Ubah operator"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Hapus "${u.nama}"?`)) deleteMutation.mutate(u.id);
-                          }}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-error-light hover:text-error transition-colors cursor-pointer"
-                          title="Hapus operator"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </TableCell>
+                      <TableCell className="text-[12px] font-medium text-muted-foreground">{u.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={roleMeta.variant} className="text-[10px] uppercase">
+                          {roleMeta.label || u.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-[12px] font-medium text-muted-foreground">
+                        {u.puskesmas ? u.puskesmas.nama : "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEdit(u)}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:bg-primary-subtle hover:text-primary"
+                            title="Ubah operator"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`Hapus "${u.nama}"?`)) deleteMutation.mutate(u.id);
+                            }}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            title="Hapus operator"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       )}
 
       {/* Add/Edit Modal */}
@@ -218,54 +212,50 @@ export default function UsersPage() {
         variant="hero"
         footer={
           <>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setShowForm(false)}
-              className="h-10 px-5 rounded-full text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer"
+              className="rounded-full"
             >
               Batal
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50 cursor-pointer"
+              className="rounded-full gap-2 shadow-xs"
             >
               {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
-            </button>
+            </Button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
             <label className={labelCls}>Nama</label>
-            <input
-              value={form.nama}
-              onChange={(e) => setForm({ ...form, nama: e.target.value })}
-              required
-              className={inputCls}
-            />
+            <Input value={form.nama} onChange={(e) => setForm({ ...form, nama: e.target.value })} required />
           </div>
           <div>
             <label className={labelCls}>Email</label>
-            <input
+            <Input
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               type="email"
               required
-              className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>
               Password {editId && <span className="font-medium normal-case">(kosongkan jika tetap)</span>}
             </label>
-            <input
+            <Input
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               type="password"
               required={!editId}
-              className={inputCls}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -274,7 +264,7 @@ export default function UsersPage() {
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className={inputCls}
+                className="w-full h-10 px-3.5 rounded-card bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer [&>option]:bg-surface [&>option]:text-foreground"
               >
                 <option value="ADMIN">Admin</option>
                 <option value="OPERATOR">Operator</option>
@@ -287,7 +277,7 @@ export default function UsersPage() {
                 <select
                   value={form.puskesmasId}
                   onChange={(e) => setForm({ ...form, puskesmasId: e.target.value })}
-                  className={inputCls}
+                  className="w-full h-10 px-3.5 rounded-card bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer [&>option]:bg-surface [&>option]:text-foreground"
                 >
                   <option value="">— Pilih —</option>
                   {puskesmasList.map((p: any) => (
@@ -303,11 +293,10 @@ export default function UsersPage() {
             <label className={labelCls}>
               Telegram Chat ID <span className="font-medium normal-case">(opsional)</span>
             </label>
-            <input
+            <Input
               value={form.telegramChatId}
               onChange={(e) => setForm({ ...form, telegramChatId: e.target.value })}
               placeholder="Contoh: 123456789"
-              className={inputCls}
             />
           </div>
         </div>

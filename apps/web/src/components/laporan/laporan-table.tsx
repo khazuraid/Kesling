@@ -2,8 +2,13 @@
 
 import { ArrowRight, ChevronLeft, ChevronRight, Database, Download, Search } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,8 +78,8 @@ function calcCompliance(
   const numParam = (params || []).find((p) => p.code === formula.numeratorCode);
   const denParam = (params || []).find((p) => p.code === formula.denominatorCode);
   if (!numParam || !denParam) return null;
-  let numerator = 0,
-    denominator = 0;
+  let numerator = 0;
+  let denominator = 0;
   if (isRowBased) {
     for (const sc of subCats || []) {
       numerator += Number(valueMap[buildKey(numParam.id, sc.id)] || 0);
@@ -207,13 +212,11 @@ export function LaporanTable({
       {/* ── Toolbar: tabs kiri, aksi kanan ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {isRowBased ? (
-          /* Kategori dibiarkan membungkus ke baris berikutnya, bukan digeser
-             mendatar: yang tergeser tidak terlihat sama sekali dan tidak ada
-             petunjuk bahwa masih ada kategori di sebelah kanan. */
           <div className="flex flex-wrap items-center gap-1 rounded-card border border-border bg-surface p-1 shadow-subtle">
             <button
+              type="button"
               onClick={() => setActiveTab("ringkasan")}
-              className={`px-3.5 h-8 rounded-button text-[11px] font-bold text-left transition-colors ${
+              className={`px-3.5 h-8 rounded-md text-[11px] font-bold text-left transition-colors ${
                 activeTab === "ringkasan"
                   ? "bg-primary text-primary-foreground shadow-subtle"
                   : "text-muted-foreground hover:text-foreground"
@@ -224,8 +227,9 @@ export function LaporanTable({
             {category.subCategories.map((sc) => (
               <button
                 key={sc.id}
+                type="button"
                 onClick={() => setActiveTab(String(sc.id))}
-                className={`px-3.5 h-8 rounded-button text-[11px] font-bold text-left transition-colors ${
+                className={`px-3.5 h-8 rounded-md text-[11px] font-bold text-left transition-colors ${
                   activeTab === String(sc.id)
                     ? "bg-primary text-primary-foreground shadow-subtle"
                     : "text-muted-foreground hover:text-foreground"
@@ -256,20 +260,19 @@ export function LaporanTable({
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               placeholder="Cari puskesmas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-56 pl-9 pr-3 rounded-button bg-surface border border-border text-[12px] font-medium text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary shadow-subtle"
+              className="h-9 w-56 pl-9 pr-3 text-[12px]"
             />
           </div>
-          <a
-            href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-button border border-border bg-surface text-[11px] font-extrabold text-foreground hover:border-primary hover:text-primary transition shadow-subtle"
-          >
-            <Download className="w-3.5 h-3.5" /> Export
-          </a>
+          <Button asChild variant="outline" size="sm" className="shadow-subtle gap-2">
+            <a href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}>
+              <Download className="w-3.5 h-3.5" /> Export
+            </a>
+          </Button>
         </div>
       </div>
 
@@ -293,33 +296,22 @@ export function LaporanTable({
           const activeSc = category.subCategories.find((sc) => String(sc.id) === activeTab);
           if (!activeSc) return null;
           return (
-            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+            <Card className="overflow-hidden">
               <div className="overflow-x-auto max-h-[70vh]">
-                <table className="w-full text-[12px]">
-                  <thead className="sticky top-0 z-20 bg-surface shadow-[0_1px_0_0_var(--color-border)]">
-                    <tr className="border-b border-border bg-surface">
-                      <th className="w-[44px] py-3 px-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] bg-surface">
-                        #
-                      </th>
-                      <th className="py-3 px-4 text-left text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] bg-surface">
-                        Puskesmas
-                      </th>
+                <Table>
+                  <TableHeader className="sticky top-0 z-20 bg-surface shadow-[0_1px_0_0_var(--color-border)]">
+                    <TableRow className="border-b border-border bg-surface">
+                      <TableHead className="w-[44px]">#</TableHead>
+                      <TableHead>Puskesmas</TableHead>
                       {reportParameters.map((p) => (
-                        <th
-                          key={p.id}
-                          className="py-3 px-4 text-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap bg-surface"
-                        >
+                        <TableHead key={p.id} className="text-center whitespace-nowrap">
                           {p.nama}
-                        </th>
+                        </TableHead>
                       ))}
-                      {category.formula && (
-                        <th className="py-3 px-4 text-right text-[10px] font-extrabold text-primary uppercase tracking-[0.15em] bg-surface">
-                          %
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
+                      {category.formula && <TableHead className="text-right text-primary">%</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {paginatedList.map((pkm: any, i: number) => {
                       const laporan = laporanList.find((l) => l.puskesmasId === pkm.id);
                       const vm = laporan ? buildValueMap(laporan.values) : {};
@@ -328,49 +320,48 @@ export function LaporanTable({
                       const tier = tierOf(scPctNum);
                       const rowIdx = (currentPage - 1) * PAGE_SIZE + i;
                       return (
-                        <tr
+                        <TableRow
                           key={pkm.id}
                           onClick={() => onRowClick(pkm.id)}
-                          className="cursor-pointer border-b border-border/60 hover:bg-surface-subtle transition-colors"
+                          className="cursor-pointer hover:bg-surface-subtle transition-colors"
                         >
-                          <td className="py-3 px-4 text-[11px] font-bold text-muted-foreground tabular-nums">
-                            {rowIdx + 1}
-                          </td>
-                          <td className="py-3 px-4">
+                          <TableCell className="font-bold text-muted-foreground tabular-nums">{rowIdx + 1}</TableCell>
+                          <TableCell>
                             <div className="flex items-center gap-2.5">
                               <span className={`w-1.5 h-6 rounded-full shrink-0 ${tierStyles[tier].ring}`} />
                               <span className="text-[12px] font-bold text-foreground">{pkm.nama}</span>
                             </div>
-                          </td>
+                          </TableCell>
                           {reportParameters.map((p) => {
                             const val = vm[buildKey(p.id, activeSc.id)];
                             return (
-                              <td
+                              <TableCell
                                 key={p.id}
-                                className={`py-3 px-4 text-center font-semibold tabular-nums ${
+                                className={`text-center font-semibold tabular-nums ${
                                   val ? "text-foreground" : "text-muted-foreground opacity-40"
                                 }`}
                               >
                                 {val || "—"}
-                              </td>
+                              </TableCell>
                             );
                           })}
                           {category.formula && (
-                            <td className="py-3 px-4 text-right">
-                              <span
-                                className={`inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-extrabold tabular-nums ${tierStyles[tier].chip}`}
+                            <TableCell className="text-right">
+                              <Badge
+                                variant={tier === "high" ? "success" : tier === "mid" ? "warning" : "secondary"}
+                                className="font-extrabold tabular-nums"
                               >
                                 {scPct !== null ? `${scPct}%` : "—"}
-                              </span>
-                            </td>
+                              </Badge>
+                            </TableCell>
                           )}
-                        </tr>
+                        </TableRow>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
-            </div>
+            </Card>
           );
         })()
       ) : (
@@ -394,6 +385,7 @@ export function LaporanTable({
             return (
               <button
                 key={pkm.id}
+                type="button"
                 onClick={() => onRowClick(pkm.id)}
                 className="group w-full text-left rounded-card border border-border bg-surface hover:border-primary/50 shadow-subtle hover:shadow-float transition-all overflow-hidden"
               >
@@ -477,20 +469,24 @@ export function LaporanTable({
             {String(currentPage).padStart(2, "0")} — {String(totalPages).padStart(2, "0")}
           </span>
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary shadow-subtle disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
+              className="h-8 px-3 gap-1 shadow-subtle"
             >
               <ChevronLeft className="w-3.5 h-3.5" /> Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 px-3 flex items-center gap-1 rounded-button border border-border bg-surface text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary shadow-subtle disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
+              className="h-8 px-3 gap-1 shadow-subtle"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           </div>
         </div>
       )}

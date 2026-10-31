@@ -2,8 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NumberFlow } from "@/components/ui/number-flow";
 
 const BULAN_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -68,25 +72,37 @@ export default function RencanaTahunanPage() {
             </h1>
             {data && (
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-                <span className="tabular-nums font-bold text-foreground">{data.totalSelesai}</span> selesai dari{" "}
-                <span className="tabular-nums font-bold text-foreground">{data.totalTarget}</span> target ·{" "}
-                <span className="tabular-nums font-bold text-foreground">{data.totalSasaran}</span> sasaran
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={data.totalSelesai} />
+                </span>{" "}
+                selesai dari{" "}
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={data.totalTarget} />
+                </span>{" "}
+                target ·{" "}
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={data.totalSasaran} />
+                </span>{" "}
+                sasaran
               </p>
             )}
           </div>
           <div className="flex items-center gap-3">
             {data && (
-              <span className="inline-flex flex-col items-center h-12 justify-center px-4 rounded-xl bg-primary-subtle text-primary border border-primary/20 shadow-xs">
-                <span className="text-[18px] font-black tabular-nums text-primary leading-none">
-                  {data.progressTahunan}%
-                </span>
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
-                  Progress
-                </span>
-              </span>
+              <Card className="px-4 py-2 bg-primary-subtle text-primary border-primary/20 shadow-xs">
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                    <NumberFlow value={data.progressTahunan} suffix="%" />
+                  </span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                    Progress
+                  </span>
+                </div>
+              </Card>
             )}
             <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
               <button
+                type="button"
                 onClick={() => setTahun(tahun - 1)}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
@@ -94,6 +110,7 @@ export default function RencanaTahunanPage() {
               </button>
               <span className="w-14 text-[13px] font-black text-foreground text-center tabular-nums">{tahun}</span>
               <button
+                type="button"
                 onClick={() => setTahun(tahun + 1)}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
@@ -124,24 +141,24 @@ export default function RencanaTahunanPage() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-[14px] font-extrabold uppercase tracking-wider text-foreground">12 Bulan</h2>
-                <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-primary" /> ≥80%
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" /> ≥50%
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500" /> &lt;50%
-                  </span>
+                <div className="flex items-center gap-2 text-[10px] font-bold">
+                  <Badge variant="success" className="text-[10px] py-0 px-2">
+                    ≥80%
+                  </Badge>
+                  <Badge variant="warning" className="text-[10px] py-0 px-2">
+                    ≥50%
+                  </Badge>
+                  <Badge variant="destructive" className="text-[10px] py-0 px-2">
+                    &lt;50%
+                  </Badge>
                 </div>
               </div>
-              <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+              <Card className="overflow-hidden">
                 {data.months.map((m, idx) => {
                   const t = tier(m.progress);
                   const isCurrent = tahun === currentYear && m.bulan === currentMonth;
                   return (
-                    <a
+                    <Link
                       key={m.bulan}
                       href={`/rencana-bulanan?bulan=${m.bulan}&tahun=${tahun}`}
                       className={`group flex items-center gap-4 px-5 py-3 hover:bg-surface-subtle/50 transition-colors ${
@@ -169,10 +186,10 @@ export default function RencanaTahunanPage() {
                       <div className="w-24 shrink-0 text-right text-[11px] font-bold tabular-nums text-muted-foreground">
                         {m.selesai}/{m.totalSasaran}
                       </div>
-                    </a>
+                    </Link>
                   );
                 })}
-              </div>
+              </Card>
             </div>
 
             {/* Triwulan + Semester */}
@@ -185,7 +202,7 @@ export default function RencanaTahunanPage() {
                   <h2 className="text-[14px] font-extrabold uppercase tracking-wider mb-4 text-foreground">
                     {block.title}
                   </h2>
-                  <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+                  <Card className="overflow-hidden">
                     {block.items.map((q, idx) => {
                       const t = tier(q.progress);
                       return (
@@ -214,7 +231,7 @@ export default function RencanaTahunanPage() {
                         </div>
                       );
                     })}
-                  </div>
+                  </Card>
                 </div>
               ))}
             </div>

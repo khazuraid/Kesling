@@ -18,6 +18,8 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LaporanBuilderPreview } from "@/components/laporan-builder-preview";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 import { defaultDataDasarCode, defaultDataDasarNama } from "@/lib/sasaran-meta";
@@ -576,12 +578,12 @@ export default function LaporanBuilderPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 onClick={() => setIsCreatingModule(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs cursor-pointer w-full sm:w-auto"
+                className="rounded-full gap-1.5 shadow-xs w-full sm:w-auto"
               >
                 <Plus className="w-3.5 h-3.5" /> Modul Baru
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -604,9 +606,9 @@ export default function LaporanBuilderPage() {
                 const fCount = cat.parameters?.filter((p: any) => p.type === "FORMULA").length || 0;
                 const eCount = cat.subCategories?.length || 0;
                 return (
-                  <div
+                  <Card
                     key={cat.id}
-                    className="rounded-card border border-border bg-surface p-5 flex flex-col justify-between hover:border-primary/50 hover:shadow-subtle transition-all group shadow-subtle"
+                    className="p-5 flex flex-col justify-between hover:border-primary/50 hover:shadow-subtle transition-all group shadow-subtle"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
@@ -671,7 +673,7 @@ export default function LaporanBuilderPage() {
                         Buka &rarr;
                       </span>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>

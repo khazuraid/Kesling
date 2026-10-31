@@ -5,7 +5,12 @@ import { Building2, Calendar, ChevronDown, ChevronLeft, ChevronRight, Download }
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NumberFlow } from "@/components/ui/number-flow";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -99,10 +104,10 @@ export default function RekapPage() {
 
   const updateUrl = useCallback(
     (t: number, p: string) => {
-      const params = new URLSearchParams();
-      params.set("tahun", String(t));
-      if (p) params.set("puskesmasId", p);
-      router.replace(`/rekap?${params}`, { scroll: false });
+      const q = new URLSearchParams();
+      q.set("tahun", String(t));
+      if (p) q.set("puskesmasId", p);
+      router.replace(`/rekap?${q.toString()}`);
     },
     [router],
   );
@@ -112,15 +117,14 @@ export default function RekapPage() {
   }, [tahun, puskesmasId, updateUrl]);
 
   const { data, isLoading } = useQuery<RekapData>({
-    queryKey: ["rekap", tahun, puskesmasId],
+    queryKey: ["rekap-dynamic", tahun, puskesmasId],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.set("tahun", String(tahun));
-      if (puskesmasId) params.set("puskesmasId", puskesmasId);
-      const res = await fetch(`/api/rekap?${params}`);
-      if (!res.ok) throw new Error("Gagal");
+      const url = `/api/rekap/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Gagal mengambil data rekap");
       return res.json();
     },
+    staleTime: 60_000,
   });
 
   const cats = data?.categories || [];
@@ -130,7 +134,6 @@ export default function RekapPage() {
   const badCount = data?.badCount || 0;
   const overallLabel = data?.overallLabel || "Perlu Perhatian";
 
-  // Best & worst category
   const sorted = [...cats].sort((a, b) => (b.pctTotalYear || 0) - (a.pctTotalYear || 0));
   const best = sorted[0];
   const worst = sorted[sorted.length - 1];
@@ -156,23 +159,24 @@ export default function RekapPage() {
 
               {/* Tier chips */}
               <div className="flex items-center gap-2 mt-3">
-                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary-subtle border border-primary/20 text-primary text-[10px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {goodCount} Baik
-                </span>
-                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 text-[10px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> {warnCount} Cukup
-                </span>
-                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 text-[10px] font-extrabold tabular-nums">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> {badCount} Kurang
-                </span>
+                <Badge variant="success" className="text-[10px] font-extrabold tabular-nums">
+                  <NumberFlow value={goodCount} /> Baik
+                </Badge>
+                <Badge variant="warning" className="text-[10px] font-extrabold tabular-nums">
+                  <NumberFlow value={warnCount} /> Cukup
+                </Badge>
+                <Badge variant="destructive" className="text-[10px] font-extrabold tabular-nums">
+                  <NumberFlow value={badCount} /> Kurang
+                </Badge>
               </div>
             </div>
           </div>
 
-          {/* Filters — inside hero, right side */}
+          {/* Filters */}
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center rounded-full bg-surface-subtle border border-border overflow-hidden">
               <button
+                type="button"
                 onClick={() => setTahun((t) => t - 1)}
                 className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
               >
@@ -185,6 +189,7 @@ export default function RekapPage() {
                 className="w-[64px] h-10 px-1 bg-transparent text-[15px] font-black text-foreground text-center outline-none tabular-nums"
               />
               <button
+                type="button"
                 onClick={() => setTahun((t) => t + 1)}
                 className="w-9 h-10 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
               >
@@ -211,12 +216,11 @@ export default function RekapPage() {
               </div>
             )}
 
-            <a
-              href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}
-              className="h-10 px-5 flex items-center gap-2 rounded-full bg-primary text-white text-[11px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs"
-            >
-              <Download className="w-3.5 h-3.5" /> Export Excel
-            </a>
+            <Button asChild size="sm" className="rounded-full shadow-xs">
+              <a href={`/api/export/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`}>
+                <Download className="w-3.5 h-3.5 mr-1" /> Export Excel
+              </a>
+            </Button>
           </div>
         </div>
       </div>
@@ -235,10 +239,10 @@ export default function RekapPage() {
           />
         ) : (
           <div className="space-y-6">
-            {/* ── BEST / WORST SPOTLIGHT (Bento-style summary cards) ── */}
+            {/* ── BEST / WORST SPOTLIGHT ── */}
             {cats.length >= 2 && best && worst && best.id !== worst.id && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-card bg-surface border border-border shadow-subtle p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
+                <Card className="p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
                   <div className="w-12 h-12 rounded-xl bg-primary-subtle text-primary flex items-center justify-center text-2xl shrink-0">
                     {best.icon}
                   </div>
@@ -249,10 +253,10 @@ export default function RekapPage() {
                     <p className="text-[15px] font-bold text-foreground truncate">{best.nama}</p>
                   </div>
                   <span className="text-[26px] font-black tabular-nums text-primary">
-                    {(best.pctTotalYear || 0).toFixed(0)}%
+                    <NumberFlow value={Math.round(best.pctTotalYear || 0)} suffix="%" />
                   </span>
-                </div>
-                <div className="rounded-card bg-surface border border-border shadow-subtle p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
+                </Card>
+                <Card className="p-5 sm:p-6 flex items-center gap-4 hover:shadow-float transition-all">
                   <div className="w-12 h-12 rounded-xl bg-red-500/10 text-red-600 flex items-center justify-center text-2xl shrink-0">
                     {worst.icon}
                   </div>
@@ -263,40 +267,42 @@ export default function RekapPage() {
                     <p className="text-[15px] font-bold text-foreground truncate">{worst.nama}</p>
                   </div>
                   <span className="text-[26px] font-black tabular-nums text-red-600">
-                    {(worst.pctTotalYear || 0).toFixed(0)}%
+                    <NumberFlow value={Math.round(worst.pctTotalYear || 0)} suffix="%" />
                   </span>
-                </div>
+                </Card>
               </div>
             )}
 
             {/* ── HEATMAP MATRIX ── */}
-            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+            <Card className="overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-surface-subtle text-[11px] font-extrabold text-muted-foreground uppercase tracking-wider">
-                      <th className="py-3.5 px-4 w-[280px]">Kategori</th>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[280px]">Kategori</TableHead>
                       {BULAN.map((b) => (
-                        <th key={b} className="py-3.5 px-2 text-center text-[10px] font-bold">
+                        <TableHead key={b} className="text-center text-[10px] px-2">
                           {b}
-                        </th>
+                        </TableHead>
                       ))}
-                      <th className="py-3.5 px-4 text-center font-extrabold text-foreground">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
+                      <TableHead className="text-center font-extrabold text-foreground">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {cats.map((cat) => {
                       const totalTier = pctTier(cat.pctTotalYear || null);
                       return (
-                        <tr key={cat.id} className="hover:bg-surface-subtle/50 transition-colors">
-                          <td className="py-3 px-4 font-bold text-[13px] text-foreground flex items-center gap-2.5">
-                            <span className="text-lg shrink-0">{cat.icon}</span>
-                            <span className="truncate">{cat.nama}</span>
-                          </td>
+                        <TableRow key={cat.id}>
+                          <TableCell className="font-bold text-[13px] text-foreground">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg shrink-0">{cat.icon}</span>
+                              <span className="truncate">{cat.nama}</span>
+                            </div>
+                          </TableCell>
                           {cat.pctMonthly.map((pct, idx) => {
                             const t = pctTier(pct);
                             return (
-                              <td key={idx} className="py-2 px-1 text-center">
+                              <TableCell key={idx} className="p-1 text-center">
                                 <div
                                   className="w-full py-2 rounded-lg text-[11px] font-bold tabular-nums transition-all"
                                   style={{
@@ -306,10 +312,10 @@ export default function RekapPage() {
                                 >
                                   {pct !== null && pct > 0 ? `${pct}%` : "—"}
                                 </div>
-                              </td>
+                              </TableCell>
                             );
                           })}
-                          <td className="py-2 px-4 text-center">
+                          <TableCell className="text-center">
                             <span
                               className="inline-block px-3 py-1.5 rounded-lg text-[12px] font-black tabular-nums"
                               style={{
@@ -321,14 +327,14 @@ export default function RekapPage() {
                                 ? `${cat.pctTotalYear.toFixed(1)}%`
                                 : "—"}
                             </span>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>

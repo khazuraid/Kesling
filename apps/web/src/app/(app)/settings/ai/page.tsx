@@ -4,6 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Key, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 interface AISettings {
   provider: string;
@@ -12,8 +17,6 @@ interface AISettings {
   model: string;
 }
 
-const inputCls =
-  "w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground";
 const labelCls = "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5";
 const hintCls = "text-[11px] font-medium text-muted-foreground mt-1.5 leading-relaxed";
 
@@ -79,7 +82,7 @@ export default function AISettingsPage() {
   return (
     <div className="max-w-3xl space-y-5">
       {/* Status banner */}
-      <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Card className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-subtle">
         <div className="flex items-center gap-3.5">
           <span className="w-10 h-10 rounded-xl bg-primary-subtle text-primary border border-primary/20 flex items-center justify-center shrink-0">
             <Sparkles className="w-5 h-5" />
@@ -94,47 +97,36 @@ export default function AISettingsPage() {
 
         <div className="flex items-center gap-2">
           {isAiEnabled ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-pill text-[11px] font-bold bg-primary-subtle text-primary border border-primary/25">
+            <Badge variant="success" className="gap-1.5 py-1 px-3 text-[11px] font-bold">
               <Check className="w-3.5 h-3.5" /> AI Aktif ({provider.toUpperCase()})
-            </span>
+            </Badge>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-pill text-[11px] font-bold bg-surface-subtle text-muted-foreground border border-border">
+            <Badge variant="secondary" className="gap-1.5 py-1 px-3 text-[11px] font-bold">
               Nonaktif
-            </span>
+            </Badge>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Form Container */}
-      <div className="rounded-card bg-surface border border-border shadow-subtle p-6 space-y-5">
+      <Card className="p-6 space-y-5 shadow-subtle">
         {/* Toggle Switch */}
         <div className="flex items-center justify-between p-4 rounded-xl bg-surface-subtle border border-border">
           <div>
             <p className="text-[12px] font-bold text-foreground">Gunakan Parser AI</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Ekstraksi cerdas field formulir menggunakan LLM</p>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isAiEnabled}
-            onClick={() => {
-              if (isAiEnabled) {
+          <Switch
+            checked={isAiEnabled}
+            onCheckedChange={(checked) => {
+              if (!checked) {
                 setProvider("disabled");
               } else {
                 setProvider("openrouter");
                 if (modelOptions.openrouter) setModel(modelOptions.openrouter[0]);
               }
             }}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-              isAiEnabled ? "bg-primary" : "bg-muted"
-            }`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                isAiEnabled ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
-          </button>
+          />
         </div>
 
         {isAiEnabled && (
@@ -150,7 +142,7 @@ export default function AISettingsPage() {
                     setModel(modelOptions[newProv][0]);
                   }
                 }}
-                className={inputCls}
+                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
               >
                 <option value="openrouter">OpenRouter (Direkomendasikan — Banyak Model)</option>
                 <option value="openai">OpenAI (ChatGPT API)</option>
@@ -169,12 +161,12 @@ export default function AISettingsPage() {
               </label>
               <div className="relative">
                 <Key className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
+                <Input
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={settings?.hasKey ? "•••••••••••••••• (sudah tersimpan)" : "Masukkan API Key rahasia..."}
-                  className={`${inputCls} pl-10 font-mono`}
+                  className="pl-10 font-mono h-10"
                 />
               </div>
               <p className={hintCls}>
@@ -193,7 +185,7 @@ export default function AISettingsPage() {
                     setModel(e.target.value);
                   }
                 }}
-                className={inputCls}
+                className="w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
               >
                 {modelOptions[provider]?.map((m) => (
                   <option key={m} value={m}>
@@ -202,28 +194,28 @@ export default function AISettingsPage() {
                 ))}
                 <option value="custom">-- Ketik Model Lainnya --</option>
               </select>
-              <input
+              <Input
                 type="text"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="Nama model kustom (contoh: meta-llama/llama-3-70b-instruct)"
-                className={`${inputCls} mt-2 font-mono text-[11px]`}
+                className="mt-2 font-mono text-[11px] h-10"
               />
             </div>
           </>
         )}
 
         <div className="pt-2 flex justify-end">
-          <button
+          <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50 cursor-pointer"
+            className="gap-2 h-10 px-6 rounded-full uppercase tracking-wider text-[11px] font-bold shadow-subtle"
           >
             {saveMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Simpan Konfigurasi AI
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

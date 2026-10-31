@@ -6,7 +6,13 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
+import { NumberFlow } from "@/components/ui/number-flow";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface FileItem {
   path: string;
@@ -107,53 +113,59 @@ export default function FileManagerPage() {
                 File Manager
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-                Manajemen berkas unggahan, deteksi file yatim, dan monitoring storage
+                Manajemen berkas unggahan, deteksi file yatim, dan monitoring storage lokal
               </p>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant={showHealth ? "default" : "outline"}
+                size="sm"
                 onClick={() => setShowHealth(!showHealth)}
-                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-extrabold transition shadow-xs ${
-                  showHealth
-                    ? "bg-primary text-white"
-                    : "bg-surface-subtle hover:bg-surface text-foreground border border-border"
-                }`}
+                className="gap-1.5 rounded-full"
               >
                 <Activity className="w-3.5 h-3.5" />
                 {showHealth ? "Tutup Health" : "Status Sistem"}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => refetch()}
                 disabled={isRefetching}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground border border-border text-[11px] font-extrabold transition shadow-xs disabled:opacity-50"
+                className="gap-1.5 rounded-full"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} />
                 Segarkan
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
+            <Card className="p-3.5 space-y-1 shadow-subtle">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Total File</p>
-              <p className="text-[20px] font-black tracking-tight text-foreground mt-0.5 tabular-nums">{total}</p>
-            </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
+              <p className="text-[20px] font-black tracking-tight text-foreground tabular-nums">
+                <NumberFlow value={total} />
+              </p>
+            </Card>
+            <Card className="p-3.5 space-y-1 shadow-subtle">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Terpakai</p>
-              <p className="text-[20px] font-black tracking-tight text-primary mt-0.5 tabular-nums">{activeCount}</p>
-            </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
+              <p className="text-[20px] font-black tracking-tight text-primary tabular-nums">
+                <NumberFlow value={activeCount} />
+              </p>
+            </Card>
+            <Card className="p-3.5 space-y-1 shadow-subtle">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">File Yatim</p>
-              <p className="text-[20px] font-black tracking-tight text-amber-600 mt-0.5 tabular-nums">{orphans}</p>
-            </div>
-            <div className="rounded-xl bg-surface-subtle/60 border border-border p-3">
+              <p className="text-[20px] font-black tracking-tight text-amber-600 tabular-nums">
+                <NumberFlow value={orphans} />
+              </p>
+            </Card>
+            <Card className="p-3.5 space-y-1 shadow-subtle">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">Ruang Yatim</p>
-              <p className="text-[20px] font-black tracking-tight text-foreground mt-0.5 tabular-nums">
+              <p className="text-[20px] font-black tracking-tight text-foreground tabular-nums">
                 {formatBytes(orphanBytes)}
               </p>
-            </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -168,45 +180,47 @@ export default function FileManagerPage() {
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
+              <Input
                 type="text"
                 placeholder="Cari file path..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 rounded-xl bg-surface border border-border text-[12px] font-semibold text-foreground outline-none focus:border-primary transition-colors shadow-subtle"
+                className="pl-9 h-10"
               />
             </div>
 
             <div className="inline-flex items-center rounded-xl border border-border bg-surface p-1 shadow-subtle">
-              <button
+              <Button
+                variant={filter === "all" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setFilter("all")}
-                className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "all" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="h-8 px-3 text-[11px] rounded-lg"
               >
                 Semua ({total})
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={filter === "orphan" ? "warning" : "ghost"}
+                size="sm"
                 onClick={() => setFilter("orphan")}
-                className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "orphan" ? "bg-amber-500/15 text-amber-700" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="h-8 px-3 text-[11px] rounded-lg"
               >
                 Yatim ({orphans})
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={filter === "active" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setFilter("active")}
-                className={`h-8 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === "active" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="h-8 px-3 text-[11px] rounded-lg"
               >
                 Terpakai ({activeCount})
-              </button>
+              </Button>
             </div>
           </div>
 
           {orphans > 0 && (
-            <button
+            <Button
+              variant="destructive"
+              size="sm"
               onClick={() => {
                 if (
                   confirm(
@@ -217,11 +231,11 @@ export default function FileManagerPage() {
                 }
               }}
               disabled={deleteOrphansMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[11px] font-extrabold transition shadow-subtle disabled:opacity-50"
+              className="gap-2 h-10 shadow-subtle"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {deleteOrphansMutation.isPending ? "Membersihkan..." : `Bersihkan Semua Yatim (${orphans})`}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -229,7 +243,7 @@ export default function FileManagerPage() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-2xl bg-surface-subtle animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-surface-subtle animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -239,24 +253,24 @@ export default function FileManagerPage() {
             description={search ? "Coba kata kunci pencarian lain." : "Belum ada file yang terunggah."}
           />
         ) : (
-          <div className="rounded-card border border-border bg-surface overflow-hidden shadow-subtle">
+          <Card className="overflow-hidden shadow-subtle">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-[12px]">
-                <thead className="bg-surface-subtle border-b border-border text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3">File</th>
-                    <th className="px-4 py-3">Ukuran</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Waktu Diubah</th>
-                    <th className="px-4 py-3 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border font-medium">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[40%]">File</TableHead>
+                    <TableHead>Ukuran</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Waktu Diubah</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filtered.map((item) => {
                     const isImg = /\.(jpe?g|png|webp|gif)$/i.test(item.path);
                     return (
-                      <tr key={item.path} className="hover:bg-surface-subtle/40 transition-colors">
-                        <td className="px-4 py-3 min-w-[240px]">
+                      <TableRow key={item.path}>
+                        <TableCell className="min-w-[240px]">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-lg bg-surface-subtle border border-border flex items-center justify-center shrink-0 overflow-hidden">
                               {isImg ? (
@@ -282,40 +296,38 @@ export default function FileManagerPage() {
                               <p className="text-[10px] text-muted-foreground truncate font-mono">{item.path}</p>
                             </div>
                           </div>
-                        </td>
-                        <td className="px-4 py-3 tabular-nums font-semibold text-foreground">
+                        </TableCell>
+                        <TableCell className="tabular-nums font-semibold text-foreground">
                           {formatBytes(item.size)}
-                        </td>
-                        <td className="px-4 py-3">
+                        </TableCell>
+                        <TableCell>
                           {item.orphan ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            <Badge variant="warning" className="text-[10px]">
                               Yatim
-                            </span>
+                            </Badge>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary-subtle text-primary border border-primary/20">
+                            <Badge variant="success" className="text-[10px]">
                               Terpakai
-                            </span>
+                            </Badge>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-[11px] text-muted-foreground">
+                        </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground">
                           {new Date(item.mtime).toLocaleString("id-ID", {
                             dateStyle: "medium",
                             timeStyle: "short",
                           })}
-                        </td>
-                        <td className="px-4 py-3 text-right">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="inline-flex items-center gap-1">
-                            <a
-                              href={item.path}
-                              target="_blank"
-                              rel="noreferrer"
-                              title="Buka file"
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
+                            <Button asChild variant="ghost" size="icon" className="w-8 h-8">
+                              <a href={item.path} target="_blank" rel="noreferrer" title="Buka file">
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </Button>
                             {item.orphan && (
-                              <button
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                   if (confirm(`Hapus file ${item.path}?`)) {
                                     deleteSingleMutation.mutate(item.path);
@@ -323,20 +335,20 @@ export default function FileManagerPage() {
                                 }}
                                 title="Hapus file yatim"
                                 disabled={deleteSingleMutation.isPending}
-                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-500/10 transition"
+                                className="w-8 h-8 text-destructive hover:bg-destructive/10"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              </Button>
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>

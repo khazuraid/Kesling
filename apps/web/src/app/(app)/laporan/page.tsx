@@ -1,9 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Droplets, Folder, GlassWater, Home, Toilet, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Building2, Droplets, Folder, GlassWater, Home, Toilet, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { NumberFlow } from "@/components/ui/number-flow";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Category {
   id: number;
@@ -25,10 +29,6 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 };
 
 export default function LaporanListPage() {
-  const { data: session } = useSession();
-  const userRole = (session?.user as any)?.role || "OPERATOR";
-  const _isAdmin = userRole === "ADMIN";
-
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["laporan-categories"],
     queryFn: async () => {
@@ -53,16 +53,19 @@ export default function LaporanListPage() {
               Laporan Bulanan
             </h1>
             <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-              <span className="tabular-nums font-bold text-foreground">{categories.length}</span> kategori aktif ·{" "}
-              <span className="tabular-nums font-bold text-foreground">{totalSub}</span> sub-kategori
+              <span className="tabular-nums font-bold text-foreground">
+                <NumberFlow value={categories.length} />
+              </span>{" "}
+              kategori aktif ·{" "}
+              <span className="tabular-nums font-bold text-foreground">
+                <NumberFlow value={totalSub} />
+              </span>{" "}
+              sub-kategori
             </p>
           </div>
-          <Link
-            href="/laporan-builder"
-            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs"
-          >
-            Builder Template →
-          </Link>
+          <Button asChild size="default" className="rounded-full shadow-xs">
+            <Link href="/laporan-builder">Builder Template →</Link>
+          </Button>
         </div>
       </div>
 
@@ -70,35 +73,45 @@ export default function LaporanListPage() {
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── STAT PILLS ── */}
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20 shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-primary leading-none">{categories.length}</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
-              Kategori
-            </span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20 shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalSub}</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
-              Sub-kategori
-            </span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
-            <span className="text-[13px] font-black text-primary leading-none mt-1">Terintegrasi</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
-              Data Dasar
-            </span>
-          </span>
+          <Card className="px-5 py-2.5 bg-primary/10 border-primary/20 shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                <NumberFlow value={categories.length} />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
+                Kategori
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-amber-500/10 border-amber-500/20 shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+                <NumberFlow value={totalSub} />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
+                Sub-kategori
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[13px] font-black text-primary leading-none mt-1">Terintegrasi</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+                Data Dasar
+              </span>
+            </div>
+          </Card>
         </div>
 
         {/* LOADING */}
         {isLoading && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="rounded-card border border-border bg-surface p-4 animate-pulse shadow-subtle">
-                <div className="w-10 h-10 rounded-xl bg-surface-subtle mb-3" />
-                <div className="h-3 w-28 bg-surface-subtle rounded mb-2" />
-                <div className="h-2 w-40 bg-surface-subtle rounded" />
-              </div>
+              <Card key={i} className="p-4 shadow-subtle">
+                <Skeleton className="w-10 h-10 rounded-xl mb-3" />
+                <Skeleton className="h-4 w-28 mb-2" />
+                <Skeleton className="h-3 w-40" />
+              </Card>
             ))}
           </div>
         )}
@@ -109,24 +122,27 @@ export default function LaporanListPage() {
             {categories.map((cat) => {
               const subCount = cat.subCategories?.length || 0;
               return (
-                <Link
-                  key={cat.id}
-                  href={`/laporan/${cat.code.toLowerCase()}`}
-                  className="group rounded-card border border-border bg-surface p-4 hover:border-primary/50 shadow-subtle hover:shadow-float transition-all"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    {ICON_MAP[cat.code.toLowerCase()] || <Folder className="w-5 h-5" />}
-                  </div>
-                  <h3 className="text-[13px] font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                    {cat.nama}
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground mb-3">
-                    {subCount} sub-kategori · {cat.isRowBased ? "Berbasis baris" : "Berbasis kolom"}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-primary">
-                    <span className="text-[11px] font-bold group-hover:underline">Buka Laporan</span>
-                    <span className="text-[11px] transition-transform group-hover:translate-x-0.5">→</span>
-                  </div>
+                <Link key={cat.id} href={`/laporan/${cat.code.toLowerCase()}`}>
+                  <Card className="p-4 hover:border-primary/50 shadow-subtle hover:shadow-float transition-all group h-full">
+                    <div className="w-10 h-10 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {ICON_MAP[cat.code.toLowerCase()] || <Folder className="w-5 h-5" />}
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                        {cat.nama}
+                      </h3>
+                      <Badge variant="outline" className="text-[9px] uppercase px-1 py-0">
+                        {cat.code}
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mb-3">
+                      {subCount} sub-kategori · {cat.isRowBased ? "Berbasis baris" : "Berbasis kolom"}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-primary text-[11px] font-bold">
+                      <span className="group-hover:underline">Buka Laporan</span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </Card>
                 </Link>
               );
             })}
@@ -135,11 +151,11 @@ export default function LaporanListPage() {
 
         {/* EMPTY */}
         {!isLoading && categories.length === 0 && (
-          <div className="rounded-card border border-border bg-surface shadow-subtle flex flex-col items-center justify-center py-20 gap-2">
+          <Card className="border-dashed flex flex-col items-center justify-center py-20 gap-2">
             <Folder className="w-8 h-8 text-muted-foreground opacity-30" />
             <p className="text-[13px] font-bold text-foreground">Belum ada laporan</p>
             <p className="text-[11px] text-muted-foreground">Hubungi admin untuk mengaktifkan kategori laporan.</p>
-          </div>
+          </Card>
         )}
       </div>
     </div>

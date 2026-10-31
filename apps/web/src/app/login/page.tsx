@@ -1,10 +1,14 @@
 "use client";
 
-import { ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Suspense, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -73,7 +77,7 @@ function LoginForm() {
         </div>
 
         {/* Card */}
-        <div className="bg-surface border border-border rounded-card shadow-subtle p-6 sm:p-8 space-y-6">
+        <Card className="p-6 sm:p-8 space-y-6 shadow-subtle">
           <div className="space-y-1 text-center sm:text-left">
             <h2 className="text-2xl font-black tracking-tight text-foreground">Masuk</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -83,17 +87,16 @@ function LoginForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-button bg-error-light border border-error/20 text-error text-xs font-semibold leading-snug">
-                <div className="w-1.5 h-1.5 rounded-full bg-error shrink-0" />
-                <p>{error}</p>
-              </div>
+              <Alert variant="destructive" className="py-2.5">
+                <AlertDescription className="text-xs font-semibold leading-snug">{error}</AlertDescription>
+              </Alert>
             )}
 
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Email
               </label>
-              <input
+              <Input
                 id="email"
                 type="email"
                 required
@@ -101,7 +104,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@puskesmas.go.id"
-                className="w-full h-11 px-3.5 rounded-button bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors hover:border-border-hover focus:border-primary focus:ring-1 focus:ring-primary"
+                className="h-11"
               />
             </div>
 
@@ -110,7 +113,7 @@ function LoginForm() {
                 Kata Sandi
               </label>
               <div className="relative">
-                <input
+                <Input
                   id="password"
                   type={showPw ? "text" : "password"}
                   required
@@ -118,7 +121,7 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-11 px-3.5 pr-11 rounded-button bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors hover:border-border-hover focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="h-11 pr-11"
                 />
                 <button
                   type="button"
@@ -131,11 +134,7 @@ function LoginForm() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-button bg-primary hover:bg-primary-hover active:scale-[0.98] text-white text-sm font-semibold tracking-tight transition-transform duration-150 disabled:opacity-50 disabled:pointer-events-none shadow-xs cursor-pointer"
-            >
+            <Button type="submit" disabled={loading} className="w-full h-11 gap-2 text-sm font-semibold shadow-xs">
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,19 +146,9 @@ function LoginForm() {
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </button>
+            </Button>
           </form>
-
-          <div className="pt-1 flex items-center justify-center gap-1.5 text-muted-foreground/80">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <p className="text-[11px] font-medium tracking-tight">Koneksi aman terenkripsi</p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Dinas Kesehatan Kota Cirebon
-        </p>
+        </Card>
       </div>
     </div>
   );
@@ -167,7 +156,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div className="min-h-dvh flex items-center justify-center bg-canvas">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

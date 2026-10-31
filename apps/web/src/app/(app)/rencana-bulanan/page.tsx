@@ -2,10 +2,15 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Calendar, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Play, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NumberFlow } from "@/components/ui/number-flow";
 
 const BULAN_FULL = [
   "Januari",
@@ -50,11 +55,14 @@ interface RencanaData {
   kategori: Kategori[];
 }
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  TERJADWAL: { label: "Terjadwal", cls: "bg-primary-subtle text-primary border border-primary/20" },
-  SELESAI: { label: "Selesai", cls: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" },
-  DILEWATI: { label: "Dilewati", cls: "bg-red-500/10 text-red-600 border border-red-500/20" },
-  BELUM: { label: "Belum", cls: "bg-surface-subtle text-muted-foreground border border-border" },
+const STATUS_VARIANT: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" }
+> = {
+  TERJADWAL: { label: "Terjadwal", variant: "default" },
+  SELESAI: { label: "Selesai", variant: "success" },
+  DILEWATI: { label: "Dilewati", variant: "destructive" },
+  BELUM: { label: "Belum", variant: "secondary" },
 };
 
 function getDaysInMonth(year: number, month: number) {
@@ -155,30 +163,38 @@ export default function RencanaBulananPage() {
               {BULAN_FULL[bulan - 1]} {tahun}
             </h1>
             <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-              <span className="tabular-nums font-bold text-foreground">{selesaiVal}</span>/{data?.totalSasaran ?? 0}{" "}
-              selesai · <span className="tabular-nums font-bold text-foreground">{data?.totalTerjadwal ?? 0}</span>{" "}
+              <span className="tabular-nums font-bold text-foreground">
+                <NumberFlow value={selesaiVal} />
+              </span>
+              /<NumberFlow value={data?.totalSasaran ?? 0} /> selesai ·{" "}
+              <span className="tabular-nums font-bold text-foreground">
+                <NumberFlow value={data?.totalTerjadwal ?? 0} />
+              </span>{" "}
               terjadwal
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
               <button
+                type="button"
                 onClick={prevMonth}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={nextMonth}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-surface hover:text-foreground transition-colors rounded-full"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <button
+            <Button
+              size="sm"
               onClick={() => generateMut.mutate()}
               disabled={generateMut.isPending}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs disabled:opacity-50"
+              className="rounded-full shadow-xs gap-1.5"
             >
               {generateMut.isPending ? (
                 <Clock className="w-3.5 h-3.5 animate-spin" />
@@ -186,7 +202,7 @@ export default function RencanaBulananPage() {
                 <Play className="w-3.5 h-3.5" />
               )}
               Jadwalkan
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -195,34 +211,46 @@ export default function RencanaBulananPage() {
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── STAT PILLS ── */}
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-primary/20 shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-primary leading-none">
-              {data?.progress ?? 0}%
-            </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
-              Progress
-            </span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
-              {data?.totalSasaran ?? 0}
-            </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
-              Sasaran
-            </span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary-subtle text-primary border border-primary/20 shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-primary leading-none">{selesaiVal}</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">Selesai</span>
-          </span>
-          <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-amber-500/20 shadow-subtle">
-            <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
-              {data?.totalTerjadwal ?? 0}
-            </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
-              Terjadwal
-            </span>
-          </span>
+          <Card className="px-5 py-2.5 bg-surface border-primary/20 shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                <NumberFlow value={data?.progress ?? 0} suffix="%" />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                Progress
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
+                <NumberFlow value={data?.totalSasaran ?? 0} />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+                Sasaran
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-primary-subtle text-primary border-primary/20 shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                <NumberFlow value={selesaiVal} />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+                Selesai
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-amber-500/20 shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+                <NumberFlow value={data?.totalTerjadwal ?? 0} />
+              </span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+                Terjadwal
+              </span>
+            </div>
+          </Card>
           <div className="flex items-center gap-2 ml-auto">
             <label className="text-[11px] font-bold text-muted-foreground">Kapasitas/hari:</label>
             <Input
@@ -238,7 +266,7 @@ export default function RencanaBulananPage() {
 
         {/* Kalender hero full-width */}
         <div className="pt-2">
-          <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+          <Card className="overflow-hidden">
             <div className="grid grid-cols-6 border-b border-border bg-surface-subtle">
               {HARI.map((h) => (
                 <div
@@ -300,11 +328,11 @@ export default function RencanaBulananPage() {
                 );
               })}
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Timeline per kategori */}
-        <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+        <Card className="overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center text-[13px] text-muted-foreground animate-pulse">Memuat jadwal...</div>
           ) : !data || data.kategori.length === 0 ? (
@@ -321,11 +349,13 @@ export default function RencanaBulananPage() {
                   <span className="text-[13px] font-extrabold uppercase tracking-wider text-foreground">
                     {kat.kategoriNama}
                   </span>
-                  <span className="text-[11px] font-bold text-muted-foreground ml-auto">{kat.list.length} sasaran</span>
+                  <Badge variant="secondary" className="ml-auto text-[11px]">
+                    {kat.list.length} sasaran
+                  </Badge>
                 </div>
                 <div>
                   {kat.list.map((item) => {
-                    const badge = STATUS_BADGE[item.status] || STATUS_BADGE.BELUM;
+                    const badge = STATUS_VARIANT[item.status] || STATUS_VARIANT.BELUM;
                     return (
                       <div
                         key={item.sasaranId}
@@ -344,9 +374,9 @@ export default function RencanaBulananPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-[13px] font-bold text-foreground truncate">{item.nama}</span>
                             {item.prioritas === 1 && (
-                              <span className="text-[11px] font-extrabold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">
+                              <Badge variant="destructive" className="text-[9px] uppercase px-1.5 py-0">
                                 PRIORITAS
-                              </span>
+                              </Badge>
                             )}
                           </div>
                           <div className="text-[11px] text-muted-foreground truncate">
@@ -358,33 +388,33 @@ export default function RencanaBulananPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${badge.cls}`}>
+                          <Badge variant={badge.variant} className="text-[10px]">
                             {badge.label}
-                          </span>
+                          </Badge>
                           {item.sudahDiperiksa ? (
-                            <a
-                              href="/pemeriksaan"
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-subtle transition"
-                            >
-                              <CheckCircle2 className="w-3 h-3" /> Detail
-                            </a>
+                            <Button asChild size="sm" variant="success" className="h-7 text-xs">
+                              <Link href="/pemeriksaan">
+                                <CheckCircle2 className="w-3 h-3 mr-1" /> Detail
+                              </Link>
+                            </Button>
                           ) : (
                             <>
-                              <a
-                                href="/pemeriksaan"
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-[11px] font-bold bg-primary text-white hover:bg-primary-hover shadow-subtle transition"
-                              >
-                                <ClipboardCheck className="w-3 h-3" /> Periksa
-                              </a>
+                              <Button asChild size="sm" className="h-7 text-xs">
+                                <Link href="/pemeriksaan">
+                                  <ClipboardCheck className="w-3 h-3 mr-1" /> Periksa
+                                </Link>
+                              </Button>
                               {item.rencanaId && (
-                                <button
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() =>
                                     updateMut.mutate({ rencanaId: item.rencanaId as number, status: "DILEWATI" })
                                   }
-                                  className="p-1.5 rounded-button hover:bg-red-500/10 hover:text-red-600 text-muted-foreground transition-colors"
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
                                 >
                                   <X className="w-3.5 h-3.5" />
-                                </button>
+                                </Button>
                               )}
                             </>
                           )}
@@ -396,7 +426,7 @@ export default function RencanaBulananPage() {
               </div>
             ))
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

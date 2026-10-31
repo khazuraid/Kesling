@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { LaporanFilter } from "@/components/laporan-filter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { ComplianceBar } from "@/components/ui/compliance-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NumberFlow } from "@/components/ui/number-flow";
@@ -204,12 +206,13 @@ export default function DashboardPkmPage() {
           <div className="flex items-center gap-3 flex-wrap">
             <LaporanFilter />
             {data && categories.length > 0 && (
-              <button
+              <Button
                 onClick={handleExportPDF}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-white text-[12px] font-black hover:bg-primary-hover active:scale-95 transition shadow-xs"
+                size="sm"
+                className="rounded-full shadow-xs gap-2 px-5 text-[12px] font-black"
               >
                 <Download className="w-3.5 h-3.5" /> Cetak PDF
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -371,82 +374,84 @@ export default function DashboardPkmPage() {
               </h3>
             </div>
 
-            <div className="rounded-card bg-surface border border-border shadow-subtle p-6">
-              <div className="flex gap-4 mb-6 text-[10px] font-extrabold uppercase tracking-widest justify-center">
-                <span className="flex items-center gap-1.5 text-primary">
-                  <span className="w-2 h-2 rounded-full bg-primary" /> Capaian
-                </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <span className="w-2 h-2 rounded-full bg-border" /> Target
-                </span>
-              </div>
+            <Card className="p-6">
+              <CardContent className="p-0">
+                <div className="flex gap-4 mb-6 text-[10px] font-extrabold uppercase tracking-widest justify-center">
+                  <span className="flex items-center gap-1.5 text-primary">
+                    <span className="w-2 h-2 rounded-full bg-primary" /> Capaian
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <span className="w-2 h-2 rounded-full bg-border" /> Target
+                  </span>
+                </div>
 
-              <div className="h-[300px] w-full min-w-[200px] min-h-[300px]">
-                {chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} layout="vertical">
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="var(--color-border)"
-                        horizontal={false}
-                        opacity={0.5}
-                      />
-                      <XAxis type="number" domain={[0, 100]} hide />
-                      <YAxis
-                        dataKey="name"
-                        type="category"
-                        axisLine={false}
-                        tickLine={false}
-                        fontSize={10}
-                        width={80}
-                        tick={{ fill: "var(--color-text-muted)" }}
-                      />
-                      <Tooltip
-                        cursor={{ fill: "rgba(15, 23, 42, 0.04)" }}
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          const capaian = payload[0]?.value as number;
-                          const targetVal = (payload[1]?.value as number) ?? 80;
-                          return (
-                            <div className="rounded-card bg-surface border border-border shadow-float p-3">
-                              <p className="text-[11px] font-bold uppercase tracking-widest mb-2 pb-2 border-b border-border text-foreground">
-                                {payload[0]?.payload?.name}
-                              </p>
-                              <div className="space-y-1 text-[12px] font-medium">
-                                <div className="flex justify-between gap-6">
-                                  <span className="text-muted-foreground">Capaian</span>
-                                  <span className="font-bold text-primary tabular-nums">{capaian}%</span>
-                                </div>
-                                <div className="flex justify-between gap-6">
-                                  <span className="text-muted-foreground">Target</span>
-                                  <span className="font-bold text-foreground tabular-nums">{targetVal}%</span>
+                <div className="h-[300px] w-full min-w-[200px] min-h-[300px]">
+                  {chartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} layout="vertical">
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--color-border)"
+                          horizontal={false}
+                          opacity={0.5}
+                        />
+                        <XAxis type="number" domain={[0, 100]} hide />
+                        <YAxis
+                          dataKey="name"
+                          type="category"
+                          axisLine={false}
+                          tickLine={false}
+                          fontSize={10}
+                          width={80}
+                          tick={{ fill: "var(--color-text-muted)" }}
+                        />
+                        <Tooltip
+                          cursor={{ fill: "rgba(15, 23, 42, 0.04)" }}
+                          content={({ active, payload }) => {
+                            if (!active || !payload?.length) return null;
+                            const capaian = payload[0]?.value as number;
+                            const targetVal = (payload[1]?.value as number) ?? 80;
+                            return (
+                              <div className="rounded-card bg-surface border border-border shadow-float p-3">
+                                <p className="text-[11px] font-bold uppercase tracking-widest mb-2 pb-2 border-b border-border text-foreground">
+                                  {payload[0]?.payload?.name}
+                                </p>
+                                <div className="space-y-1 text-[12px] font-medium">
+                                  <div className="flex justify-between gap-6">
+                                    <span className="text-muted-foreground">Capaian</span>
+                                    <span className="font-bold text-primary tabular-nums">{capaian}%</span>
+                                  </div>
+                                  <div className="flex justify-between gap-6">
+                                    <span className="text-muted-foreground">Target</span>
+                                    <span className="font-bold text-foreground tabular-nums">{targetVal}%</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        }}
-                      />
-                      <Bar dataKey="persen" fill="var(--color-primary)" radius={[0, 4, 4, 0]} barSize={12} />
-                      <Bar dataKey="target" fill="var(--color-border)" radius={[0, 4, 4, 0]} barSize={12} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-[12px] font-medium text-muted-foreground">
-                    Tidak ada data untuk grafik
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Tips */}
-              <div className="mt-6 pt-5 border-t border-border">
-                <div className="flex gap-3 text-[12px] text-muted-foreground leading-relaxed">
-                  <Info className="w-4 h-4 shrink-0 text-primary mt-0.5" />
-                  <p>
-                    Klik pada kategori di daftar sebelah kiri untuk mengisi atau memperbaiki data laporan bulan ini.
-                  </p>
+                            );
+                          }}
+                        />
+                        <Bar dataKey="persen" fill="var(--color-primary)" radius={[0, 4, 4, 0]} barSize={12} />
+                        <Bar dataKey="target" fill="var(--color-border)" radius={[0, 4, 4, 0]} barSize={12} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-[12px] font-medium text-muted-foreground">
+                      Tidak ada data untuk grafik
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+
+                {/* Quick Tips */}
+                <div className="mt-6 pt-5 border-t border-border">
+                  <div className="flex gap-3 text-[12px] text-muted-foreground leading-relaxed">
+                    <Info className="w-4 h-4 shrink-0 text-primary mt-0.5" />
+                    <p>
+                      Klik pada kategori di daftar sebelah kiri untuk mengisi atau memperbaiki data laporan bulan ini.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

@@ -11,6 +11,8 @@ import { DataDasarModal } from "@/components/laporan/data-dasar-modal";
 import { LaporanFormModal } from "@/components/laporan/laporan-form-modal";
 import { LaporanTable } from "@/components/laporan/laporan-table";
 import { LaporanFilter } from "@/components/laporan-filter";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -347,7 +349,7 @@ export default function DynamicLaporanPage() {
   if (!category && allCategories.length > 0) {
     return (
       <div className="w-full mx-auto pb-6 space-y-5 fade-in bg-canvas">
-        <div className="rounded-card border border-border bg-surface shadow-subtle flex flex-col items-center justify-center py-20 gap-3">
+        <Card className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="w-12 h-12 rounded-xl bg-surface-subtle border border-border flex items-center justify-center">
             <Layers className="w-5 h-5 text-muted-foreground" />
           </div>
@@ -355,7 +357,7 @@ export default function DynamicLaporanPage() {
           <p className="text-[12px] text-muted-foreground">
             Modul data &quot;{categoryCode}&quot; belum tersedia di sistem.
           </p>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -388,38 +390,45 @@ export default function DynamicLaporanPage() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <LaporanFilter />
             {category?.parameters && category.parameters.filter((p) => p.isBaseline).length > 0 && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => openDataDasarForm()}
                 disabled={!category}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border bg-surface-subtle hover:bg-surface text-[11px] font-bold text-foreground transition-all shadow-xs disabled:opacity-50"
+                className="rounded-full shadow-xs gap-1.5"
               >
                 <Database className="w-3.5 h-3.5 text-primary" /> Data Dasar
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setShowCopyModal(true)}
               disabled={!category}
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border bg-surface-subtle hover:bg-surface text-[11px] font-bold text-foreground transition-all shadow-xs disabled:opacity-50"
+              className="rounded-full shadow-xs gap-1.5"
             >
               <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Salin
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => syncMutation.mutate()}
               disabled={!category || syncMutation.isPending}
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/15 text-[11px] font-bold text-primary transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="rounded-full border-primary/30 bg-primary/10 hover:bg-primary/15 text-primary shadow-xs gap-1.5 cursor-pointer"
               title="Tarik data hasil pemeriksaan IKL bulan ini otomatis ke laporan"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-primary ${syncMutation.isPending ? "animate-spin" : ""}`} />
               {syncMutation.isPending ? "Menyinkronkan..." : "Tarik IKL"}
-            </button>
-            <button
+            </Button>
+            <Button
+              size="sm"
               onClick={() => openForm()}
               disabled={!category}
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary-hover transition-all shadow-xs disabled:opacity-50"
+              className="rounded-full shadow-xs gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" /> Input Laporan
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -15,8 +15,13 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface SystemErrorLog {
   id: number;
@@ -107,10 +112,10 @@ export default function SystemErrorsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-red-500/10 text-red-600 text-[11px] font-bold border border-red-500/20">
+            <Badge variant="destructive" className="gap-1.5 py-1 px-3 text-[11px] font-bold">
               <span className="w-2 h-2 rounded-full bg-red-500" />
               {logs.length} Total Error
-            </span>
+            </Badge>
           </div>
         </div>
       </div>
@@ -121,28 +126,28 @@ export default function SystemErrorsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
+            <Input
               placeholder="Cari pesan error, path, atau email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-3 rounded-xl bg-surface border border-border text-[12px] font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all placeholder:text-muted-foreground"
+              className="pl-10 h-10"
             />
           </div>
 
           {logs.length > 0 && (
-            <button
-              type="button"
+            <Button
+              variant="destructive"
               onClick={() => {
                 if (confirm("Apakah Anda yakin ingin membersihkan semua log error?")) {
                   clearAllMutation.mutate();
                 }
               }}
               disabled={clearAllMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-error text-white text-[11px] font-bold uppercase tracking-wider hover:bg-error/90 shadow-subtle transition-all cursor-pointer disabled:opacity-50"
+              className="gap-2 h-10 px-5 rounded-full uppercase tracking-wider text-[11px] font-bold shadow-subtle"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {clearAllMutation.isPending ? "Membersihkan..." : "Bersihkan Semua Log"}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -150,7 +155,7 @@ export default function SystemErrorsPage() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-card bg-surface border border-border animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-surface-subtle animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -164,90 +169,84 @@ export default function SystemErrorsPage() {
             }
           />
         ) : (
-          <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-surface-subtle">
-                  <th className="text-left px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-36">
-                    Konteks / Path
-                  </th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Pesan Error
-                  </th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-48">
-                    User
-                  </th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-40">
-                    Waktu
-                  </th>
-                  <th className="text-right px-5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-24">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((log) => (
-                  <tr
-                    key={log.id}
-                    onClick={() => setSelectedLog(log)}
-                    className="border-b border-border last:border-0 hover:bg-surface-hover transition-colors cursor-pointer group"
-                  >
-                    <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-pill text-[10px] font-mono font-bold bg-error-light text-error border border-error/20">
-                        {log.path || "API"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="text-[12px] font-mono font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                        {log.message}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-[12px] font-medium text-muted-foreground flex items-center gap-1.5 truncate">
-                        <UserIcon className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                        {log.userEmail || "Anonymous"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                        <Calendar className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                        {new Date(log.createdAt).toLocaleString("id-ID", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedLog(log)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer"
-                          title="Lihat detail stack trace"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm("Hapus log error ini?")) {
-                              deleteOneMutation.mutate(log.id);
-                            }
-                          }}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-error-light hover:text-error transition-colors cursor-pointer"
-                          title="Hapus log"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Card className="shadow-subtle overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-36">Konteks / Path</TableHead>
+                    <TableHead>Pesan Error</TableHead>
+                    <TableHead className="w-48">User</TableHead>
+                    <TableHead className="w-40">Waktu</TableHead>
+                    <TableHead className="w-24 text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((log) => (
+                    <TableRow
+                      key={log.id}
+                      onClick={() => setSelectedLog(log)}
+                      className="cursor-pointer group hover:bg-surface-subtle/50"
+                    >
+                      <TableCell>
+                        <Badge variant="destructive" className="font-mono text-[10px]">
+                          {log.path || "API"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-[12px] font-mono font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                          {log.message}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-[12px] font-medium text-muted-foreground flex items-center gap-1.5 truncate">
+                          <UserIcon className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                          {log.userEmail || "Anonymous"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 tabular-nums">
+                          <Calendar className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                          {new Date(log.createdAt).toLocaleString("id-ID", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedLog(log)}
+                            className="w-8 h-8"
+                            title="Lihat detail stack trace"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (confirm("Hapus log error ini?")) {
+                                deleteOneMutation.mutate(log.id);
+                              }
+                            }}
+                            className="w-8 h-8 text-destructive hover:bg-destructive/10"
+                            title="Hapus log"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
         )}
 
         {/* Detail Modal */}
@@ -256,13 +255,14 @@ export default function SystemErrorsPage() {
           onClose={() => setSelectedLog(null)}
           title="Detail Error Log"
           description="Informasi konteks dan stack trace pengecualian sistem"
-          icon={<Terminal className="w-4 h-4 text-error" />}
+          icon={<Terminal className="w-4 h-4 text-destructive" />}
           size="lg"
           variant="hero"
           footer={
             <div className="flex items-center justify-between w-full">
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   if (selectedLog?.stack || selectedLog?.message) {
                     navigator.clipboard.writeText(
@@ -271,29 +271,26 @@ export default function SystemErrorsPage() {
                     toast.success("Detail error disalin ke clipboard");
                   }
                 }}
-                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-full border border-border text-[11px] font-bold text-foreground hover:bg-surface-subtle transition-colors cursor-pointer"
+                className="gap-1.5"
               >
                 <Copy className="w-3.5 h-3.5" /> Salin Detail
-              </button>
+              </Button>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     if (selectedLog && confirm("Hapus log error ini?")) {
                       deleteOneMutation.mutate(selectedLog.id);
                     }
                   }}
-                  className="h-10 px-4 rounded-full text-[11px] font-bold uppercase tracking-wider text-error hover:bg-error-light transition-colors cursor-pointer"
+                  className="text-destructive hover:bg-destructive/10"
                 >
                   Hapus
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedLog(null)}
-                  className="h-10 px-5 rounded-full bg-primary text-white text-[11px] font-bold uppercase tracking-wider hover:bg-primary-hover shadow-subtle transition-all cursor-pointer"
-                >
+                </Button>
+                <Button size="sm" onClick={() => setSelectedLog(null)}>
                   Tutup
-                </button>
+                </Button>
               </div>
             </div>
           }
@@ -304,36 +301,36 @@ export default function SystemErrorsPage() {
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                   Pesan Error
                 </span>
-                <div className="p-3.5 rounded-xl bg-error-light/60 border border-error/25 font-mono text-[12px] text-error font-semibold break-all leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 font-mono text-[12px] text-destructive font-semibold break-all leading-relaxed">
                   {selectedLog.message}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl bg-surface-subtle border border-border">
+                <Card className="p-3 bg-surface-subtle">
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Path / Modul
                   </span>
                   <span className="font-mono text-[12px] font-semibold text-foreground block mt-1">
                     {selectedLog.path || "-"}
                   </span>
-                </div>
-                <div className="p-3 rounded-xl bg-surface-subtle border border-border">
+                </Card>
+                <Card className="p-3 bg-surface-subtle">
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Pengguna
                   </span>
                   <span className="text-[12px] font-semibold text-foreground block mt-1 truncate">
                     {selectedLog.userEmail || "Anonymous"}
                   </span>
-                </div>
-                <div className="p-3 rounded-xl bg-surface-subtle border border-border">
+                </Card>
+                <Card className="p-3 bg-surface-subtle">
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Waktu Kejadian
                   </span>
                   <span className="text-[12px] font-semibold text-foreground block mt-1 tabular-nums">
                     {new Date(selectedLog.createdAt).toLocaleString("id-ID")}
                   </span>
-                </div>
+                </Card>
               </div>
 
               <div>
@@ -345,9 +342,9 @@ export default function SystemErrorsPage() {
                     {selectedLog.stack}
                   </pre>
                 ) : (
-                  <div className="p-4 rounded-xl bg-surface-subtle border border-border text-[11px] font-medium text-muted-foreground italic text-center">
+                  <Card className="p-4 bg-surface-subtle text-[11px] font-medium text-muted-foreground italic text-center">
                     Tidak ada stack trace terekam untuk error ini.
-                  </div>
+                  </Card>
                 )}
               </div>
             </div>

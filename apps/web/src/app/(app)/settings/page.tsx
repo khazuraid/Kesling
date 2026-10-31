@@ -19,7 +19,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MasterCrud } from "@/components/master-crud";
 import { SystemHealthDashboard } from "@/components/system-health-dashboard";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import AISettingsPage from "./ai/page";
 import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
@@ -120,14 +123,14 @@ function TargetManagement() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-card bg-surface border border-border shadow-subtle p-3">
+      <Card className="p-3 shadow-subtle flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tahun:</span>
-          <input
+          <Input
             type="number"
             value={tahun}
             onChange={(e) => setTahun(Number(e.target.value))}
-            className="w-24 h-10 px-3 rounded-xl bg-surface border border-border text-[13px] font-bold text-center tabular-nums text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all"
+            className="w-24 h-10 text-[13px] font-bold text-center tabular-nums"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -135,7 +138,7 @@ function TargetManagement() {
           <select
             value={selectedPkmId}
             onChange={(e) => setSelectedPkmId(e.target.value)}
-            className="h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-semibold text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-subtle transition-all cursor-pointer"
+            className="h-10 px-3.5 rounded-xl bg-surface border border-border text-[12px] font-semibold text-foreground outline-none focus:border-primary shadow-subtle transition-all cursor-pointer"
           >
             <option value="global">Target Global (Semua Puskesmas)</option>
             {puskesmasList.map((p) => (
@@ -146,21 +149,22 @@ function TargetManagement() {
           </select>
         </div>
         {selectedPkmId === "global" && (
-          <button
+          <Button
+            size="sm"
             onClick={() => bulkCopyMutation.mutate()}
             disabled={bulkCopyMutation.isPending}
-            className="ml-auto inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-white text-[11px] font-bold hover:bg-primary-hover shadow-subtle transition-all disabled:opacity-50"
+            className="ml-auto gap-2 h-10 shadow-subtle"
           >
             <Copy className="w-3.5 h-3.5" />
             {bulkCopyMutation.isPending ? "Menyalin..." : "Salin ke Semua Puskesmas"}
-          </button>
+          </Button>
         )}
-      </div>
+      </Card>
 
       {isLoading ? (
         <div className="space-y-2.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-card bg-surface border border-border/60 animate-pulse" />
+            <div key={i} className="h-16 rounded-xl bg-surface-subtle border border-border/60 animate-pulse" />
           ))}
         </div>
       ) : categories.length === 0 ? (
@@ -176,9 +180,9 @@ function TargetManagement() {
             const isEditing = editingId === cat.id;
             const t = targetTier(currentTarget);
             return (
-              <div
+              <Card
                 key={cat.id}
-                className="rounded-card bg-surface border border-border shadow-subtle px-5 py-3.5 flex items-center gap-4 hover:border-primary/40 hover:shadow-md transition-all"
+                className="px-5 py-3.5 flex items-center gap-4 hover:border-primary/40 hover:shadow-md transition-all shadow-subtle"
               >
                 <span className="w-10 h-10 rounded-xl bg-surface-subtle border border-border flex items-center justify-center text-[18px] shrink-0">
                   {cat.icon}
@@ -199,14 +203,14 @@ function TargetManagement() {
                 </div>
                 {isEditing ? (
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <input
+                    <Input
                       type="number"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                       min={0}
                       max={100}
                       autoFocus
-                      className="w-16 h-9 px-2 text-center rounded-xl bg-surface border border-primary text-[13px] font-bold tabular-nums text-foreground outline-none ring-1 ring-primary"
+                      className="w-16 h-9 px-2 text-center text-[13px] font-bold tabular-nums"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           saveMutation.mutate({ categoryId: cat.id, targetPersen: Number(editValue) });
@@ -227,14 +231,14 @@ function TargetManagement() {
                       setEditingId(cat.id);
                       setEditValue(String(currentTarget));
                     }}
-                    className="shrink-0 inline-flex items-center h-8 px-3 rounded-full text-[12px] font-bold tabular-nums transition hover:brightness-95 border border-border/40"
+                    className="shrink-0 inline-flex items-center h-8 px-3 rounded-full text-[12px] font-bold tabular-nums transition hover:brightness-95 border border-border/40 cursor-pointer"
                     style={{ background: t.soft, color: t.text }}
                     title="Klik untuk ubah target"
                   >
                     {currentTarget}%
                   </button>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -253,7 +257,7 @@ export default function SettingsPage() {
     return (
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen bg-canvas">
         <EmptyState
-          icon={<ShieldAlert className="w-8 h-8 text-error" />}
+          icon={<ShieldAlert className="w-8 h-8 text-destructive" />}
           title="Akses Ditolak"
           description="Hanya administrator yang dapat mengelola pengaturan sistem."
         />
@@ -288,20 +292,18 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/settings/import"
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-xs"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
-              Import Excel
-            </Link>
-            <Link
-              href="/settings/errors"
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle hover:bg-surface text-foreground text-[11px] font-bold transition-all border border-border shadow-xs"
-            >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-              Log Error
-            </Link>
+            <Button asChild variant="outline" size="sm" className="rounded-full shadow-xs gap-1.5">
+              <Link href="/settings/import">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
+                Import Excel
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="rounded-full shadow-xs gap-1.5">
+              <Link href="/settings/errors">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                Log Error
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -314,13 +316,13 @@ export default function SettingsPage() {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
             return (
-              <button
+              <Card
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`rounded-card bg-surface border text-left p-3.5 sm:p-4 transition-all duration-180 flex flex-col justify-between group cursor-pointer ${
+                className={`text-left p-3.5 sm:p-4 transition-all duration-180 flex flex-col justify-between group cursor-pointer ${
                   isActive
                     ? "border-primary bg-primary-subtle/50 ring-1 ring-primary shadow-subtle"
-                    : "border-border shadow-subtle hover:border-border-hover hover:bg-surface-hover hover:shadow-md"
+                    : "hover:border-border-hover hover:bg-surface-hover hover:shadow-md shadow-subtle"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2.5">
@@ -345,7 +347,7 @@ export default function SettingsPage() {
                     {tab.desc}
                   </p>
                 </div>
-              </button>
+              </Card>
             );
           })}
         </div>

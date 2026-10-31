@@ -20,6 +20,9 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DateRangeInputs, FilterBar } from "@/components/ui/filter-bar";
 import { Pagination } from "@/components/ui/pagination";
@@ -65,21 +68,10 @@ interface PaginatedResponse<T> {
 
 // ─── Tier meta ────────────────────────────────────────────────────────────────
 
-const ACTION_META: Record<string, { chip: string; dot: string }> = {
-  CREATE: { chip: "bg-success-light text-success border border-success/25", dot: "bg-success" },
-  UPDATE: { chip: "bg-warning-light text-warning border border-warning/25", dot: "bg-warning" },
-  DELETE: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
-};
-const SECURITY_META: Record<string, { chip: string; dot: string }> = {
-  LOGIN_SUCCESS: { chip: "bg-success-light text-success border border-success/25", dot: "bg-success" },
-  LOGIN_FAILED: { chip: "bg-warning-light text-warning border border-warning/25", dot: "bg-warning" },
-  RATE_LIMIT: { chip: "bg-info-light text-info border border-info/25", dot: "bg-info" },
-  BRUTE_FORCE: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
-  SUSPICIOUS: { chip: "bg-error-light text-error border border-error/25", dot: "bg-error" },
-};
-const FALLBACK_META = {
-  chip: "bg-muted text-muted-foreground border border-border",
-  dot: "bg-muted-foreground",
+const ACTION_VARIANT: Record<string, "success" | "warning" | "destructive" | "default"> = {
+  CREATE: "success",
+  UPDATE: "warning",
+  DELETE: "destructive",
 };
 
 const PAGE_SIZE = 25;
@@ -223,11 +215,11 @@ export default function AuditLogPage() {
                 {k}
               </span>
               <div className="flex flex-wrap gap-2 items-center text-[11px] font-mono">
-                <span className="px-2 py-0.5 rounded-button bg-error-light text-error line-through border border-error/20">
+                <span className="px-2 py-0.5 rounded-md bg-destructive/10 text-destructive line-through border border-destructive/20">
                   {oldData?.[k] !== undefined ? String(oldData?.[k]) : "—"}
                 </span>
                 <span className="text-muted-foreground">→</span>
-                <span className="px-2 py-0.5 rounded-button bg-success-light text-success border border-success/20">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                   {newData?.[k] !== undefined ? String(newData?.[k]) : "—"}
                 </span>
               </div>
@@ -245,7 +237,7 @@ export default function AuditLogPage() {
         {Object.entries(data).map(([k, v]) => (
           <div key={k} className="flex gap-2 text-[11px]">
             <span className="text-muted-foreground min-w-[120px] shrink-0">{k}:</span>
-            <span className="font-mono break-all text-text-main">{String(v)}</span>
+            <span className="font-mono break-all text-foreground">{String(v)}</span>
           </div>
         ))}
       </div>
@@ -277,37 +269,34 @@ export default function AuditLogPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant={autoRefresh ? "default" : "outline"}
+                size="sm"
                 onClick={() => setAutoRefresh(!autoRefresh)}
+                className="gap-1.5 rounded-full"
                 title={autoRefresh ? "Matikan auto-refresh" : "Nyalakan auto-refresh"}
-                className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-extrabold transition shadow-xs ${
-                  autoRefresh
-                    ? "bg-primary text-white"
-                    : "bg-surface-subtle border border-border text-foreground hover:bg-surface"
-                }`}
               >
                 {autoRefresh ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                 {autoRefresh ? "Live" : "Paused"}
-              </button>
+              </Button>
               {isErrors ? (
                 items.length > 0 && (
-                  <button
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={() => {
                       if (confirm("Hapus semua log error?")) clearErrorsMutation.mutate();
                     }}
                     disabled={clearErrorsMutation.isPending}
-                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-error text-white text-[11px] font-extrabold hover:brightness-95 transition shadow-xs disabled:opacity-50"
+                    className="gap-1.5 rounded-full"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Bersihkan
-                  </button>
+                  </Button>
                 )
               ) : (
-                <button
-                  onClick={handleExport}
-                  className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-surface-subtle border border-border text-foreground text-[11px] font-extrabold hover:bg-surface transition shadow-xs"
-                >
+                <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 rounded-full">
                   <Download className="w-3.5 h-3.5" /> CSV
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -322,7 +311,7 @@ export default function AuditLogPage() {
                   setPage(1);
                   setExpandedId(null);
                 }}
-                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
+                className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
                   tab === t.key ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -330,7 +319,7 @@ export default function AuditLogPage() {
                 {t.count !== undefined && t.count > 0 && (
                   <span
                     className={`text-[10px] font-extrabold tabular-nums px-1.5 py-px rounded-full ${
-                      tab === t.key ? "bg-white/20 text-white" : "bg-error-light text-error"
+                      tab === t.key ? "bg-white/20 text-white" : "bg-destructive/10 text-destructive"
                     }`}
                   >
                     {t.count}
@@ -346,7 +335,7 @@ export default function AuditLogPage() {
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── TOOLBAR ── */}
         {!isErrors && (
-          <div className="pt-5">
+          <div className="pt-2">
             <FilterBar
               searchValue={search}
               onSearchChange={(v) => {
@@ -391,24 +380,21 @@ export default function AuditLogPage() {
               }}
             >
               {isAudit && (
-                <div className="shrink-0 inline-flex items-center gap-1 rounded-button border border-border bg-surface p-1 shadow-subtle">
+                <div className="shrink-0 inline-flex items-center gap-1 rounded-xl border border-border bg-surface p-1 shadow-subtle">
                   {["all", "CREATE", "UPDATE", "DELETE"].map((a) => (
-                    <button
+                    <Button
                       key={a}
                       type="button"
+                      variant={actionFilter === a ? "default" : "ghost"}
+                      size="sm"
                       onClick={() => {
                         setActionFilter(a);
                         setPage(1);
                       }}
-                      className={cn(
-                        "h-8 px-3 rounded-button text-[10px] font-extrabold uppercase tracking-wider transition-colors",
-                        actionFilter === a
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground",
-                      )}
+                      className="h-8 px-3 text-[10px] font-extrabold uppercase tracking-wider rounded-lg"
                     >
                       {a === "all" ? "Semua" : a}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -426,7 +412,7 @@ export default function AuditLogPage() {
         )}
 
         {/* ── LIST ── */}
-        <div className={cn(isErrors ? "pt-5" : "pt-4")}>
+        <div>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-6 h-6 border-2 border-border border-t-primary animate-spin rounded-full" />
@@ -447,20 +433,20 @@ export default function AuditLogPage() {
               {items.map((log: ErrorLog) => {
                 const expanded = expandedId === log.id;
                 return (
-                  <div
+                  <Card
                     key={log.id}
                     className={cn(
-                      "rounded-card border bg-surface shadow-subtle overflow-hidden transition-colors",
-                      expanded ? "border-error/50" : "border-border",
+                      "overflow-hidden transition-colors shadow-subtle",
+                      expanded ? "border-destructive/50" : "border-border",
                     )}
                   >
                     <button
                       onClick={() => setExpandedId(expanded ? null : log.id)}
-                      className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-surface-hover transition-colors"
+                      className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-surface-subtle/50 transition-colors cursor-pointer"
                     >
-                      <span className="mt-1 w-2 h-2 rounded-full shrink-0 bg-error" />
+                      <span className="mt-1 w-2 h-2 rounded-full shrink-0 bg-destructive" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold font-mono text-error leading-snug break-all">
+                        <p className="text-[12px] font-bold font-mono text-destructive leading-snug break-all">
                           {log.message}
                         </p>
                         <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[10px] font-semibold text-muted-foreground">
@@ -476,9 +462,9 @@ export default function AuditLogPage() {
                           )}
                         </div>
                       </div>
-                      <span className="shrink-0 inline-flex items-center h-6 px-2.5 rounded-button bg-error-light text-error border border-error/25 text-[11px] font-extrabold uppercase tracking-wider">
+                      <Badge variant="destructive" className="shrink-0 text-[10px] uppercase font-bold tracking-wider">
                         {log.path || "API"}
-                      </span>
+                      </Badge>
                       <ChevronDown
                         className={cn(
                           "w-4 h-4 shrink-0 text-muted-foreground transition-transform mt-1",
@@ -493,7 +479,7 @@ export default function AuditLogPage() {
                           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                             Pesan Error
                           </p>
-                          <div className="px-4 py-3 rounded-button bg-error-light border border-error/20 font-mono text-[12px] text-error break-all whitespace-pre-wrap">
+                          <div className="px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 font-mono text-[12px] text-destructive break-all whitespace-pre-wrap">
                             {log.message}
                           </div>
                         </div>
@@ -510,27 +496,27 @@ export default function AuditLogPage() {
                           <p className="text-[11px] italic text-muted-foreground">Tidak ada stack trace terekam.</p>
                         )}
                         <div className="flex justify-end">
-                          <button
+                          <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={() => {
                               if (confirm("Hapus log error ini?")) deleteErrorMutation.mutate(log.id);
                             }}
                             disabled={deleteErrorMutation.isPending}
-                            className="inline-flex items-center gap-2 h-9 px-5 rounded-button border border-error/40 text-error text-[11px] font-extrabold uppercase tracking-wider hover:bg-error-light active:scale-[0.98] transition-all disabled:opacity-50"
+                            className="gap-2"
                           >
                             <Trash2 className="w-3.5 h-3.5" /> Hapus Log
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     )}
-                  </div>
+                  </Card>
                 );
               })}
             </div>
           ) : (
             /* ── AUDIT / SECURITY TABLE ── */
-            <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
-              {/* Baris berkolom lebar tetap: tanpa overflow-x-auto isinya
-                  terpotong di layar sempit, bukan bisa digulir. */}
+            <Card className="shadow-subtle overflow-hidden">
               <div className="overflow-x-auto">
                 {/* Header */}
                 <div className="flex items-center px-5 py-3 border-b border-border bg-surface-subtle min-w-[720px]">
@@ -554,9 +540,6 @@ export default function AuditLogPage() {
                       <div className="w-[110px] shrink-0 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         Event
                       </div>
-                      {/* Alamat IPv6 penuh 39 karakter, jadi kolomnya dilebarkan
-                          dan isinya dipotong dengan tooltip — nilai utuhnya ada
-                          di panel yang terbuka saat baris diklik. */}
                       <div className="w-[200px] shrink-0 text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
                         IP
                       </div>
@@ -573,30 +556,25 @@ export default function AuditLogPage() {
                 <div className="max-h-[600px] overflow-y-auto divide-y divide-border/60 min-w-[720px]">
                   {items.map((item: any) => {
                     const isExpanded = expandedId === item.id;
-                    const meta = isAudit
-                      ? ACTION_META[item.action] || FALLBACK_META
-                      : SECURITY_META[item.eventType] || FALLBACK_META;
                     return (
                       <Fragment key={item.id}>
                         <div
                           onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                          className="flex items-center px-5 py-3 hover:bg-surface-hover transition-colors cursor-pointer"
+                          className="flex items-center px-5 py-3 hover:bg-surface-subtle/50 transition-colors cursor-pointer"
                         >
                           {isAudit ? (
                             <>
                               <div className="w-[90px]">
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
-                                    meta.chip,
-                                  )}
+                                <Badge
+                                  variant={ACTION_VARIANT[item.action] || "secondary"}
+                                  className="text-[10px] uppercase font-bold"
                                 >
                                   {item.action}
-                                </span>
+                                </Badge>
                               </div>
                               <div className="w-[150px] flex items-center gap-1.5">
                                 <Database className="w-3 h-3 text-muted-foreground shrink-0" />
-                                <span className="text-[11px] font-bold text-text-main truncate">{item.tableName}</span>
+                                <span className="text-[11px] font-bold text-foreground truncate">{item.tableName}</span>
                                 {item.recordId ? (
                                   <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
                                     #{item.recordId}
@@ -604,11 +582,11 @@ export default function AuditLogPage() {
                                 ) : null}
                               </div>
                               <div className="flex-1 flex items-center gap-2 min-w-0">
-                                <div className="w-6 h-6 rounded-button bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
+                                <div className="w-6 h-6 rounded-md bg-primary-subtle text-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">
                                   {item.user?.nama?.charAt(0) || "U"}
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-[11px] font-bold text-text-main truncate">{item.user?.nama}</p>
+                                  <p className="text-[11px] font-bold text-foreground truncate">{item.user?.nama}</p>
                                   <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
                                     {item.user?.role}
                                   </p>
@@ -618,25 +596,20 @@ export default function AuditLogPage() {
                           ) : (
                             <>
                               <div className="w-[110px] shrink-0">
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center h-6 px-2 rounded-button text-[11px] font-extrabold uppercase tracking-wider",
-                                    meta.chip,
-                                  )}
-                                >
+                                <Badge variant="outline" className="text-[10px] uppercase font-bold">
                                   {item.eventType.replace("_", " ")}
-                                </span>
+                                </Badge>
                               </div>
                               <div className="w-[200px] shrink-0">
                                 <span
-                                  className="block text-[11px] font-bold text-text-main font-mono truncate"
+                                  className="block text-[11px] font-bold text-foreground font-mono truncate"
                                   title={item.ip || "—"}
                                 >
                                   {item.ip || "—"}
                                 </span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-medium text-text-main truncate">
+                                <p className="text-[11px] font-medium text-foreground truncate">
                                   {item.detail || item.path || "—"}
                                 </p>
                               </div>
@@ -644,7 +617,7 @@ export default function AuditLogPage() {
                           )}
                           <div className="w-[160px] shrink-0 flex items-center justify-end gap-2">
                             <div className="text-right">
-                              <p className="text-[11px] font-medium text-text-main tabular-nums">
+                              <p className="text-[11px] font-medium text-foreground tabular-nums">
                                 {new Date(item.createdAt).toLocaleDateString("id-ID", {
                                   day: "2-digit",
                                   month: "short",
@@ -679,9 +652,9 @@ export default function AuditLogPage() {
                                     {new Date(item.createdAt).toLocaleString("id-ID")}
                                   </span>
                                 </div>
-                                <div className="rounded-button bg-surface border border-border p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
+                                <Card className="p-3.5 overflow-x-auto max-h-[300px] overflow-y-auto">
                                   {formatChanges(item)}
-                                </div>
+                                </Card>
                               </>
                             ) : (
                               <>
@@ -691,7 +664,7 @@ export default function AuditLogPage() {
                                     Detail Event
                                   </span>
                                 </div>
-                                <div className="space-y-1.5 text-[11px] font-medium text-text-main">
+                                <div className="space-y-1.5 text-[11px] font-medium text-foreground">
                                   <p>
                                     <span className="text-muted-foreground">IP:</span> {item.ip}
                                   </p>
@@ -725,13 +698,13 @@ export default function AuditLogPage() {
                   })}
                 </div>
               </div>
-            </div>
+            </Card>
           )}
         </div>
 
         {/* ── PAGINATION ── */}
         {!isErrors && (
-          <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
+          <Card className="shadow-subtle overflow-hidden">
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -742,7 +715,7 @@ export default function AuditLogPage() {
               noun="entri"
               className="border-t-0"
             />
-          </div>
+          </Card>
         )}
       </div>
     </div>

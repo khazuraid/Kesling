@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, Crown } from "lucide-react";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { PdfExportButton } from "@/components/pdf-export-button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NumberFlow } from "@/components/ui/number-flow";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +57,6 @@ export default function PerbandinganPage() {
 
   const avgScore = ranking.length > 0 ? Math.round(ranking.reduce((sum, r) => sum + r.avg, 0) / ranking.length) : 0;
   const top3 = ranking.slice(0, 3);
-  // Podium order: 2nd, 1st, 3rd
   const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
   const podiumRank = (r: any) => ranking.indexOf(r);
 
@@ -72,8 +74,13 @@ export default function PerbandinganPage() {
                 Perbandingan
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-                <span className="tabular-nums font-bold text-foreground">{ranking.length}</span> puskesmas · rata-rata{" "}
-                <span className="tabular-nums font-bold text-foreground">{avgScore}%</span>
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={ranking.length} />
+                </span>{" "}
+                puskesmas · rata-rata{" "}
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={avgScore} suffix="%" />
+                </span>
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -99,11 +106,10 @@ export default function PerbandinganPage() {
                 const height = isFirst ? "h-24 sm:h-28" : rank === 1 ? "h-16 sm:h-20" : "h-12 sm:h-16";
                 return (
                   <div key={r.id} className="flex flex-col items-center w-32 sm:w-44">
-                    {/* Medal + name */}
                     <div className="relative mb-2.5">
                       <div
                         className={cn(
-                          "rounded-full flex items-center justify-center font-black text-slate-900",
+                          "rounded-full flex items-center justify-center font-black text-slate-900 shadow-md",
                           isFirst
                             ? "w-14 h-14 sm:w-16 sm:h-16 text-[18px] sm:text-[20px]"
                             : "w-11 h-11 sm:w-13 sm:h-13 text-[14px] sm:text-[16px]",
@@ -123,10 +129,8 @@ export default function PerbandinganPage() {
                       {r.nama}
                     </p>
                     <p className="text-[18px] sm:text-[24px] font-black tabular-nums text-primary mt-0.5">
-                      {r.avg}
-                      <span className="text-[11px] font-bold text-muted-foreground">%</span>
+                      <NumberFlow value={r.avg} suffix="%" />
                     </p>
-                    {/* Pillar */}
                     <div
                       className={cn(
                         "w-full mt-2 sm:mt-3 rounded-t-2xl border-x border-t border-border shadow-subtle",
@@ -143,12 +147,12 @@ export default function PerbandinganPage() {
           )}
 
           {isLoading && (
-            <div className="mt-6 flex items-end justify-center gap-5 animate-pulse pb-1">
+            <div className="mt-6 flex items-end justify-center gap-5 pb-1">
               {[80, 112, 64].map((h, i) => (
                 <div key={i} className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-surface-subtle mb-3" />
-                  <div className="h-3 w-20 bg-surface-subtle rounded mb-2" />
-                  <div className="rounded-t-2xl bg-surface-subtle w-32 sm:w-44" style={{ height: h }} />
+                  <Skeleton className="w-12 h-12 rounded-full mb-3" />
+                  <Skeleton className="h-3 w-20 mb-2" />
+                  <Skeleton className="rounded-t-2xl w-32 sm:w-44" style={{ height: h }} />
                 </div>
               ))}
             </div>
@@ -158,7 +162,6 @@ export default function PerbandinganPage() {
 
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
-        {/* EMPTY */}
         {!isLoading && ranking.length === 0 && (
           <EmptyState
             icon={Activity}
@@ -167,12 +170,11 @@ export default function PerbandinganPage() {
           />
         )}
 
-        {/* BENTO SUMMARY CARDS + RANKING BAR LIST */}
         {!isLoading && ranking.length > 0 && (
           <div className="space-y-6">
             {/* Bento-style summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
                 <div className="w-11 h-11 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
                   <Activity className="w-5 h-5" />
                 </div>
@@ -181,12 +183,11 @@ export default function PerbandinganPage() {
                     Rata-Rata Kinerja
                   </p>
                   <p className="text-[24px] font-black tabular-nums text-foreground leading-none">
-                    {avgScore}
-                    <span className="text-[14px] font-bold text-muted-foreground">%</span>
+                    <NumberFlow value={avgScore} suffix="%" />
                   </p>
                 </div>
-              </div>
-              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+              </Card>
+              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
                 <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
                   <Crown className="w-5 h-5" />
                 </div>
@@ -196,13 +197,13 @@ export default function PerbandinganPage() {
                   </p>
                   <p className="text-[14px] font-bold text-foreground truncate">{top3[0]?.nama || "—"}</p>
                   <p className="text-[11px] font-extrabold text-primary tabular-nums mt-0.5">
-                    {top3[0]?.avg || 0}% Capaian
+                    <NumberFlow value={top3[0]?.avg || 0} suffix="% Capaian" />
                   </p>
                 </div>
-              </div>
-              <div className="rounded-card bg-surface border border-border shadow-subtle p-5 flex items-center gap-4 hover:shadow-float transition-all">
+              </Card>
+              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
                 <div className="w-11 h-11 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center shrink-0 font-black text-sm">
-                  {ranking.length}
+                  <NumberFlow value={ranking.length} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
@@ -211,12 +212,11 @@ export default function PerbandinganPage() {
                   <p className="text-[14px] font-bold text-foreground">{ranking.length} Fasilitas Aktif</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{categories.length} Kategori Program</p>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Ranking cards list */}
             <div className="space-y-2.5">
-              {/* Column header */}
               <div className="flex items-center gap-4 px-5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
                 <span className="w-8 text-center">Rank</span>
                 <span className="w-48 shrink-0">Puskesmas</span>
@@ -227,16 +227,13 @@ export default function PerbandinganPage() {
               {ranking.map((r, i) => {
                 const isTop3 = i < 3;
                 return (
-                  <div
+                  <Card
                     key={r.id}
                     className={cn(
-                      "flex items-center gap-4 px-5 py-3.5 rounded-card border transition-all shadow-subtle",
-                      isTop3
-                        ? "border-border bg-surface hover:shadow-float"
-                        : "border-border/70 bg-surface/80 hover:bg-surface hover:border-border hover:shadow-subtle",
+                      "flex items-center gap-4 px-5 py-3.5 transition-all shadow-subtle",
+                      isTop3 ? "hover:shadow-float" : "bg-surface/80 hover:bg-surface",
                     )}
                   >
-                    {/* Rank */}
                     <span className="w-8 text-center shrink-0">
                       {isTop3 ? (
                         <span
@@ -252,10 +249,8 @@ export default function PerbandinganPage() {
                       )}
                     </span>
 
-                    {/* Name */}
                     <span className="w-48 shrink-0 text-[13px] font-bold text-foreground truncate">{r.nama}</span>
 
-                    {/* Category score segments */}
                     <div className="flex-1 min-w-0">
                       <div className="flex h-2.5 rounded-full overflow-hidden bg-surface-subtle">
                         {categories.map((c) => {
@@ -277,12 +272,11 @@ export default function PerbandinganPage() {
                       </div>
                     </div>
 
-                    {/* Average score */}
                     <div className="w-16 text-right shrink-0">
                       <span className="text-[14px] font-black tabular-nums text-foreground">{r.avg}</span>
                       <span className="text-[10px] font-bold text-muted-foreground ml-0.5">%</span>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
