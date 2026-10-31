@@ -129,7 +129,13 @@ export default function FormPemeriksaanPage() {
     const lastJobId = typeof window !== "undefined" ? localStorage.getItem("kesling:last-import-job-id") : null;
     if (lastJobId && !activeImportJob) {
       fetch(`/api/inspection/templates/import?jobId=${lastJobId}`)
-        .then((res) => (res.ok ? res.json() : null))
+        .then((res) => {
+          if (res.status === 404) {
+            localStorage.removeItem("kesling:last-import-job-id");
+            return null;
+          }
+          return res.ok ? res.json() : null;
+        })
         .then((data) => {
           if (data && (data.status === "processing" || data.status === "queued")) {
             setActiveImportJob({
@@ -145,6 +151,8 @@ export default function FormPemeriksaanPage() {
               error: data.error,
             });
             setIsImportWidgetVisible(true);
+          } else if (data && (data.status === "completed" || data.status === "failed")) {
+            localStorage.removeItem("kesling:last-import-job-id");
           }
         })
         .catch(() => {});
@@ -1986,13 +1994,13 @@ export default function FormPemeriksaanPage() {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">
         {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
           <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Builder
               </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+              <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Form Pemeriksaan
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
@@ -2000,11 +2008,11 @@ export default function FormPemeriksaanPage() {
                 · Kelola parameter dan instrumen IKL
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => setIsHistoryModalOpen(true)}
                 title="Lihat status antrean & riwayat upload"
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-surface-subtle border border-border text-foreground text-[11px] font-bold hover:bg-surface transition shadow-xs"
+                className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-surface-subtle border border-border text-foreground text-[10px] sm:text-[11px] font-bold hover:bg-surface transition shadow-xs"
               >
                 <History className="w-3.5 h-3.5 text-primary" />
                 <span>Status & Antrean</span>
@@ -2015,7 +2023,7 @@ export default function FormPemeriksaanPage() {
                   </span>
                 )}
               </button>
-              <label className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-surface-subtle border border-border text-foreground text-[11px] font-bold hover:bg-surface transition shadow-xs cursor-pointer">
+              <label className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-surface-subtle border border-border text-foreground text-[10px] sm:text-[11px] font-bold hover:bg-surface transition shadow-xs cursor-pointer">
                 <Upload className="w-3.5 h-3.5 text-primary" /> Import
                 <input
                   type="file"
@@ -2033,17 +2041,17 @@ export default function FormPemeriksaanPage() {
                 type="button"
                 onClick={loadContohMatriksSPPG}
                 title="Muat contoh lembar inspeksi Matriks Multi-Area SPPG (8 Area A-H)"
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/20 transition shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] sm:text-[11px] font-bold hover:bg-emerald-500/20 transition shadow-xs cursor-pointer"
               >
-                🍱 Contoh Matriks SPPG
+                🍱 Matriks SPPG
               </button>
               <button
                 type="button"
                 onClick={loadContohJajananKeliling}
                 title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-[11px] font-bold hover:bg-amber-500/20 transition shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 text-[10px] sm:text-[11px] font-bold hover:bg-amber-500/20 transition shadow-xs cursor-pointer"
               >
-                🍿 Contoh IKL Jajanan
+                🍿 IKL Jajanan
               </button>
               <button
                 onClick={() => {
@@ -2051,7 +2059,7 @@ export default function FormPemeriksaanPage() {
                   setIsCreating(true);
                   resetForm();
                 }}
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-primary text-white text-[11px] font-bold hover:bg-primary-hover active:scale-95 transition shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-primary text-white text-[10px] sm:text-[11px] font-bold hover:bg-primary-hover active:scale-95 transition shadow-xs cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Buat Template
               </button>
@@ -2060,7 +2068,7 @@ export default function FormPemeriksaanPage() {
         </div>
 
         {/* ── CONTENT BODY (CANVAS) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {isLoading ? (
             <div className="flex flex-col gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -2419,32 +2427,32 @@ export default function FormPemeriksaanPage() {
   return (
     <div className="w-full fade-in min-h-screen bg-canvas">
       {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-4 sm:py-5">
-        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+      <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-3.5 sm:py-5">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
             <button
               onClick={() => {
                 setSelectedTemplateId(null);
                 setIsCreating(false);
               }}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-surface-subtle hover:bg-surface border border-border text-[11px] font-bold text-foreground transition-all shrink-0 shadow-xs"
+              className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-3.5 rounded-full bg-surface-subtle hover:bg-surface border border-border text-[10px] sm:text-[11px] font-bold text-foreground transition-all shrink-0 shadow-xs"
             >
-              <ArrowLeft className="h-4 w-4" /> Kembali
+              <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Kembali
             </button>
-            <div className="h-6 w-px bg-border shrink-0" />
+            <div className="h-5 sm:h-6 w-px bg-border shrink-0" />
             <input
               type="text"
               value={nama}
               onChange={(e) => setNama(e.target.value)}
               placeholder="Nama Template..."
-              className="flex-1 text-[18px] sm:text-[22px] font-black text-foreground placeholder:text-muted-foreground/40 outline-none bg-transparent tracking-tight min-w-0"
+              className="flex-1 text-[16px] sm:text-[22px] font-black text-foreground placeholder:text-muted-foreground/40 outline-none bg-transparent tracking-tight min-w-0"
             />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0">
             {/* Auto-save status */}
             {selectedTemplateId && !isCreating && (
               <span
-                className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-colors ${
+                className={`inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full border transition-colors ${
                   autoSaveState === "saved"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : autoSaveState === "saving"
@@ -2475,27 +2483,27 @@ export default function FormPemeriksaanPage() {
                   : autoSaveState === "saving"
                     ? "Menyimpan..."
                     : autoSaveState === "error"
-                      ? "Gagal — coba Simpan"
+                      ? "Gagal"
                       : autoSaveState === "dirty"
                         ? "Perubahan..."
-                        : "Auto-simpan aktif"}
+                        : "Auto-simpan"}
               </span>
             )}
             <button
               type="button"
               onClick={loadContohMatriksSPPG}
               title="Muat contoh lembar inspeksi Matriks Multi-Area SPPG (8 Area A-H)"
-              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors rounded-xl flex-1 sm:flex-initial"
+              className="flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors rounded-full flex-1 sm:flex-initial"
             >
-              🍱 Contoh Matriks SPPG
+              🍱 Matriks SPPG
             </button>
             <button
               type="button"
               onClick={loadContohJajananKeliling}
               title="Muat contoh lengkap formulir Jajanan Keliling Golongan A1 & A2"
-              className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[11px] font-bold border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition-colors rounded-xl flex-1 sm:flex-initial"
+              className="flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition-colors rounded-full flex-1 sm:flex-initial"
             >
-              🍿 Contoh A1 / A2
+              🍿 IKL Jajanan
             </button>
             {selectedTemplateId && isOwner && (
               <button
@@ -2514,9 +2522,9 @@ export default function FormPemeriksaanPage() {
                 }}
                 disabled={deleteMutation.isPending}
                 title="Hapus template ini"
-                className="flex items-center justify-center gap-1.5 h-11 px-3.5 text-[12px] font-bold border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-xl shrink-0"
+                className="flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-[11px] font-bold border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors rounded-full shrink-0"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Hapus</span>
               </button>
             )}
@@ -2524,7 +2532,7 @@ export default function FormPemeriksaanPage() {
               <button
                 type="button"
                 onClick={handleDuplicate}
-                className="flex items-center justify-center gap-1.5 h-9 px-4 text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all rounded-full shadow-xs shrink-0"
+                className="flex items-center justify-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 text-[10px] sm:text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all rounded-full shadow-xs shrink-0"
               >
                 <Copy className="w-3.5 h-3.5" /> Duplikat
               </button>
@@ -2533,9 +2541,9 @@ export default function FormPemeriksaanPage() {
               <button
                 onClick={handleSave}
                 disabled={createMutation.isPending}
-                className="flex items-center justify-center gap-2 h-9 px-5 text-[11px] font-bold bg-primary text-white hover:bg-primary-hover disabled:opacity-40 transition-all rounded-full shadow-xs flex-1 sm:flex-initial"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3.5 sm:px-5 text-[10px] sm:text-[11px] font-bold bg-primary text-white hover:bg-primary-hover disabled:opacity-40 transition-all rounded-full shadow-xs flex-1 sm:flex-initial"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {createMutation.isPending ? "Menyimpan..." : "Simpan"}
               </button>
             )}
@@ -2544,7 +2552,7 @@ export default function FormPemeriksaanPage() {
       </div>
 
       {/* ── CONTENT BODY (CANVAS) ── */}
-      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+      <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {!isOwner && activeTemplate && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-card border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-[12px] font-medium shadow-subtle">
             <div className="flex items-center gap-2.5">

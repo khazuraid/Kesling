@@ -206,8 +206,11 @@ export const GET = withAuth(async (request: NextRequest) => {
     return NextResponse.json({ error: "jobId tidak valid" }, { status: 400 });
 
   const data = await redis.hgetall(`inspection-import:${jobId}`);
-  if (!data.status || data.ownerId !== String(req.user.id))
-    return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
+  if (!data.status) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
+
+  const isOwner = !data.ownerId || data.ownerId === String(req.user.id);
+  const isAdminOrDinkes = (req as any).user?.role === "ADMIN" || (req as any).user?.role === "DINKES";
+  if (!isOwner && !isAdminOrDinkes) return NextResponse.json({ error: "Job tidak ditemukan" }, { status: 404 });
 
   // Read logs array
   const logsRaw = await redis.lrange(`inspection-import:${jobId}:logs`, 0, -1);

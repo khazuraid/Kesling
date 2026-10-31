@@ -119,7 +119,7 @@ export default function RekapPage() {
   const { data, isLoading } = useQuery<RekapData>({
     queryKey: ["rekap-dynamic", tahun, puskesmasId],
     queryFn: async () => {
-      const url = `/api/rekap/dynamic?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`;
+      const url = `/api/rekap?tahun=${tahun}${puskesmasId ? `&puskesmasId=${puskesmasId}` : ""}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Gagal mengambil data rekap");
       return res.json();

@@ -4,6 +4,9 @@ import Script from "next/script";
 import { Providers } from "@/components/providers";
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
   themeColor: "#00A876",
 };
 

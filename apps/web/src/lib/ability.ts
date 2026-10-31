@@ -40,14 +40,22 @@ export function defineAbilityFor(user?: AbilityUser | null): AppAbility {
 
   if (role === "ADMIN") {
     can("manage", "all");
+    cannot("read", "DashboardPkm");
+    cannot(
+      ["create", "read", "update", "delete"],
+      ["Pemeriksaan", "FormPemeriksaan", "RencanaBulanan", "RencanaTahunan"],
+    );
   } else if (role === "DINKES") {
     can("read", "all");
     can(["read", "approve", "export"], "Laporan");
-    can(["read", "approve", "export"], "Pemeriksaan");
     can("read", "Approval");
     can(["create", "update"], "LaporanBuilder");
     can("read", "DashboardOverview");
     cannot("read", "DashboardPkm");
+    cannot(
+      ["create", "read", "update", "delete"],
+      ["Pemeriksaan", "FormPemeriksaan", "RencanaBulanan", "RencanaTahunan"],
+    );
     cannot("manage", ["User", "AuditLog", "Settings", "FileManager"]);
   } else if (role === "OPERATOR") {
     can("read", "DashboardPkm");

@@ -1305,13 +1305,15 @@ export default function PemeriksaanPage() {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">
         {/* ── SEAMLESS MASTHEAD (FLUSH LANGSUNG KE NAVBAR) ── */}
-        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
-          <div className="w-full max-w-[1600px] mx-auto space-y-4">
+        <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
+          <div className="w-full max-w-[1600px] mx-auto space-y-3 sm:space-y-4">
             {/* Top Navigation Row: Breadcrumbs */}
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-semibold text-muted-foreground flex-wrap">
               <span>Inspeksi</span>
               <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
-              <span className="font-bold text-foreground truncate max-w-[280px]">{pendingForm.nama}</span>
+              <span className="font-bold text-foreground truncate max-w-[200px] sm:max-w-[280px]">
+                {pendingForm.nama}
+              </span>
               <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
               <span className="text-primary font-bold">Pilih Sasaran</span>
             </div>
@@ -1322,36 +1324,36 @@ export default function PemeriksaanPage() {
                 <Sparkles className="w-3 h-3 text-primary" />
                 {pendingForm.dataDasarCategory?.nama || pendingForm.nama}
               </div>
-              <h1 className="text-[22px] sm:text-[26px] font-black tracking-tight leading-tight text-foreground">
+              <h1 className="text-[20px] sm:text-[26px] font-black tracking-tight leading-tight text-foreground">
                 Pilih Sasaran Pemeriksaan
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground leading-relaxed max-w-3xl">
+              <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground leading-relaxed max-w-3xl">
                 Pilih sasaran yang akan diinspeksi. Data profil (alamat, pengelola, kontak, koordinat) otomatis terisi
                 ke form penilaian.
               </p>
 
               {/* Action Buttons di bawah Pilih Sasaran */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-2 sm:pt-3">
                 <button
                   type="button"
                   onClick={() => setPendingForm(null)}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[11px] sm:text-[12px] font-bold shadow-xs transition-all cursor-pointer flex-1 sm:flex-initial"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Kembali ke Formulir</span>
+                  <span>Kembali</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => openFormWithoutSasaran(pendingForm)}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-foreground text-[11px] sm:text-[12px] font-bold transition-all shadow-xs cursor-pointer flex-1 sm:flex-initial"
                 >
                   <SkipForward className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Lewati (Tanpa Sasaran)</span>
+                  <span>Tanpa Sasaran</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsNewSasaranModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[12px] font-extrabold shadow-subtle transition-all cursor-pointer sm:ml-auto"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-[11px] sm:text-[12px] font-extrabold shadow-subtle transition-all cursor-pointer w-full sm:w-auto sm:ml-auto"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Sasaran Baru</span>
@@ -1362,7 +1364,7 @@ export default function PemeriksaanPage() {
         </div>
 
         {/* ── CONTENT BODY (CANVAS) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Subcategory Filter Tabs & Search Bar */}
           <div className="space-y-3">
             {/* Filter Pills */}
@@ -1726,13 +1728,13 @@ export default function PemeriksaanPage() {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">
         {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-        <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+        <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
           <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Pemeriksaan
               </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+              <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Inspeksi Lapangan
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
@@ -1774,38 +1776,38 @@ export default function PemeriksaanPage() {
         </div>
 
         {/* ── CONTENT BODY (CANVAS) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
+            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
+              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
                 <NumberFlow value={templates.length} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
                 Formulir
               </span>
             </span>
-            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
-              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-amber-600 leading-none">
                 <NumberFlow value={totalRiwayat} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-amber-600/70 mt-1">
                 Riwayat
               </span>
             </span>
-            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-primary/10 border border-primary/20">
+              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-primary leading-none">
                 <NumberFlow value={totalVariabel} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-primary/70 mt-1">
                 Variabel
               </span>
             </span>
-            <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
-              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
+            <span className="inline-flex flex-col items-center h-13 sm:h-14 justify-center px-3 sm:px-5 rounded-card bg-surface border border-border shadow-subtle">
+              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={categories.length} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-muted-foreground mt-1">
                 Kategori
               </span>
             </span>
@@ -2175,21 +2177,21 @@ export default function PemeriksaanPage() {
                             <Link
                               href={`/pemeriksaan/${res.id}`}
                               title="Lihat Detail Pemeriksaan"
-                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
+                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-foreground bg-primary/10 hover:bg-primary/20 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5 text-primary" /> <span>Detail</span>
                             </Link>
                             <button
                               title="Export PDF"
                               onClick={() => handleExportPDF(res)}
-                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
+                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
                             >
                               <Download className="w-3.5 h-3.5" /> <span>PDF</span>
                             </button>
                             <button
                               title="Edit Pemeriksaan"
                               onClick={() => handleEditResult(res)}
-                              className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-[11px] font-bold text-foreground hover:bg-surface-subtle rounded-lg transition-colors"
+                              className="inline-flex items-center justify-center gap-1 h-8 px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold text-foreground hover:bg-surface-subtle rounded-lg transition-colors"
                             >
                               <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> <span>Edit</span>
                             </button>
@@ -2200,7 +2202,7 @@ export default function PemeriksaanPage() {
                                   deleteMut.mutate(res.id);
                                 }
                               }}
-                              className="inline-flex items-center justify-center h-8 w-8 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
+                              className="inline-flex items-center justify-center h-8 w-full sm:w-8 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

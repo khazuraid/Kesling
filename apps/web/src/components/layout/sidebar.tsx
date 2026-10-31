@@ -49,15 +49,21 @@ function useMenuGroups() {
   const ability = useAppAbility();
   const userRole = (session?.user as any)?.role || "OPERATOR";
 
-  const canOverview = ability.can("read", "DashboardOverview");
-  const canCommandCenter = ability.can("read", "DashboardPkm");
-  const canPemeriksaan = ability.can("create", "Pemeriksaan");
-  const canRencana = ability.can("create", "RencanaBulanan");
-  const canApproval = ability.can("read", "Approval");
-  const canLaporanBuilder = ability.can("create", "LaporanBuilder");
-  const canAuditLog = ability.can("manage", "AuditLog");
-  const canFileManager = ability.can("manage", "FileManager");
-  const canSettings = ability.can("manage", "Settings");
+  const isPkm = userRole === "OPERATOR";
+  const isAdmin = userRole === "ADMIN";
+  const isDinkes = userRole === "DINKES";
+  const isAdminOrDinkes = isAdmin || isDinkes;
+
+  const canOverview = isAdminOrDinkes && ability.can("read", "DashboardOverview");
+  const canCommandCenter = isPkm && ability.can("read", "DashboardPkm");
+  const canPemeriksaan = isPkm && ability.can("read", "Pemeriksaan");
+  const canRencana = isPkm && ability.can("read", "RencanaBulanan");
+  const canApproval = isAdminOrDinkes && ability.can("read", "Approval");
+  const canLaporanBuilder =
+    isAdminOrDinkes && (ability.can("create", "LaporanBuilder") || ability.can("manage", "all"));
+  const canAuditLog = isAdmin && ability.can("manage", "AuditLog");
+  const canFileManager = isAdmin && ability.can("manage", "FileManager");
+  const canSettings = isAdmin && ability.can("manage", "Settings");
 
   const groups: MenuGroup[] = [
     {
@@ -95,7 +101,7 @@ function useMenuGroups() {
           },
         ]
       : []),
-    ...(canApproval || canLaporanBuilder || canAuditLog || canFileManager || canSettings
+    ...(isAdminOrDinkes
       ? [
           {
             title: "Admin",

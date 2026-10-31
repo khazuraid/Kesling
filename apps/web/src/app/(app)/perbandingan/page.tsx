@@ -63,14 +63,14 @@ export default function PerbandinganPage() {
   return (
     <div className="w-full fade-in min-h-screen bg-canvas">
       {/* ── MASTHEAD FLUSH LANGSUNG KE NAVBAR ── */}
-      <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
+      <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
                 Kinerja Wilayah
               </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
+              <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Perbandingan
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
@@ -83,7 +83,7 @@ export default function PerbandinganPage() {
                 </span>
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <LaporanFilter />
               {ranking.length > 0 && (
                 <PdfExportButton
@@ -98,42 +98,42 @@ export default function PerbandinganPage() {
 
           {/* PODIUM */}
           {!isLoading && top3.length > 0 && (
-            <div className="mt-6 sm:mt-8 flex items-end justify-center gap-3 sm:gap-5 pb-1">
+            <div className="mt-5 sm:mt-8 flex items-end justify-center gap-2 sm:gap-5 pb-1">
               {podiumOrder.map((r) => {
                 const rank = podiumRank(r);
                 const medal = MEDAL[rank];
                 const isFirst = rank === 0;
-                const height = isFirst ? "h-24 sm:h-28" : rank === 1 ? "h-16 sm:h-20" : "h-12 sm:h-16";
+                const height = isFirst ? "h-20 sm:h-28" : rank === 1 ? "h-14 sm:h-20" : "h-10 sm:h-16";
                 return (
-                  <div key={r.id} className="flex flex-col items-center w-32 sm:w-44">
-                    <div className="relative mb-2.5">
+                  <div key={r.id} className="flex flex-col items-center flex-1 max-w-[120px] sm:max-w-[176px]">
+                    <div className="relative mb-1.5 sm:mb-2.5">
                       <div
                         className={cn(
                           "rounded-full flex items-center justify-center font-black text-slate-900 shadow-md",
                           isFirst
-                            ? "w-14 h-14 sm:w-16 sm:h-16 text-[18px] sm:text-[20px]"
-                            : "w-11 h-11 sm:w-13 sm:h-13 text-[14px] sm:text-[16px]",
+                            ? "w-11 h-11 sm:w-16 sm:h-16 text-[15px] sm:text-[20px]"
+                            : "w-9 h-9 sm:w-13 sm:h-13 text-[13px] sm:text-[16px]",
                         )}
                         style={{
                           background: medal.ring,
-                          boxShadow: `0 0 0 4px ${medal.glow}`,
+                          boxShadow: `0 0 0 3px ${medal.glow}`,
                         }}
                       >
                         {rank + 1}
                       </div>
                       {isFirst && (
-                        <Crown className="absolute -top-4 left-1/2 -translate-x-1/2 w-4 sm:w-5 h-4 sm:h-5 text-[#F5B93D]" />
+                        <Crown className="absolute -top-3.5 sm:-top-4 left-1/2 -translate-x-1/2 w-4 sm:w-5 h-4 sm:h-5 text-[#F5B93D]" />
                       )}
                     </div>
-                    <p className="text-[11px] sm:text-[13px] font-bold text-foreground text-center leading-tight line-clamp-2 h-7 sm:h-8">
+                    <p className="text-[10px] sm:text-[13px] font-bold text-foreground text-center leading-tight line-clamp-2 h-6 sm:h-8 px-1">
                       {r.nama}
                     </p>
-                    <p className="text-[18px] sm:text-[24px] font-black tabular-nums text-primary mt-0.5">
+                    <p className="text-[15px] sm:text-[24px] font-black tabular-nums text-primary mt-0.5">
                       <NumberFlow value={r.avg} suffix="%" />
                     </p>
                     <div
                       className={cn(
-                        "w-full mt-2 sm:mt-3 rounded-t-2xl border-x border-t border-border shadow-subtle",
+                        "w-full mt-1.5 sm:mt-3 rounded-t-xl sm:rounded-t-2xl border-x border-t border-border shadow-subtle",
                         height,
                       )}
                       style={{
@@ -147,12 +147,12 @@ export default function PerbandinganPage() {
           )}
 
           {isLoading && (
-            <div className="mt-6 flex items-end justify-center gap-5 pb-1">
-              {[80, 112, 64].map((h, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <Skeleton className="w-12 h-12 rounded-full mb-3" />
-                  <Skeleton className="h-3 w-20 mb-2" />
-                  <Skeleton className="rounded-t-2xl w-32 sm:w-44" style={{ height: h }} />
+            <div className="mt-5 sm:mt-6 flex items-end justify-center gap-2 sm:gap-5 pb-1">
+              {[64, 96, 48].map((h, i) => (
+                <div key={i} className="flex flex-col items-center flex-1 max-w-[120px] sm:max-w-[176px]">
+                  <Skeleton className="w-9 h-9 sm:w-12 sm:h-12 rounded-full mb-2 sm:mb-3" />
+                  <Skeleton className="h-3 w-16 sm:w-20 mb-2" />
+                  <Skeleton className="rounded-t-xl sm:rounded-t-2xl w-full" style={{ height: h }} />
                 </div>
               ))}
             </div>
@@ -161,7 +161,7 @@ export default function PerbandinganPage() {
       </div>
 
       {/* ── CONTENT BODY (CANVAS) ── */}
-      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
+      <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {!isLoading && ranking.length === 0 && (
           <EmptyState
             icon={Activity}
@@ -171,53 +171,59 @@ export default function PerbandinganPage() {
         )}
 
         {!isLoading && ranking.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Bento-style summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
-                <div className="w-11 h-11 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <Card className="p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 hover:shadow-float transition-all">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-primary-subtle text-primary flex items-center justify-center shrink-0">
                   <Activity className="w-5 h-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
                     Rata-Rata Kinerja
                   </p>
-                  <p className="text-[24px] font-black tabular-nums text-foreground leading-none">
+                  <p className="text-[20px] sm:text-[24px] font-black tabular-nums text-foreground leading-none">
                     <NumberFlow value={avgScore} suffix="%" />
                   </p>
                 </div>
               </Card>
-              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
-                <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+              <Card className="p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 hover:shadow-float transition-all">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
                   <Crown className="w-5 h-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
                     Peringkat 1
                   </p>
-                  <p className="text-[14px] font-bold text-foreground truncate">{top3[0]?.nama || "—"}</p>
+                  <p className="text-[13px] sm:text-[14px] font-bold text-foreground truncate">
+                    {top3[0]?.nama || "—"}
+                  </p>
                   <p className="text-[11px] font-extrabold text-primary tabular-nums mt-0.5">
                     <NumberFlow value={top3[0]?.avg || 0} suffix="% Capaian" />
                   </p>
                 </div>
               </Card>
-              <Card className="p-5 flex items-center gap-4 hover:shadow-float transition-all">
-                <div className="w-11 h-11 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center shrink-0 font-black text-sm">
+              <Card className="p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 hover:shadow-float transition-all">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center shrink-0 font-black text-sm">
                   <NumberFlow value={ranking.length} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-0.5">
                     Total Puskesmas
                   </p>
-                  <p className="text-[14px] font-bold text-foreground">{ranking.length} Fasilitas Aktif</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{categories.length} Kategori Program</p>
+                  <p className="text-[13px] sm:text-[14px] font-bold text-foreground">
+                    {ranking.length} Fasilitas Aktif
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
+                    {categories.length} Kategori Program
+                  </p>
                 </div>
               </Card>
             </div>
 
             {/* Ranking cards list */}
             <div className="space-y-2.5">
-              <div className="flex items-center gap-4 px-5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="hidden sm:flex items-center gap-4 px-5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
                 <span className="w-8 text-center">Rank</span>
                 <span className="w-48 shrink-0">Puskesmas</span>
                 <span className="flex-1">Skor per kategori</span>
@@ -230,29 +236,38 @@ export default function PerbandinganPage() {
                   <Card
                     key={r.id}
                     className={cn(
-                      "flex items-center gap-4 px-5 py-3.5 transition-all shadow-subtle",
+                      "flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-3.5 transition-all shadow-subtle",
                       isTop3 ? "hover:shadow-float" : "bg-surface/80 hover:bg-surface",
                     )}
                   >
-                    <span className="w-8 text-center shrink-0">
-                      {isTop3 ? (
-                        <span
-                          className="inline-flex w-7 h-7 rounded-full items-center justify-center text-[11px] font-black text-slate-900"
-                          style={{ background: MEDAL[i].ring }}
-                        >
-                          {i + 1}
-                        </span>
-                      ) : (
-                        <span className="text-[13px] font-bold text-muted-foreground tabular-nums">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                      )}
-                    </span>
+                    <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+                      <span className="w-7 sm:w-8 text-center shrink-0">
+                        {isTop3 ? (
+                          <span
+                            className="inline-flex w-6 h-6 sm:w-7 sm:h-7 rounded-full items-center justify-center text-[10px] sm:text-[11px] font-black text-slate-900"
+                            style={{ background: MEDAL[i].ring }}
+                          >
+                            {i + 1}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] sm:text-[13px] font-bold text-muted-foreground tabular-nums">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                        )}
+                      </span>
 
-                    <span className="w-48 shrink-0 text-[13px] font-bold text-foreground truncate">{r.nama}</span>
+                      <span className="flex-1 sm:w-48 sm:flex-initial text-[13px] font-bold text-foreground truncate">
+                        {r.nama}
+                      </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex h-2.5 rounded-full overflow-hidden bg-surface-subtle">
+                      <div className="sm:hidden text-right shrink-0">
+                        <span className="text-[14px] font-black tabular-nums text-foreground">{r.avg}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground ml-0.5">%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0 pl-9 sm:pl-0 w-full sm:w-auto">
+                      <div className="flex h-2 sm:h-2.5 rounded-full overflow-hidden bg-surface-subtle">
                         {categories.map((c) => {
                           const val = r[c.code] || 0;
                           if (val <= 0) return null;
@@ -272,7 +287,7 @@ export default function PerbandinganPage() {
                       </div>
                     </div>
 
-                    <div className="w-16 text-right shrink-0">
+                    <div className="hidden sm:block w-16 text-right shrink-0">
                       <span className="text-[14px] font-black tabular-nums text-foreground">{r.avg}</span>
                       <span className="text-[10px] font-bold text-muted-foreground ml-0.5">%</span>
                     </div>
