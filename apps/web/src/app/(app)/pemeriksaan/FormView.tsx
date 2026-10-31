@@ -18,7 +18,9 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { MapPicker } from "@/components/ui/map-picker";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { useInspectionDraft } from "@/hooks/use-inspection-draft";
 import { photoSrc } from "@/lib/photo-url";
 import { toRoman } from "./helpers";
 
@@ -304,6 +306,14 @@ export function FormView({
   onSubmit,
 }: FormViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+
+  const { hasDraft, existingDraft, clearDraft } = useInspectionDraft({
+    templateId: activeForm?.id,
+    sasaranId: (metaValues as any)?.sasaranId ?? null,
+    formValues,
+    metaValues,
+    enabled: !editingId,
+  });
 
   const matrixColumns: { code: string; label: string }[] = useMemo(() => {
     const raw = activeForm?.config?.matrixColumns;
@@ -708,6 +718,51 @@ export function FormView({
 
         {/* ── STEP CONTENT AREA ── */}
         <div className="space-y-6">
+          {/* Offline Draft Recovery Notice */}
+          {hasDraft && existingDraft && !editingId && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-card bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 shadow-subtle">
+              <div className="flex items-center gap-2.5">
+                <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  Ditemukan draf inspeksi offline dari perangkat ini (
+                  {new Date(existingDraft.updatedAt).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  ). Pulihkan draf untuk melanjutkan pengisian?
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (existingDraft.formValues) {
+                      for (const [k, v] of Object.entries(existingDraft.formValues)) {
+                        onFieldChange(Number(k), v);
+                      }
+                    }
+                    if (existingDraft.metaValues) {
+                      for (const [k, v] of Object.entries(existingDraft.metaValues)) {
+                        onMetaChange(Number(k), v);
+                      }
+                    }
+                    clearDraft();
+                  }}
+                  className="h-8 px-3 rounded-button bg-amber-600 hover:bg-amber-700 text-white font-bold transition shadow-xs cursor-pointer"
+                >
+                  Pulihkan Draf
+                </button>
+                <button
+                  type="button"
+                  onClick={clearDraft}
+                  className="h-8 px-2.5 rounded-button text-muted-foreground hover:bg-muted transition cursor-pointer"
+                >
+                  Abaikan
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* STEP 0: INFORMASI SASARAN */}
           {currentStep.type === "meta" && (
             <div className="rounded-card border border-border bg-surface shadow-subtle overflow-hidden">
@@ -1376,9 +1431,6 @@ function FieldInput({
             lng <= 180 &&
             !(lat === 0 && lng === 0);
           const mapsUrl = validCoords ? `https://www.google.com/maps?q=${lat},${lng}` : null;
-          const osmUrl = validCoords
-            ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.002},${lat - 0.002},${lng + 0.002},${lat + 0.002}&layer=mapnik&marker=${lat},${lng}`
-            : null;
           return (
             <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1406,21 +1458,15 @@ function FieldInput({
                   </a>
                 )}
               </div>
-              {/* Map preview, muncul setelah koordinat valid */}
-              {osmUrl && (
-                <div className="relative rounded-xl overflow-hidden border border-border shadow-subtle">
-                  <iframe
-                    title={`Peta lokasi: ${coords}`}
-                    src={osmUrl}
-                    className="w-full h-44 border-0"
-                    loading="lazy"
-                    allow="geolocation"
-                  />
-                  <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {lat.toFixed(5)}, {lng.toFixed(5)}
-                  </div>
-                </div>
-              )}
+              {/* Interaktif WebGL Vector MapPicker (MapLibre GL) */}
+              <div className="rounded-xl overflow-hidden border border-border shadow-subtle">
+                <MapPicker
+                  lat={validCoords ? lat : null}
+                  lng={validCoords ? lng : null}
+                  onChange={(newLat, newLng) => onChange(`${newLat.toFixed(6)}, ${newLng.toFixed(6)}`)}
+                  height="220px"
+                />
+              </div>
             </div>
           );
         })()}

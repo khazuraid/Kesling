@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Compass, MapPin, Phone } from "lucide-react";
+import { MapOverview } from "@/components/ui/map-overview";
 import type { SasaranIdentity } from "@/lib/sasaran-meta";
 
 /**
@@ -67,6 +68,32 @@ export function SasaranProfileCard({ identity }: { identity: SasaranIdentity }) 
           </div>
         ))}
       </div>
+
+      {identity.lat !== null && identity.lng !== null && (
+        <div className="pt-2">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Peta Lokasi Fasilitas
+            </span>
+            <a
+              href={`https://www.google.com/maps?q=${identity.lat},${identity.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              <Compass className="w-3.5 h-3.5" /> Buka Google Maps
+            </a>
+          </div>
+          <div className="rounded-xl overflow-hidden border border-border">
+            <MapOverview
+              lat={identity.lat}
+              lng={identity.lng}
+              title={identity.nama || "Lokasi Sasaran"}
+              height="180px"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

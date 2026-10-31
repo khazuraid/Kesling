@@ -1,7 +1,9 @@
 "use client";
 
+import { format } from "date-fns";
 import { Search, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
 
@@ -13,14 +15,9 @@ export type ActiveFilter = {
   onRemove?: () => void;
 };
 
-const dateInputClass =
-  "h-9 px-2.5 rounded-button bg-surface-subtle border border-border text-[11px] font-medium text-text-main outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors";
-
 /**
- * Rentang tanggal untuk diletakkan di dalam FilterBar. Selalu terlihat, bukan
- * disembunyikan di balik tombol: dua input tanggal tidak cukup berharga untuk
- * satu klik tambahan, dan menyembunyikannya membuat filter yang sedang aktif
- * tak terlihat.
+ * Rentang tanggal untuk diletakkan di dalam FilterBar. Menggunakan DatePicker
+ * popover kalender yang responsif dan mendukung format lokal.
  */
 export function DateRangeInputs({
   from,
@@ -35,26 +32,26 @@ export function DateRangeInputs({
   labelFrom?: string;
   labelTo?: string;
 }) {
+  const toStrDate = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
+
   return (
     <div className="shrink-0 flex flex-wrap items-center gap-2">
       <div className="flex items-center gap-1.5">
         <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">{labelFrom}</label>
-        <input
-          type="date"
-          value={from}
-          onChange={(e) => onChange(e.target.value, to)}
-          className={dateInputClass}
-          aria-label={`Tanggal ${labelFrom.toLowerCase()}`}
+        <DatePicker
+          value={from || undefined}
+          onChange={(d) => onChange(toStrDate(d), to)}
+          placeholder="Tgl mulai"
+          className="h-9 w-[135px] text-[11px]"
         />
       </div>
       <div className="flex items-center gap-1.5">
         <label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">{labelTo}</label>
-        <input
-          type="date"
-          value={to}
-          onChange={(e) => onChange(from, e.target.value)}
-          className={dateInputClass}
-          aria-label={`Tanggal ${labelTo.toLowerCase()}`}
+        <DatePicker
+          value={to || undefined}
+          onChange={(d) => onChange(from, toStrDate(d))}
+          placeholder="Tgl akhir"
+          className="h-9 w-[135px] text-[11px]"
         />
       </div>
     </div>

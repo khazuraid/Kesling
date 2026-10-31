@@ -8,6 +8,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { LaporanFilter } from "@/components/laporan-filter";
 import { ComplianceBar } from "@/components/ui/compliance-bar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NumberFlow } from "@/components/ui/number-flow";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 
 const BULAN_NAMES = [
@@ -194,8 +195,10 @@ export default function DashboardPkmPage() {
               {data?.puskesmas?.nama || "Puskesmas"}
             </h1>
             <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
-              <span className="tabular-nums font-bold text-foreground">{achievedCount}</span>/
-              <span className="tabular-nums font-bold">{summary.length}</span> indikator tercapai
+              <span className="tabular-nums font-bold text-foreground">
+                <NumberFlow value={achievedCount} />
+              </span>
+              /<span className="tabular-nums font-bold">{summary.length}</span> indikator tercapai
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -255,7 +258,7 @@ export default function DashboardPkmPage() {
           <div className="flex items-center gap-3 shrink-0 flex-wrap">
             <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-card bg-primary-subtle border border-primary/20 shadow-subtle">
               <span className="text-[18px] font-black tabular-nums text-primary leading-none">
-                {achievedCount}
+                <NumberFlow value={achievedCount} />
                 <span className="text-[11px] font-bold text-primary/60">/{summary.length}</span>
               </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
@@ -263,13 +266,17 @@ export default function DashboardPkmPage() {
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-card bg-amber-500/10 border border-amber-500/20 shadow-subtle">
-              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{deficitCount}</span>
+              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+                <NumberFlow value={deficitCount} />
+              </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
                 Defisit
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-4 rounded-card bg-rose-500/10 border border-rose-500/20 shadow-subtle">
-              <span className="text-[18px] font-black tabular-nums text-rose-600 leading-none">{noDataCount}</span>
+              <span className="text-[18px] font-black tabular-nums text-rose-600 leading-none">
+                <NumberFlow value={noDataCount} />
+              </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-rose-600/80 mt-1">
                 Kosong
               </span>

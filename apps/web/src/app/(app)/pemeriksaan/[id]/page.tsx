@@ -10,18 +10,21 @@ import {
   Clock,
   Download,
   Edit3,
+  Eye,
   FileText,
   ImageIcon,
   Loader2,
   PenTool,
   ShieldAlert,
   User,
+  X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PdfViewer } from "@/components/ui/pdf-viewer";
 import { groupInspectionFields } from "@/lib/inspection-answers";
 import { extractInspectionPhotos, extractInspectionSignatures } from "@/lib/inspection-media";
 import { resolveSasaranIdentity } from "@/lib/sasaran-meta";
@@ -59,6 +62,8 @@ export default function DetailPemeriksaanPage() {
 
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
 
   const {
     data: result,
@@ -117,6 +122,22 @@ export default function DetailPemeriksaanPage() {
       toast.error("Gagal mengunduh file PDF");
     } finally {
       setIsExportingPDF(false);
+    }
+  };
+
+  const handlePreviewPDF = async () => {
+    setIsPreviewingPdf(true);
+    try {
+      const res = await generateInspectionPDF(result, template, { save: false });
+      if (res.blob) {
+        const url = URL.createObjectURL(res.blob);
+        setPreviewPdfUrl(url);
+      }
+    } catch (err) {
+      console.error("Gagal pratinjau PDF:", err);
+      toast.error("Gagal menyiapkan pratinjau PDF");
+    } finally {
+      setIsPreviewingPdf(false);
     }
   };
 
@@ -213,6 +234,15 @@ export default function DetailPemeriksaanPage() {
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[12px] font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePreviewPDF}
+              disabled={isPreviewingPdf}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-[12px] font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] transition-colors disabled:opacity-50"
+            >
+              {isPreviewingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Pratinjau PDF</span>
             </button>
             <button
               type="button"
@@ -384,6 +414,36 @@ export default function DetailPemeriksaanPage() {
           onIndexChange={setPreviewIndex}
           onClose={() => setPreviewIndex(null)}
         />
+      )}
+
+      {previewPdfUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 fade-in">
+          <div className="w-full max-w-4xl h-[88vh] flex flex-col rounded-card bg-surface border border-border shadow-float overflow-hidden">
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-surface shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-extrabold text-foreground">Pratinjau Berita Acara IKL</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  URL.revokeObjectURL(previewPdfUrl);
+                  setPreviewPdfUrl(null);
+                }}
+                className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 bg-muted/30">
+              <PdfViewer
+                url={previewPdfUrl}
+                title="Berita Acara IKL"
+                className="h-full border-0 rounded-none shadow-none"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -35,6 +35,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { DateRangeInputs, FilterBar } from "@/components/ui/filter-bar";
+import { NumberFlow } from "@/components/ui/number-flow";
 import { Pagination } from "@/components/ui/pagination";
 import { Select } from "@/components/ui/select";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
@@ -1777,26 +1778,32 @@ export default function PemeriksaanPage() {
           {/* ── STAT SUMMARY PILLS BAR (Identik Data Dasar) ── */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">{templates.length}</span>
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                <NumberFlow value={templates.length} />
+              </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
                 Formulir
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-amber-500/10 border border-amber-500/20">
-              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">{totalRiwayat}</span>
+              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+                <NumberFlow value={totalRiwayat} />
+              </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/70 mt-1">
                 Riwayat
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-primary/10 border border-primary/20">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">{totalVariabel}</span>
+              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+                <NumberFlow value={totalVariabel} />
+              </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/70 mt-1">
                 Variabel
               </span>
             </span>
             <span className="inline-flex flex-col items-center h-14 justify-center px-5 rounded-card bg-surface border border-border shadow-subtle">
               <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
-                {categories.length}
+                <NumberFlow value={categories.length} />
               </span>
               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
                 Kategori

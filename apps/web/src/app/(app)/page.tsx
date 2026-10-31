@@ -12,6 +12,9 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModuleSparkChips } from "@/components/module-spark-chips";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { NumberFlow } from "@/components/ui/number-flow";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -137,7 +140,7 @@ export default async function DashboardPage() {
             <div className="text-right border-r border-border pr-4 sm:pr-6">
               <div className="flex items-baseline justify-end gap-1">
                 <span className="text-[32px] sm:text-[38px] font-black tabular-nums leading-none text-primary">
-                  {completionRate}
+                  <NumberFlow value={completionRate} />
                 </span>
                 <span className="text-[14px] sm:text-[16px] font-bold text-primary/70">%</span>
               </div>
@@ -169,115 +172,124 @@ export default async function DashboardPage() {
         {/* ── KPI CARDS ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Capaian */}
-          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Total Capaian
-              </span>
-              <span
-                className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
-                  delta >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
-                }`}
-              >
-                {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                <span className="tabular-nums">{delta >= 0 ? `+${delta}` : delta}</span>
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-foreground">
-                {completionRate}%
-              </span>
-            </div>
-            <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-              <span className="tabular-nums font-bold text-foreground">{totalData}</span> dari{" "}
-              <span className="tabular-nums">{totalTarget}</span> target laporan
-            </p>
-          </div>
+          <Card className="hover:shadow-md transition-all">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Total Capaian
+                </span>
+                <Badge
+                  variant={delta >= 0 ? "success" : "destructive"}
+                  className="gap-1 font-black px-2 py-0.5 text-[10px]"
+                >
+                  {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  <NumberFlow value={Math.abs(delta)} prefix={delta >= 0 ? "+" : "-"} />
+                </Badge>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-foreground">
+                  <NumberFlow value={completionRate} suffix="%" />
+                </span>
+              </div>
+              <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${Math.min(Math.max(completionRate, 3), 100)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+                <span className="tabular-nums font-bold text-foreground">
+                  <NumberFlow value={totalData} />
+                </span>{" "}
+                dari <span className="tabular-nums">{totalTarget}</span> target laporan
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Card 2: Tercapai */}
-          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4" />
+          <Card className="hover:shadow-md transition-all">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-emerald-600">
-                {achieved}
-              </span>
-              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-            </div>
-            <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-              Kepatuhan &ge; 80% (
-              <span className="tabular-nums">{pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%</span>{" "}
-              wilayah)
-            </p>
-          </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-emerald-600">
+                  <NumberFlow value={achieved} />
+                </span>
+                <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+              </div>
+              <div className="mt-3 h-2 w-full bg-emerald-500/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  style={{ width: `${pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+                Kepatuhan &ge; 80% (
+                <span className="tabular-nums">{pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%</span>{" "}
+                wilayah)
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Card 3: Parsial */}
-          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
-              <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4" />
+          <Card className="hover:shadow-md transition-all">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
+                <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-amber-600">
-                {partial}
-              </span>
-              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-            </div>
-            <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-              Capaian 50% &ndash; 79% (
-              <span className="tabular-nums">{pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%</span>{" "}
-              wilayah)
-            </p>
-          </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-amber-600">
+                  <NumberFlow value={partial} />
+                </span>
+                <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+              </div>
+              <div className="mt-3 h-2 w-full bg-amber-500/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                  style={{ width: `${pkmCount > 0 ? (partial / pkmCount) * 100 : 0}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+                Capaian 50% &ndash; 79% (
+                <span className="tabular-nums">{pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%</span>{" "}
+                wilayah)
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Card 4: Rendah / Butuh Pembinaan */}
-          <div className="rounded-card border border-border bg-surface p-5 shadow-subtle hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
-              <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
-                <AlertCircle className="w-4 h-4" />
+          <Card className="hover:shadow-md transition-all">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
+                <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-rose-600">
-                {low}
-              </span>
-              <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
-            </div>
-            <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-rose-500 transition-all duration-500"
-                style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
-              Capaian &lt; 50% target bulanan
-            </p>
-          </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-rose-600">
+                  <NumberFlow value={low} />
+                </span>
+                <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
+              </div>
+              <div className="mt-3 h-2 w-full bg-rose-500/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-rose-500 transition-all duration-500"
+                  style={{ width: `${pkmCount > 0 ? (low / pkmCount) * 100 : 0}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
+                Capaian &lt; 50% target bulanan
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* ── MODUL / PROGRAM PRIORITAS ── */}

@@ -27,6 +27,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useAppAbility } from "@/components/ability-provider";
 import { NotificationBell } from "@/components/notification-bell";
 
 type MenuItem = {
@@ -45,25 +46,33 @@ type MenuGroup = {
 
 function useMenuGroups() {
   const { data: session } = useSession();
+  const ability = useAppAbility();
   const userRole = (session?.user as any)?.role || "OPERATOR";
 
-  const isPkm = userRole === "OPERATOR";
-  const isAdmin = userRole === "ADMIN";
-  const isDinkes = userRole === "DINKES";
-  const isAdminOrDinkes = isAdmin || isDinkes;
+  const canOverview = ability.can("read", "DashboardOverview");
+  const canCommandCenter = ability.can("read", "DashboardPkm");
+  const canPemeriksaan = ability.can("create", "Pemeriksaan");
+  const canRencana = ability.can("create", "RencanaBulanan");
+  const canApproval = ability.can("read", "Approval");
+  const canLaporanBuilder = ability.can("create", "LaporanBuilder");
+  const canAuditLog = ability.can("manage", "AuditLog");
+  const canFileManager = ability.can("manage", "FileManager");
+  const canSettings = ability.can("manage", "Settings");
 
   const groups: MenuGroup[] = [
     {
       title: "Utama",
       items: [
-        ...(isAdminOrDinkes ? [{ label: "Overview", href: "/", icon: <LayoutDashboard className="w-4 h-4" /> }] : []),
-        ...(isPkm ? [{ label: "Command Center", href: "/dashboard-pkm", icon: <Activity className="w-4 h-4" /> }] : []),
+        ...(canOverview ? [{ label: "Overview", href: "/", icon: <LayoutDashboard className="w-4 h-4" /> }] : []),
+        ...(canCommandCenter
+          ? [{ label: "Command Center", href: "/dashboard-pkm", icon: <Activity className="w-4 h-4" /> }]
+          : []),
         { label: "Laporan", href: "/laporan", icon: <Folder className="w-4 h-4" /> },
         { label: "Rekap", href: "/rekap", icon: <BarChart3 className="w-4 h-4" /> },
         { label: "Perbandingan", href: "/perbandingan", icon: <ArrowLeftRight className="w-4 h-4" /> },
       ],
     },
-    ...(isPkm
+    ...(canPemeriksaan
       ? [
           {
             title: "Pemeriksaan",
@@ -73,6 +82,10 @@ function useMenuGroups() {
               { label: "Data Dasar", href: "/data-dasar", icon: <Database className="w-4 h-4" /> },
             ],
           },
+        ]
+      : []),
+    ...(canRencana
+      ? [
           {
             title: "Perencanaan",
             items: [
@@ -82,19 +95,25 @@ function useMenuGroups() {
           },
         ]
       : []),
-    ...(isAdminOrDinkes
+    ...(canApproval || canLaporanBuilder || canAuditLog || canFileManager || canSettings
       ? [
           {
             title: "Admin",
             items: [
-              { label: "Approval", href: "/approval", icon: <ShieldCheck className="w-4 h-4" /> },
-              { label: "Format Laporan", href: "/laporan-builder", icon: <FileEdit className="w-4 h-4" /> },
-              ...(isAdmin
-                ? [
-                    { label: "Audit Log", href: "/audit-log", icon: <ClipboardCheck className="w-4 h-4" /> },
-                    { label: "File Manager", href: "/file-manager", icon: <HardDrive className="w-4 h-4" /> },
-                    { label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> },
-                  ]
+              ...(canApproval
+                ? [{ label: "Approval", href: "/approval", icon: <ShieldCheck className="w-4 h-4" /> }]
+                : []),
+              ...(canLaporanBuilder
+                ? [{ label: "Format Laporan", href: "/laporan-builder", icon: <FileEdit className="w-4 h-4" /> }]
+                : []),
+              ...(canAuditLog
+                ? [{ label: "Audit Log", href: "/audit-log", icon: <ClipboardCheck className="w-4 h-4" /> }]
+                : []),
+              ...(canFileManager
+                ? [{ label: "File Manager", href: "/file-manager", icon: <HardDrive className="w-4 h-4" /> }]
+                : []),
+              ...(canSettings
+                ? [{ label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> }]
                 : []),
             ],
           },

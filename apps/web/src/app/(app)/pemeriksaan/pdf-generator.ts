@@ -284,7 +284,8 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
 export async function generateInspectionPDF(
   result: InspectionDetailData,
   templateFallback?: any,
-): Promise<{ success: boolean; filename: string }> {
+  options?: { save?: boolean },
+): Promise<{ success: boolean; filename: string; blob?: Blob }> {
   // Ambil library jsPDF & autoTable secara dinamis
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
 
@@ -878,7 +879,10 @@ export async function generateInspectionPDF(
   // Simpan File PDF
   const safeName = namaSasaran.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase();
   const filename = `berita-acara-ikl-${safeName}-${result.id}.pdf`;
-  doc.save(filename);
+  if (options?.save !== false) {
+    doc.save(filename);
+  }
+  const blob = doc.output("blob");
 
-  return { success: true, filename };
+  return { success: true, filename, blob };
 }
