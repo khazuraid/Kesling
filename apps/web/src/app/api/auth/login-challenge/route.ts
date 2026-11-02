@@ -1,4 +1,4 @@
-import { prisma } from "@apps-kes/database";
+import { ensureDbSchema, prisma } from "@apps-kes/database";
 import { compare } from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { createOtpChallenge, maskEmail, sendOtpEmail } from "@/lib/email-otp";
@@ -50,17 +50,36 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Cari pengguna berdasarkan Email ATAU Username resmi (atau fallback nama/telegram)
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: identifier },
-          { username: identifier },
-          { telegramUsername: identifier },
-          { email: { startsWith: `${identifier}@` } },
-          { nama: { equals: identifier, mode: "insensitive" } },
-        ],
-      },
-    });
+    await ensureDbSchema();
+    let user: Awaited<ReturnType<typeof prisma.user.findFirst>> = null;
+    try {
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: identifier },
+            { username: identifier },
+            { telegramUsername: identifier },
+            { email: { startsWith: `${identifier}@` } },
+            { nama: { equals: identifier, mode: "insensitive" } },
+          ],
+        },
+      });
+    } catch (queryErr: any) {
+      if (queryErr?.message?.includes("user.username")) {
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: identifier },
+              { telegramUsername: identifier },
+              { email: { startsWith: `${identifier}@` } },
+              { nama: { equals: identifier, mode: "insensitive" } },
+            ],
+          },
+        });
+      } else {
+        throw queryErr;
+      }
+    }
 
     if (!user) {
       await recordFailedLogin(ip, "ip");

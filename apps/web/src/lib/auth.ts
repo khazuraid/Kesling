@@ -1,4 +1,4 @@
-import { prisma } from "@apps-kes/database";
+import { ensureDbSchema, prisma } from "@apps-kes/database";
 import { compare } from "bcryptjs";
 import { headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
@@ -100,18 +100,40 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Terlalu banyak percobaan login gagal. Akun dikunci sementara selama 15 menit.");
         }
 
-        const user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: normalizedEmail },
-              { username: normalizedEmail },
-              { telegramUsername: normalizedEmail },
-              { email: { startsWith: `${normalizedEmail}@` } },
-              { nama: { equals: normalizedEmail, mode: "insensitive" } },
-            ],
-          },
-          include: { puskesmas: true },
-        });
+        await ensureDbSchema();
+
+        let user: Awaited<ReturnType<typeof prisma.user.findFirst<{ include: { puskesmas: true } }>>> = null;
+        try {
+          user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: normalizedEmail },
+                { username: normalizedEmail },
+                { telegramUsername: normalizedEmail },
+                { email: { startsWith: `${normalizedEmail}@` } },
+                { nama: { equals: normalizedEmail, mode: "insensitive" } },
+              ],
+            },
+            include: { puskesmas: true },
+          });
+        } catch (queryErr: any) {
+          // Graceful fallback jika kolom username belum tersinkron di DB fisik
+          if (queryErr?.message?.includes("user.username")) {
+            user = await prisma.user.findFirst({
+              where: {
+                OR: [
+                  { email: normalizedEmail },
+                  { telegramUsername: normalizedEmail },
+                  { email: { startsWith: `${normalizedEmail}@` } },
+                  { nama: { equals: normalizedEmail, mode: "insensitive" } },
+                ],
+              },
+              include: { puskesmas: true },
+            });
+          } else {
+            throw queryErr;
+          }
+        }
 
         // Pesan gagal disamakan agar tidak membocorkan email mana yang terdaftar.
         if (!user) {

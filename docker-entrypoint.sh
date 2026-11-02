@@ -80,12 +80,25 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   if [ -d "$MIGRATIONS_DIR" ]; then
     echo "📦 Running migrations via psql..."
 
-    # Daftar migrasi yang sudah diterapkan. Tanpa tabel ini, setiap restart
-    # menjalankan ulang SEMUA migrasi; berkas migrasi lama tidak semuanya
-    # idempoten (banyak CREATE/ALTER tanpa IF NOT EXISTS), sehingga restart
-    # pada database yang sudah terisi akan melaporkan kegagalan yang
-    # menyesatkan — dan itu menutupi kegagalan yang sungguhan.
-    psql "$PSQL_URL" -q -c 'CREATE TABLE IF NOT EXISTS "_prisma_migrations" (migration_name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())' >/dev/null
+    # Daftar migrasi yang sudah diterapkan. Kompatibel dengan tabel resmi Prisma (kolom id dsb)
+    # maupun tabel ledger sederhana.
+    record_migration() {
+      psql "$PSQL_URL" -q -c "
+        DO \$\$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = '_prisma_migrations' AND column_name = 'id') THEN
+            INSERT INTO \"_prisma_migrations\" (id, checksum, migration_name, started_at, finished_at, applied_steps_count)
+            VALUES (md5('$1'), '', '$1', NOW(), NOW(), 1)
+            ON CONFLICT DO NOTHING;
+          ELSE
+            CREATE TABLE IF NOT EXISTS \"_prisma_migrations\" (migration_name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+            INSERT INTO \"_prisma_migrations\" (migration_name) VALUES ('$1') ON CONFLICT DO NOTHING;
+          END IF;
+        END \$\$;
+      " >/dev/null 2>&1 || true
+    }
+
+    psql "$PSQL_URL" -q -c 'CREATE TABLE IF NOT EXISTS "_prisma_migrations" (migration_name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())' 2>/dev/null || true
 
     MIGRATION_FAILURES=0
     MIGRATION_APPLIED=0
@@ -107,7 +120,7 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
         migration_status=$?
 
         if [ "$migration_status" -eq 0 ]; then
-          psql "$PSQL_URL" -q -c "INSERT INTO \"_prisma_migrations\" (migration_name) VALUES ('$migration_name') ON CONFLICT DO NOTHING" >/dev/null
+          record_migration "$migration_name"
           MIGRATION_APPLIED=$((MIGRATION_APPLIED + 1))
           continue
         fi
@@ -117,7 +130,7 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
         # idempoten, jadi "sudah ada" adalah hasil yang wajar — bukan
         # kegagalan, dan tidak perlu dilaporkan sebagai error.
         if printf '%s' "$migration_output" | grep -qE 'already exists|duplicate key value|multiple primary keys|already a '; then
-          psql "$PSQL_URL" -q -c "INSERT INTO \"_prisma_migrations\" (migration_name) VALUES ('$migration_name') ON CONFLICT DO NOTHING" >/dev/null
+          record_migration "$migration_name"
           echo "    ↷ dilewati (objek sudah ada)"
           MIGRATION_APPLIED=$((MIGRATION_APPLIED + 1))
           continue
