@@ -27,13 +27,27 @@ interface TurnstileProps {
   onError?: (error: unknown) => void;
   onExpire?: () => void;
   theme?: "light" | "dark" | "auto";
+  size?: "normal" | "compact" | "flexible";
   className?: string;
 }
 
-export function Turnstile({ onSuccess, onError, onExpire, theme = "auto", className }: TurnstileProps) {
+export function Turnstile({
+  onSuccess,
+  onError,
+  onExpire,
+  theme = "auto",
+  size = "normal",
+  className,
+}: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  // Simpan callback dalam ref agar perubahan callback tidak memicu re-render widget pada setiap ketikan input form
+  const callbacksRef = useRef({ onSuccess, onError, onExpire });
+  useEffect(() => {
+    callbacksRef.current = { onSuccess, onError, onExpire };
+  });
 
   useEffect(() => {
     // Jika siteKey belum diatur, komponen tidak perlu merender apa-apa
@@ -44,28 +58,31 @@ export function Turnstile({ onSuccess, onError, onExpire, theme = "auto", classN
     function renderWidget() {
       if (!window.turnstile || !containerRef.current || !isMounted) return;
 
-      // Bersihkan widget sebelumnya jika ada
+      // Bersihkan widget sebelumnya hanya jika masih terpasang di DOM
       if (widgetIdRef.current) {
-        try {
-          window.turnstile.remove(widgetIdRef.current);
-        } catch {}
+        const prevId = widgetIdRef.current;
         widgetIdRef.current = null;
+        try {
+          if (containerRef.current && document.body.contains(containerRef.current)) {
+            window.turnstile.remove(prevId);
+          }
+        } catch {}
       }
 
       try {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey as string,
           callback: (token: string) => {
-            if (isMounted) onSuccess(token);
+            if (isMounted) callbacksRef.current.onSuccess(token);
           },
           "error-callback": (err: unknown) => {
-            if (isMounted && onError) onError(err);
+            if (isMounted && callbacksRef.current.onError) callbacksRef.current.onError(err);
           },
           "expired-callback": () => {
-            if (isMounted && onExpire) onExpire();
+            if (isMounted && callbacksRef.current.onExpire) callbacksRef.current.onExpire();
           },
           theme,
-          size: "flexible",
+          size,
         });
       } catch (err) {
         console.error("[Turnstile] Render error:", err);
@@ -102,13 +119,17 @@ export function Turnstile({ onSuccess, onError, onExpire, theme = "auto", classN
 
     return () => {
       isMounted = false;
-      if (widgetIdRef.current && window.turnstile) {
+      const wid = widgetIdRef.current;
+      widgetIdRef.current = null;
+      if (wid && window.turnstile) {
         try {
-          window.turnstile.remove(widgetIdRef.current);
+          if (containerRef.current && document.body.contains(containerRef.current)) {
+            window.turnstile.remove(wid);
+          }
         } catch {}
       }
     };
-  }, [siteKey, onSuccess, onError, onExpire, theme]);
+  }, [siteKey, theme, size]);
 
   if (!siteKey) return null;
 
