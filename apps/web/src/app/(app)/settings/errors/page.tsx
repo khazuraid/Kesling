@@ -93,15 +93,13 @@ export default function SystemErrorsPage() {
       <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <Link
                 href="/settings"
-                className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
               >
-                <ChevronLeft className="w-3.5 h-3.5" /> Pengaturan
+                <ChevronLeft className="w-3.5 h-3.5" /> Kembali ke Pengaturan
               </Link>
-              <span className="text-muted-foreground/40">•</span>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-red-600">Diagnostik Sistem</p>
             </div>
             <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Log Error Sistem

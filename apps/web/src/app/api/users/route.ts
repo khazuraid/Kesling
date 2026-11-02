@@ -8,10 +8,12 @@ export const GET = withAdmin(async () => {
     select: {
       id: true,
       nama: true,
+      username: true,
       email: true,
       role: true,
       puskesmasId: true,
       telegramChatId: true,
+      telegramUsername: true,
       puskesmas: { select: { nama: true } },
     },
     orderBy: { nama: "asc" },
@@ -37,20 +39,30 @@ export const POST = withAdmin(async (req: NextRequest) => {
   }
 
   // FIX: Check duplicate email before insert
-  const existing = await prisma.user.findUnique({ where: { email: body.email } });
-  if (existing) {
+  const existingEmail = await prisma.user.findUnique({ where: { email: body.email } });
+  if (existingEmail) {
     return NextResponse.json({ error: "Email sudah terdaftar" }, { status: 400 });
+  }
+
+  const cleanUsername = body.username ? String(body.username).trim().toLowerCase() : null;
+  if (cleanUsername) {
+    const existingUsername = await prisma.user.findUnique({ where: { username: cleanUsername } });
+    if (existingUsername) {
+      return NextResponse.json({ error: "Username sudah terdaftar" }, { status: 400 });
+    }
   }
 
   const hashedPassword = await hash(body.password, 12);
   const data = await prisma.user.create({
     data: {
       nama: body.nama,
+      username: cleanUsername,
       email: body.email,
       password: hashedPassword,
       role: body.role,
       puskesmasId: body.puskesmasId || null,
       telegramChatId: body.telegramChatId || null,
+      telegramUsername: body.telegramUsername ? String(body.telegramUsername).replace(/^@/, "").trim() : null,
     },
   });
 
@@ -60,9 +72,12 @@ export const POST = withAdmin(async (req: NextRequest) => {
       action: "CREATE",
       tableName: "user",
       recordId: data.id,
-      newData: { nama: data.nama, email: data.email, role: data.role },
+      newData: { nama: data.nama, username: data.username, email: data.email, role: data.role },
     },
   });
 
-  return NextResponse.json({ id: data.id, nama: data.nama, email: data.email, role: data.role }, { status: 201 });
+  return NextResponse.json(
+    { id: data.id, nama: data.nama, username: data.username, email: data.email, role: data.role },
+    { status: 201 },
+  );
 });

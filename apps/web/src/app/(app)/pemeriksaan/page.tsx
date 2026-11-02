@@ -63,9 +63,9 @@ import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
 /** Label dropdown pemilik formulir di tab Formulir. */
 const TEMPLATE_OWNER_LABEL: Record<string, string> = {
   all: "Semua Pemilik",
-  dinkes: "🏛️ Dinkes",
-  own: "🏥 Puskesmas Saya",
-  other: "🏥 Puskesmas Lain",
+  dinkes: "Dinkes",
+  own: "Puskesmas Saya",
+  other: "Puskesmas Lain",
 };
 
 import { generateInspectionPDF } from "./pdf-generator";
@@ -1750,9 +1750,6 @@ export default function PemeriksaanPage() {
           <div className="w-full bg-surface border-b border-border px-4 sm:px-8 py-4 sm:py-6">
             <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-                  Pemeriksaan
-                </p>
                 <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                   Inspeksi Lapangan
                 </h1>
@@ -1929,11 +1926,11 @@ export default function PemeriksaanPage() {
                                   </h4>
                                   {!tpl.puskesmasId ? (
                                     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
-                                      🏛️ Dinkes
+                                      Dinkes
                                     </span>
                                   ) : tpl.puskesmas?.nama || tpl.config?.authorPuskesmas ? (
                                     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 shrink-0">
-                                      🏥 {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
+                                      {tpl.puskesmas?.nama || tpl.config?.authorPuskesmas}
                                     </span>
                                   ) : null}
                                 </div>

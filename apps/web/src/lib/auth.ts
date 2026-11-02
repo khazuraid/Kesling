@@ -3,9 +3,13 @@ import { compare } from "bcryptjs";
 import { headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyOtpChallenge } from "./email-otp";
+import { checkLoginRateLimit, clearLoginRateLimit, recordFailedLogin } from "./rate-limit";
 import { clientIp } from "./request-ip";
 import { logSecurityEvent } from "./security-logger";
 import { validateTelegramInitData } from "./telegram/bot";
+import { sendTelegramMessage } from "./telegram/notify";
+import { verifyTurnstileToken } from "./turnstile";
 
 // Selang revalidasi role/keberadaan user di dalam JWT (5 menit).
 const ROLE_REFRESH_MS = 5 * 60 * 1000;
@@ -13,10 +17,52 @@ const ROLE_REFRESH_MS = 5 * 60 * 1000;
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
+      id: "otp",
+      name: "otp",
+      credentials: {
+        challengeToken: { label: "Challenge Token", type: "text" },
+        otp: { label: "OTP Code", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.challengeToken || !credentials?.otp) return null;
+
+        const result = await verifyOtpChallenge(credentials.challengeToken, credentials.otp);
+        if (!result.success || !result.userId) {
+          throw new Error(result.error || "Kode verifikasi tidak valid.");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { id: result.userId },
+          include: { puskesmas: true },
+        });
+        if (!user) return null;
+
+        let ip = "unknown";
+        try {
+          const reqHeaders = await headers();
+          ip = clientIp(reqHeaders);
+        } catch {}
+
+        await clearLoginRateLimit(ip, "ip");
+        await clearLoginRateLimit(user.email, "email");
+
+        return {
+          id: String(user.id),
+          name: user.nama,
+          email: user.email,
+          role: user.role,
+          puskesmasId: user.puskesmasId,
+          puskesmasNama: user.puskesmas?.nama,
+          mustChangePassword: user.mustChangePassword,
+        };
+      },
+    }),
+    CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        turnstileToken: { label: "Turnstile Token", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
@@ -31,12 +77,46 @@ export const authOptions: NextAuthOptions = {
           // headers() tidak tersedia — tetap lanjut, log pakai "unknown"
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // Verifikasi Cloudflare Turnstile Token jika diaktifkan di backend
+        const turnstileCheck = await verifyTurnstileToken(credentials.turnstileToken || "", ip);
+        if (!turnstileCheck.success) {
+          throw new Error(turnstileCheck.error || "Verifikasi keamanan Cloudflare gagal.");
+        }
+
+        const normalizedEmail = credentials.email.toLowerCase().trim();
+
+        // 1. Cek proteksi brute force di Redis (per-IP dan per-Email)
+        const ipCheck = await checkLoginRateLimit(ip, "ip");
+        const emailCheck = await checkLoginRateLimit(normalizedEmail, "email");
+
+        if (ipCheck.isBlocked || emailCheck.isBlocked) {
+          await logSecurityEvent({
+            eventType: "BRUTE_FORCE",
+            ip,
+            path: "/api/auth/callback/credentials",
+            userAgent,
+            detail: `Login diblokir sementara (IP: ${ipCheck.currentAttempts}/${ipCheck.maxAttempts}, Email: ${emailCheck.currentAttempts}/${emailCheck.maxAttempts})`,
+          });
+          throw new Error("Terlalu banyak percobaan login gagal. Akun dikunci sementara selama 15 menit.");
+        }
+
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: normalizedEmail },
+              { username: normalizedEmail },
+              { telegramUsername: normalizedEmail },
+              { email: { startsWith: `${normalizedEmail}@` } },
+              { nama: { equals: normalizedEmail, mode: "insensitive" } },
+            ],
+          },
           include: { puskesmas: true },
         });
+
         // Pesan gagal disamakan agar tidak membocorkan email mana yang terdaftar.
         if (!user) {
+          await recordFailedLogin(ip, "ip");
+          await recordFailedLogin(normalizedEmail, "email");
           await logSecurityEvent({
             eventType: "LOGIN_FAILED",
             ip,
@@ -46,17 +126,57 @@ export const authOptions: NextAuthOptions = {
           });
           return null;
         }
+
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) {
+          await recordFailedLogin(ip, "ip");
+          const emailAttempts = await recordFailedLogin(normalizedEmail, "email");
+
           await logSecurityEvent({
             eventType: "LOGIN_FAILED",
             ip,
             path: "/api/auth/callback/credentials",
             userAgent,
-            detail: `Password salah untuk ${user.email}`,
+            detail: `Password salah untuk ${user.email} (Percobaan gagal ke-${emailAttempts})`,
           });
+
+          // Jika percobaan salah mencapai batas (5x), kirim alert ke admin Telegram
+          if (emailAttempts >= 5) {
+            try {
+              const adminSetting = await prisma.appSetting.findUnique({
+                where: { key: "telegram_admin_chat_id" },
+              });
+              const adminChatId = adminSetting?.value || process.env.TELEGRAM_ADMIN_CHAT_ID;
+              if (adminChatId) {
+                const nowStr = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+                await sendTelegramMessage(
+                  adminChatId,
+                  `🚨 *Peringatan Brute Force Login Terdeteksi!*\n\n` +
+                    `*Target Akun:* \`${user.email}\`\n` +
+                    `*Nama User:* ${user.nama}\n` +
+                    `*IP Penyerang:* \`${ip}\`\n` +
+                    `*Waktu:* ${nowStr} WIB\n` +
+                    `*Status:* Akun dikunci sementara selama 15 menit setelah 5x gagal berturut-turut.`,
+                );
+              }
+            } catch (tgErr) {
+              console.error("[Auth] Gagal kirim alert Telegram:", tgErr);
+            }
+            throw new Error("Akun Anda dikunci sementara selama 15 menit karena 5 kali percobaan gagal.");
+          }
+
+          const sisa = Math.max(0, 5 - emailAttempts);
+          if (sisa <= 2) {
+            throw new Error(`Kata sandi salah. Tersisa ${sisa} kali kesempatan sebelum akun dikunci.`);
+          }
+
           return null;
         }
+
+        // Login sukses — hapus counter gagal
+        await clearLoginRateLimit(ip, "ip");
+        await clearLoginRateLimit(normalizedEmail, "email");
+
         return {
           id: String(user.id),
           name: user.nama,

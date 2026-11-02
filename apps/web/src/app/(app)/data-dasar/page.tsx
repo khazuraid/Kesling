@@ -69,9 +69,6 @@ export default function DataDasarIndexPage() {
       <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-              Master Data
-            </p>
             <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Data Dasar
             </h1>
@@ -102,32 +99,32 @@ export default function DataDasarIndexPage() {
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── STAT PILLS ── */}
         <div className="flex flex-wrap items-center gap-3">
-          <Card className="px-5 py-2.5 bg-primary/10 border-primary/20 shadow-subtle">
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
             <div className="flex flex-col items-center justify-center">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={categories.length} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">
                 Kategori
               </span>
             </div>
           </Card>
-          <Card className="px-5 py-2.5 bg-amber-500/10 border-amber-500/20 shadow-subtle">
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
             <div className="flex flex-col items-center justify-center">
-              <span className="text-[18px] font-black tabular-nums text-amber-600 leading-none">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={totalSubs} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-amber-600/80 mt-1">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">
                 Entitas
               </span>
             </div>
           </Card>
-          <Card className="px-5 py-2.5 bg-primary/10 border-primary/20 shadow-subtle">
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
             <div className="flex flex-col items-center justify-center">
-              <span className="text-[18px] font-black tabular-nums text-primary leading-none">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={totalFields} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary/80 mt-1">Field</span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">Field</span>
             </div>
           </Card>
           <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
@@ -135,9 +132,7 @@ export default function DataDasarIndexPage() {
               <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={totalSync} />
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground mt-1">
-                Sync
-              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">Sync</span>
             </div>
           </Card>
         </div>
@@ -145,9 +140,7 @@ export default function DataDasarIndexPage() {
         {/* ── LIST / TABLE CONTAINER ── */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.22em]">
-              Kategori Pemeliharaan
-            </h3>
+            <h3 className="text-sm font-bold text-foreground">Kategori Pemeliharaan</h3>
             <span className="text-[11px] font-bold text-muted-foreground">
               <span className="tabular-nums">{filtered.length}</span> dari{" "}
               <span className="tabular-nums">{categories.length}</span> modul

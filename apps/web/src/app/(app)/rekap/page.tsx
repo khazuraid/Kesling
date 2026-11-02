@@ -149,9 +149,6 @@ export default function RekapPage() {
             <ScoreRing pct={overallPct} />
 
             <div className="min-w-[220px]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5">
-                Rekapitulasi Tahunan
-              </p>
               <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-tight text-foreground">
                 {data?.selectedPkm ? data.selectedPkm.nama : "Semua Puskesmas"}
               </h1>

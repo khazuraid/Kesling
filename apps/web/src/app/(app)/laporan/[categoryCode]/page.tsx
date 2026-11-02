@@ -368,9 +368,6 @@ export default function DynamicLaporanPage() {
       <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-              Pelaporan Program
-            </p>
             <div className="flex items-center gap-2.5">
               <span className="text-xl sm:text-2xl">{category?.icon || "\uD83D\uDCC4"}</span>
               <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">

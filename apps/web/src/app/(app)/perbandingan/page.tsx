@@ -67,11 +67,8 @@ export default function PerbandinganPage() {
         <div className="w-full max-w-[1600px] mx-auto">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-                Kinerja Wilayah
-              </p>
               <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
-                Perbandingan
+                Perbandingan Kinerja Puskesmas
               </h1>
               <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
                 <span className="tabular-nums font-bold text-foreground">

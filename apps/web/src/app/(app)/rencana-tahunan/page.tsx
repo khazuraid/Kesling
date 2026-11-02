@@ -65,9 +65,6 @@ export default function RencanaTahunanPage() {
       <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-              Perencanaan
-            </p>
             <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
               Rencana Tahunan
             </h1>

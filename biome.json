@@ -54,6 +54,7 @@
       "!**/Pods",
       "!**/Kesling Mobile",
       "!**/.claude",
+      "!**/.impeccable",
       "!**/.agents",
       "!**/.gemini",
       "!**/graphify-out"

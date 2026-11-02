@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const user = session?.user as any;
   const [tab, setTab] = useState<string>("overview");
   const [nama, setNama] = useState(user?.name || "");
+  const [username, setUsername] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   const { data: profileData, refetch: refetchProfile } = useQuery<{
     id: number;
     nama: string;
+    username?: string | null;
     email: string;
     role: string;
     puskesmas?: { nama: string };
@@ -45,7 +47,10 @@ export default function ProfilePage() {
     } else if (user?.name) {
       setNama(user.name);
     }
-  }, [profileData?.nama, user?.name]);
+    if (profileData?.username !== undefined) {
+      setUsername(profileData.username || "");
+    }
+  }, [profileData?.nama, profileData?.username, user?.name]);
 
   const { data: activity = [], isLoading: activityLoading } = useQuery<any[]>({
     queryKey: ["audit-log-me"],
@@ -85,7 +90,7 @@ export default function ProfilePage() {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama: cleanNama }),
+        body: JSON.stringify({ nama: cleanNama, username: username.trim() }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Gagal memperbarui profil");
@@ -134,6 +139,7 @@ export default function ProfilePage() {
   }
 
   const displayName = profileData?.nama || user?.name || "Profil";
+  const displayUsername = profileData?.username;
   const displayEmail = profileData?.email || user?.email || "";
   const displayRole = profileData?.role || user?.role || "-";
   const displayPuskesmas = profileData?.puskesmas?.nama || user?.puskesmasNama;
@@ -150,13 +156,17 @@ export default function ProfilePage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1">
-                {displayRole} {displayPuskesmas ? `· ${displayPuskesmas}` : ""}
-              </p>
-              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
-                {displayName}
+              <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground flex items-center gap-2">
+                <span>{displayName}</span>
+                {displayUsername && (
+                  <span className="text-[13px] sm:text-[14px] font-mono font-medium text-muted-foreground">
+                    @{displayUsername}
+                  </span>
+                )}
               </h1>
-              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-1.5">{displayEmail}</p>
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-1.5">
+                {displayRole} {displayPuskesmas ? `· ${displayPuskesmas}` : ""} · {displayEmail}
+              </p>
             </div>
           </div>
         </div>
@@ -176,6 +186,9 @@ export default function ProfilePage() {
               </Avatar>
               <div>
                 <h2 className="text-[15px] font-bold tracking-tight text-foreground">{displayName}</h2>
+                {displayUsername && (
+                  <p className="text-[12px] font-mono text-muted-foreground mt-0.5">@{displayUsername}</p>
+                )}
                 <Badge variant="outline" className="mt-2 text-[10px] uppercase font-bold tracking-wider">
                   {displayRole}
                 </Badge>
@@ -191,6 +204,14 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Nama</span>
                   <span className="text-[12px] font-bold text-foreground">{displayName}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">
+                    Username
+                  </span>
+                  <span className="text-[12px] font-bold text-foreground font-mono">
+                    {displayUsername ? `@${displayUsername}` : "—"}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Email</span>
@@ -222,23 +243,23 @@ export default function ProfilePage() {
           <div className="lg:col-span-2">
             <Card className="overflow-hidden">
               <Tabs value={tab} onValueChange={setTab} className="w-full">
-                <div className="border-b border-border bg-surface-subtle px-4 pt-3">
-                  <TabsList className="bg-transparent gap-2 p-0 h-auto">
+                <div className="border-b border-border bg-surface-subtle px-4">
+                  <TabsList className="bg-transparent gap-4 p-0 h-auto border-0">
                     <TabsTrigger
                       value="overview"
-                      className="gap-2 px-4 py-2.5 data-[state=active]:bg-surface data-[state=active]:shadow-xs rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"
+                      className="gap-2 px-3 py-3 rounded-none border-b-2 -mb-px border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
                     >
                       <User className="w-4 h-4" /> Overview
                     </TabsTrigger>
                     <TabsTrigger
                       value="security"
-                      className="gap-2 px-4 py-2.5 data-[state=active]:bg-surface data-[state=active]:shadow-xs rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"
+                      className="gap-2 px-3 py-3 rounded-none border-b-2 -mb-px border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
                     >
                       <Lock className="w-4 h-4" /> Security
                     </TabsTrigger>
                     <TabsTrigger
                       value="mobile"
-                      className="gap-2 px-4 py-2.5 data-[state=active]:bg-surface data-[state=active]:shadow-xs rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary"
+                      className="gap-2 px-3 py-3 rounded-none border-b-2 -mb-px border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
                     >
                       <Smartphone className="w-4 h-4" /> Akses Mobile
                     </TabsTrigger>
@@ -263,6 +284,17 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">
+                            Username (Login)
+                          </label>
+                          <Input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/^@/, ""))}
+                            placeholder="Contoh: fikri atau staf_kesling"
+                            className="h-10 text-[12px]"
+                          />
+                        </div>
+                        <div className="space-y-1.5 sm:col-span-2">
                           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">
                             Email
                           </label>

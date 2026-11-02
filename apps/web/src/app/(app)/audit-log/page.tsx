@@ -258,9 +258,6 @@ export default function AuditLogPage() {
         <div className="w-full max-w-[1600px] mx-auto space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-                Sistem
-              </p>
               <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 Log & Pemantauan
               </h1>

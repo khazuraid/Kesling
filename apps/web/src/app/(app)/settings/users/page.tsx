@@ -28,6 +28,7 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     nama: "",
+    username: "",
     email: "",
     password: "",
     role: "OPERATOR",
@@ -49,21 +50,28 @@ export default function UsersPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const body = { ...form, puskesmasId: form.puskesmasId ? Number(form.puskesmasId) : null };
+      const body = {
+        ...form,
+        username: form.username ? form.username.trim().toLowerCase() : null,
+        puskesmasId: form.puskesmasId ? Number(form.puskesmasId) : null,
+      };
       const url = editId ? `/api/users/${editId}` : "/api/users";
       const res = await fetch(url, {
         method: editId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Gagal menyimpan operator");
+      }
     },
     onSuccess: () => {
       toast.success(editId ? "Operator updated" : "Operator created");
       setShowForm(false);
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: () => toast.error("Failed to save operator"),
+    onError: (err: any) => toast.error(err.message || "Failed to save operator"),
   });
 
   const deleteMutation = useMutation({
@@ -82,6 +90,7 @@ export default function UsersPage() {
     setEditId(user.id);
     setForm({
       nama: user.nama,
+      username: user.username || "",
       email: user.email,
       password: "",
       role: user.role,
@@ -93,13 +102,23 @@ export default function UsersPage() {
 
   function openAdd() {
     setEditId(null);
-    setForm({ nama: "", email: "", password: "", role: "OPERATOR", puskesmasId: "", telegramChatId: "" });
+    setForm({
+      nama: "",
+      username: "",
+      email: "",
+      password: "",
+      role: "OPERATOR",
+      puskesmasId: "",
+      telegramChatId: "",
+    });
     setShowForm(true);
   }
 
   const filtered = users.filter(
     (u: any) =>
-      u.nama.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()),
+      u.nama.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.username?.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -109,7 +128,7 @@ export default function UsersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Cari nama atau email..."
+            placeholder="Cari nama, username, atau email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -139,7 +158,7 @@ export default function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[280px]">Nama</TableHead>
+                  <TableHead className="w-[280px]">Nama & Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Puskesmas</TableHead>
@@ -158,7 +177,12 @@ export default function UsersPage() {
                               {u.nama.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-[12px] font-bold text-foreground">{u.nama}</span>
+                          <div className="leading-tight">
+                            <div className="text-[12px] font-bold text-foreground">{u.nama}</div>
+                            {u.username && (
+                              <div className="text-[11px] font-mono text-muted-foreground">@{u.username}</div>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-[12px] font-medium text-muted-foreground">{u.email}</TableCell>
@@ -239,6 +263,16 @@ export default function UsersPage() {
           <div className="space-y-1.5">
             <Label className={labelCls}>Nama</Label>
             <Input value={form.nama} onChange={(e) => setForm({ ...form, nama: e.target.value })} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label className={labelCls}>
+              Username <span className="font-medium normal-case">(opsional untuk login)</span>
+            </Label>
+            <Input
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="Contoh: fikri atau petugas_kesling"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className={labelCls}>Email</Label>

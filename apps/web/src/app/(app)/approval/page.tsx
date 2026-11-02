@@ -171,7 +171,6 @@ export default function ApprovalPage() {
                 </span>
               </div>
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-0.5">Verifikasi</p>
                 <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                   Pusat Approval
                 </h1>

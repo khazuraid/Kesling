@@ -15,6 +15,7 @@ export async function GET() {
     select: {
       id: true,
       nama: true,
+      username: true,
       email: true,
       role: true,
       puskesmasId: true,
@@ -39,7 +40,7 @@ export const PUT = withRateLimit(
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { nama, currentPassword, newPassword } = await req.json();
+    const { nama, username, currentPassword, newPassword } = await req.json();
 
     const data: any = {};
     if (nama !== undefined && nama !== null) {
@@ -48,6 +49,21 @@ export const PUT = withRateLimit(
         return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 });
       }
       data.nama = trimmed;
+    }
+
+    if (username !== undefined && username !== null) {
+      const cleanUsername = String(username).replace(/^@/, "").trim().toLowerCase();
+      if (cleanUsername) {
+        const exist = await prisma.user.findFirst({
+          where: { username: cleanUsername, NOT: { id: user.id } },
+        });
+        if (exist) {
+          return NextResponse.json({ error: "Username sudah digunakan oleh akun lain" }, { status: 400 });
+        }
+        data.username = cleanUsername;
+      } else {
+        data.username = null;
+      }
     }
 
     if (currentPassword && newPassword) {
@@ -88,6 +104,7 @@ export const PUT = withRateLimit(
       select: {
         id: true,
         nama: true,
+        username: true,
         email: true,
         role: true,
         puskesmasId: true,

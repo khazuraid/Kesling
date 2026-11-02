@@ -277,11 +277,8 @@ export default function SettingsPage() {
       <div className="w-full bg-surface border-b border-border px-6 sm:px-8 py-5 sm:py-6">
         <div className="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-              Sistem & Konfigurasi
-            </p>
             <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
-              Pengaturan
+              Pengaturan Sistem
             </h1>
             <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mt-2">
               Master data, target capaian, manajemen pengguna, dan integrasi API

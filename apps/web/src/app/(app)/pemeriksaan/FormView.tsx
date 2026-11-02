@@ -1252,14 +1252,14 @@ function FieldInput({
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
               {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary">
-                  👤 Akun Pemeriksa
+                  Akun Pemeriksa
                 </Badge>
               )}
               {(f.config?.autoFill === "USER_PUSKESMAS" ||
                 f.pertanyaan?.toLowerCase().includes("wilayah") ||
                 f.pertanyaan?.toLowerCase().includes("puskesmas")) && (
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-600">
-                  🏥 Wilayah Kerja
+                  Wilayah Kerja
                 </Badge>
               )}
               {f.config?.targetGolongan &&
@@ -1273,7 +1273,7 @@ function FieldInput({
                         : "bg-indigo-500/10 text-indigo-800 border-indigo-300"
                     }`}
                   >
-                    🎯 Khusus{" "}
+                    Khusus{" "}
                     {f.config.targetGolongan === "A1"
                       ? "Golongan A1"
                       : f.config.targetGolongan === "A2"
@@ -1283,7 +1283,7 @@ function FieldInput({
                 )}
               {disabled && (
                 <Badge variant="warning" className="text-[10px] px-2 py-0.5 font-bold">
-                  🚫 Tidak Dinilai
+                  Tidak Dinilai
                 </Badge>
               )}
             </div>

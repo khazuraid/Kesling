@@ -328,15 +328,25 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Top 3 Podium Cards */}
             <div className="space-y-3">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                Top 3 Teratas
-              </span>
+              <h3 className="text-sm font-bold text-foreground">Top 3 Teratas</h3>
               <div className="space-y-2.5">
                 {top3.map((pkm, idx) => {
                   const medalColors = [
-                    { bg: "bg-amber-400 text-amber-950 border-amber-300", badge: "🥇 Rank 1", color: "text-amber-500" },
-                    { bg: "bg-slate-300 text-slate-900 border-slate-200", badge: "🥈 Rank 2", color: "text-slate-400" },
-                    { bg: "bg-amber-600/80 text-white border-amber-500", badge: "🥉 Rank 3", color: "text-amber-600" },
+                    {
+                      bg: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/25",
+                      badge: "Rank 1",
+                      color: "text-amber-500",
+                    },
+                    {
+                      bg: "bg-slate-500/10 text-slate-800 dark:text-slate-200 border-slate-500/25",
+                      badge: "Rank 2",
+                      color: "text-slate-400",
+                    },
+                    {
+                      bg: "bg-orange-500/10 text-orange-800 dark:text-orange-300 border-orange-500/25",
+                      badge: "Rank 3",
+                      color: "text-orange-600",
+                    },
                   ][idx];
 
                   return (
@@ -372,9 +382,7 @@ export default async function DashboardPage() {
 
             {/* Full Ranking Table */}
             <div className="lg:col-span-2 space-y-3">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                Peringkat Keseluruhan ({pkmStats.length} Puskesmas)
-              </span>
+              <h3 className="text-sm font-bold text-foreground">Peringkat Keseluruhan ({pkmStats.length} Puskesmas)</h3>
               <div className="rounded-card border border-border bg-surface divide-y divide-border overflow-hidden shadow-subtle">
                 <div className="p-3 bg-surface-subtle grid grid-cols-12 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   <span className="col-span-1 text-center">#</span>
@@ -389,7 +397,7 @@ export default async function DashboardPage() {
                       href={`/laporan/tpp?puskesmasId=${pkm.id}`}
                       className="grid grid-cols-12 items-center p-3 hover:bg-surface-subtle transition-colors group text-[12px]"
                     >
-                      <span className="col-span-1 text-center font-bold font-mono text-muted-foreground tabular-nums">
+                      <span className="col-span-1 text-center font-semibold text-muted-foreground tabular-nums">
                         {idx + 1}
                       </span>
                       <div className="col-span-6 sm:col-span-6 min-w-0 pr-2">

@@ -449,36 +449,40 @@ export default function DashboardPkmPage() {
               </div>
 
               {/* Action Toolbar */}
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-                <LaporanFilter />
-                <Button
-                  onClick={handleExportPDF}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-3.5 border-border hover:bg-surface-subtle"
-                >
-                  <Download className="w-3.5 h-3.5 text-primary" />
-                  <span className="hidden sm:inline">Cetak</span> PDF
-                </Button>
-                <Button
-                  onClick={handleExportCSV}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-3.5 border-border hover:bg-surface-subtle"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">Ekspor</span> CSV
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className="rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-4 bg-primary text-white hover:bg-primary/90"
-                >
-                  <Link href={`/laporan?bulan=${bulan}&tahun=${tahun}`}>
-                    <FileText className="w-3.5 h-3.5" />
-                    Input Laporan
-                  </Link>
-                </Button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full lg:w-auto">
+                <div className="w-full sm:w-auto">
+                  <LaporanFilter />
+                </div>
+                <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+                  <Button
+                    onClick={handleExportPDF}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-3 sm:px-3.5 border-border hover:bg-surface-subtle justify-center"
+                  >
+                    <Download className="w-3.5 h-3.5 text-primary" />
+                    <span>PDF</span>
+                  </Button>
+                  <Button
+                    onClick={handleExportCSV}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-3 sm:px-3.5 border-border hover:bg-surface-subtle justify-center"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>CSV</span>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="col-span-2 sm:col-span-1 rounded-full shadow-xs gap-1.5 text-[11px] font-bold h-9 sm:h-10 px-4 bg-primary text-white hover:bg-primary/90 justify-center"
+                  >
+                    <Link href={`/laporan?bulan=${bulan}&tahun=${tahun}`}>
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Input Laporan</span>
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -617,43 +621,45 @@ export default function DashboardPkmPage() {
           {/* ── TABS NAVIGASI ANALITIK UTAMA ── */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
-              <TabsList className="bg-surface border border-border h-11 p-1 rounded-xl">
-                <TabsTrigger
-                  value="matriks"
-                  className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4"
-                >
-                  <ListChecks className="w-4 h-4" />
-                  Matriks Kinerja & Data Riil
-                </TabsTrigger>
-                <TabsTrigger
-                  value="visual"
-                  className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Grafik Komparasi
-                </TabsTrigger>
-                <TabsTrigger
-                  value="isian"
-                  className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4"
-                >
-                  <Layers className="w-4 h-4" />
-                  Rincian Nilai Isian
-                </TabsTrigger>
-                <TabsTrigger
-                  value="prioritas"
-                  className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Analisis Kesenjangan & Aksi
-                </TabsTrigger>
-              </TabsList>
+              <div className="w-full sm:w-auto overflow-x-auto scrollbar-none touch-pan-x -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+                <TabsList className="bg-surface border border-border h-11 p-1 rounded-xl flex items-center justify-start w-max sm:w-auto">
+                  <TabsTrigger
+                    value="matriks"
+                    className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4 shrink-0"
+                  >
+                    <ListChecks className="w-4 h-4" />
+                    Matriks Kinerja & Data Riil
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="visual"
+                    className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4 shrink-0"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    Grafik Komparasi
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="isian"
+                    className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4 shrink-0"
+                  >
+                    <Layers className="w-4 h-4" />
+                    Rincian Nilai Isian
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="prioritas"
+                    className="rounded-lg text-[12px] font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all px-3 sm:px-4 shrink-0"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Analisis Kesenjangan & Aksi
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-              <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 font-bold border border-emerald-500/20">
+              <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 font-bold border border-emerald-500/20 text-[10px] sm:text-[11px]">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  {analytics.approvedLaporan} Disetujui Dinkes
+                  {analytics.approvedLaporan} Disetujui
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 font-bold border border-amber-500/20">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 font-bold border border-amber-500/20 text-[10px] sm:text-[11px]">
                   <Clock className="w-3.5 h-3.5" />
                   {analytics.submittedLaporan} Menunggu Review
                 </span>
@@ -678,23 +684,23 @@ export default function DashboardPkmPage() {
                     </div>
 
                     {/* Filter & Search Bar */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className="relative min-w-[200px]">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                      <div className="relative w-full sm:w-auto sm:min-w-[200px]">
                         <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           placeholder="Cari indikator / kode..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="h-9 pl-8 text-[12px] rounded-lg border-border bg-surface"
+                          className="h-9 pl-8 text-[12px] rounded-lg border-border bg-surface w-full"
                         />
                       </div>
-                      <div className="inline-flex items-center p-0.5 rounded-lg border border-border bg-surface text-[11px] font-bold">
+                      <div className="flex items-center p-0.5 rounded-lg border border-border bg-surface text-[11px] font-bold overflow-x-auto scrollbar-none w-full sm:w-auto justify-between sm:justify-start">
                         <Button
                           type="button"
                           variant={statusFilter === "ALL" ? "default" : "ghost"}
                           size="sm"
                           onClick={() => setStatusFilter("ALL")}
-                          className="h-7 px-2.5 text-[11px]"
+                          className="h-7 px-2 sm:px-2.5 text-[10px] sm:text-[11px] flex-1 sm:flex-initial"
                         >
                           Semua ({analytics.list.length})
                         </Button>
@@ -703,7 +709,7 @@ export default function DashboardPkmPage() {
                           variant={statusFilter === "ACHIEVED" ? "default" : "ghost"}
                           size="sm"
                           onClick={() => setStatusFilter("ACHIEVED")}
-                          className={`h-7 px-2.5 text-[11px] ${statusFilter === "ACHIEVED" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
+                          className={`h-7 px-2 sm:px-2.5 text-[10px] sm:text-[11px] flex-1 sm:flex-initial ${statusFilter === "ACHIEVED" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
                         >
                           Tercapai ({analytics.achievedCount})
                         </Button>
@@ -712,7 +718,7 @@ export default function DashboardPkmPage() {
                           variant={statusFilter === "DEFICIT" ? "default" : "ghost"}
                           size="sm"
                           onClick={() => setStatusFilter("DEFICIT")}
-                          className={`h-7 px-2.5 text-[11px] ${statusFilter === "DEFICIT" ? "bg-amber-600 hover:bg-amber-700 text-white" : ""}`}
+                          className={`h-7 px-2 sm:px-2.5 text-[10px] sm:text-[11px] flex-1 sm:flex-initial ${statusFilter === "DEFICIT" ? "bg-amber-600 hover:bg-amber-700 text-white" : ""}`}
                         >
                           Defisit ({analytics.deficitCount})
                         </Button>
@@ -721,7 +727,7 @@ export default function DashboardPkmPage() {
                           variant={statusFilter === "EMPTY" ? "default" : "ghost"}
                           size="sm"
                           onClick={() => setStatusFilter("EMPTY")}
-                          className="h-7 px-2.5 text-[11px]"
+                          className="h-7 px-2 sm:px-2.5 text-[10px] sm:text-[11px] flex-1 sm:flex-initial"
                         >
                           Kosong ({analytics.emptyCount})
                         </Button>
@@ -922,7 +928,7 @@ export default function DashboardPkmPage() {
                     </div>
                   </div>
 
-                  <div className="h-[360px] w-full">
+                  <div className="h-[280px] sm:h-[360px] w-full">
                     {analytics.comparativeChartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -1019,7 +1025,7 @@ export default function DashboardPkmPage() {
                     </div>
                   </div>
 
-                  <div className="h-[360px] w-full">
+                  <div className="h-[280px] sm:h-[360px] w-full">
                     {analytics.volumeChartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -1100,7 +1106,7 @@ export default function DashboardPkmPage() {
                     </div>
 
                     {/* Selector Kategori Aktif */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x pb-1 w-full md:max-w-xl">
                       {analytics.list.map((c) => (
                         <Button
                           key={c.code}
@@ -1108,7 +1114,7 @@ export default function DashboardPkmPage() {
                           variant={activeCategoryCode === c.code ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedCategoryCode(c.code)}
-                          className="h-8 px-3 text-[11px] font-bold whitespace-nowrap"
+                          className="h-8 px-2.5 sm:px-3 text-[11px] font-bold whitespace-nowrap shrink-0"
                         >
                           <span className="mr-1">{c.icon}</span> {c.nama}
                         </Button>

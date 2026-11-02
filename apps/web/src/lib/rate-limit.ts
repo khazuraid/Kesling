@@ -43,3 +43,49 @@ export function withRateLimit(handler: RouteHandler, config?: RateLimitConfig): 
     return handler(req, ctx);
   };
 }
+
+/**
+ * Cek dan catat brute force login via Redis (Per-IP dan Per-Email).
+ * Mengembalikan:
+ * - isBlocked: true jika sudah mencapai batas maksimal gagal
+ * - remainingAttempts: sisa percobaan
+ * - isLockedOut: jika akun/IP terkunci
+ */
+export async function checkLoginRateLimit(identifier: string, type: "ip" | "email") {
+  const maxAttempts = type === "ip" ? 15 : 5;
+  const key = `login_fail:${type}:${identifier.toLowerCase().trim()}`;
+
+  try {
+    const attempts = await redis.get(key);
+    const count = attempts ? parseInt(attempts, 10) : 0;
+
+    return {
+      isBlocked: count >= maxAttempts,
+      remainingAttempts: Math.max(0, maxAttempts - count),
+      currentAttempts: count,
+      maxAttempts,
+    };
+  } catch {
+    return { isBlocked: false, remainingAttempts: maxAttempts, currentAttempts: 0, maxAttempts };
+  }
+}
+
+export async function recordFailedLogin(identifier: string, type: "ip" | "email") {
+  const windowSec = 15 * 60; // 15 menit
+  const key = `login_fail:${type}:${identifier.toLowerCase().trim()}`;
+
+  try {
+    const current = await redis.incr(key);
+    if (current === 1) await redis.expire(key, windowSec);
+    return current;
+  } catch {
+    return 0;
+  }
+}
+
+export async function clearLoginRateLimit(identifier: string, type: "ip" | "email") {
+  const key = `login_fail:${type}:${identifier.toLowerCase().trim()}`;
+  try {
+    await redis.del(key);
+  } catch {}
+}

@@ -10,14 +10,34 @@ export const PUT = withAdmin(async (req: NextRequest, { params }: { params: Prom
 
   const old = await prisma.user.findUnique({
     where: { id: Number(id) },
-    select: { nama: true, email: true, role: true },
+    select: { nama: true, username: true, email: true, role: true },
   });
+
+  const cleanUsername =
+    body.username !== undefined ? (body.username ? String(body.username).trim().toLowerCase() : null) : undefined;
+
+  if (cleanUsername) {
+    const existingUsername = await prisma.user.findFirst({
+      where: { username: cleanUsername, NOT: { id: Number(id) } },
+    });
+    if (existingUsername) {
+      return NextResponse.json({ error: "Username sudah terdaftar" }, { status: 400 });
+    }
+  }
+
   const data: any = {
     nama: body.nama,
+    username: cleanUsername,
     email: body.email,
     role: body.role,
     puskesmasId: body.puskesmasId || null,
     telegramChatId: body.telegramChatId || null,
+    telegramUsername:
+      body.telegramUsername !== undefined
+        ? body.telegramUsername
+          ? String(body.telegramUsername).replace(/^@/, "").trim()
+          : null
+        : undefined,
   };
   if (body.password) data.password = await hash(body.password, 12);
   const user = await prisma.user.update({ where: { id: Number(id) }, data });
@@ -28,12 +48,12 @@ export const PUT = withAdmin(async (req: NextRequest, { params }: { params: Prom
       action: "UPDATE",
       tableName: "user",
       recordId: user.id,
-      oldData: { nama: old?.nama, email: old?.email, role: old?.role },
-      newData: { nama: user.nama, email: user.email, role: user.role },
+      oldData: { nama: old?.nama, username: old?.username, email: old?.email, role: old?.role },
+      newData: { nama: user.nama, username: user.username, email: user.email, role: user.role },
     },
   });
 
-  return NextResponse.json({ id: user.id, nama: user.nama, email: user.email });
+  return NextResponse.json({ id: user.id, nama: user.nama, username: user.username, email: user.email });
 });
 
 export const DELETE = withAdmin(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {

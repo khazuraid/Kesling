@@ -457,11 +457,12 @@ export default function DataDasarSubCatPage() {
         <div className="w-full max-w-[1600px] mx-auto space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary mb-1.5 sm:mb-2">
-                <Link href="/data-dasar" className="hover:underline transition-colors">
-                  ← Data Dasar
-                </Link>
-              </p>
+              <Link
+                href="/data-dasar"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors mb-2"
+              >
+                ← Kembali ke Data Dasar
+              </Link>
               <h1 className="text-[22px] sm:text-[28px] font-black tracking-tight leading-none text-foreground">
                 {category?.nama || "Memuat..."}
               </h1>
