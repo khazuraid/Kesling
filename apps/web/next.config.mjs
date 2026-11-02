@@ -7,6 +7,9 @@ const nextConfig = {
   output: "standalone",
   compress: true,
   productionBrowserSourceMaps: false,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+  },
   outputFileTracingRoot: path.join(import.meta.dirname, "../../"),
   experimental: {
     optimizePackageImports: ["recharts", "lucide-react", "@tanstack/react-query"],

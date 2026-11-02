@@ -84,8 +84,8 @@ export function Turnstile({
           theme,
           size,
         });
-      } catch (err) {
-        console.error("[Turnstile] Render error:", err);
+      } catch {
+        // Abaikan log error di console klien
       }
     }
 
