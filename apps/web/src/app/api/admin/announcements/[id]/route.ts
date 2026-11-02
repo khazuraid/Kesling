@@ -1,0 +1,79 @@
+import { type AnnouncementTargetRole, type AnnouncementType, prisma } from "@apps-kes/database";
+import { type NextRequest, NextResponse } from "next/server";
+import { withAdmin } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
+
+export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
+  try {
+    const id = Number(params?.id);
+    if (!id || Number.isNaN(id)) {
+      return NextResponse.json({ error: "ID pengumuman tidak valid." }, { status: 400 });
+    }
+
+    const existing = await prisma.announcement.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Pengumuman tidak ditemukan." }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const { title, content, type, isActive, startDate, endDate, targetRole, isPopup } = body;
+
+    const data: any = {};
+    if (title !== undefined) data.title = String(title).trim();
+    if (content !== undefined) data.content = String(content).trim();
+    if (type !== undefined) data.type = type as AnnouncementType;
+    if (isActive !== undefined) data.isActive = Boolean(isActive);
+    if (startDate !== undefined) data.startDate = startDate ? new Date(startDate) : new Date();
+    if (endDate !== undefined) data.endDate = endDate ? new Date(endDate) : null;
+    if (targetRole !== undefined) data.targetRole = targetRole as AnnouncementTargetRole;
+    if (isPopup !== undefined) data.isPopup = Boolean(isPopup);
+
+    const updated = await prisma.announcement.update({
+      where: { id },
+      data,
+    });
+
+    await createAuditLog({
+      userId: user.id,
+      action: "UPDATE",
+      tableName: "announcement",
+      recordId: id,
+      oldData: existing,
+      newData: updated,
+    });
+
+    return NextResponse.json({ announcement: updated });
+  } catch (error) {
+    console.error("[Admin Announcement PUT] Error:", error);
+    return NextResponse.json({ error: "Gagal memperbarui pengumuman." }, { status: 500 });
+  }
+});
+
+export const DELETE = withAdmin(async (_req: NextRequest, { user, params }) => {
+  try {
+    const id = Number(params?.id);
+    if (!id || Number.isNaN(id)) {
+      return NextResponse.json({ error: "ID pengumuman tidak valid." }, { status: 400 });
+    }
+
+    const existing = await prisma.announcement.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Pengumuman tidak ditemukan." }, { status: 404 });
+    }
+
+    await prisma.announcement.delete({ where: { id } });
+
+    await createAuditLog({
+      userId: user.id,
+      action: "DELETE",
+      tableName: "announcement",
+      recordId: id,
+      oldData: existing,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[Admin Announcement DELETE] Error:", error);
+    return NextResponse.json({ error: "Gagal menghapus pengumuman." }, { status: 500 });
+  }
+});

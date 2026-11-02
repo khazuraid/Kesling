@@ -32,13 +32,13 @@ function LoginForm() {
     } catch {}
   }
 
-  // Step state: "credentials" atau "otp" (OTP dinonaktifkan sementara)
+  // Step state: "credentials" atau "otp" (OTP hanya jika belum verifikasi dalam 30 hari)
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [challengeToken, _setChallengeToken] = useState("");
-  const [maskedEmail, _setMaskedEmail] = useState("");
+  const [challengeToken, setChallengeToken] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
   const [otp, setOtp] = useState("");
 
   const [error, setError] = useState("");
@@ -56,28 +56,56 @@ function LoginForm() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Handle Login Langsung (Username/Email + Password + Turnstile)
+  // Handle Tahap 1: Validasi Kredensial & Cek Apakah Perlu OTP (30 hari sekali)
   async function handleCredentialsSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const res = await signIn("credentials", {
-        email: identifier,
-        password,
-        turnstileToken,
-        redirect: false,
-        callbackUrl: safeCallback,
+      const challengeRes = await fetch("/api/auth/login-challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier,
+          password,
+          turnstileToken,
+        }),
       });
 
-      setLoading(false);
+      const challengeData = await challengeRes.json();
 
-      if (res?.error) {
-        setError(res.error);
-      } else {
-        window.location.href = safeCallback;
+      if (!challengeRes.ok) {
+        setLoading(false);
+        setError(challengeData.error || "Gagal memproses kredensial masuk.");
+        return;
       }
+
+      // Kasus A: User masih dalam masa 30 hari verifikasi -> langsung login
+      if (!challengeData.requiresOtp) {
+        const res = await signIn("credentials", {
+          email: identifier,
+          password,
+          turnstileToken,
+          redirect: false,
+          callbackUrl: safeCallback,
+        });
+
+        setLoading(false);
+
+        if (res?.error) {
+          setError(res.error);
+        } else {
+          window.location.href = safeCallback;
+        }
+        return;
+      }
+
+      // Kasus B: User butuh verifikasi OTP (verifikasi pertama / > 30 hari)
+      setChallengeToken(challengeData.challengeToken);
+      setMaskedEmail(challengeData.maskedEmail);
+      setStep("otp");
+      setLoading(false);
     } catch {
       setLoading(false);
       setError("Terjadi kesalahan jaringan. Silakan periksa koneksi internet Anda.");

@@ -3,19 +3,29 @@ import nodemailer from "nodemailer";
 import { redis } from "./redis";
 
 // Buat transporter SMTP dari environment variables
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT || "587");
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM || `"Kesling Core - Dinkes Cirebon" <no-reply@kesling.biz.id>`;
+// Mendukung format standard (SMTP_*) dan format Laravel/Sumopod (MAIL_*)
+const smtpHost = process.env.MAIL_HOST || process.env.SMTP_HOST;
+const smtpPort = Number(process.env.MAIL_PORT || process.env.SMTP_PORT || "465");
+const smtpUser = process.env.MAIL_USERNAME || process.env.SMTP_USER;
+const smtpPass = process.env.MAIL_PASSWORD || process.env.SMTP_PASS;
+
+const defaultFromName = process.env.MAIL_FROM_NAME || "Kesling Core - Dinkes Cirebon";
+const defaultFromAddress = process.env.MAIL_FROM_ADDRESS || "no-reply@kesling.biz.id";
+const smtpFrom =
+  process.env.SMTP_FROM ||
+  (process.env.MAIL_FROM_ADDRESS
+    ? `"${defaultFromName}" <${defaultFromAddress}>`
+    : `"${defaultFromName}" <no-reply@kesling.biz.id>`);
 
 let transporter: nodemailer.Transporter | null = null;
 
 if (smtpHost && smtpUser && smtpPass) {
+  const isSecure = process.env.MAIL_ENCRYPTION?.toLowerCase() === "ssl" || smtpPort === 465;
+
   transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: smtpPort === 465,
+    secure: isSecure,
     auth: {
       user: smtpUser,
       pass: smtpPass,

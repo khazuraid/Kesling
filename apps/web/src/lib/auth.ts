@@ -37,6 +37,16 @@ export const authOptions: NextAuthOptions = {
         });
         if (!user) return null;
 
+        // Catat tanggal verifikasi OTP agar berlaku selama 30 hari ke depan
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastOtpVerifiedAt: new Date() },
+          });
+        } catch (dbErr) {
+          console.warn("[Auth OTP] Gagal perbarui lastOtpVerifiedAt:", dbErr);
+        }
+
         let ip = "unknown";
         try {
           const reqHeaders = await headers();

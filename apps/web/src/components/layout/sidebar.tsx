@@ -4,6 +4,7 @@ import {
   Activity,
   ArrowLeftRight,
   BarChart3,
+  Bell,
   Calendar,
   CalendarRange,
   ClipboardCheck,
@@ -120,7 +121,14 @@ function useMenuGroups() {
                 ? [{ label: "File Manager", href: "/file-manager", icon: <HardDrive className="w-4 h-4" /> }]
                 : []),
               ...(canSettings
-                ? [{ label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> }]
+                ? [
+                    {
+                      label: "Notifikasi & Siaran",
+                      href: "/settings/notifications",
+                      icon: <Bell className="w-4 h-4" />,
+                    },
+                    { label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> },
+                  ]
                 : []),
             ],
           },

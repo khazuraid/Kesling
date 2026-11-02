@@ -148,6 +148,7 @@ function checkBodySize(req: NextRequest): NextResponse | null {
 /* Admin-only routes */
 const ADMIN_ONLY_PREFIXES = [
   "/settings/users",
+  "/settings/notifications",
   "/laporan-builder",
   "/approval",
   "/api/laporan/approval",
@@ -155,6 +156,8 @@ const ADMIN_ONLY_PREFIXES = [
   "/api/backup",
   "/api/restore",
   "/api/import",
+  "/api/admin/notifications",
+  "/api/admin/announcements",
   "/api/master/dynamic-formulas",
   "/api/master/dynamic-parameters",
   "/api/master/dynamic-subcategories",

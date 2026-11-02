@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
+  Bell,
   Bot,
   Building2,
   Copy,
@@ -26,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import AISettingsPage from "./ai/page";
+import NotificationsSettingsPage from "./notifications/page";
 import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
 
@@ -266,6 +268,7 @@ export default function SettingsPage() {
     { key: "puskesmas", label: "Puskesmas", icon: Building2, desc: "Master faskes" },
     { key: "target", label: "Target", icon: Target, desc: "Capaian tahunan" },
     { key: "users", label: "Pengguna", icon: Users, desc: "Akun & peran" },
+    { key: "notifications", label: "Notifikasi", icon: Bell, desc: "Siaran & Pengumuman" },
     { key: "telegram", label: "Telegram", icon: Bot, desc: "Notifikasi bot" },
     { key: "ai", label: "AI Import", icon: Sparkles, desc: "Model & parser" },
     { key: "health", label: "Status Sistem", icon: Activity, desc: "Telemetri live" },
@@ -305,7 +308,7 @@ export default function SettingsPage() {
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* ── BENTO SETTINGS GRID ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -351,6 +354,7 @@ export default function SettingsPage() {
           {activeTab === "puskesmas" && <MasterCrud title="Master Puskesmas" apiUrl="/api/master/puskesmas" />}
           {activeTab === "target" && <TargetManagement />}
           {activeTab === "users" && <UsersPage />}
+          {activeTab === "notifications" && <NotificationsSettingsPage />}
           {activeTab === "telegram" && <TelegramSettingsPage />}
           {activeTab === "ai" && <AISettingsPage />}
           {activeTab === "health" && <SystemHealthDashboard />}

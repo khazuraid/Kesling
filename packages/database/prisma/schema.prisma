@@ -19,15 +19,18 @@ model User {
   telegramChatId   String?
   telegramUserId   String?    @unique
   telegramUsername String?
+  /// Tanggal terakhir user berhasil verifikasi OTP 2FA (untuk aturan OTP 30 hari sekali)
+  lastOtpVerifiedAt DateTime?
   /// Akun hasil seed wajib mengganti password sebelum memakai aplikasi.
   mustChangePassword Boolean  @default(false)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  auditLogs         AuditLog[]
-  notifications     Notification[]
-  inspectionResults InspectionResult[]
-  changelogs        Changelog[]
+  auditLogs              AuditLog[]
+  notifications          Notification[]
+  inspectionResults      InspectionResult[]
+  changelogs             Changelog[]
+  announcementDismissals AnnouncementDismissal[]
 
   @@map("user")
 }
@@ -328,6 +331,52 @@ model Notification {
 
   @@index([userId, isRead, createdAt])
   @@map("notification")
+}
+
+enum AnnouncementType {
+  INFO
+  WARNING
+  URGENT
+}
+
+enum AnnouncementTargetRole {
+  ALL
+  OPERATOR
+  DINKES
+  ADMIN
+}
+
+model Announcement {
+  id         Int                    @id @default(autoincrement())
+  title      String
+  content    String                 @db.Text
+  type       AnnouncementType       @default(INFO)
+  isActive   Boolean                @default(true)
+  startDate  DateTime               @default(now())
+  endDate    DateTime?
+  targetRole AnnouncementTargetRole @default(ALL)
+  isPopup    Boolean                @default(true)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  dismissals AnnouncementDismissal[]
+
+  @@index([isActive, isPopup, startDate, endDate, targetRole])
+  @@map("announcement")
+}
+
+model AnnouncementDismissal {
+  id             Int          @id @default(autoincrement())
+  announcementId Int
+  userId         Int
+  dismissedAt    DateTime     @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+  @@map("announcement_dismissal")
 }
 
 enum Role {

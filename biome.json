@@ -56,7 +56,9 @@
       "!**/.claude",
       "!**/.impeccable",
       "!**/.agents",
+      "!**/.agent",
       "!**/.gemini",
+      "!**/.codex",
       "!**/graphify-out"
     ]
   }

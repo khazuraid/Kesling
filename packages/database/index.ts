@@ -15,8 +15,9 @@ export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
 /**
  * Self-healing schema bootstrap:
- * Memastikan kolom-kolom baru seperti 'username' pada tabel 'user' selalu ada di database fisik,
- * mencegah kegagalan login jika deployment container mendahului migrasi atau psql migration terlewat.
+ * Memastikan kolom-kolom baru seperti 'username' pada tabel 'user' serta tabel baru
+ * seperti 'announcement' & 'announcement_dismissal' selalu ada di database fisik,
+ * mencegah kegagalan jika deployment container mendahului migrasi atau psql migration terlewat.
  */
 export async function ensureDbSchema(): Promise<void> {
   if (!globalForPrisma.bootstrapPromise) {
@@ -24,7 +25,48 @@ export async function ensureDbSchema(): Promise<void> {
       try {
         await pgPool.query(`
           ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "username" TEXT;
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "lastOtpVerifiedAt" TIMESTAMP(3);
           CREATE UNIQUE INDEX IF NOT EXISTS "user_username_key" ON "user"("username");
+
+          DO $$ BEGIN
+            CREATE TYPE "AnnouncementType" AS ENUM ('INFO', 'WARNING', 'URGENT');
+          EXCEPTION
+            WHEN duplicate_object THEN NULL;
+          END $$;
+
+          DO $$ BEGIN
+            CREATE TYPE "AnnouncementTargetRole" AS ENUM ('ALL', 'OPERATOR', 'DINKES', 'ADMIN');
+          EXCEPTION
+            WHEN duplicate_object THEN NULL;
+          END $$;
+
+          CREATE TABLE IF NOT EXISTS "announcement" (
+            "id" SERIAL PRIMARY KEY,
+            "title" TEXT NOT NULL,
+            "content" TEXT NOT NULL,
+            "type" "AnnouncementType" NOT NULL DEFAULT 'INFO',
+            "isActive" BOOLEAN NOT NULL DEFAULT true,
+            "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "endDate" TIMESTAMP(3),
+            "targetRole" "AnnouncementTargetRole" NOT NULL DEFAULT 'ALL',
+            "isPopup" BOOLEAN NOT NULL DEFAULT true,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE INDEX IF NOT EXISTS "announcement_isActive_isPopup_startDate_endDate_targetRole_idx"
+            ON "announcement"("isActive", "isPopup", "startDate", "endDate", "targetRole");
+
+          CREATE TABLE IF NOT EXISTS "announcement_dismissal" (
+            "id" SERIAL PRIMARY KEY,
+            "announcementId" INTEGER NOT NULL REFERENCES "announcement"("id") ON DELETE CASCADE,
+            "userId" INTEGER NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+            "dismissedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT "announcement_dismissal_announcementId_userId_key" UNIQUE ("announcementId", "userId")
+          );
+
+          CREATE INDEX IF NOT EXISTS "announcement_dismissal_userId_idx"
+            ON "announcement_dismissal"("userId");
         `);
       } catch (err: any) {
         // Jangan crash jika tabel belum dibuat sama sekali saat awal setup

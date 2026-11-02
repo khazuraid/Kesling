@@ -146,7 +146,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errorMsg }, { status: 401 });
     }
 
-    // 4. Kredensial Valid -> Generate OTP & Simpan Challenge di Redis
+    // 4. Kredensial Valid -> Cek apakah butuh verifikasi OTP (Aturan: hanya sebulan sekali / 30 hari)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const isOtpRequired = !user.lastOtpVerifiedAt || user.lastOtpVerifiedAt < thirtyDaysAgo;
+
+    if (!isOtpRequired) {
+      // Masih dalam masa 30 hari verifikasi valid -> langsung login tanpa kirim OTP baru
+      return NextResponse.json({
+        success: true,
+        requiresOtp: false,
+      });
+    }
+
+    // Perlu OTP (verifikasi pertama kali atau sudah lebih dari 30 hari)
     const { challengeToken, otp } = await createOtpChallenge(user.id, user.email);
 
     // Kirim email OTP

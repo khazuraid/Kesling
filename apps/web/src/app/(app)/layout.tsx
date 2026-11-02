@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AnnouncementModal } from "@/components/announcement-modal";
 import { CommandPalette } from "@/components/command-palette";
 import { KeyboardHints } from "@/components/keyboard-hints";
 import { DesktopHeader } from "@/components/layout/desktop-header";
@@ -26,6 +27,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
         </main>
       </SidebarOffset>
+      <AnnouncementModal />
       <CommandPalette />
       <KeyboardHints />
     </div>
