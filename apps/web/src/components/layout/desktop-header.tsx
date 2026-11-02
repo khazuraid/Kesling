@@ -57,11 +57,11 @@ export function DesktopHeader() {
   }
 
   return (
-    <header className="hidden md:flex sticky top-0 z-20 h-16 w-full items-center justify-between border-b border-border bg-surface/90 backdrop-blur-md px-6">
+    <header className="hidden md:flex sticky top-0 z-20 h-16 w-full items-center justify-between border-b border-border/80 bg-surface/85 backdrop-blur-xl px-6 transition-colors">
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-2">
-          <h1 className="text-sm font-extrabold tracking-tight text-foreground truncate">{currentMeta.title}</h1>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-subtle text-primary border border-primary/20">
+          <h1 className="text-[13px] font-extrabold tracking-tight text-foreground truncate">{currentMeta.title}</h1>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary-subtle text-primary border border-primary/20 shadow-2xs">
             <Sparkles className="w-2.5 h-2.5" />
             Civic System
           </span>
@@ -69,35 +69,35 @@ export function DesktopHeader() {
         <p className="text-[11px] font-medium text-muted-foreground truncate">{currentMeta.subtitle}</p>
       </div>
 
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Quick Search */}
         <button
           onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-palette"))}
           aria-label="Cari Cepat"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/80 bg-surface-subtle hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition-all shadow-2xs"
         >
           <Search className="w-3.5 h-3.5" />
           <span>Cari fitur / sasaran...</span>
-          <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[11px] font-bold text-muted-foreground">
+          <kbd className="inline-flex items-center gap-0.5 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-mono font-bold text-muted-foreground">
             ⌘K
           </kbd>
         </button>
 
         {/* Notification Bell */}
-        <div className="flex items-center justify-center p-1 rounded-lg border border-border bg-surface hover:bg-muted/60 transition">
+        <div className="flex items-center justify-center p-1 rounded-xl border border-border/80 bg-surface hover:bg-surface-subtle transition-all shadow-2xs">
           <NotificationBell placement="bottom" />
         </div>
 
         {/* Puskesmas/Role Badge */}
-        <div className="flex items-center gap-2 pl-2 border-l border-border">
-          <div className="w-7 h-7 rounded-lg bg-primary-subtle border border-primary/25 flex items-center justify-center text-xs font-black text-primary">
+        <div className="flex items-center gap-2 pl-3 border-l border-border/80">
+          <div className="w-8 h-8 rounded-xl bg-primary-subtle border border-primary/25 flex items-center justify-center text-xs font-black text-primary shadow-2xs">
             {session?.user?.name?.charAt(0) || "K"}
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-xs font-bold text-foreground leading-tight truncate max-w-[120px]">
+            <span className="text-xs font-bold text-foreground leading-tight truncate max-w-[130px]">
               {session?.user?.name || "Sanitarian"}
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground leading-none uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-muted-foreground leading-none uppercase tracking-wider mt-0.5">
               {(session?.user as any)?.role || "Operator"}
             </span>
           </div>

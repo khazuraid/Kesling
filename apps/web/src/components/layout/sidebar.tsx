@@ -167,15 +167,21 @@ export function SideNav() {
       <Link
         href={item.href}
         onClick={() => setMobileOpen(false)}
-        className={`flex items-center rounded-lg h-9 text-[12px] font-semibold transition-all duration-150 ${
+        className={`group relative flex items-center rounded-xl h-10 text-[12px] font-semibold transition-all duration-200 active:scale-[0.98] ${
           collapsed ? "md:justify-center px-3 md:px-0" : "gap-2.5 px-3"
         } ${
           active
-            ? "bg-primary-subtle text-primary border-l-2 border-primary font-bold shadow-xs"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/70 border-l-2 border-transparent"
+            ? "bg-primary text-white font-bold shadow-xs shadow-primary/25"
+            : "text-muted-foreground hover:text-foreground hover:bg-surface-subtle"
         }`}
       >
-        <span className={`shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`}>{item.icon}</span>
+        <span
+          className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+            active ? "text-white" : "text-muted-foreground group-hover:text-foreground"
+          }`}
+        >
+          {item.icon}
+        </span>
         {(!collapsed || mobileOpen) && <span className="truncate">{item.label}</span>}
       </Link>
     );
@@ -239,10 +245,10 @@ export function SideNav() {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-surface border-r border-border text-foreground flex flex-col ${
-          mounted ? "transition-all duration-200" : ""
+        className={`fixed left-0 top-0 bottom-0 bg-surface/95 backdrop-blur-xl border-r border-border/80 text-foreground flex flex-col ${
+          mounted ? "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" : ""
         } overflow-hidden select-none ${
-          mobileOpen ? "translate-x-0 z-50 w-[260px] shadow-2xl" : "-translate-x-full md:translate-x-0 z-40"
+          mobileOpen ? "translate-x-0 z-50 w-[268px] shadow-2xl" : "-translate-x-full md:translate-x-0 z-40"
         } ${collapsed ? "md:w-16" : "md:w-[232px]"}`}
       >
         {/* Logo & Mobile Close */}

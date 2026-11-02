@@ -173,51 +173,53 @@ export default async function DashboardPage() {
 
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
-        {/* ── KPI CARDS ── */}
+        {/* ── KPI BENTO GRID (Apple Modular Pattern) ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Total Capaian */}
-          <Card className="hover:shadow-md transition-all">
-            <CardContent className="p-5">
+          {/* Card 1: Total Capaian (Hero Tile) */}
+          <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:shadow-md transition-all duration-300 hover:border-primary/40 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none -mr-8 -mt-8" />
+            <CardContent className="p-5 relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Total Capaian
                 </span>
                 <Badge
                   variant={delta >= 0 ? "success" : "destructive"}
-                  className="gap-1 font-black px-2 py-0.5 text-[10px]"
+                  className="gap-1 font-black px-2 py-0.5 text-[10px] rounded-full"
                 >
                   {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   <NumberFlow value={Math.abs(delta)} prefix={delta >= 0 ? "+" : "-"} />
                 </Badge>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-foreground">
+                <span className="text-[34px] sm:text-[38px] font-black tabular-nums tracking-tight text-foreground">
                   <NumberFlow value={completionRate} suffix="%" />
                 </span>
               </div>
               <div className="mt-3">
-                <Progress value={Math.min(Math.max(completionRate, 3), 100)} className="h-2" />
+                <Progress value={Math.min(Math.max(completionRate, 3), 100)} className="h-2 rounded-full" />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 <span className="tabular-nums font-bold text-foreground">
                   <NumberFlow value={totalData} />
                 </span>{" "}
-                dari <span className="tabular-nums">{totalTarget}</span> target laporan
+                dari <span className="tabular-nums font-semibold">{totalTarget}</span> target laporan
               </p>
             </CardContent>
           </Card>
 
           {/* Card 2: Tercapai */}
-          <Card className="hover:shadow-md transition-all">
-            <CardContent className="p-5">
+          <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:shadow-md transition-all duration-300 hover:border-emerald-500/40 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+            <CardContent className="p-5 relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Target Tercapai</span>
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-2xs">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-emerald-600">
+                <span className="text-[34px] sm:text-[38px] font-black tabular-nums tracking-tight text-emerald-600">
                   <NumberFlow value={achieved} />
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
@@ -225,60 +227,72 @@ export default async function DashboardPage() {
               <div className="mt-3">
                 <Progress
                   value={pkmCount > 0 ? (achieved / pkmCount) * 100 : 0}
-                  className="h-2 [&>div]:bg-emerald-500"
+                  className="h-2 rounded-full [&>div]:bg-emerald-500"
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 Kepatuhan &ge; 80% (
-                <span className="tabular-nums">{pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%</span>{" "}
+                <span className="tabular-nums font-semibold">
+                  {pkmCount > 0 ? Math.round((achieved / pkmCount) * 100) : 0}%
+                </span>{" "}
                 wilayah)
               </p>
             </CardContent>
           </Card>
 
           {/* Card 3: Parsial */}
-          <Card className="hover:shadow-md transition-all">
-            <CardContent className="p-5">
+          <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:shadow-md transition-all duration-300 hover:border-amber-500/40 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+            <CardContent className="p-5 relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Kinerja Parsial</span>
-                <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shadow-2xs">
                   <AlertTriangle className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-amber-600">
+                <span className="text-[34px] sm:text-[38px] font-black tabular-nums tracking-tight text-amber-600">
                   <NumberFlow value={partial} />
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
               </div>
               <div className="mt-3">
-                <Progress value={pkmCount > 0 ? (partial / pkmCount) * 100 : 0} className="h-2 [&>div]:bg-amber-500" />
+                <Progress
+                  value={pkmCount > 0 ? (partial / pkmCount) * 100 : 0}
+                  className="h-2 rounded-full [&>div]:bg-amber-500"
+                />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 Capaian 50% &ndash; 79% (
-                <span className="tabular-nums">{pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%</span>{" "}
+                <span className="tabular-nums font-semibold">
+                  {pkmCount > 0 ? Math.round((partial / pkmCount) * 100) : 0}%
+                </span>{" "}
                 wilayah)
               </p>
             </CardContent>
           </Card>
 
           {/* Card 4: Rendah / Butuh Pembinaan */}
-          <Card className="hover:shadow-md transition-all">
-            <CardContent className="p-5">
+          <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:shadow-md transition-all duration-300 hover:border-rose-500/40 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+            <CardContent className="p-5 relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Perlu Pembinaan</span>
-                <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shadow-2xs">
                   <AlertCircle className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] sm:text-[36px] font-black tabular-nums tracking-tight text-rose-600">
+                <span className="text-[34px] sm:text-[38px] font-black tabular-nums tracking-tight text-rose-600">
                   <NumberFlow value={low} />
                 </span>
                 <span className="text-[12px] font-bold text-muted-foreground tabular-nums">/ {pkmCount} PKM</span>
               </div>
               <div className="mt-3">
-                <Progress value={pkmCount > 0 ? (low / pkmCount) * 100 : 0} className="h-2 [&>div]:bg-rose-500" />
+                <Progress
+                  value={pkmCount > 0 ? (low / pkmCount) * 100 : 0}
+                  className="h-2 rounded-full [&>div]:bg-rose-500"
+                />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 font-medium leading-relaxed">
                 Capaian &lt; 50% target bulanan

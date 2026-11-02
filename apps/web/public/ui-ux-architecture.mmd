@@ -1,0 +1,55 @@
+flowchart TB
+  %% Styling & Class Definitions
+  classDef userLayer fill:#f0fdf4,stroke:#059669,stroke-width:2px,color:#065f46;
+  classDef appShell fill:#f8fafc,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+  classDef designTokens fill:#ecfdf5,stroke:#10b981,stroke-width:1.5px,color:#065f46;
+  classDef uiComponents fill:#ffffff,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+  classDef dataEngine fill:#faf5ff,stroke:#8b5cf6,stroke-width:1.5px,color:#5b21b6;
+
+  subgraph Actors ["👤 User Persona & Roles"]
+    Sanitarian["Sanitarian Puskesmas (Operator Mobile)"]
+    Dinkes["Pimpinan Dinkes & Admin (Desktop Executive)"]
+  end
+
+  subgraph Presentation ["🎨 UI Architecture & Layout Shell"]
+    MobileNav["Mobile Top Bar + Drawer (Touch Target ≥44px)"]
+    DesktopNav["Desktop Sidebar (Collapsible 64px/232px) + Header"]
+    GlobalTokens["Design Tokens (globals.css: Light & Dark Modes)"]
+
+    subgraph Atoms ["🧩 Atomic UI Components (shadcn & Primitives)"]
+      Btn["Button (Variants: Default, Outline, Ghost)"]
+      KpiCard["Card & Metric Bento (Progress, NumberFlow)"]
+      DataTable["Data Table (Scrollable & Sortable)"]
+      ModalForm["Dialog & Modal Form Controls"]
+    end
+  end
+
+  subgraph Views ["🖥️ Core Surfaces"]
+    ExecDash["Executive Dashboard (Matriks Capaian Kota)"]
+    PkmCenter["Command Center PKM (Analitik Riil & Denominator)"]
+    FieldInspect["Entri Pemeriksaan & Laporan Bulanan"]
+  end
+
+  subgraph Engine ["⚡ State & Data Layer"]
+    TanStack["TanStack Query (Cache, Invalidation, 5s Polling)"]
+    NextAPI["Next.js Route Handlers & Prisma ORM"]
+  end
+
+  Sanitarian -->|Touch First| MobileNav
+  Dinkes -->|Keyboard First / ⌘K| DesktopNav
+
+  MobileNav --> Views
+  DesktopNav --> Views
+
+  GlobalTokens -.-> Atoms
+  Atoms --> Views
+
+  Views --> TanStack
+  TanStack --> NextAPI
+
+  class Sanitarian,Dinkes userLayer;
+  class MobileNav,DesktopNav appShell;
+  class GlobalTokens designTokens;
+  class Btn,KpiCard,DataTable,ModalForm uiComponents;
+  class ExecDash,PkmCenter,FieldInspect appShell;
+  class TanStack,NextAPI dataEngine;

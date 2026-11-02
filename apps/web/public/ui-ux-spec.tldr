@@ -1,0 +1,126 @@
+{
+  "tldrawFileFormatVersion": 1,
+  "schema": {
+    "schemaVersion": 2,
+    "sequences": {
+      "com.tldraw.store": 4,
+      "com.tldraw.asset": 1,
+      "com.tldraw.camera": 1,
+      "com.tldraw.document": 2,
+      "com.tldraw.instance": 25,
+      "com.tldraw.instance_page_state": 5,
+      "com.tldraw.page": 1,
+      "com.tldraw.instance_presence": 5,
+      "com.tldraw.pointer": 1,
+      "com.tldraw.shape": 4,
+      "com.tldraw.asset.bookmark": 2,
+      "com.tldraw.asset.image": 5,
+      "com.tldraw.shape.group": 0,
+      "com.tldraw.shape.text": 2,
+      "com.tldraw.shape.bookmark": 2,
+      "com.tldraw.shape.draw": 2,
+      "com.tldraw.shape.geo": 9,
+      "com.tldraw.shape.image": 4,
+      "com.tldraw.shape.line": 5,
+      "com.tldraw.shape.note": 7,
+      "com.tldraw.shape.frame": 0,
+      "com.tldraw.shape.arrow": 5,
+      "com.tldraw.shape.highlight": 1,
+      "com.tldraw.binding.arrow": 0
+    }
+  },
+  "records": [
+    {
+      "gridSize": 10,
+      "name": "",
+      "meta": {},
+      "id": "document:document",
+      "typeName": "document"
+    },
+    {
+      "id": "page:page",
+      "name": "Design System Spec",
+      "index": "a1",
+      "typeName": "page",
+      "meta": {}
+    },
+    {
+      "id": "shape:header",
+      "typeName": "shape",
+      "parentId": "page:page",
+      "index": "a1",
+      "type": "geo",
+      "x": 40,
+      "y": 40,
+      "props": {
+        "w": 720,
+        "h": 70,
+        "geo": "rectangle",
+        "color": "green",
+        "labelColor": "black",
+        "fill": "semi",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "text": "Kesling Core UI/UX Design System Spec\nEmerald Civic System · Light & Dark Tokens · 44px Touch Targets",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "growY": 0,
+        "url": "",
+        "scale": 1
+      }
+    },
+    {
+      "id": "shape:card_tokens",
+      "typeName": "shape",
+      "parentId": "page:page",
+      "index": "a2",
+      "type": "geo",
+      "x": 40,
+      "y": 140,
+      "props": {
+        "w": 340,
+        "h": 200,
+        "geo": "rectangle",
+        "color": "light-green",
+        "labelColor": "black",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "text": "🎨 Design Tokens\n\n• Primary: #059669 (Emerald 600)\n• Canvas: #F8FAFC → Dark: #090D16\n• Surface: #FFFFFF → Dark: #0F172A\n• Border: #E2E8F0 → Dark: #1E293B\n• Radius: Card (14px) / Button (8px)\n• Font: Inter + Tabular Nums",
+        "align": "start",
+        "verticalAlign": "start",
+        "growY": 0,
+        "url": "",
+        "scale": 1
+      }
+    },
+    {
+      "id": "shape:card_rules",
+      "typeName": "shape",
+      "parentId": "page:page",
+      "index": "a3",
+      "type": "geo",
+      "x": 420,
+      "y": 140,
+      "props": {
+        "w": 340,
+        "h": 200,
+        "geo": "rectangle",
+        "color": "light-blue",
+        "labelColor": "black",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "text": "📱 Mobile & UX Rules\n\n• Min Touch Target: 44×44px (WCAG AA)\n• Easing: cubic-bezier(0.16, 1, 0.3, 1)\n• Zero Layout Jump: min-h-[100dvh]\n• Single Theme Lock across surfaces\n• Micro-physics: active:scale-[0.98]\n• SVGs from Lucide icons only",
+        "align": "start",
+        "verticalAlign": "start",
+        "growY": 0,
+        "url": "",
+        "scale": 1
+      }
+    }
+  ]
+}

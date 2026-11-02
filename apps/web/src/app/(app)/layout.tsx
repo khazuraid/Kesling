@@ -18,17 +18,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="min-h-[100dvh] bg-canvas flex flex-col selection:bg-primary/20">
       <SideNav />
       <SidebarOffset>
         <DesktopHeader />
-        <main className="w-full min-h-[calc(100vh-4rem)] bg-canvas">
+        <main className="w-full min-h-[calc(100dvh-4rem)] bg-canvas p-0">
           <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
         </main>
       </SidebarOffset>
       <CommandPalette />
       <KeyboardHints />
-    </>
+    </div>
   );
 }
 

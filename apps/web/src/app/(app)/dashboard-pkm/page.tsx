@@ -490,26 +490,27 @@ export default function DashboardPkmPage() {
 
         {/* ── CANVAS UTAMA ── */}
         <div className="w-full max-w-[1600px] mx-auto px-3.5 sm:px-8 py-5 sm:py-7 space-y-6">
-          {/* ── 4 KPI CARDS ANALITIK BERBASIS ISIAN RIIL ── */}
+          {/* ── 4 KPI BENTO TILES (Apple Modular Pattern) ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {/* KPI 1: Indeks Kepatuhan Rata-rata */}
-            <Card className="rounded-card border border-border shadow-subtle hover:border-primary/40 transition-all">
-              <CardHeader className="p-4 sm:p-5 pb-2">
+            <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:border-primary/40 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+              <CardHeader className="p-4 sm:p-5 pb-2 relative z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     Indeks Kepatuhan Rata-Rata
                   </span>
-                  <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-2xs">
                     <Activity className="w-4 h-4" />
                   </span>
                 </div>
-                <CardTitle className="text-[24px] sm:text-[28px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
+                <CardTitle className="text-[26px] sm:text-[30px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
                   <NumberFlow value={analytics.avgCompliance} />
                   <span className="text-[14px] font-bold text-muted-foreground">%</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0 space-y-2">
-                <Progress value={Math.min(100, analytics.avgCompliance)} className="h-1.5" />
+              <CardContent className="p-4 sm:p-5 pt-0 space-y-2 relative z-10">
+                <Progress value={Math.min(100, analytics.avgCompliance)} className="h-2 rounded-full" />
                 <div className="flex items-center justify-between text-[11px] font-semibold">
                   <span className="text-muted-foreground">Target Rata-Rata: {analytics.avgTarget}%</span>
                   <span
@@ -529,22 +530,23 @@ export default function DashboardPkmPage() {
             </Card>
 
             {/* KPI 2: Total Sasaran Diperiksa (Denominator Riil) */}
-            <Card className="rounded-card border border-border shadow-subtle hover:border-primary/40 transition-all">
-              <CardHeader className="p-4 sm:p-5 pb-2">
+            <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:border-blue-500/40 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+              <CardHeader className="p-4 sm:p-5 pb-2 relative z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     Total Sasaran Diperiksa (Den)
                   </span>
-                  <span className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shadow-2xs">
                     <Layers className="w-4 h-4" />
                   </span>
                 </div>
-                <CardTitle className="text-[24px] sm:text-[28px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
+                <CardTitle className="text-[26px] sm:text-[30px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
                   <NumberFlow value={analytics.totalDen} />
                   <span className="text-[12px] font-bold text-muted-foreground">sarana</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0 space-y-1">
+              <CardContent className="p-4 sm:p-5 pt-0 space-y-1 relative z-10">
                 <p className="text-[11px] font-medium text-muted-foreground">
                   Akumulasi denominator dari seluruh isian inspeksi kesehatan lingkungan bulan ini.
                 </p>
@@ -556,22 +558,23 @@ export default function DashboardPkmPage() {
             </Card>
 
             {/* KPI 3: Memenuhi Syarat Higienis (Numerator Riil) */}
-            <Card className="rounded-card border border-border shadow-subtle hover:border-primary/40 transition-all">
-              <CardHeader className="p-4 sm:p-5 pb-2">
+            <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:border-emerald-500/40 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+              <CardHeader className="p-4 sm:p-5 pb-2 relative z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     Memenuhi Syarat (Num)
                   </span>
-                  <span className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-2xs">
                     <CheckCircle2 className="w-4 h-4" />
                   </span>
                 </div>
-                <CardTitle className="text-[24px] sm:text-[28px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
+                <CardTitle className="text-[26px] sm:text-[30px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
                   <NumberFlow value={analytics.totalNum} />
                   <span className="text-[12px] font-bold text-muted-foreground">laik</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0 space-y-1">
+              <CardContent className="p-4 sm:p-5 pt-0 space-y-1 relative z-10">
                 <div className="flex items-center justify-between text-[11px] font-semibold">
                   <span className="text-muted-foreground">Rasio Kelaikan Wilayah</span>
                   <span className="font-bold text-emerald-600">{analytics.overallRatio}%</span>
@@ -584,32 +587,33 @@ export default function DashboardPkmPage() {
             </Card>
 
             {/* KPI 4: Status Ketercapaian & Verifikasi */}
-            <Card className="rounded-card border border-border shadow-subtle hover:border-primary/40 transition-all">
-              <CardHeader className="p-4 sm:p-5 pb-2">
+            <Card className="rounded-2xl border border-border/80 bg-surface/90 shadow-2xs hover:border-purple-500/40 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
+              <CardHeader className="p-4 sm:p-5 pb-2 relative z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     Status Program & Target
                   </span>
-                  <span className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shadow-2xs">
                     <Target className="w-4 h-4" />
                   </span>
                 </div>
-                <CardTitle className="text-[24px] sm:text-[28px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
+                <CardTitle className="text-[26px] sm:text-[30px] font-black tracking-tight text-foreground flex items-baseline gap-1 mt-1">
                   <NumberFlow value={analytics.achievedCount} />
                   <span className="text-[14px] font-bold text-muted-foreground">/{analytics.list.length}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0 space-y-2">
-                <div className="grid grid-cols-3 gap-1 text-center pt-0.5">
-                  <div className="bg-primary/10 rounded-md py-1">
+              <CardContent className="p-4 sm:p-5 pt-0 space-y-2 relative z-10">
+                <div className="grid grid-cols-3 gap-1.5 text-center pt-0.5">
+                  <div className="bg-primary/10 rounded-xl py-1.5">
                     <span className="block text-[12px] font-black text-primary">{analytics.achievedCount}</span>
                     <span className="text-[9px] font-bold text-primary/70 uppercase">Tercapai</span>
                   </div>
-                  <div className="bg-amber-500/10 rounded-md py-1">
+                  <div className="bg-amber-500/10 rounded-xl py-1.5">
                     <span className="block text-[12px] font-black text-amber-600">{analytics.deficitCount}</span>
                     <span className="text-[9px] font-bold text-amber-600/70 uppercase">Defisit</span>
                   </div>
-                  <div className="bg-muted rounded-md py-1">
+                  <div className="bg-muted rounded-xl py-1.5">
                     <span className="block text-[12px] font-black text-muted-foreground">{analytics.emptyCount}</span>
                     <span className="text-[9px] font-bold text-muted-foreground uppercase">Kosong</span>
                   </div>
