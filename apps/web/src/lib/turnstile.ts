@@ -52,7 +52,7 @@ export async function verifyTurnstileToken(
       const errorCodes = (data["error-codes"] || []).join(", ");
       return {
         success: false,
-        error: `Verifikasi Cloudflare gagal (${errorCodes || "invalid-token"}). Silakan refresh halaman dan ulangi.`,
+        error: errorCodes || "invalid-token",
       };
     }
 

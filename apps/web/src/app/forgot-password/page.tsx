@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { TurnstileRef } from "@/components/turnstile";
 import { Turnstile } from "@/components/turnstile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default function ForgotPasswordPage() {
   // Step 1 states
   const [identifier, setIdentifier] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileRef>(null);
 
   // Step 2 states
   const [resetToken, setResetToken] = useState("");
@@ -73,6 +75,8 @@ export default function ForgotPasswordPage() {
 
       if (!res.ok) {
         setError(data.error || "Gagal memproses permintaan reset kata sandi.");
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         return;
       }
 
@@ -219,6 +223,7 @@ export default function ForgotPasswordPage() {
 
                 {/* Cloudflare Turnstile */}
                 <Turnstile
+                  ref={turnstileRef}
                   onSuccess={(token) => setTurnstileToken(token)}
                   onExpire={() => setTurnstileToken("")}
                   onError={() => setTurnstileToken("")}

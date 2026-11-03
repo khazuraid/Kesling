@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
@@ -22,6 +22,10 @@ declare global {
   }
 }
 
+export interface TurnstileRef {
+  reset: () => void;
+}
+
 interface TurnstileProps {
   onSuccess: (token: string) => void;
   onError?: (error: unknown) => void;
@@ -29,6 +33,7 @@ interface TurnstileProps {
   theme?: "light" | "dark" | "auto";
   size?: "normal" | "compact" | "flexible";
   className?: string;
+  ref?: React.Ref<TurnstileRef>;
 }
 
 export function Turnstile({
@@ -38,10 +43,21 @@ export function Turnstile({
   theme = "auto",
   size = "normal",
   className,
+  ref,
 }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  React.useImperativeHandle(ref, () => ({
+    reset: () => {
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset(widgetIdRef.current);
+        } catch {}
+      }
+    },
+  }));
 
   // Simpan callback dalam ref agar perubahan callback tidak memicu re-render widget pada setiap ketikan input form
   const callbacksRef = useRef({ onSuccess, onError, onExpire });

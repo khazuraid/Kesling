@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { TurnstileRef } from "@/components/turnstile";
 import { Turnstile } from "@/components/turnstile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<"OPERATOR" | "DINKES">("OPERATOR");
   const [puskesmasId, setPuskesmasId] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileRef>(null);
 
   // OTP inputs
   const [challengeToken, setChallengeToken] = useState("");
@@ -131,6 +133,8 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         setError(data.error || "Gagal mendaftarkan akun.");
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         return;
       }
 
@@ -393,6 +397,7 @@ export default function RegisterPage() {
 
                 {/* Cloudflare Turnstile Verification */}
                 <Turnstile
+                  ref={turnstileRef}
                   onSuccess={(token) => setTurnstileToken(token)}
                   onExpire={() => setTurnstileToken("")}
                   onError={() => setTurnstileToken("")}

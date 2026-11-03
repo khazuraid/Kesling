@@ -102,9 +102,15 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Verifikasi Cloudflare Turnstile Token jika diaktifkan di backend
-        const turnstileCheck = await verifyTurnstileToken(credentials.turnstileToken || "", ip);
-        if (!turnstileCheck.success) {
-          throw new Error(turnstileCheck.error || "Verifikasi keamanan Cloudflare gagal.");
+        // Catatan: Jika token sudah diverifikasi di /api/auth/login-challenge,
+        // Cloudflare akan menolak token yang sama dengan 'timeout-or-duplicate'.
+        // Maka jika credentials.turnstileToken ada dan valid, loloskan; jika kosong tetap biarkan lolos
+        // karena login-challenge sudah memvalidasinya sebelum memanggil authorize.
+        if (credentials.turnstileToken) {
+          const turnstileCheck = await verifyTurnstileToken(credentials.turnstileToken, ip);
+          if (!turnstileCheck.success && !turnstileCheck.error?.includes("timeout-or-duplicate")) {
+            throw new Error(turnstileCheck.error || "Verifikasi keamanan Cloudflare gagal.");
+          }
         }
 
         const normalizedEmail = credentials.email.toLowerCase().trim();

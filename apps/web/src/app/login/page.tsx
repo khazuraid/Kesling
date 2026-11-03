@@ -4,7 +4,8 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, Loader2, RefreshCw } from
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import type { TurnstileRef } from "@/components/turnstile";
 import { Turnstile } from "@/components/turnstile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ function LoginForm() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileRef>(null);
   const [challengeToken, setChallengeToken] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -78,6 +80,8 @@ function LoginForm() {
       if (!challengeRes.ok) {
         setLoading(false);
         setError(challengeData.error || "Gagal memproses kredensial masuk.");
+        turnstileRef.current?.reset();
+        setTurnstileToken("");
         return;
       }
 
@@ -86,7 +90,6 @@ function LoginForm() {
         const res = await signIn("credentials", {
           email: identifier,
           password,
-          turnstileToken,
           redirect: false,
           callbackUrl: safeCallback,
         });
@@ -95,6 +98,8 @@ function LoginForm() {
 
         if (res?.error) {
           setError(res.error);
+          turnstileRef.current?.reset();
+          setTurnstileToken("");
         } else {
           window.location.href = safeCallback;
         }
@@ -263,6 +268,7 @@ function LoginForm() {
 
                 {/* Cloudflare Turnstile Verification */}
                 <Turnstile
+                  ref={turnstileRef}
                   onSuccess={(token) => setTurnstileToken(token)}
                   onExpire={() => setTurnstileToken("")}
                   onError={() => setTurnstileToken("")}

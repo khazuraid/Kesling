@@ -26,7 +26,12 @@ export async function POST(req: NextRequest) {
     const turnstileCheck = await verifyTurnstileToken(turnstileToken, ip);
     if (!turnstileCheck.success) {
       return NextResponse.json(
-        { error: turnstileCheck.error || "Verifikasi keamanan Cloudflare Turnstile gagal." },
+        {
+          error:
+            turnstileCheck.error === "timeout-or-duplicate"
+              ? "Verifikasi Turnstile kedaluwarsa atau duplikat. Silakan centang ulang kotak verifikasi."
+              : `Verifikasi keamanan Cloudflare gagal (${turnstileCheck.error}).`,
+        },
         { status: 400 },
       );
     }
