@@ -106,6 +106,11 @@ ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "tanggal" TIMESTAMP(3);
 ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "signatureData" JSONB;
 ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "fotoPaths" JSONB DEFAULT '[]';
 
+-- Ensure columns exist on InspectionResultValue
+ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueString" TEXT;
+ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueNumber" DOUBLE PRECISION;
+ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueJson" JSONB;
+
 -- AddForeignKey
 ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_puskesmasId_fkey";
 ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
