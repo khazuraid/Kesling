@@ -93,6 +93,19 @@ CREATE INDEX IF NOT EXISTS "InspectionResultValue_fieldId_idx" ON "InspectionRes
 CREATE INDEX IF NOT EXISTS "Sasaran_puskesmasId_idx" ON "Sasaran"("puskesmasId");
 CREATE INDEX IF NOT EXISTS "Sasaran_subCategoryId_idx" ON "Sasaran"("subCategoryId");
 
+-- Ensure columns exist before creating foreign keys
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "userId" INTEGER;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "sasaranId" INTEGER;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "namaSasaran" TEXT;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "alamatSasaran" TEXT;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "lat" DOUBLE PRECISION;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "lng" DOUBLE PRECISION;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "bulan" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "tahun" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "tanggal" TIMESTAMP(3);
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "signatureData" JSONB;
+ALTER TABLE "InspectionResult" ADD COLUMN IF NOT EXISTS "fotoPaths" JSONB DEFAULT '[]';
+
 -- AddForeignKey
 ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_puskesmasId_fkey";
 ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
