@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "InspectionTemplate" ADD COLUMN "config" JSONB;
+ALTER TABLE IF EXISTS "InspectionTemplate" ADD COLUMN IF NOT EXISTS "config" JSONB;
