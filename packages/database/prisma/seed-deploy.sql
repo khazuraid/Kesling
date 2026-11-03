@@ -102,6 +102,26 @@ ON CONFLICT (email) DO NOTHING;
 
 \endif
 
+-- 2.1. Seed Akun Utama Administrator (Permanen agar tidak hilang saat deploy ulang)
+INSERT INTO "user" (nama, username, email, password, role, status, "mustChangePassword", "lastOtpVerifiedAt", "createdAt", "updatedAt")
+VALUES (
+  'Administrator',
+  'fikri',
+  'triejuliantofikrie@gmail.com',
+  '$2b$10$Yb7VLKVlZP/AhIGw0cYzFu5zqUSpyad5xDM0oYtIARmHygT8lyDtu',
+  'ADMIN',
+  'ACTIVE',
+  false,
+  NOW(),
+  NOW(),
+  NOW()
+)
+ON CONFLICT (email) DO UPDATE SET
+  role = 'ADMIN',
+  status = 'ACTIVE',
+  username = 'fikri',
+  "mustChangePassword" = false;
+
 -- ============================================================
 -- 3. INSPECTION TEMPLATES + FIELDS (global, puskesmasId = NULL)
 -- ============================================================

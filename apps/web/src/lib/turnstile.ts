@@ -48,9 +48,11 @@ export async function verifyTurnstileToken(
 
     const data: TurnstileVerifyResponse = await res.json();
     if (!data.success) {
+      console.warn("[Turnstile] Cloudflare siteverify rejected:", data["error-codes"]);
+      const errorCodes = (data["error-codes"] || []).join(", ");
       return {
         success: false,
-        error: "Verifikasi Cloudflare gagal atau kedaluwarsa. Silakan ulangi.",
+        error: `Verifikasi Cloudflare gagal (${errorCodes || "invalid-token"}). Silakan refresh halaman dan ulangi.`,
       };
     }
 
