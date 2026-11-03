@@ -57,7 +57,7 @@ COPY apps/web/inspection-import-parser.js ./apps/web/inspection-import-parser.js
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf && \
     chmod +x /app/docker-entrypoint.sh && \
-    mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache /app/apps/web/public/uploads/mobile && \
+    mkdir -p /app/apps/web/node_modules/.prisma/client /home/nextjs/.cache /app/apps/web/public/uploads/mobile /app/public/uploads && \
     PRISMA_PNPM_DIR=$(find /app/node_modules/.pnpm -name "@prisma+client@*_*" -type d | head -n 1) && \
     if [ -n "$PRISMA_PNPM_DIR" ]; then \
       ENGINE_SOURCE="${PRISMA_PNPM_DIR}/node_modules/.prisma/client" && \
@@ -65,7 +65,7 @@ RUN npm install --omit=dev --no-package-lock ioredis @opendataloader/pdf && \
     fi && \
     if [ ! -f "/app/apps/web/server.js" ] && [ -f "/app/server.js" ]; then mkdir -p /app/apps/web && ln -sf /app/server.js /app/apps/web/server.js; fi && \
     if [ -f "/app/apps/web/server.js" ] && [ ! -f "/app/server.js" ]; then ln -sf /app/apps/web/server.js /app/server.js; fi && \
-    chown -R nextjs:nodejs /app/apps/web /app/packages/database/prisma /app/node_modules /home/nextjs/.cache
+    chown -R nextjs:nodejs /app/apps/web /app/packages/database/prisma /app/node_modules /home/nextjs/.cache /app/public
 
 USER nextjs
 EXPOSE 3000

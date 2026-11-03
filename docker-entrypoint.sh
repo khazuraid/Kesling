@@ -179,13 +179,14 @@ elif [ -f "/app/apps/web/server.js" ] && [ ! -f "/app/server.js" ]; then
 fi
 
 # Ensure uploads directory structure exists and is writable
-mkdir -p /app/apps/web/public/uploads/inspections /app/apps/web/public/uploads/mobile /app/public/uploads
+mkdir -p /app/apps/web/public/uploads/inspections /app/apps/web/public/uploads/mobile 2>/dev/null || true
+mkdir -p /app/public/uploads 2>/dev/null || true
 if [ -d "/app/apps/web/public/uploads" ] && [ ! -e "/app/public/uploads/inspections" ]; then
   ln -sf /app/apps/web/public/uploads/* /app/public/uploads/ 2>/dev/null || true
 fi
 
-# Auto-start background inspection queue worker
-if [ "${DISABLE_INTERNAL_WORKER:-0}" != "1" ] && [ -f "/app/apps/web/worker.js" ]; then
+# Auto-start background inspection queue worker (only if not already running as worker CMD)
+if [ "${DISABLE_INTERNAL_WORKER:-0}" != "1" ] && ! echo "$*" | grep -q "worker.js" && [ -f "/app/apps/web/worker.js" ]; then
   echo "👷 Starting background queue worker..."
   node /app/apps/web/worker.js &
 fi
