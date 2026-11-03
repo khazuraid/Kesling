@@ -79,22 +79,39 @@ CREATE TABLE IF NOT EXISTS "InspectionResultValue" (
 );
 
 -- AddForeignKey
-ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "Puskesmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "DynamicSubCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_puskesmasId_fkey";
+ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_subCategoryId_fkey";
+ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "dynamic_sub_category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "InspectionField" DROP CONSTRAINT IF EXISTS "InspectionField_templateId_fkey";
 ALTER TABLE "InspectionField" ADD CONSTRAINT "InspectionField_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "InspectionTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "DynamicSubCategory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Sasaran" DROP CONSTRAINT IF EXISTS "Sasaran_puskesmasId_fkey";
+ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Sasaran" DROP CONSTRAINT IF EXISTS "Sasaran_subCategoryId_fkey";
+ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "dynamic_sub_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_templateId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "InspectionTemplate"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "Puskesmas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_puskesmasId_fkey";
+ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_userId_fkey";
+ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_sasaranId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_sasaranId_fkey" FOREIGN KEY ("sasaranId") REFERENCES "Sasaran"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "InspectionResultValue" DROP CONSTRAINT IF EXISTS "InspectionResultValue_resultId_fkey";
 ALTER TABLE "InspectionResultValue" ADD CONSTRAINT "InspectionResultValue_resultId_fkey" FOREIGN KEY ("resultId") REFERENCES "InspectionResult"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResultValue" DROP CONSTRAINT IF EXISTS "InspectionResultValue_fieldId_fkey";
 ALTER TABLE "InspectionResultValue" ADD CONSTRAINT "InspectionResultValue_fieldId_fkey" FOREIGN KEY ("fieldId") REFERENCES "InspectionField"("id") ON DELETE CASCADE ON UPDATE CASCADE;

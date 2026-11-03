@@ -1,5 +1,5 @@
 -- CreateTable: InspectionTemplate
-CREATE TABLE "InspectionTemplate" (
+CREATE TABLE IF NOT EXISTS "InspectionTemplate" (
     "id" SERIAL NOT NULL,
     "nama" TEXT NOT NULL,
     "deskripsi" TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE "InspectionTemplate" (
 );
 
 -- CreateTable: InspectionField
-CREATE TABLE "InspectionField" (
+CREATE TABLE IF NOT EXISTS "InspectionField" (
     "id" SERIAL NOT NULL,
     "templateId" INTEGER NOT NULL,
     "pertanyaan" TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE "InspectionField" (
 );
 
 -- CreateTable: InspectionResult
-CREATE TABLE "InspectionResult" (
+CREATE TABLE IF NOT EXISTS "InspectionResult" (
     "id" SERIAL NOT NULL,
     "templateId" INTEGER NOT NULL,
     "puskesmasId" INTEGER NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE "InspectionResult" (
 );
 
 -- CreateTable: InspectionResultValue
-CREATE TABLE "InspectionResultValue" (
+CREATE TABLE IF NOT EXISTS "InspectionResultValue" (
     "id" SERIAL NOT NULL,
     "resultId" INTEGER NOT NULL,
     "fieldId" INTEGER NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE "InspectionResultValue" (
 );
 
 -- CreateTable: Sasaran
-CREATE TABLE "Sasaran" (
+CREATE TABLE IF NOT EXISTS "Sasaran" (
     "id" SERIAL NOT NULL,
     "nama" TEXT NOT NULL,
     "alamat" TEXT,
@@ -81,27 +81,48 @@ CREATE TABLE "Sasaran" (
 );
 
 -- CreateIndex
-CREATE INDEX "InspectionTemplate_puskesmasId_idx" ON "InspectionTemplate"("puskesmasId");
-CREATE INDEX "InspectionTemplate_subCategoryId_idx" ON "InspectionTemplate"("subCategoryId");
-CREATE INDEX "InspectionField_templateId_idx" ON "InspectionField"("templateId");
-CREATE INDEX "InspectionResult_templateId_idx" ON "InspectionResult"("templateId");
-CREATE INDEX "InspectionResult_puskesmasId_idx" ON "InspectionResult"("puskesmasId");
-CREATE INDEX "InspectionResult_userId_idx" ON "InspectionResult"("userId");
-CREATE INDEX "InspectionResult_sasaranId_idx" ON "InspectionResult"("sasaranId");
-CREATE INDEX "InspectionResultValue_resultId_idx" ON "InspectionResultValue"("resultId");
-CREATE INDEX "InspectionResultValue_fieldId_idx" ON "InspectionResultValue"("fieldId");
-CREATE INDEX "Sasaran_puskesmasId_idx" ON "Sasaran"("puskesmasId");
-CREATE INDEX "Sasaran_subCategoryId_idx" ON "Sasaran"("subCategoryId");
+CREATE INDEX IF NOT EXISTS "InspectionTemplate_puskesmasId_idx" ON "InspectionTemplate"("puskesmasId");
+CREATE INDEX IF NOT EXISTS "InspectionTemplate_subCategoryId_idx" ON "InspectionTemplate"("subCategoryId");
+CREATE INDEX IF NOT EXISTS "InspectionField_templateId_idx" ON "InspectionField"("templateId");
+CREATE INDEX IF NOT EXISTS "InspectionResult_templateId_idx" ON "InspectionResult"("templateId");
+CREATE INDEX IF NOT EXISTS "InspectionResult_puskesmasId_idx" ON "InspectionResult"("puskesmasId");
+CREATE INDEX IF NOT EXISTS "InspectionResult_userId_idx" ON "InspectionResult"("userId");
+CREATE INDEX IF NOT EXISTS "InspectionResult_sasaranId_idx" ON "InspectionResult"("sasaranId");
+CREATE INDEX IF NOT EXISTS "InspectionResultValue_resultId_idx" ON "InspectionResultValue"("resultId");
+CREATE INDEX IF NOT EXISTS "InspectionResultValue_fieldId_idx" ON "InspectionResultValue"("fieldId");
+CREATE INDEX IF NOT EXISTS "Sasaran_puskesmasId_idx" ON "Sasaran"("puskesmasId");
+CREATE INDEX IF NOT EXISTS "Sasaran_subCategoryId_idx" ON "Sasaran"("subCategoryId");
 
 -- AddForeignKey
+ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_puskesmasId_fkey";
 ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionTemplate" DROP CONSTRAINT IF EXISTS "InspectionTemplate_subCategoryId_fkey";
 ALTER TABLE "InspectionTemplate" ADD CONSTRAINT "InspectionTemplate_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "dynamic_sub_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionField" DROP CONSTRAINT IF EXISTS "InspectionField_templateId_fkey";
 ALTER TABLE "InspectionField" ADD CONSTRAINT "InspectionField_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "InspectionTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_templateId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "InspectionTemplate"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_puskesmasId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "puskesmas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_userId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResult" DROP CONSTRAINT IF EXISTS "InspectionResult_sasaranId_fkey";
 ALTER TABLE "InspectionResult" ADD CONSTRAINT "InspectionResult_sasaranId_fkey" FOREIGN KEY ("sasaranId") REFERENCES "Sasaran"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResultValue" DROP CONSTRAINT IF EXISTS "InspectionResultValue_resultId_fkey";
 ALTER TABLE "InspectionResultValue" ADD CONSTRAINT "InspectionResultValue_resultId_fkey" FOREIGN KEY ("resultId") REFERENCES "InspectionResult"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "InspectionResultValue" DROP CONSTRAINT IF EXISTS "InspectionResultValue_fieldId_fkey";
 ALTER TABLE "InspectionResultValue" ADD CONSTRAINT "InspectionResultValue_fieldId_fkey" FOREIGN KEY ("fieldId") REFERENCES "InspectionField"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Sasaran" DROP CONSTRAINT IF EXISTS "Sasaran_puskesmasId_fkey";
 ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_puskesmasId_fkey" FOREIGN KEY ("puskesmasId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Sasaran" DROP CONSTRAINT IF EXISTS "Sasaran_subCategoryId_fkey";
 ALTER TABLE "Sasaran" ADD CONSTRAINT "Sasaran_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "dynamic_sub_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;

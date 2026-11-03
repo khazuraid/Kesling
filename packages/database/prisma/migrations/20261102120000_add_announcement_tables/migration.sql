@@ -1,11 +1,19 @@
 -- CreateEnum
-CREATE TYPE "AnnouncementType" AS ENUM ('INFO', 'WARNING', 'URGENT');
+DO $$ BEGIN
+    CREATE TYPE "AnnouncementType" AS ENUM ('INFO', 'WARNING', 'URGENT');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "AnnouncementTargetRole" AS ENUM ('ALL', 'OPERATOR', 'DINKES', 'ADMIN');
+DO $$ BEGIN
+    CREATE TYPE "AnnouncementTargetRole" AS ENUM ('ALL', 'OPERATOR', 'DINKES', 'ADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "announcement" (
+CREATE TABLE IF NOT EXISTS "announcement" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -22,7 +30,7 @@ CREATE TABLE "announcement" (
 );
 
 -- CreateTable
-CREATE TABLE "announcement_dismissal" (
+CREATE TABLE IF NOT EXISTS "announcement_dismissal" (
     "id" SERIAL NOT NULL,
     "announcementId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
@@ -32,16 +40,18 @@ CREATE TABLE "announcement_dismissal" (
 );
 
 -- CreateIndex
-CREATE INDEX "announcement_isActive_isPopup_startDate_endDate_targetRole_idx" ON "announcement"("isActive", "isPopup", "startDate", "endDate", "targetRole");
+CREATE INDEX IF NOT EXISTS "announcement_isActive_isPopup_startDate_endDate_targetRole_idx" ON "announcement"("isActive", "isPopup", "startDate", "endDate", "targetRole");
 
 -- CreateIndex
-CREATE INDEX "announcement_dismissal_userId_idx" ON "announcement_dismissal"("userId");
+CREATE INDEX IF NOT EXISTS "announcement_dismissal_userId_idx" ON "announcement_dismissal"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "announcement_dismissal_announcementId_userId_key" ON "announcement_dismissal"("announcementId", "userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "announcement_dismissal_announcementId_userId_key" ON "announcement_dismissal"("announcementId", "userId");
 
 -- AddForeignKey
+ALTER TABLE "announcement_dismissal" DROP CONSTRAINT IF EXISTS "announcement_dismissal_announcementId_fkey";
 ALTER TABLE "announcement_dismissal" ADD CONSTRAINT "announcement_dismissal_announcementId_fkey" FOREIGN KEY ("announcementId") REFERENCES "announcement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "announcement_dismissal" DROP CONSTRAINT IF EXISTS "announcement_dismissal_userId_fkey";
 ALTER TABLE "announcement_dismissal" ADD CONSTRAINT "announcement_dismissal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
