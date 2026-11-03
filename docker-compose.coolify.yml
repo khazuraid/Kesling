@@ -19,6 +19,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+    - uploads:/app/apps/web/public/uploads
     image: kesling-app:latest
   worker:
     restart: unless-stopped
@@ -50,7 +52,7 @@ services:
     - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
     - POSTGRES_DB=kesling_cirebon
     volumes:
-    - pgdata:/var/lib/postgresql/data
+    - pgdata_v2:/var/lib/postgresql/data
     healthcheck:
       test:
       - CMD-SHELL
@@ -70,4 +72,5 @@ services:
       timeout: 5s
       retries: 5
 volumes:
-  pgdata: null
+  pgdata_v2: null
+  uploads: null
