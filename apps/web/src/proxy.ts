@@ -290,7 +290,7 @@ export default securityLayer;
 
 export const config = {
   matcher: [
-    "/((?!login|api/|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icon-.*|offline.html|workbox-.*).*)",
+    "/((?!login|register|forgot-password|api/|_next/static|_next/image|favicon.ico|sw.js|manifest.json|icon-.*|offline.html|workbox-.*).*)",
     "/api/:path*",
   ],
 };

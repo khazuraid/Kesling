@@ -146,6 +146,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errorMsg }, { status: 401 });
     }
 
+    // 3.1. Validasi Status Akun (Dual Verifikasi)
+    if (user.status && user.status !== "ACTIVE") {
+      if (user.status === "PENDING_EMAIL") {
+        return NextResponse.json(
+          { error: "Alamat email Anda belum diverifikasi. Silakan selesaikan proses verifikasi email pendaftaran." },
+          { status: 403 },
+        );
+      }
+      if (user.status === "PENDING_APPROVAL") {
+        return NextResponse.json(
+          { error: "Pendaftaran akun Anda sedang menunggu persetujuan Administrator Dinas Kesehatan." },
+          { status: 403 },
+        );
+      }
+      if (user.status === "REJECTED") {
+        const alasan = user.rejectionReason ? ` Alasan: ${user.rejectionReason}` : "";
+        return NextResponse.json(
+          { error: `Permohonan pendaftaran akun Anda ditolak oleh Administrator.${alasan}` },
+          { status: 403 },
+        );
+      }
+    }
+
     // 4. Kredensial Valid -> Cek apakah butuh verifikasi OTP (Aturan: hanya sebulan sekali / 30 hari)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const isOtpRequired = !user.lastOtpVerifiedAt || user.lastOtpVerifiedAt < thirtyDaysAgo;

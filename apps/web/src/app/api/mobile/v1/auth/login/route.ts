@@ -44,6 +44,18 @@ export const POST = withRateLimit(
       const valid = await compare(password, user.password);
       if (!valid) return reject(`Password salah untuk ${email}`);
 
+      if (user.status && user.status !== "ACTIVE") {
+        if (user.status === "PENDING_EMAIL") {
+          return NextResponse.json({ error: "Email belum diverifikasi." }, { status: 403 });
+        }
+        if (user.status === "PENDING_APPROVAL") {
+          return NextResponse.json({ error: "Akun menunggu persetujuan Admin." }, { status: 403 });
+        }
+        if (user.status === "REJECTED") {
+          return NextResponse.json({ error: "Pendaftaran akun ditolak." }, { status: 403 });
+        }
+      }
+
       const token = createMobileToken({
         sub: user.id,
         email: user.email,

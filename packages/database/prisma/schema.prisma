@@ -14,6 +14,13 @@ model User {
   email            String     @unique
   password         String
   role             Role       @default(OPERATOR)
+  status           UserStatus @default(PENDING_EMAIL)
+  emailVerifiedAt  DateTime?
+  approvedAt       DateTime?
+  approvedById     Int?
+  approvedBy       User?      @relation("UserApprovals", fields: [approvedById], references: [id])
+  approvedUsers    User[]     @relation("UserApprovals")
+  rejectionReason  String?    @db.Text
   puskesmasId      Int?
   puskesmas        Puskesmas? @relation(fields: [puskesmasId], references: [id])
   telegramChatId   String?
@@ -383,6 +390,13 @@ enum Role {
   ADMIN
   OPERATOR
   DINKES
+}
+
+enum UserStatus {
+  PENDING_EMAIL
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
 }
 
 enum StatusLaporan {

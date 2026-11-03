@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Plus, Search, Trash2, Users } from "lucide-react";
+import { Check, Edit2, Plus, Search, Trash2, Users, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,9 +23,31 @@ const ROLE_META: Record<string, { variant: "destructive" | "secondary" | "defaul
   OPERATOR: { variant: "default", label: "Operator" },
 };
 
+const STATUS_META: Record<
+  string,
+  { variant: "default" | "secondary" | "destructive" | "outline"; label: string; className?: string }
+> = {
+  ACTIVE: { variant: "default", label: "Aktif", className: "bg-emerald-600 text-white hover:bg-emerald-700" },
+  PENDING_APPROVAL: {
+    variant: "secondary",
+    label: "Menunggu Persetujuan",
+    className: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200",
+  },
+  PENDING_EMAIL: { variant: "outline", label: "Verifikasi Email", className: "text-muted-foreground border-dashed" },
+  REJECTED: {
+    variant: "destructive",
+    label: "Ditolak",
+    className: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-200",
+  },
+};
+
 export default function UsersPage() {
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState<"ALL" | "PENDING_APPROVAL" | "ACTIVE" | "REJECTED">("ALL");
   const [showForm, setShowForm] = useState(false);
+  const [rejectModalUser, setRejectModalUser] = useState<any | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+
   const [form, setForm] = useState({
     nama: "",
     username: "",
@@ -43,6 +65,7 @@ export default function UsersPage() {
     queryFn: () => fetch("/api/users").then((r) => r.json()),
     refetchInterval: 5000,
   });
+
   const { data: puskesmasList = [] } = useQuery<any[]>({
     queryKey: ["master", "puskesmas"],
     queryFn: () => fetch("/api/master/puskesmas").then((r) => r.json()),
@@ -86,6 +109,27 @@ export default function UsersPage() {
     onError: () => toast.error("Failed to delete operator"),
   });
 
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status, reason }: { id: number; status: "ACTIVE" | "REJECTED"; reason?: string }) => {
+      const res = await fetch(`/api/users/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, rejectionReason: reason }),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Gagal memperbarui status akun");
+      }
+    },
+    onSuccess: (_, vars) => {
+      toast.success(vars.status === "ACTIVE" ? "Akun disetujui & diaktifkan" : "Pendaftaran akun ditolak");
+      setRejectModalUser(null);
+      setRejectionReason("");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Gagal memperbarui status akun"),
+  });
+
   function openEdit(user: any) {
     setEditId(user.id);
     setForm({
@@ -114,18 +158,85 @@ export default function UsersPage() {
     setShowForm(true);
   }
 
-  const filtered = users.filter(
-    (u: any) =>
-      u.nama.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.username?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const pendingCount = users.filter((u: any) => (u.status || "ACTIVE") === "PENDING_APPROVAL").length;
+
+  const filtered = users
+    .filter((u: any) => {
+      const currentStatus = u.status || "ACTIVE";
+      if (tab === "PENDING_APPROVAL") return currentStatus === "PENDING_APPROVAL";
+      if (tab === "ACTIVE") return currentStatus === "ACTIVE";
+      if (tab === "REJECTED") return currentStatus === "REJECTED";
+      return true;
+    })
+    .filter(
+      (u: any) =>
+        u.nama.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase()) ||
+        u.username?.toLowerCase().includes(search.toLowerCase()),
+    );
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="relative flex-1">
+      {/* Header Tabs & Toolbar */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl border border-border">
+            <button
+              type="button"
+              onClick={() => setTab("ALL")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                tab === "ALL" ? "bg-surface text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Semua ({users.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("PENDING_APPROVAL")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                tab === "PENDING_APPROVAL"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Menunggu Persetujuan
+              {pendingCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-white text-amber-700">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("ACTIVE")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                tab === "ACTIVE"
+                  ? "bg-surface text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Aktif
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("REJECTED")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                tab === "REJECTED"
+                  ? "bg-surface text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Ditolak
+            </button>
+          </div>
+
+          <Button onClick={openAdd} className="rounded-full gap-2 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Tambah Operator
+          </Button>
+        </div>
+
+        <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Cari nama, username, atau email..."
@@ -134,9 +245,6 @@ export default function UsersPage() {
             className="pl-10"
           />
         </div>
-        <Button onClick={openAdd} className="rounded-full gap-2 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Tambah Operator
-        </Button>
       </div>
 
       {/* Table */}
@@ -149,8 +257,8 @@ export default function UsersPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={search ? "Tidak ada yang cocok" : "Belum ada pengguna"}
-          description="Klik Tambah Operator untuk menambahkan akun staf atau administrator baru."
+          title={search ? "Tidak ada yang cocok" : "Belum ada pengguna pada kategori ini"}
+          description="Klik Tambah Operator untuk membuat akun baru secara manual."
         />
       ) : (
         <Card className="overflow-hidden">
@@ -158,16 +266,20 @@ export default function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[280px]">Nama & Username</TableHead>
+                  <TableHead className="w-[260px]">Nama & Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Puskesmas</TableHead>
-                  <TableHead className="text-right w-24">Aksi</TableHead>
+                  <TableHead className="text-right w-36">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((u: any) => {
                   const roleMeta = ROLE_META[u.role] || ROLE_META.OPERATOR;
+                  const currentStatus = u.status || "ACTIVE";
+                  const statusMeta = STATUS_META[currentStatus] || STATUS_META.ACTIVE;
+
                   return (
                     <TableRow key={u.id} className="hover:bg-surface-subtle transition-colors">
                       <TableCell>
@@ -191,11 +303,42 @@ export default function UsersPage() {
                           {roleMeta.label || u.role}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Badge variant={statusMeta.variant} className={`text-[10px] ${statusMeta.className || ""}`}>
+                          {statusMeta.label}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-[12px] font-medium text-muted-foreground">
                         {u.puskesmas ? u.puskesmas.nama : "—"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
+                        <div className="flex justify-end items-center gap-1">
+                          {/* Approval Actions for Pending Registrations */}
+                          {currentStatus === "PENDING_APPROVAL" && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => statusMutation.mutate({ id: u.id, status: "ACTIVE" })}
+                                disabled={statusMutation.isPending}
+                                className="h-7 px-2 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 gap-1"
+                                title="Setujui Akun"
+                              >
+                                <Check className="w-3.5 h-3.5" /> Setujui
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setRejectModalUser(u)}
+                                disabled={statusMutation.isPending}
+                                className="h-7 px-2 text-xs font-bold text-rose-700 bg-rose-50 border-rose-300 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-300 gap-1"
+                                title="Tolak Akun"
+                              >
+                                <X className="w-3.5 h-3.5" /> Tolak
+                              </Button>
+                            </>
+                          )}
+
                           <Button
                             variant="ghost"
                             size="sm"
@@ -226,6 +369,57 @@ export default function UsersPage() {
           </div>
         </Card>
       )}
+
+      {/* Reject Modal */}
+      <Modal
+        open={!!rejectModalUser}
+        onClose={() => setRejectModalUser(null)}
+        title="Tolak Pendaftaran Pengguna"
+        description={`Masukkan alasan penolakan akun untuk ${rejectModalUser?.nama || ""}`}
+        icon={<X className="w-4 h-4 text-destructive" />}
+        size="sm"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setRejectModalUser(null)}
+              className="rounded-full"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() =>
+                statusMutation.mutate({
+                  id: rejectModalUser.id,
+                  status: "REJECTED",
+                  reason: rejectionReason,
+                })
+              }
+              disabled={statusMutation.isPending}
+              className="rounded-full gap-2 shadow-xs"
+            >
+              {statusMutation.isPending ? "Memproses..." : "Konfirmasi Tolak"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className={labelCls}>Alasan Penolakan</Label>
+            <Input
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Contoh: Bukan staf resmi Puskesmas atau NIP tidak sesuai"
+              required
+            />
+          </div>
+        </div>
+      </Modal>
 
       {/* Add/Edit Modal */}
       <Modal

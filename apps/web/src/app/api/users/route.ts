@@ -11,12 +11,17 @@ export const GET = withAdmin(async () => {
       username: true,
       email: true,
       role: true,
+      status: true,
+      emailVerifiedAt: true,
+      approvedAt: true,
+      approvedById: true,
+      rejectionReason: true,
       puskesmasId: true,
       telegramChatId: true,
       telegramUsername: true,
       puskesmas: { select: { nama: true } },
     },
-    orderBy: { nama: "asc" },
+    orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(data);
 });

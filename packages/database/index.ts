@@ -29,6 +29,20 @@ export async function ensureDbSchema(): Promise<void> {
           CREATE UNIQUE INDEX IF NOT EXISTS "user_username_key" ON "user"("username");
 
           DO $$ BEGIN
+            CREATE TYPE "UserStatus" AS ENUM ('PENDING_EMAIL', 'PENDING_APPROVAL', 'ACTIVE', 'REJECTED');
+          EXCEPTION
+            WHEN duplicate_object THEN NULL;
+          END $$;
+
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "status" "UserStatus" DEFAULT 'ACTIVE';
+          UPDATE "user" SET "status" = 'ACTIVE' WHERE "status" IS NULL;
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "emailVerifiedAt" TIMESTAMP(3);
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "approvedAt" TIMESTAMP(3);
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "approvedById" INTEGER;
+          ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "rejectionReason" TEXT;
+          CREATE INDEX IF NOT EXISTS "user_status_idx" ON "user"("status");
+
+          DO $$ BEGIN
             CREATE TYPE "AnnouncementType" AS ENUM ('INFO', 'WARNING', 'URGENT');
           EXCEPTION
             WHEN duplicate_object THEN NULL;

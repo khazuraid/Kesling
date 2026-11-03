@@ -227,9 +227,14 @@ function LoginForm() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-xs font-medium text-foreground/80">
-                    Kata Sandi
-                  </Label>
+                  <div className="flex items-center justify-between text-xs">
+                    <Label htmlFor="password" className="text-xs font-medium text-foreground/80">
+                      Kata Sandi
+                    </Label>
+                    <a href="/forgot-password" className="font-medium text-primary hover:underline transition-colors">
+                      Lupa sandi?
+                    </a>
+                  </div>
                   <div className="relative">
                     <Input
                       id="password"
@@ -277,6 +282,13 @@ function LoginForm() {
                     </>
                   )}
                 </Button>
+
+                <div className="pt-2 text-center text-xs text-muted-foreground border-t border-border">
+                  Belum memiliki akun?{" "}
+                  <a href="/register" className="font-semibold text-primary hover:underline">
+                    Daftar di sini
+                  </a>
+                </div>
               </form>
             </>
           ) : (

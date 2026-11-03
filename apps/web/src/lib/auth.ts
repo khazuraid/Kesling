@@ -37,6 +37,20 @@ export const authOptions: NextAuthOptions = {
         });
         if (!user) return null;
 
+        // Validasi status akun
+        if (user.status && user.status !== "ACTIVE") {
+          if (user.status === "PENDING_EMAIL") {
+            throw new Error("Email belum diverifikasi. Silakan selesaikan proses verifikasi email pendaftaran.");
+          }
+          if (user.status === "PENDING_APPROVAL") {
+            throw new Error("Pendaftaran akun Anda sedang menunggu persetujuan Administrator Dinas Kesehatan.");
+          }
+          if (user.status === "REJECTED") {
+            const alasan = user.rejectionReason ? ` Alasan: ${user.rejectionReason}` : "";
+            throw new Error(`Permohonan pendaftaran akun Anda ditolak oleh Administrator.${alasan}`);
+          }
+        }
+
         // Catat tanggal verifikasi OTP agar berlaku selama 30 hari ke depan
         try {
           await prisma.user.update({
@@ -203,6 +217,20 @@ export const authOptions: NextAuthOptions = {
           }
 
           return null;
+        }
+
+        // Cek Status Akun Pengguna (Dual Verifikasi)
+        if (user.status && user.status !== "ACTIVE") {
+          if (user.status === "PENDING_EMAIL") {
+            throw new Error("Email belum diverifikasi. Silakan selesaikan proses verifikasi email pendaftaran.");
+          }
+          if (user.status === "PENDING_APPROVAL") {
+            throw new Error("Pendaftaran akun Anda sedang menunggu persetujuan Administrator Dinas Kesehatan.");
+          }
+          if (user.status === "REJECTED") {
+            const alasan = user.rejectionReason ? ` Alasan: ${user.rejectionReason}` : "";
+            throw new Error(`Permohonan pendaftaran akun Anda ditolak oleh Administrator.${alasan}`);
+          }
         }
 
         // Login sukses — hapus counter gagal
