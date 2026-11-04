@@ -236,7 +236,63 @@ export default function DonationsSettingsPage() {
                 </Button>
               </div>
               <p className="text-[10px] text-muted-foreground">
-                Daftarkan URL di atas pada menu Webhook di dashboard merchant SumoPod Anda.
+                Daftarkan URL ini di <strong>Settings → Webhook</strong> pada dashboard SumoPod.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Success Return URL
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value="https://kesling.biz.id/dashboard?donation=success"
+                  className="text-xs font-mono bg-surface-subtle"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://kesling.biz.id/dashboard?donation=success");
+                    toast.success("Success Return URL disalin ke clipboard");
+                  }}
+                  className="shrink-0 text-xs"
+                >
+                  Salin
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Daftarkan di <strong>Settings → Redirect URLs</strong> pada dashboard SumoPod.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Cancel Return URL
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value="https://kesling.biz.id/dashboard?donation=cancel"
+                  className="text-xs font-mono bg-surface-subtle"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://kesling.biz.id/dashboard?donation=cancel");
+                    toast.success("Cancel Return URL disalin ke clipboard");
+                  }}
+                  className="shrink-0 text-xs"
+                >
+                  Salin
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Daftarkan di <strong>Settings → Redirect URLs</strong> pada dashboard SumoPod.
               </p>
             </div>
           </div>

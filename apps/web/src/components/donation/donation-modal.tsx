@@ -34,6 +34,25 @@ export function DonationModal() {
     return () => document.removeEventListener("kesling:open-donation", handleOpen);
   }, []);
 
+  // Cek return URL callback dari SumoPod (?donation=success atau ?donation=cancel)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const donationStatus = params.get("donation");
+      if (donationStatus === "success") {
+        toast.success(
+          "Alhamdulillah! Pembayaran donasi Anda telah berhasil terverifikasi. Terima kasih banyak atas dukungan Anda!",
+          { duration: 8000 },
+        );
+        window.history.replaceState({}, "", window.location.pathname);
+      } else if (donationStatus === "cancel") {
+        toast.info("Pembayaran donasi dibatalkan atau belum diselesaikan.");
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    } catch {}
+  }, []);
+
   // Auto popup berkala jika diaktifkan (maksimal 1 kali per 3 hari jika belum donasi)
   useEffect(() => {
     try {
