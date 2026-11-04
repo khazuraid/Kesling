@@ -1,4 +1,45 @@
 import crypto from "node:crypto";
+import { prisma } from "@apps-kes/database";
+
+/**
+ * Lazy auto-create tabel donation & enum DonationStatus bila belum ada di DB produksi.
+ */
+let donationTableEnsured = false;
+export async function ensureDonationTable() {
+  if (donationTableEnsured) return;
+  try {
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        CREATE TYPE "DonationStatus" AS ENUM ('PENDING', 'PAID', 'EXPIRED', 'FAILED');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+
+      CREATE TABLE IF NOT EXISTS "donation" (
+        "id" SERIAL PRIMARY KEY,
+        "orderId" TEXT NOT NULL UNIQUE,
+        "paymentId" TEXT,
+        "userId" INTEGER,
+        "donorName" TEXT,
+        "donorEmail" TEXT,
+        "amount" INTEGER NOT NULL,
+        "paymentUrl" TEXT,
+        "qrCodeUrl" TEXT,
+        "status" "DonationStatus" NOT NULL DEFAULT 'PENDING',
+        "paymentMethod" TEXT NOT NULL DEFAULT 'QRIS',
+        "rawWebhookData" JSONB,
+        "paidAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS "donation_status_idx" ON "donation"("status");
+      CREATE INDEX IF NOT EXISTS "donation_userId_idx" ON "donation"("userId");
+    `);
+    donationTableEnsured = true;
+  } catch (err) {
+    console.warn("[ensureDonationTable warning]:", err);
+  }
+}
 
 /**
  * Verifikasi signature webhook Svix (HMAC-SHA256).
@@ -57,7 +98,9 @@ export interface SumoPodPaymentResponse {
   data?: {
     id?: string;
     order_id?: string;
+    payment_link_url?: string;
     payment_url?: string;
+    payment_code?: string;
     qr_code_url?: string;
     qr_string?: string;
     amount?: number;
@@ -69,28 +112,35 @@ export interface SumoPodPaymentResponse {
 
 /**
  * Call API SumoPod Create Payment
- * POST https://api-pay.sumopod.com/api/v1/payments
+ * POST https://api-pay.sumopod.com/api/v1/payments (Live)
+ * POST https://api-pay-sandbox.sumopod.com/api/v1/payments (Sandbox)
  */
 export async function createSumoPodPayment(
   params: CreateSumoPodPaymentParams,
   apiKeyOverride?: string,
+  baseUrlOverride?: string,
 ): Promise<SumoPodPaymentResponse> {
   const apiKey = apiKeyOverride || process.env.SUMOPOD_API_KEY;
-  const baseUrl = process.env.SUMOPOD_BASE_URL || "https://api-pay.sumopod.com";
+  const baseUrl = baseUrlOverride || process.env.SUMOPOD_BASE_URL || "https://api-pay.sumopod.com";
 
   if (!apiKey) {
     throw new Error("SUMOPOD_API_KEY belum dikonfigurasi di environment atau pengaturan sistem.");
   }
 
-  const payload = {
+  const payload: Record<string, any> = {
     order_id: params.orderId,
     amount: params.amount,
     currency: params.currency || "IDR",
     expires_in_hours: params.expiresInHours || 24,
     payment_method_type_code: params.paymentMethodTypeCode || "QRIS",
-    success_return_url: params.successReturnUrl || "",
-    cancel_return_url: params.cancelReturnUrl || "",
   };
+
+  if (params.successReturnUrl) {
+    payload.success_return_url = params.successReturnUrl;
+  }
+  if (params.cancelReturnUrl) {
+    payload.cancel_return_url = params.cancelReturnUrl;
+  }
 
   const res = await fetch(`${baseUrl}/api/v1/payments`, {
     method: "POST",

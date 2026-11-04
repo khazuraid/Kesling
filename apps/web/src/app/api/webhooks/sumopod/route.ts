@@ -1,9 +1,10 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { verifyWebhookSignature, verifyWebhookToken } from "@/lib/sumopod";
+import { ensureDonationTable, verifyWebhookSignature, verifyWebhookToken } from "@/lib/sumopod";
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDonationTable();
     // 1. Ambil raw body string untuk verifikasi HMAC
     const rawBody = await req.text();
 
@@ -61,11 +62,13 @@ export async function POST(req: NextRequest) {
       return new NextResponse("order_id or payment_id not found in payload", { status: 400 });
     }
 
-    // Cek status pembayaran dari payload
+    // Cek status pembayaran dari payload (mendukung event payment.completed, payment.failed, payment.expired)
     const isSuccess =
+      eventType.includes("completed") ||
       eventType.includes("success") ||
       eventType.includes("paid") ||
       eventType.includes("settlement") ||
+      String(data.status || "").toLowerCase() === "completed" ||
       String(data.status || "").toLowerCase() === "paid" ||
       String(data.status || "").toLowerCase() === "success";
 
@@ -92,7 +95,7 @@ export async function POST(req: NextRequest) {
 
       if (isSuccess) {
         newStatus = "PAID";
-        paidAt = new Date();
+        paidAt = data.paid_at ? new Date(data.paid_at) : new Date();
       } else if (isExpiredOrFailed && donation.status !== "PAID") {
         newStatus = "EXPIRED";
       }

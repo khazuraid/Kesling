@@ -19,6 +19,7 @@ export default function DonationsSettingsPage() {
   const [webhookSecret, setWebhookSecret] = useState("");
   const [webhookToken, setWebhookToken] = useState("");
   const [popupEnabled, setPopupEnabled] = useState(true);
+  const [mode, setMode] = useState<"sandbox" | "live">("sandbox");
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
   const { data, isLoading } = useQuery({
@@ -33,6 +34,7 @@ export default function DonationsSettingsPage() {
   // Sinkronkan state saat data selesai di-fetch pertama kali
   if (data && !isConfigLoaded) {
     setPopupEnabled(data.config?.popupEnabled ?? true);
+    setMode(data.config?.mode === "live" ? "live" : "sandbox");
     setIsConfigLoaded(true);
   }
 
@@ -61,7 +63,7 @@ export default function DonationsSettingsPage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = { popupEnabled };
+    const payload: any = { popupEnabled, mode };
     if (apiKey.trim()) payload.apiKey = apiKey.trim();
     if (webhookSecret.trim()) payload.webhookSecret = webhookSecret.trim();
     if (webhookToken.trim()) payload.webhookToken = webhookToken.trim();
@@ -117,23 +119,64 @@ export default function DonationsSettingsPage() {
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
+          {/* Mode Selector (Sandbox vs Live) */}
+          <div className="p-3 rounded-lg border border-border bg-surface-subtle/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <Label className="text-xs font-bold text-foreground block">Mode Environment SumoPod</Label>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Pilih <strong>Sandbox</strong> untuk uji coba/testing dengan simulasi QRIS, atau <strong>Live</strong>{" "}
+                untuk menerima transaksi asli.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMode("sandbox")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                  mode === "sandbox"
+                    ? "bg-amber-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sandbox (Test)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("live")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                  mode === "live"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Live (Produksi)
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                X-Api-Key SumoPod
+                X-Api-Key SumoPod ({mode === "live" ? "Live Key" : "Sandbox Key"})
               </Label>
               <Input
                 type="password"
                 placeholder={
-                  config.hasApiKey ? "•••••••• (Tersimpan - isi jika ingin mengganti)" : "Contoh: live_sk_..."
+                  config.hasApiKey
+                    ? "•••••••• (Tersimpan - isi jika ingin mengganti)"
+                    : "Contoh: live_sk_... / test_sk_..."
                 }
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 className="text-xs font-mono"
               />
               <p className="text-[10px] text-muted-foreground">
-                Dipakai untuk request pembuatan tagihan QRIS ke endpoint{" "}
-                <code>https://api-pay.sumopod.com/api/v1/payments</code>
+                Endpoint:{" "}
+                <code>
+                  {mode === "live"
+                    ? "https://api-pay.sumopod.com/api/v1/payments"
+                    : "https://api-pay-sandbox.sumopod.com/api/v1/payments"}
+                </code>
               </p>
             </div>
 

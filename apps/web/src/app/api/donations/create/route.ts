@@ -1,10 +1,12 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/api-auth";
-import { createSumoPodPayment } from "@/lib/sumopod";
+import { createSumoPodPayment, ensureDonationTable } from "@/lib/sumopod";
 
 export const POST = withAuth(async (req: NextRequest) => {
   try {
+    await ensureDonationTable();
+
     const user = (req as any).user;
     const body = await req.json();
     const amount = Number(body.amount);
@@ -13,11 +15,19 @@ export const POST = withAuth(async (req: NextRequest) => {
       return NextResponse.json({ error: "Nominal donasi minimal Rp 1.000" }, { status: 400 });
     }
 
-    // Ambil API Key dari AppSetting jika ada override, fallback ke process.env
-    const settingKey = await prisma.appSetting.findUnique({
-      where: { key: "SUMOPOD_API_KEY" },
-    });
-    const apiKey = settingKey?.value || process.env.SUMOPOD_API_KEY;
+    // Ambil API Key dan Mode dari AppSetting jika ada override, fallback ke process.env
+    let apiKey = process.env.SUMOPOD_API_KEY;
+    let sumopodMode = "sandbox"; // default Sandbox per panduan SumoPod Managed Payment
+    try {
+      const [settingKey, settingMode] = await Promise.all([
+        prisma.appSetting.findUnique({ where: { key: "SUMOPOD_API_KEY" } }),
+        prisma.appSetting.findUnique({ where: { key: "SUMOPOD_MODE" } }),
+      ]);
+      if (settingKey?.value) apiKey = settingKey.value;
+      if (settingMode?.value) sumopodMode = settingMode.value;
+    } catch (e) {
+      console.warn("[AppSetting fallback]:", e);
+    }
 
     if (!apiKey) {
       return NextResponse.json(
@@ -33,7 +43,11 @@ export const POST = withAuth(async (req: NextRequest) => {
 
     const host = req.headers.get("host") || "kesling.biz.id";
     const protocol = host.includes("localhost") ? "http" : "https";
-    const baseUrl = `${protocol}://${host}`;
+    const appBaseUrl = `${protocol}://${host}`;
+
+    const apiBaseUrl =
+      process.env.SUMOPOD_BASE_URL ||
+      (sumopodMode === "live" ? "https://api-pay.sumopod.com" : "https://api-pay-sandbox.sumopod.com");
 
     // Request ke SumoPod
     const sumoRes = await createSumoPodPayment(
@@ -43,10 +57,11 @@ export const POST = withAuth(async (req: NextRequest) => {
         currency: "IDR",
         expiresInHours: 24,
         paymentMethodTypeCode: "QRIS",
-        successReturnUrl: `${baseUrl}/dashboard?donation=success`,
-        cancelReturnUrl: `${baseUrl}/dashboard?donation=cancel`,
+        successReturnUrl: `${appBaseUrl}/dashboard?donation=success`,
+        cancelReturnUrl: `${appBaseUrl}/dashboard?donation=cancel`,
       },
       apiKey,
+      apiBaseUrl,
     );
 
     if (!sumoRes.success || !sumoRes.data) {
@@ -55,8 +70,8 @@ export const POST = withAuth(async (req: NextRequest) => {
 
     const data = sumoRes.data;
     const paymentId = data.id || data.payment_id || null;
-    const paymentUrl = data.payment_url || data.checkout_url || data.url || null;
-    const qrCodeUrl = data.qr_code_url || data.qr_image_url || data.qr_string || null;
+    const paymentUrl = data.payment_link_url || data.payment_url || data.checkout_url || data.url || null;
+    const qrCodeUrl = data.payment_code || data.qr_code_url || data.qr_image_url || data.qr_string || null;
 
     // Simpan ke database
     const donation = await prisma.donation.create({

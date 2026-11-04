@@ -1,9 +1,11 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   ArrowLeftRight,
   BarChart3,
+  Bell,
   Calendar,
   CalendarRange,
   ClipboardCheck,
@@ -31,6 +33,8 @@ import { useEffect, useState } from "react";
 import { useAppAbility } from "@/components/ability-provider";
 import { NotificationBell } from "@/components/notification-bell";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { fetchJsonOr } from "@/lib/fetch-json";
+import { cn } from "@/lib/utils";
 
 type MenuItem = {
   label: string;
@@ -142,6 +146,13 @@ export function SideNav() {
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { data: countData } = useQuery({
+    queryKey: ["notifications-count"],
+    queryFn: () => fetchJsonOr<{ count: number }>("/api/notifications/count", { count: 0 }),
+    refetchInterval: 15_000,
+  });
+  const unreadNotif = countData?.count ?? 0;
 
   useEffect(() => {
     const v = localStorage.getItem(LS_KEY);
@@ -327,20 +338,61 @@ export function SideNav() {
 
         {/* Bottom Dock */}
         <div className="shrink-0 flex flex-col border-t border-border p-2 space-y-1 bg-surface">
-          {/* Notification */}
+          {/* Notification Page Link */}
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center justify-center p-1 rounded-lg hover:bg-muted/60 transition-colors">
-                  <NotificationBell placement="side" />
-                </div>
+                <Link
+                  href="/notifications"
+                  className={cn(
+                    "relative flex items-center justify-center rounded-lg transition-colors h-9 w-full",
+                    pathname === "/notifications"
+                      ? "bg-primary text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                  )}
+                  aria-label="Notifikasi"
+                >
+                  <Bell className="w-4 h-4 shrink-0" />
+                  {unreadNotif > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+                  )}
+                </Link>
               </TooltipTrigger>
               <TooltipContent side="right" className="text-[11px] font-medium">
-                Notifikasi Pengguna
+                Notifikasi {unreadNotif > 0 ? `(${unreadNotif} baru)` : ""}
               </TooltipContent>
             </Tooltip>
           ) : (
-            <NotificationBell placement="top" showLabel />
+            <Link
+              href="/notifications"
+              className={cn(
+                "flex items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors w-full text-left select-none group",
+                pathname === "/notifications"
+                  ? "bg-primary text-white font-bold shadow-xs"
+                  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Bell
+                  className={cn(
+                    "w-4 h-4 shrink-0",
+                    pathname === "/notifications" ? "text-white" : "text-muted-foreground group-hover:text-foreground",
+                  )}
+                />
+                <span className="text-[12px] font-semibold truncate">Notifikasi</span>
+              </div>
+
+              {unreadNotif > 0 && (
+                <span
+                  className={cn(
+                    "px-1.5 py-0.2 rounded-full text-[10px] font-black tabular-nums shadow-xs",
+                    pathname === "/notifications" ? "bg-white text-primary" : "bg-emerald-600 text-white",
+                  )}
+                >
+                  {unreadNotif > 99 ? "99+" : unreadNotif}
+                </span>
+              )}
+            </Link>
           )}
 
           {/* Donation Quick Trigger */}

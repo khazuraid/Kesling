@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  ExternalLink,
   Inbox,
   Loader2,
   MailCheck,
@@ -14,6 +15,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -482,21 +484,29 @@ export function NotificationBell({ placement = "bottom", showLabel = false, clas
           </div>
 
           {/* Secondary Footer Action */}
-          <div className="px-2 py-1.5 border-t border-border/70 bg-surface shrink-0">
+          <div className="p-2 border-t border-border/70 bg-surface shrink-0 flex items-center gap-1.5">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 h-7 text-[11px] font-bold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 rounded-md transition-colors"
+            >
+              <ExternalLink className="w-3 h-3" /> Buka Halaman Penuh
+            </Link>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => testNotifMutation.mutate()}
               disabled={testNotifMutation.isPending}
-              className="w-full h-6 text-[10px] font-bold text-muted-foreground hover:text-foreground gap-1.5 rounded-md"
+              className="h-7 px-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground gap-1 rounded-md"
+              title="Kirim Uji Coba Lonceng"
             >
               {testNotifMutation.isPending ? (
-                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
-                <Sparkles className="w-2.5 h-2.5 text-primary" />
+                <Sparkles className="w-3 h-3 text-primary" />
               )}
-              {testNotifMutation.isPending ? "Menguji..." : "Kirim Uji Coba Lonceng"}
+              Test
             </Button>
           </div>
         </div>
