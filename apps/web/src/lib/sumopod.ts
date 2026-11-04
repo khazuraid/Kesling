@@ -146,12 +146,25 @@ export async function createSumoPodPayment(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 KeslingApp/1.0",
       "X-Api-Key": apiKey,
     },
     body: JSON.stringify(payload),
   });
 
   const responseText = await res.text();
+
+  // Deteksi jika respon dicegat oleh Cloudflare Challenge (HTML)
+  if (responseText.includes("Just a moment...") || responseText.includes("<!DOCTYPE html>")) {
+    return {
+      success: false,
+      error:
+        "Permintaan ke gateway SumoPod dicegat oleh proteksi Cloudflare WAF. Pastikan API Key valid dan coba beberapa saat lagi.",
+    };
+  }
+
   let json: any = {};
   try {
     json = JSON.parse(responseText);
