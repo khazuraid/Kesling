@@ -12,6 +12,7 @@ import {
   FileEdit,
   Folder,
   HardDrive,
+  Heart,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -343,6 +344,34 @@ export function SideNav() {
               <NotificationBell placement="top" />
               <span className="text-[12px] font-semibold text-muted-foreground select-none">Notifikasi</span>
             </div>
+          )}
+
+          {/* Donation Quick Trigger */}
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-donation"))}
+                  aria-label="Dukung / Donasi"
+                  className="flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors h-9 w-full"
+                >
+                  <Heart className="w-4 h-4 shrink-0 fill-rose-500/20" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-[11px] font-medium">
+                Dukung / Donasi
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              type="button"
+              onClick={() => document.dispatchEvent(new CustomEvent("kesling:open-donation"))}
+              className="flex items-center rounded-lg px-2.5 py-1.5 gap-2 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 transition-colors w-full text-left"
+            >
+              <Heart className="w-4 h-4 shrink-0 fill-rose-500/20 text-rose-500" />
+              <span className="text-[12px] font-bold select-none">Dukung Aplikasi</span>
+            </button>
           )}
 
           {/* User Profile */}

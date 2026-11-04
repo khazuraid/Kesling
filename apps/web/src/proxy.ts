@@ -149,6 +149,7 @@ function checkBodySize(req: NextRequest): NextResponse | null {
 const ADMIN_ONLY_PREFIXES = [
   "/settings/users",
   "/settings/notifications",
+  "/settings/donations",
   "/laporan-builder",
   "/approval",
   "/api/laporan/approval",
@@ -158,6 +159,7 @@ const ADMIN_ONLY_PREFIXES = [
   "/api/import",
   "/api/admin/notifications",
   "/api/admin/announcements",
+  "/api/admin/donations",
   "/api/master/dynamic-formulas",
   "/api/master/dynamic-parameters",
   "/api/master/dynamic-subcategories",
@@ -188,8 +190,10 @@ async function securityLayer(req: NextRequest): Promise<NextResponse> {
   const pathname = req.nextUrl.pathname;
 
   // Route API tidak boleh memakai cookie sesi untuk akses lintas-situs.
+  // Pengecualian: webhook eksternal dari penyedia pihak ketiga (misal: SumoPod)
+  const isWebhook = pathname.startsWith("/api/webhooks/");
   const isMutation = req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS";
-  if (pathname.startsWith("/api/") && isMutation) {
+  if (pathname.startsWith("/api/") && isMutation && !isWebhook) {
     const origin = req.headers.get("origin");
     if (origin) {
       const host = req.headers.get("host");

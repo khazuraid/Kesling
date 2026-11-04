@@ -9,6 +9,7 @@ import {
   Building2,
   Copy,
   FileSpreadsheet,
+  Heart,
   ShieldAlert,
   Sparkles,
   Target,
@@ -27,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import AISettingsPage from "./ai/page";
+import DonationsSettingsPage from "./donations/page";
 import NotificationsSettingsPage from "./notifications/page";
 import TelegramSettingsPage from "./telegram/page";
 import UsersPage from "./users/page";
@@ -269,6 +271,7 @@ export default function SettingsPage() {
     { key: "target", label: "Target", icon: Target, desc: "Capaian tahunan" },
     { key: "users", label: "Pengguna", icon: Users, desc: "Akun & peran" },
     { key: "notifications", label: "Notifikasi", icon: Bell, desc: "Siaran & Pengumuman" },
+    { key: "donations", label: "Donasi", icon: Heart, desc: "Gateway SumoPod & QRIS" },
     { key: "telegram", label: "Telegram", icon: Bot, desc: "Notifikasi bot" },
     { key: "ai", label: "AI Import", icon: Sparkles, desc: "Model & parser" },
     { key: "health", label: "Status Sistem", icon: Activity, desc: "Telemetri live" },
@@ -355,6 +358,7 @@ export default function SettingsPage() {
           {activeTab === "target" && <TargetManagement />}
           {activeTab === "users" && <UsersPage />}
           {activeTab === "notifications" && <NotificationsSettingsPage />}
+          {activeTab === "donations" && <DonationsSettingsPage />}
           {activeTab === "telegram" && <TelegramSettingsPage />}
           {activeTab === "ai" && <AISettingsPage />}
           {activeTab === "health" && <SystemHealthDashboard />}

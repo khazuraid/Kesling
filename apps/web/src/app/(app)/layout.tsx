@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { AnnouncementModal } from "@/components/announcement-modal";
 import { CommandPalette } from "@/components/command-palette";
+import { DonationModal } from "@/components/donation/donation-modal";
 import { KeyboardHints } from "@/components/keyboard-hints";
 import { DesktopHeader } from "@/components/layout/desktop-header";
 import { SideNav } from "@/components/layout/sidebar";
@@ -28,6 +29,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </SidebarOffset>
       <AnnouncementModal />
+      <DonationModal />
       <CommandPalette />
       <KeyboardHints />
     </div>

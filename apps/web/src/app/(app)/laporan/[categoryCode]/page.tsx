@@ -1,21 +1,20 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Database, Download, Layers, Plus, RefreshCw } from "lucide-react";
+import { Copy, Database, Download, FileSpreadsheet, Layers, Plus, RefreshCw, Table2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CopyTemplateModal } from "@/components/laporan/copy-template-modal";
 import { DataDasarModal } from "@/components/laporan/data-dasar-modal";
-import { LaporanFormModal } from "@/components/laporan/laporan-form-modal";
+import { LaporanSpreadsheetEditor } from "@/components/laporan/laporan-spreadsheet-editor";
 import { LaporanTable } from "@/components/laporan/laporan-table";
 import { LaporanFilter } from "@/components/laporan-filter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 import { usePuskesmasList } from "@/hooks/use-puskesmas-list";
-import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -122,7 +121,7 @@ export default function DynamicLaporanPage() {
   const { data: puskesmasList = [] } = usePuskesmasList();
   const queryClient = useQueryClient();
 
-  const [showForm, setShowForm] = useState(false);
+  const [viewMode, setViewMode] = useState<"spreadsheet" | "rekap">("spreadsheet");
   const [showDataDasarForm, setShowDataDasarForm] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyPuskesmasId, setCopyPuskesmasId] = useState<number>(0);
@@ -132,7 +131,6 @@ export default function DynamicLaporanPage() {
   const [formValues, setFormValues] = useState<ValueMap>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  useUnsavedChanges(showForm);
 
   // ── Queries ──────────────────────────────────────────────────────────
 
@@ -269,7 +267,6 @@ export default function DynamicLaporanPage() {
       toast.success("Data berhasil disimpan");
       queryClient.invalidateQueries({ queryKey: ["laporan", categoryCode] });
       if (variables.isDataDasar) setShowDataDasarForm(false);
-      else setShowForm(false);
     },
     onError: (e: Error) => {
       toast.error(e.message || "Gagal menyimpan data");
@@ -278,31 +275,13 @@ export default function DynamicLaporanPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────
 
-  const openForm = useCallback(
+  const openSpreadsheet = useCallback(
     (pkmId?: number) => {
       const id = pkmId || (session?.user as any)?.puskesmasId || puskesmasList[0]?.id || 0;
       setFormPuskesmasId(id);
-
-      const existing = laporanList.find((l) => l.puskesmasId === id);
-      const prefilled: ValueMap = existing ? buildValueMap(existing.values) : {};
-
-      // Fallback isi data dasar (bulan = 0) jika nilai terdaftar/baseline belum ada atau masih 0
-      if (dataDasarList.length > 0) {
-        const baselineData = dataDasarList.find((l) => l.puskesmasId === id);
-        if (baselineData) {
-          for (const v of baselineData.values) {
-            const k = buildKey(v.parameterId, v.subCategoryId);
-            if (!prefilled[k] || prefilled[k] === "0") {
-              prefilled[k] = v.value;
-            }
-          }
-        }
-      }
-
-      setFormValues(prefilled);
-      setShowForm(true);
+      setViewMode("spreadsheet");
     },
-    [laporanList, dataDasarList, puskesmasList, session],
+    [puskesmasList, session],
   );
 
   const openDataDasarForm = useCallback(
@@ -408,6 +387,27 @@ export default function DynamicLaporanPage() {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <div className="flex items-center bg-surface-subtle border border-border p-0.5 rounded-full shadow-xs">
+              <Button
+                type="button"
+                variant={viewMode === "spreadsheet" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("spreadsheet")}
+                className="h-8 rounded-full text-xs font-bold gap-1.5 px-3.5 shadow-none"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Input Excel
+              </Button>
+              <Button
+                type="button"
+                variant={viewMode === "rekap" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("rekap")}
+                className="h-8 rounded-full text-xs font-bold gap-1.5 px-3.5 shadow-none"
+              >
+                <Table2 className="w-3.5 h-3.5" /> Rekap Kota
+              </Button>
+            </div>
+
             <LaporanFilter />
             {category?.parameters && category.parameters.filter((p) => p.isBaseline).length > 0 && (
               <Button
@@ -452,43 +452,64 @@ export default function DynamicLaporanPage() {
                 <Download className="w-3.5 h-3.5 text-emerald-600" /> Export Excel
               </a>
             </Button>
-            <Button
-              size="sm"
-              onClick={() => openForm()}
-              disabled={!category}
-              className="rounded-full shadow-xs gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" /> Input Laporan
-            </Button>
+            {viewMode === "rekap" && (
+              <Button
+                size="sm"
+                onClick={() => openSpreadsheet()}
+                disabled={!category}
+                className="rounded-full shadow-xs gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" /> Input Excel
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* ── CONTENT BODY (CANVAS) ── */}
       <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 py-6 space-y-6">
-        {/* ── Data Table (includes summary cards + tabbed sub-categories) ── */}
-        {category && (
-          <LaporanTable
-            category={category}
-            laporanList={laporanList}
-            cumulativeData={cumulativeData}
-            isLoading={isLoading}
-            paginatedList={paginatedList}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            PAGE_SIZE={PAGE_SIZE}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            setCurrentPage={setCurrentPage}
-            laporanCount={laporanList.length}
-            puskesmasTotal={puskesmasList.length}
-            categoryCode={categoryCode}
-            bulan={bulan}
-            tahun={tahun}
-            onRowClick={(pkmId) => openForm(pkmId)}
-            openForm={() => openForm()}
-          />
-        )}
+        {category &&
+          (viewMode === "spreadsheet" ? (
+            <LaporanSpreadsheetEditor
+              category={category}
+              categoryCode={categoryCode}
+              bulan={bulan}
+              tahun={tahun}
+              isOperator={isOperator}
+              puskesmasId={formPuskesmasId}
+              setPuskesmasId={setFormPuskesmasId}
+              puskesmasList={puskesmasList}
+              laporanList={laporanList}
+              dataDasarList={dataDasarList}
+              submitMutation={submitMutation}
+              onBackToRekap={() => setViewMode("rekap")}
+              onOpenDataDasar={() => openDataDasarForm(formPuskesmasId)}
+              onOpenCopyModal={() => setShowCopyModal(true)}
+              onSyncIkl={() => syncMutation.mutate()}
+              syncPending={syncMutation.isPending}
+            />
+          ) : (
+            <LaporanTable
+              category={category}
+              laporanList={laporanList}
+              cumulativeData={cumulativeData}
+              isLoading={isLoading}
+              paginatedList={paginatedList}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              PAGE_SIZE={PAGE_SIZE}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              setCurrentPage={setCurrentPage}
+              laporanCount={laporanList.length}
+              puskesmasTotal={puskesmasList.length}
+              categoryCode={categoryCode}
+              bulan={bulan}
+              tahun={tahun}
+              onRowClick={(pkmId) => openSpreadsheet(pkmId)}
+              openForm={() => openSpreadsheet()}
+            />
+          ))}
       </div>
 
       {/* ── Data Dasar Modal ── */}
@@ -504,24 +525,6 @@ export default function DynamicLaporanPage() {
           setFormValues={setFormValues}
           puskesmasList={puskesmasList}
           dataDasarList={dataDasarList}
-          submitMutation={submitMutation}
-          handleSubmit={handleSubmit}
-        />
-      )}
-
-      {/* ── Input Form Modal ── */}
-      {showForm && category && (
-        <LaporanFormModal
-          open={showForm}
-          onClose={() => setShowForm(false)}
-          category={category}
-          isOperator={isOperator}
-          formPuskesmasId={formPuskesmasId}
-          setFormPuskesmasId={setFormPuskesmasId}
-          formValues={formValues}
-          setFormValues={setFormValues}
-          puskesmasList={puskesmasList}
-          laporanList={laporanList}
           submitMutation={submitMutation}
           handleSubmit={handleSubmit}
         />

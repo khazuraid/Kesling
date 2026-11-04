@@ -422,8 +422,8 @@ export function LaporanTable({
         <EmptyState
           icon={Database}
           title="Belum ada data laporan"
-          description="Belum ada puskesmas yang menginput laporan untuk periode ini. Mulai dengan mengisi data sekarang."
-          actionLabel="Input Laporan"
+          description="Belum ada puskesmas yang menginput laporan untuk periode ini. Mulai dengan mengisi data spreadsheet sekarang."
+          actionLabel="Buka Input Excel"
           onAction={() => openForm()}
         />
       ) : isRowBased && activeTab !== "ringkasan" ? (
