@@ -480,6 +480,7 @@ export default function DynamicLaporanPage() {
               setPuskesmasId={setFormPuskesmasId}
               puskesmasList={puskesmasList}
               laporanList={laporanList}
+              cumulativeData={cumulativeData}
               dataDasarList={dataDasarList}
               submitMutation={submitMutation}
               onBackToRekap={() => setViewMode("rekap")}

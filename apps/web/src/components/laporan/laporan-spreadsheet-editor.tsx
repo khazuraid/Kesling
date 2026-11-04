@@ -5,6 +5,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  Columns,
   FilePenLine,
   Loader2,
   RefreshCw,
@@ -13,7 +14,7 @@ import {
   Sigma,
   Sparkles,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,8 @@ function calcRowCompliance(
   return ((numerator / denominator) * 100).toFixed(1);
 }
 
+const BULAN_SHORT = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+
 // ─── Component Props ──────────────────────────────────────────────────────────
 
 interface LaporanSpreadsheetEditorProps {
@@ -116,6 +119,7 @@ interface LaporanSpreadsheetEditorProps {
   setPuskesmasId: (id: number) => void;
   puskesmasList: any[];
   laporanList: DynamicLaporan[];
+  cumulativeData?: Record<number, Record<string, number>>;
   dataDasarList?: DynamicLaporan[];
   submitMutation: { isPending: boolean; mutate: (body: any) => void };
   onBackToRekap?: () => void;
@@ -128,13 +132,14 @@ interface LaporanSpreadsheetEditorProps {
 export function LaporanSpreadsheetEditor({
   category,
   categoryCode: _categoryCode,
-  bulan: _bulan,
+  bulan,
   tahun: _tahun,
   isOperator,
   puskesmasId,
   setPuskesmasId,
   puskesmasList,
   laporanList,
+  cumulativeData,
   dataDasarList = [],
   submitMutation,
   onBackToRekap,
@@ -159,6 +164,8 @@ export function LaporanSpreadsheetEditor({
   const [cellValues, setCellValues] = useState<ValueMap>({});
   const [dirty, setDirty] = useState(false);
   const [focusedCell, setFocusedCell] = useState<{ rowIdx: number; colIdx: number } | null>(null);
+  const [displayMode, setDisplayMode] = useState<"input" | "split">("input");
+  const isSplit = displayMode === "split";
 
   // Input refs for keyboard navigation: key = `${rowIdx}-${colIdx}`
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -307,6 +314,69 @@ export function LaporanSpreadsheetEditor({
     return sums;
   }, [reportParameters, isRowBased, scList, cellValues]);
 
+  // Prior cumulative values (Jan s/d Bulan - 1)
+  const priorMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (bulan <= 1) return map;
+
+    const existingReport = laporanList.find((l) => l.puskesmasId === puskesmasId);
+    const existingMonthMap: Record<string, number> = {};
+    for (const v of existingReport?.values || []) {
+      const k = buildKey(v.parameterId, v.subCategoryId);
+      existingMonthMap[k] = parseFloat(v.value) || 0;
+    }
+
+    const pkmCum = cumulativeData?.[puskesmasId] || {};
+    for (const k in pkmCum) {
+      const rawCum = pkmCum[k] || 0;
+      const existingVal = existingMonthMap[k] || 0;
+      map[k] = Math.max(0, rawCum - existingVal);
+    }
+    return map;
+  }, [bulan, laporanList, puskesmasId, cumulativeData]);
+
+  // Real-time cumulative value map (prior + active cell values)
+  const cumulativeValuesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (isRowBased) {
+      for (const sc of scList) {
+        for (const p of reportParameters) {
+          const k = buildKey(p.id, sc.id);
+          const prior = bulan <= 1 ? 0 : priorMap[k] || 0;
+          const cur = parseFloat(cellValues[k] || "0") || 0;
+          map[k] = String(prior + cur);
+        }
+      }
+    } else {
+      for (const p of reportParameters) {
+        const k = buildKey(p.id);
+        const prior = bulan <= 1 ? 0 : priorMap[k] || 0;
+        const cur = parseFloat(cellValues[k] || "0") || 0;
+        map[k] = String(prior + cur);
+      }
+    }
+    return map;
+  }, [isRowBased, scList, reportParameters, bulan, priorMap, cellValues]);
+
+  // Real-time Sum per Parameter Cumulative Column
+  const columnCumulativeSums = useMemo(() => {
+    const sums: Record<number, number> = {};
+    for (const p of reportParameters) {
+      let sum = 0;
+      if (isRowBased) {
+        for (const sc of scList) {
+          const key = buildKey(p.id, sc.id);
+          sum += parseFloat(cumulativeValuesMap[key] || "0") || 0;
+        }
+      } else {
+        const key = buildKey(p.id);
+        sum += parseFloat(cumulativeValuesMap[key] || "0") || 0;
+      }
+      sums[p.id] = sum;
+    }
+    return sums;
+  }, [reportParameters, isRowBased, scList, cumulativeValuesMap]);
+
   // Real-time Total Capaian % Puskesmas Ini
   const totalCapaianPct = useMemo(() => {
     if (!category.formula) return null;
@@ -319,6 +389,19 @@ export function LaporanSpreadsheetEditor({
     if (denSum === 0) return null;
     return ((numSum / denSum) * 100).toFixed(1);
   }, [category.formula, reportParameters, columnSums]);
+
+  // Real-time Total Capaian Kumulatif % Puskesmas Ini
+  const totalCumulativeCapaianPct = useMemo(() => {
+    if (!category.formula) return null;
+    const numParam = reportParameters.find((p) => p.code === category.formula?.numeratorCode);
+    const denParam = reportParameters.find((p) => p.code === category.formula?.denominatorCode);
+    if (!numParam || !denParam) return null;
+
+    const numSum = columnCumulativeSums[numParam.id] || 0;
+    const denSum = columnCumulativeSums[denParam.id] || 0;
+    if (denSum === 0) return null;
+    return ((numSum / denSum) * 100).toFixed(1);
+  }, [category.formula, reportParameters, columnCumulativeSums]);
 
   // Index pkm saat ini untuk navigasi Next/Prev Puskesmas (khusus Admin)
   const currentPkmIdx = puskesmasList.findIndex((p: any) => p.id === puskesmasId);
@@ -402,6 +485,34 @@ export function LaporanSpreadsheetEditor({
                   Ada Perubahan (Belum Disimpan)
                 </Badge>
               )}
+            </div>
+
+            {/* Toggle Tampilan Input vs Split Kumulatif */}
+            <div className="flex items-center bg-surface-subtle border border-border p-0.5 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setDisplayMode("input")}
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                  !isSplit
+                    ? "bg-surface text-foreground shadow-xs font-black border border-border/70"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Tampilkan hanya kolom input bulan ini"
+              >
+                Input Saja
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayMode("split")}
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 ${
+                  isSplit
+                    ? "bg-surface text-primary shadow-xs font-black border border-border/70"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Tampilkan kolom input berdampingan dengan total kumulatif real-time"
+              >
+                <Columns className="w-3 h-3" /> Split Kumulatif
+              </button>
             </div>
           </div>
 
@@ -508,10 +619,15 @@ export function LaporanSpreadsheetEditor({
             {category.formula && (
               <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold text-[11px]">
                 <Sparkles className="w-3 h-3" />
-                Capaian Puskesmas:{" "}
+                Capaian:{" "}
                 <span className="font-mono text-xs font-black">
                   {totalCapaianPct !== null ? `${totalCapaianPct}%` : "0%"}
                 </span>
+                {isSplit && (
+                  <span className="font-mono text-[10px] opacity-80 border-l border-primary/30 pl-1.5 ml-0.5">
+                    Kum: {totalCumulativeCapaianPct !== null ? `${totalCumulativeCapaianPct}%` : "0%"}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -545,16 +661,23 @@ export function LaporanSpreadsheetEditor({
             {/* ── Table Header (Excel style) ── */}
             <thead className="sticky top-0 z-20 bg-surface shadow-[0_1px_0_0_var(--color-border)]">
               <tr className="border-b border-border bg-surface-subtle text-foreground text-[11px] font-black tracking-tight divide-x divide-border">
-                <th className="w-12 py-2.5 px-2 text-center sticky left-0 z-30 bg-surface-subtle uppercase text-[10px] text-muted-foreground">
+                <th
+                  rowSpan={isSplit ? 2 : 1}
+                  className="w-12 py-2.5 px-2 text-center sticky left-0 z-30 bg-surface-subtle uppercase text-[10px] text-muted-foreground align-middle"
+                >
                   No
                 </th>
-                <th className="min-w-[240px] py-2.5 px-4 text-left sticky left-12 z-30 bg-surface-subtle uppercase text-[10px] text-muted-foreground">
+                <th
+                  rowSpan={isSplit ? 2 : 1}
+                  className="min-w-[240px] py-2.5 px-4 text-left sticky left-12 z-30 bg-surface-subtle uppercase text-[10px] text-muted-foreground align-middle"
+                >
                   {isRowBased ? "Sub-Kategori / Sarana" : "Parameter Indikator"}
                 </th>
                 {reportParameters.map((p, colIdx) => (
                   <th
                     key={p.id}
-                    className="w-36 min-w-[130px] py-2.5 px-3 text-center uppercase text-[10px] tracking-wider text-foreground whitespace-nowrap"
+                    colSpan={isSplit ? 2 : 1}
+                    className="py-2.5 px-3 text-center uppercase text-[10px] tracking-wider text-foreground whitespace-nowrap"
                   >
                     <div className="flex flex-col items-center">
                       <span className="font-black text-foreground">{p.nama}</span>
@@ -565,11 +688,38 @@ export function LaporanSpreadsheetEditor({
                   </th>
                 ))}
                 {category.formula && (
-                  <th className="w-28 min-w-[100px] py-2.5 px-3 text-center text-primary uppercase text-[10px] font-black whitespace-nowrap bg-primary/5">
+                  <th
+                    colSpan={isSplit ? 2 : 1}
+                    className="py-2.5 px-3 text-center text-primary uppercase text-[10px] font-black whitespace-nowrap bg-primary/5"
+                  >
                     % Capaian
                   </th>
                 )}
               </tr>
+              {isSplit && (
+                <tr className="border-b border-border bg-surface text-[10px] font-bold text-muted-foreground divide-x divide-border">
+                  {reportParameters.map((p) => (
+                    <Fragment key={p.id}>
+                      <th className="w-28 min-w-[100px] py-1 px-2 text-right uppercase text-[9px] font-extrabold text-foreground/80">
+                        Bln Ini
+                      </th>
+                      <th className="w-28 min-w-[100px] py-1 px-2 text-right uppercase text-[9px] font-black text-primary bg-primary/5">
+                        {bulan === 1 ? "Kum. (Jan)" : `Kum. (s/d ${BULAN_SHORT[bulan]})`}
+                      </th>
+                    </Fragment>
+                  ))}
+                  {category.formula && (
+                    <>
+                      <th className="w-20 min-w-[70px] py-1 px-1.5 text-center uppercase text-[9px] font-extrabold text-foreground/80">
+                        Bln Ini
+                      </th>
+                      <th className="w-20 min-w-[70px] py-1 px-1.5 text-center uppercase text-[9px] font-black text-primary bg-primary/10">
+                        Kumulatif
+                      </th>
+                    </>
+                  )}
+                </tr>
+              )}
             </thead>
 
             {/* ── Table Body: Editable Rows ── */}
@@ -578,6 +728,12 @@ export function LaporanSpreadsheetEditor({
                 /* Matrix Sub-Categories Rows */
                 scList.map((sc, rowIdx) => {
                   const rowPct = calcRowCompliance(cellValues, category.parameters, sc.id, category.formula);
+                  const rowCumPct = calcRowCompliance(
+                    cumulativeValuesMap,
+                    category.parameters,
+                    sc.id,
+                    category.formula,
+                  );
                   const isRowFocused = focusedCell?.rowIdx === rowIdx;
 
                   return (
@@ -614,66 +770,89 @@ export function LaporanSpreadsheetEditor({
                         </div>
                       </td>
 
-                      {/* Col Data: Inputs */}
+                      {/* Col Data: Inputs & Optional Kumulatif */}
                       {reportParameters.map((p, colIdx) => {
                         const cellKey = buildKey(p.id, sc.id);
                         const val = cellValues[cellKey] ?? "";
                         const refKey = `${rowIdx}-${colIdx}`;
                         const isCellFocused = focusedCell?.rowIdx === rowIdx && focusedCell?.colIdx === colIdx;
+                        const cumVal = parseFloat(cumulativeValuesMap[cellKey] || "0") || 0;
 
                         return (
-                          <td
-                            key={p.id}
-                            className={`p-0 w-36 transition-colors ${
-                              isCellFocused ? "bg-primary-subtle/30 ring-2 ring-primary ring-inset z-10" : ""
-                            }`}
-                          >
-                            <input
-                              ref={(el) => {
-                                if (el) inputRefs.current.set(refKey, el);
-                                else inputRefs.current.delete(refKey);
-                              }}
-                              type="number"
-                              min={0}
-                              step={p.type === "DECIMAL" ? "0.1" : "1"}
-                              value={val}
-                              placeholder="0"
-                              onFocus={() => setFocusedCell({ rowIdx, colIdx })}
-                              onBlur={() => setFocusedCell(null)}
-                              onChange={(e) => handleCellChange(cellKey, e.target.value)}
-                              onKeyDown={(e) =>
-                                handleKeyDownCell(e, rowIdx, colIdx, scList.length, reportParameters.length)
-                              }
-                              className={`w-full h-10 px-3 text-right font-mono text-[12px] font-bold tabular-nums bg-transparent border-0 outline-none transition-colors ${
-                                val !== "" && val !== "0"
-                                  ? "text-foreground font-black"
-                                  : "text-muted-foreground/50 placeholder:text-muted-foreground/30"
+                          <Fragment key={p.id}>
+                            <td
+                              className={`p-0 ${isSplit ? "w-28 min-w-[100px]" : "w-36 min-w-[130px]"} transition-colors ${
+                                isCellFocused ? "bg-primary-subtle/30 ring-2 ring-primary ring-inset z-10" : ""
                               }`}
-                            />
-                          </td>
+                            >
+                              <input
+                                ref={(el) => {
+                                  if (el) inputRefs.current.set(refKey, el);
+                                  else inputRefs.current.delete(refKey);
+                                }}
+                                type="number"
+                                min={0}
+                                step={p.type === "DECIMAL" ? "0.1" : "1"}
+                                value={val}
+                                placeholder="0"
+                                onFocus={() => setFocusedCell({ rowIdx, colIdx })}
+                                onBlur={() => setFocusedCell(null)}
+                                onChange={(e) => handleCellChange(cellKey, e.target.value)}
+                                onKeyDown={(e) =>
+                                  handleKeyDownCell(e, rowIdx, colIdx, scList.length, reportParameters.length)
+                                }
+                                className={`w-full h-10 px-3 text-right font-mono text-[12px] font-bold tabular-nums bg-transparent border-0 outline-none transition-colors ${
+                                  val !== "" && val !== "0"
+                                    ? "text-foreground font-black"
+                                    : "text-muted-foreground/50 placeholder:text-muted-foreground/30"
+                                }`}
+                              />
+                            </td>
+                            {isSplit && (
+                              <td
+                                tabIndex={-1}
+                                className="w-28 min-w-[100px] px-2.5 py-2 text-right font-mono text-[12px] font-bold tabular-nums text-primary bg-primary/5 select-none"
+                              >
+                                {cumVal.toLocaleString("id-ID")}
+                              </td>
+                            )}
+                          </Fragment>
                         );
                       })}
 
                       {/* Col Formula % */}
                       {category.formula && (
-                        <td className="w-28 text-center font-mono text-[11px] font-black px-3 py-2 bg-primary/5">
-                          {rowPct !== null ? (
-                            <Badge
-                              variant="outline"
-                              className={`font-mono text-[10px] font-bold ${
-                                Number(rowPct) >= 80
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
-                                  : Number(rowPct) >= 60
-                                    ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
-                                    : "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950 dark:text-rose-300"
-                              }`}
-                            >
-                              {rowPct}%
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground/40 font-mono">—</span>
+                        <>
+                          <td
+                            className={`${isSplit ? "w-20 min-w-[70px]" : "w-28"} text-center font-mono text-[11px] font-black px-2 py-2 bg-primary/5`}
+                          >
+                            {rowPct !== null ? (
+                              <Badge
+                                variant="outline"
+                                className={`font-mono text-[10px] font-bold ${
+                                  Number(rowPct) >= 80
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : Number(rowPct) >= 60
+                                      ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
+                                      : "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950 dark:text-rose-300"
+                                }`}
+                              >
+                                {rowPct}%
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground/40 font-mono">—</span>
+                            )}
+                          </td>
+                          {isSplit && (
+                            <td className="w-20 min-w-[70px] text-center font-mono text-[11px] font-black px-2 py-2 bg-primary/10 select-none">
+                              {rowCumPct !== null ? (
+                                <span className="text-primary font-bold">{rowCumPct}%</span>
+                              ) : (
+                                <span className="text-muted-foreground/40 font-mono">—</span>
+                              )}
+                            </td>
                           )}
-                        </td>
+                        </>
                       )}
                     </tr>
                   );
@@ -692,36 +871,55 @@ export function LaporanSpreadsheetEditor({
                     const val = cellValues[cellKey] ?? "";
                     const refKey = `0-${colIdx}`;
                     const isCellFocused = focusedCell?.rowIdx === 0 && focusedCell?.colIdx === colIdx;
+                    const cumVal = parseFloat(cumulativeValuesMap[cellKey] || "0") || 0;
 
                     return (
-                      <td
-                        key={p.id}
-                        className={`p-0 w-36 ${
-                          isCellFocused ? "bg-primary-subtle/30 ring-2 ring-primary ring-inset z-10" : ""
-                        }`}
-                      >
-                        <input
-                          ref={(el) => {
-                            if (el) inputRefs.current.set(refKey, el);
-                            else inputRefs.current.delete(refKey);
-                          }}
-                          type="number"
-                          min={0}
-                          value={val}
-                          placeholder="0"
-                          onFocus={() => setFocusedCell({ rowIdx: 0, colIdx })}
-                          onBlur={() => setFocusedCell(null)}
-                          onChange={(e) => handleCellChange(cellKey, e.target.value)}
-                          onKeyDown={(e) => handleKeyDownCell(e, 0, colIdx, 1, reportParameters.length)}
-                          className="w-full h-11 px-3 text-right font-mono text-[13px] font-bold tabular-nums bg-transparent border-0 outline-none"
-                        />
-                      </td>
+                      <Fragment key={p.id}>
+                        <td
+                          className={`p-0 ${isSplit ? "w-28 min-w-[100px]" : "w-36 min-w-[130px]"} ${
+                            isCellFocused ? "bg-primary-subtle/30 ring-2 ring-primary ring-inset z-10" : ""
+                          }`}
+                        >
+                          <input
+                            ref={(el) => {
+                              if (el) inputRefs.current.set(refKey, el);
+                              else inputRefs.current.delete(refKey);
+                            }}
+                            type="number"
+                            min={0}
+                            value={val}
+                            placeholder="0"
+                            onFocus={() => setFocusedCell({ rowIdx: 0, colIdx })}
+                            onBlur={() => setFocusedCell(null)}
+                            onChange={(e) => handleCellChange(cellKey, e.target.value)}
+                            onKeyDown={(e) => handleKeyDownCell(e, 0, colIdx, 1, reportParameters.length)}
+                            className="w-full h-11 px-3 text-right font-mono text-[13px] font-bold tabular-nums bg-transparent border-0 outline-none"
+                          />
+                        </td>
+                        {isSplit && (
+                          <td
+                            tabIndex={-1}
+                            className="w-28 min-w-[100px] px-2.5 py-2 text-right font-mono text-[12px] font-bold tabular-nums text-primary bg-primary/5 select-none"
+                          >
+                            {cumVal.toLocaleString("id-ID")}
+                          </td>
+                        )}
+                      </Fragment>
                     );
                   })}
                   {category.formula && (
-                    <td className="w-28 text-center font-mono text-xs font-black px-3 py-2 bg-primary/5">
-                      {totalCapaianPct !== null ? `${totalCapaianPct}%` : "—"}
-                    </td>
+                    <>
+                      <td
+                        className={`${isSplit ? "w-20 min-w-[70px]" : "w-28"} text-center font-mono text-xs font-black px-2 py-2 bg-primary/5`}
+                      >
+                        {totalCapaianPct !== null ? `${totalCapaianPct}%` : "—"}
+                      </td>
+                      {isSplit && (
+                        <td className="w-20 min-w-[70px] text-center font-mono text-xs font-black px-2 py-2 bg-primary/10 text-primary select-none">
+                          {totalCumulativeCapaianPct !== null ? `${totalCumulativeCapaianPct}%` : "—"}
+                        </td>
+                      )}
+                    </>
                   )}
                 </tr>
               )}
@@ -738,19 +936,35 @@ export function LaporanSpreadsheetEditor({
                 </td>
                 {reportParameters.map((p) => {
                   const sum = columnSums[p.id] || 0;
+                  const cumSum = columnCumulativeSums[p.id] || 0;
                   return (
-                    <td
-                      key={p.id}
-                      className="w-36 py-2.5 px-3 text-right font-mono text-[12px] font-black tabular-nums text-foreground"
-                    >
-                      {sum.toLocaleString("id-ID")}
-                    </td>
+                    <Fragment key={p.id}>
+                      <td
+                        className={`${isSplit ? "w-28 min-w-[100px]" : "w-36 min-w-[130px]"} py-2.5 px-3 text-right font-mono text-[12px] font-black tabular-nums text-foreground`}
+                      >
+                        {sum.toLocaleString("id-ID")}
+                      </td>
+                      {isSplit && (
+                        <td className="w-28 min-w-[100px] py-2.5 px-2.5 text-right font-mono text-[12px] font-black tabular-nums text-primary bg-primary/5">
+                          {cumSum.toLocaleString("id-ID")}
+                        </td>
+                      )}
+                    </Fragment>
                   );
                 })}
                 {category.formula && (
-                  <td className="w-28 py-2.5 px-3 text-center font-mono text-xs font-black text-primary bg-primary/10">
-                    {totalCapaianPct !== null ? `${totalCapaianPct}%` : "—"}
-                  </td>
+                  <>
+                    <td
+                      className={`${isSplit ? "w-20 min-w-[70px]" : "w-28"} py-2.5 px-2 text-center font-mono text-xs font-black text-primary bg-primary/10`}
+                    >
+                      {totalCapaianPct !== null ? `${totalCapaianPct}%` : "—"}
+                    </td>
+                    {isSplit && (
+                      <td className="w-20 min-w-[70px] py-2.5 px-2 text-center font-mono text-xs font-black text-primary bg-primary/20">
+                        {totalCumulativeCapaianPct !== null ? `${totalCumulativeCapaianPct}%` : "—"}
+                      </td>
+                    )}
+                  </>
                 )}
               </tr>
             </tfoot>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Category {
@@ -23,6 +24,36 @@ interface Category {
   subCategories?: { id: number; nama: string; parentId: number }[];
 }
 
+interface StatsSummaryItem {
+  categoryId: number;
+  code: string;
+  totalDataDasar: number;
+  totalReported: number;
+  diff: number;
+}
+
+interface StatsResponse {
+  success: boolean;
+  bulan: number;
+  tahun: number;
+  summary: Record<string, StatsSummaryItem>;
+}
+
+const BULAN_NAMES = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
 const ICON_MAP: Record<string, React.ReactNode> = {
   tpp: <UtensilsCrossed className="w-5 h-5" />,
   spal: <Droplets className="w-5 h-5" />,
@@ -34,6 +65,10 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 export default function DataDasarIndexPage() {
   const [search, setSearch] = useState("");
+  const currentDate = new Date();
+  const [bulan, setBulan] = useState(currentDate.getMonth() + 1);
+  const [tahun, setTahun] = useState(currentDate.getFullYear());
+
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["laporan-categories", "data-dasar-index"],
     queryFn: async () => {
@@ -43,8 +78,31 @@ export default function DataDasarIndexPage() {
     },
   });
 
+  const { data: statsData } = useQuery<StatsResponse>({
+    queryKey: ["data-dasar-stats", bulan, tahun],
+    queryFn: async () => {
+      const res = await fetch(`/api/data-dasar/stats?bulan=${bulan}&tahun=${tahun}`);
+      if (!res.ok) throw new Error("Failed to fetch stats");
+      return res.json();
+    },
+  });
+
+  const statsSummary = statsData?.summary || {};
+
   const totalFields = categories.reduce((s, c) => s + (c.parameters || []).filter((p) => p.isBaseline).length, 0);
   const totalSubs = categories.reduce((s, c) => s + (c.subCategories?.length || 0), 0);
+
+  const totalDataDasarSasaran = useMemo(() => {
+    return Object.values(statsSummary).reduce((acc, curr) => acc + (curr.totalDataDasar || 0), 0);
+  }, [statsSummary]);
+
+  const totalReportedSasaran = useMemo(() => {
+    return Object.values(statsSummary).reduce((acc, curr) => acc + (curr.totalReported || 0), 0);
+  }, [statsSummary]);
+
+  const totalBelumInputSasaran = useMemo(() => {
+    return Object.values(statsSummary).reduce((acc, curr) => acc + (curr.diff || 0), 0);
+  }, [statsSummary]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -122,6 +180,40 @@ export default function DataDasarIndexPage() {
           <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
             <div className="flex flex-col items-center justify-center">
               <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
+                <NumberFlow value={totalDataDasarSasaran} />
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">
+                Sasaran Fisik
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-success leading-none">
+                <NumberFlow value={totalReportedSasaran} />
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">
+                Di Laporan ({BULAN_NAMES[bulan - 1]?.slice(0, 3)})
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span
+                className={`text-[18px] font-black tabular-nums leading-none ${
+                  totalBelumInputSasaran > 0 ? "text-warning" : "text-muted-foreground"
+                }`}
+              >
+                <NumberFlow value={totalBelumInputSasaran} />
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">
+                Belum Terinput
+              </span>
+            </div>
+          </Card>
+          <Card className="px-5 py-2.5 bg-surface border-border shadow-subtle">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[18px] font-black tabular-nums text-foreground leading-none">
                 <NumberFlow value={totalFields} />
               </span>
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-1">Field</span>
@@ -139,12 +231,37 @@ export default function DataDasarIndexPage() {
 
         {/* ── LIST / TABLE CONTAINER ── */}
         <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-bold text-foreground">Kategori Pemeliharaan</h3>
-            <span className="text-[11px] font-bold text-muted-foreground">
-              <span className="tabular-nums">{filtered.length}</span> dari{" "}
-              <span className="tabular-nums">{categories.length}</span> modul
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+            <div>
+              <h3 className="text-sm font-bold text-foreground">Kategori Pemeliharaan</h3>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                Perbandingan sasaran data dasar vs jumlah terdaftar di laporan bulanan
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={bulan}
+                onChange={(e) => setBulan(Number(e.target.value))}
+                className="h-8 text-xs py-0 pl-2.5 pr-7 w-[125px]"
+              >
+                {BULAN_NAMES.map((name, idx) => (
+                  <option key={idx + 1} value={idx + 1}>
+                    {name}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                value={tahun}
+                onChange={(e) => setTahun(Number(e.target.value))}
+                className="h-8 text-xs py-0 pl-2.5 pr-7 w-[85px]"
+              >
+                {[2024, 2025, 2026, 2027].map((yr) => (
+                  <option key={yr} value={yr}>
+                    {yr}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
 
           <FilterBar
@@ -178,6 +295,9 @@ export default function DataDasarIndexPage() {
                   <TableRow>
                     <TableHead className="px-5">Kategori</TableHead>
                     <TableHead className="hidden md:table-cell">Contoh Parameter Dasar</TableHead>
+                    <TableHead className="text-center">Sasaran Fisik</TableHead>
+                    <TableHead className="text-center">Di Laporan</TableHead>
+                    <TableHead className="text-center">Belum Input</TableHead>
                     <TableHead className="text-center">Entitas</TableHead>
                     <TableHead className="text-center">Field</TableHead>
                     <TableHead className="text-center">Sync</TableHead>
@@ -191,6 +311,14 @@ export default function DataDasarIndexPage() {
                     const syncFields = dataDasarFields.filter((p) => p.config?.syncToParamId);
                     const subCount = cat.subCategories?.length || 0;
                     const hasData = dataDasarFields.length > 0;
+                    const catStat = statsSummary[code] || {
+                      totalDataDasar: 0,
+                      totalReported: 0,
+                      diff: 0,
+                    };
+                    const sDataDasar = catStat.totalDataDasar;
+                    const sReported = catStat.totalReported;
+                    const sDiff = catStat.diff;
                     return (
                       <TableRow
                         key={cat.id}
@@ -231,6 +359,37 @@ export default function DataDasarIndexPage() {
                                   .join(" · ")
                               : "Belum ada field"}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="text-[15px] font-black tabular-nums leading-none text-foreground block">
+                            {sDataDasar}
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
+                            Sasaran
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="text-[15px] font-black tabular-nums leading-none text-success block">
+                            {sReported}
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mt-0.5 block">
+                            Terdaftar
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {sDataDasar === 0 && sReported === 0 ? (
+                            <span className="text-[12px] font-medium text-muted-foreground block">-</span>
+                          ) : sDiff === 0 ? (
+                            <Badge variant="success" className="text-[10px] px-2 py-0.5">
+                              Lengkap
+                            </Badge>
+                          ) : (
+                            <div className="inline-flex flex-col items-center">
+                              <Badge variant="warning" className="text-[11px] font-black tabular-nums px-2 py-0.5">
+                                {sDiff} belum
+                              </Badge>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="text-[15px] font-black tabular-nums leading-none text-foreground block">

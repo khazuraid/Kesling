@@ -18,6 +18,21 @@ function isGolonganMatch(targetGolongan?: string | null, selectedGolongan?: stri
   );
 }
 
+let inspectionColsEnsured = false;
+export async function ensureInspectionColumns() {
+  if (inspectionColsEnsured) return;
+  try {
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueNumber" DOUBLE PRECISION;
+      ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "valueString" TEXT;
+      ALTER TABLE "InspectionResultValue" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+    `);
+    inspectionColsEnsured = true;
+  } catch (e) {
+    console.warn("[ensureInspectionColumns warning]:", e);
+  }
+}
+
 export async function recalculateLaporanBulanan({
   puskesmasId,
   categoryId,
@@ -35,6 +50,8 @@ export async function recalculateLaporanBulanan({
     categoryId || (await prisma.dynamicSubCategory.findUnique({ where: { id: subCategoryId } }))?.categoryId;
 
   if (!catId) return;
+
+  await ensureInspectionColumns();
 
   let laporan = await prisma.dynamicLaporan.findFirst({
     where: { puskesmasId, categoryId: catId, bulan, tahun },
