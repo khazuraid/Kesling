@@ -43,6 +43,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { NumberFlow } from "@/components/ui/number-flow";
 import { Progress } from "@/components/ui/progress";
+import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -126,7 +127,24 @@ interface DashboardData {
 export default function DashboardPkmPage() {
   const { data: session } = useSession();
   const { bulan, tahun } = useLaporanFilter();
-  const pkmId = (session?.user as any)?.puskesmasId;
+  const userRole = (session?.user as any)?.role || "OPERATOR";
+  const sessionPkmId = (session?.user as any)?.puskesmasId;
+  const [adminPkmId, setAdminPkmId] = useState<number | null>(null);
+
+  const { data: puskesmasList = [] } = useQuery<{ id: number; nama: string }[]>({
+    queryKey: ["puskesmas-list"],
+    queryFn: async () => {
+      const res = await fetch("/api/puskesmas");
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: userRole === "ADMIN" || userRole === "DINKES",
+  });
+
+  const effectivePkmId =
+    userRole === "ADMIN" || userRole === "DINKES"
+      ? (adminPkmId ?? sessionPkmId ?? puskesmasList[0]?.id ?? null)
+      : sessionPkmId;
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -135,13 +153,13 @@ export default function DashboardPkmPage() {
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>("");
 
   const { data, isLoading } = useQuery<DashboardData>({
-    queryKey: ["dashboard-pkm", pkmId, bulan, tahun],
+    queryKey: ["dashboard-pkm", effectivePkmId, bulan, tahun],
     queryFn: async () => {
-      const res = await fetch(`/api/dashboard/puskesmas?puskesmasId=${pkmId}&bulan=${bulan}&tahun=${tahun}`);
+      const res = await fetch(`/api/dashboard/puskesmas?puskesmasId=${effectivePkmId}&bulan=${bulan}&tahun=${tahun}`);
       if (!res.ok) throw new Error("Gagal memuat dashboard analitik");
       return res.json();
     },
-    enabled: !!pkmId,
+    enabled: !!effectivePkmId,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
@@ -395,7 +413,7 @@ export default function DashboardPkmPage() {
     document.body.removeChild(link);
   }
 
-  if (!pkmId) {
+  if (!effectivePkmId) {
     return (
       <EmptyState
         icon={<AlertCircle className="w-8 h-8 opacity-40 text-amber-500" />}
@@ -450,6 +468,22 @@ export default function DashboardPkmPage() {
 
               {/* Action Toolbar */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full lg:w-auto">
+                {(userRole === "ADMIN" || userRole === "DINKES") && puskesmasList.length > 0 && (
+                  <div className="w-full sm:w-auto min-w-[180px]">
+                    <Select
+                      value={String(effectivePkmId || "")}
+                      onChange={(e) => setAdminPkmId(Number(e.target.value))}
+                      aria-label="Pilih Puskesmas"
+                      className="h-9 sm:h-10 text-[11px] font-semibold"
+                    >
+                      {puskesmasList.map((p) => (
+                        <option key={p.id} value={String(p.id)}>
+                          {p.nama}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
                 <div className="w-full sm:w-auto">
                   <LaporanFilter />
                 </div>

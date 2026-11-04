@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Select } from "@/components/ui/select";
 
 const BULAN_FULL = [
   "Januari",
@@ -76,7 +77,26 @@ function getFirstDayOfWeek(year: number, month: number) {
 export default function RencanaBulananPage() {
   const sp = useSearchParams();
   const router = useRouter();
-  useSession();
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role || "OPERATOR";
+  const sessionPkmId = (session?.user as any)?.puskesmasId;
+  const [selectedPkmId, setSelectedPkmId] = useState<number | null>(null);
+
+  const { data: puskesmasList = [] } = useQuery<{ id: number; nama: string }[]>({
+    queryKey: ["puskesmas-list"],
+    queryFn: async () => {
+      const res = await fetch("/api/puskesmas");
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: userRole === "ADMIN" || userRole === "DINKES",
+  });
+
+  const effectivePkmId =
+    userRole === "ADMIN" || userRole === "DINKES"
+      ? (selectedPkmId ?? sessionPkmId ?? puskesmasList[0]?.id ?? null)
+      : sessionPkmId;
+
   const now = new Date();
   const [bulan, setBulan] = useState(Number(sp.get("bulan")) || now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
@@ -84,12 +104,14 @@ export default function RencanaBulananPage() {
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery<RencanaData>({
-    queryKey: ["rencana-bulanan", bulan, tahun],
+    queryKey: ["rencana-bulanan", bulan, tahun, effectivePkmId],
     queryFn: async () => {
-      const res = await fetch(`/api/rencana-bulanan?bulan=${bulan}&tahun=${tahun}`);
+      const pkmParam = effectivePkmId ? `&puskesmasId=${effectivePkmId}` : "";
+      const res = await fetch(`/api/rencana-bulanan?bulan=${bulan}&tahun=${tahun}${pkmParam}`);
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
+    enabled: !!effectivePkmId,
   });
 
   const generateMut = useMutation({
@@ -97,7 +119,7 @@ export default function RencanaBulananPage() {
       const res = await fetch("/api/rencana-bulanan/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bulan, tahun, kapasitasPerHari: kapasitas }),
+        body: JSON.stringify({ bulan, tahun, kapasitasPerHari: kapasitas, puskesmasId: effectivePkmId }),
       });
       if (!res.ok) throw new Error("Gagal generate");
       return res.json();
@@ -170,7 +192,23 @@ export default function RencanaBulananPage() {
               terjadwal
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {(userRole === "ADMIN" || userRole === "DINKES") && puskesmasList.length > 0 && (
+              <div className="min-w-[180px]">
+                <Select
+                  value={String(effectivePkmId || "")}
+                  onChange={(e) => setSelectedPkmId(Number(e.target.value))}
+                  aria-label="Pilih Puskesmas"
+                  className="h-8 sm:h-9 text-[11px] font-semibold"
+                >
+                  {puskesmasList.map((p) => (
+                    <option key={p.id} value={String(p.id)}>
+                      {p.nama}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
             <div className="flex items-center gap-1 rounded-full bg-surface-subtle border border-border p-1">
               <Button
                 type="button"

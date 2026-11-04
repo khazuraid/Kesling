@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Database, Layers, Plus, RefreshCw } from "lucide-react";
+import { Copy, Database, Download, Layers, Plus, RefreshCw } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
@@ -65,6 +65,7 @@ interface DynamicLaporan {
   puskesmas: { id: number; nama: string };
   values: DynamicLaporanValue[];
   status: string;
+  catatan?: string | null;
 }
 
 type ValueMap = Record<string, string>;
@@ -147,7 +148,13 @@ export default function DynamicLaporanPage() {
 
   const category = allCategories.find((c) => c.code.toLowerCase() === categoryCode.toLowerCase());
 
-  const { data: laporanList = [], isLoading } = useQuery<DynamicLaporan[]>({
+  const { data: laporanResponse, isLoading } = useQuery<
+    | {
+        reports: DynamicLaporan[];
+        cumulative: Record<number, Record<string, number>>;
+      }
+    | DynamicLaporan[]
+  >({
     queryKey: ["laporan", categoryCode, bulan, tahun],
     queryFn: async () => {
       const res = await fetch(`/api/laporan/${categoryCode}?bulan=${bulan}&tahun=${tahun}`);
@@ -158,7 +165,19 @@ export default function DynamicLaporanPage() {
     refetchInterval: 5000,
   });
 
-  const { data: dataDasarList = [] } = useQuery<DynamicLaporan[]>({
+  const laporanList: DynamicLaporan[] = Array.isArray(laporanResponse)
+    ? laporanResponse
+    : laporanResponse?.reports || [];
+  const cumulativeData: Record<number, Record<string, number>> = Array.isArray(laporanResponse)
+    ? {}
+    : laporanResponse?.cumulative || {};
+
+  const { data: dataDasarResponse, isLoading: _loadingDataDasar } = useQuery<
+    | {
+        reports: DynamicLaporan[];
+      }
+    | DynamicLaporan[]
+  >({
     queryKey: ["laporan", categoryCode, 0, tahun],
     queryFn: async () => {
       const res = await fetch(`/api/laporan/${categoryCode}?bulan=0&tahun=${tahun}`);
@@ -168,6 +187,10 @@ export default function DynamicLaporanPage() {
     enabled: !!categoryCode,
     refetchInterval: 5000,
   });
+
+  const dataDasarList: DynamicLaporan[] = Array.isArray(dataDasarResponse)
+    ? dataDasarResponse
+    : dataDasarResponse?.reports || [];
 
   // ── Mutations ────────────────────────────────────────────────────────
 
@@ -419,6 +442,17 @@ export default function DynamicLaporanPage() {
               {syncMutation.isPending ? "Menyinkronkan..." : "Tarik IKL"}
             </Button>
             <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="rounded-full shadow-xs gap-1.5"
+              title="Export file Excel laporan bulan ini dan kumulatif"
+            >
+              <a href={`/api/export/${categoryCode}?bulan=${bulan}&tahun=${tahun}`}>
+                <Download className="w-3.5 h-3.5 text-emerald-600" /> Export Excel
+              </a>
+            </Button>
+            <Button
               size="sm"
               onClick={() => openForm()}
               disabled={!category}
@@ -437,6 +471,7 @@ export default function DynamicLaporanPage() {
           <LaporanTable
             category={category}
             laporanList={laporanList}
+            cumulativeData={cumulativeData}
             isLoading={isLoading}
             paginatedList={paginatedList}
             currentPage={currentPage}

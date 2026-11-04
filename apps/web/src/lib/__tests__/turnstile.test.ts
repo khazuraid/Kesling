@@ -44,6 +44,6 @@ describe("Turnstile Token Verification", () => {
 
     const result = await verifyTurnstileToken("invalid-token", "127.0.0.1");
     expect(result.success).toBe(false);
-    expect(result.error).toContain("gagal");
+    expect(result.error).toBe("invalid-input-response");
   });
 });

@@ -1980,16 +1980,6 @@ export default function FormPemeriksaanPage() {
     return filteredTemplates.slice(start, start + templateLimit);
   }, [filteredTemplates, templatePage, templateLimit]);
 
-  if ((session?.user as any)?.role === "ADMIN") {
-    return (
-      <div className="w-full min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center space-y-3">
-        <ShieldAlert className="w-8 h-8 text-muted-foreground" />
-        <p className="text-[13px] font-bold text-foreground">Akses Ditolak</p>
-        <p className="text-[11px] text-muted-foreground">Halaman ini hanya untuk Operator / Puskesmas</p>
-      </div>
-    );
-  }
-
   if (!selectedTemplateId && !isCreating) {
     return (
       <div className="w-full fade-in min-h-screen bg-canvas">

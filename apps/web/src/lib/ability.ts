@@ -40,11 +40,6 @@ export function defineAbilityFor(user?: AbilityUser | null): AppAbility {
 
   if (role === "ADMIN") {
     can("manage", "all");
-    cannot("read", "DashboardPkm");
-    cannot(
-      ["create", "read", "update", "delete"],
-      ["Pemeriksaan", "FormPemeriksaan", "RencanaBulanan", "RencanaTahunan"],
-    );
   } else if (role === "DINKES") {
     can("read", "all");
     can(["read", "approve", "export"], "Laporan");

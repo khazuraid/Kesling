@@ -4,7 +4,6 @@ import {
   Activity,
   ArrowLeftRight,
   BarChart3,
-  Bell,
   Calendar,
   CalendarRange,
   ClipboardCheck,
@@ -56,10 +55,10 @@ function useMenuGroups() {
   const isDinkes = userRole === "DINKES";
   const isAdminOrDinkes = isAdmin || isDinkes;
 
-  const canOverview = isAdminOrDinkes && ability.can("read", "DashboardOverview");
-  const canCommandCenter = isPkm && ability.can("read", "DashboardPkm");
-  const canPemeriksaan = isPkm && ability.can("read", "Pemeriksaan");
-  const canRencana = isPkm && ability.can("read", "RencanaBulanan");
+  const canOverview = (isAdminOrDinkes || isAdmin) && ability.can("read", "DashboardOverview");
+  const canCommandCenter = (isPkm || isAdmin) && ability.can("read", "DashboardPkm");
+  const canPemeriksaan = (isPkm || isAdmin) && ability.can("read", "Pemeriksaan");
+  const canRencana = (isPkm || isAdmin) && ability.can("read", "RencanaBulanan");
   const canApproval = isAdminOrDinkes && ability.can("read", "Approval");
   const canLaporanBuilder =
     isAdminOrDinkes && (ability.can("create", "LaporanBuilder") || ability.can("manage", "all"));
@@ -123,14 +122,7 @@ function useMenuGroups() {
                 ? [{ label: "File Manager", href: "/file-manager", icon: <HardDrive className="w-4 h-4" /> }]
                 : []),
               ...(canSettings
-                ? [
-                    {
-                      label: "Notifikasi & Siaran",
-                      href: "/settings/notifications",
-                      icon: <Bell className="w-4 h-4" />,
-                    },
-                    { label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> },
-                  ]
+                ? [{ label: "Settings", href: "/settings", icon: <Settings2 className="w-4 h-4" /> }]
                 : []),
             ],
           },

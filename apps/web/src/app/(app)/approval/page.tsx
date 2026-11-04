@@ -26,7 +26,7 @@ import { useLaporanFilter } from "@/hooks/use-laporan-filter";
 
 const BULAN_NAMA = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
-type FilterTab = "all" | "SUBMITTED" | "APPROVED" | "DRAFT";
+type FilterTab = "all" | "SUBMITTED" | "APPROVED" | "REJECTED" | "DRAFT";
 
 const STATUS_META: Record<
   string,
@@ -122,6 +122,7 @@ export default function ApprovalPage() {
     total: laporan.length,
     submitted: laporan.filter((l) => l.status === "SUBMITTED").length,
     approved: laporan.filter((l) => l.status === "APPROVED").length,
+    rejected: laporan.filter((l) => l.status === "REJECTED").length,
     draft: laporan.filter((l) => l.status === "DRAFT").length,
   };
 
@@ -151,6 +152,7 @@ export default function ApprovalPage() {
     { key: "all", label: "Semua", count: stats.total },
     { key: "SUBMITTED", label: "Menunggu", count: stats.submitted },
     { key: "APPROVED", label: "Disetujui", count: stats.approved },
+    { key: "REJECTED", label: "Ditolak", count: stats.rejected },
     { key: "DRAFT", label: "Draft", count: stats.draft },
   ];
 

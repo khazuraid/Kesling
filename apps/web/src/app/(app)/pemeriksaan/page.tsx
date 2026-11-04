@@ -136,6 +136,7 @@ export default function PemeriksaanPage() {
   const [formulirCategory, setFormulirCategory] = useState("all");
   // Dinkes | own | other | public — lihat TEMPLATE_OWNER_LABEL.
   const [formulirOwner, setFormulirOwner] = useState("all");
+  const [selectedPuskesmasId, setSelectedPuskesmasId] = useState<number | "all">("all");
 
   // Filter riwayat (server-side; semuanya diteruskan sebagai query param).
   const [riwayatDateFrom, setRiwayatDateFrom] = useState("");
@@ -230,6 +231,7 @@ export default function PemeriksaanPage() {
       riwayatStatus,
       riwayatTemplateId,
       riwayatUserId,
+      selectedPuskesmasId,
     ],
     queryFn: async () => {
       const sp = buildRiwayatParams({
@@ -242,6 +244,9 @@ export default function PemeriksaanPage() {
         templateId: riwayatTemplateId,
         userId: riwayatUserId,
       });
+      if (selectedPuskesmasId !== "all") {
+        sp.set("puskesmasId", String(selectedPuskesmasId));
+      }
       const res = await fetch(`/api/inspection/results?${sp.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat riwayat");
       return res.json();
@@ -1288,16 +1293,6 @@ export default function PemeriksaanPage() {
         return val !== null && val !== undefined && String(val).trim() !== "";
       });
 
-  if ((session?.user as any)?.role === "ADMIN") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-3">
-        <ShieldAlert className="w-8 h-8 text-muted-foreground" />
-        <p className="text-[13px] font-bold text-foreground">Akses Ditolak</p>
-        <p className="text-[11px] text-muted-foreground">Halaman ini hanya untuk Operator / Puskesmas</p>
-      </div>
-    );
-  }
-
   const filteredSasarans = sasarans.filter((sasaran: any) => {
     const term = sasaranSearch.trim().toLowerCase();
     const matchTerm =
@@ -2033,6 +2028,18 @@ export default function PemeriksaanPage() {
                           },
                         ]
                       : []),
+                    ...(selectedPuskesmasId !== "all"
+                      ? [
+                          {
+                            key: "pkm",
+                            label: `Puskesmas: ${puskesmasList.find((p) => p.id === Number(selectedPuskesmasId))?.nama || selectedPuskesmasId}`,
+                            onRemove: () => {
+                              setSelectedPuskesmasId("all");
+                              setRiwayatPage(1);
+                            },
+                          },
+                        ]
+                      : []),
                     ...(riwayatDateFrom || riwayatDateTo
                       ? [
                           {
@@ -2082,22 +2089,39 @@ export default function PemeriksaanPage() {
                   </Select>
                   {userRole !== "OPERATOR" && (
                     <Select
-                      value={riwayatTemplateId}
+                      value={String(selectedPuskesmasId)}
                       onChange={(e) => {
-                        setRiwayatTemplateId(e.target.value);
+                        const val = e.target.value === "all" ? "all" : Number(e.target.value);
+                        setSelectedPuskesmasId(val);
                         setRiwayatPage(1);
                       }}
-                      aria-label="Filter formulir"
+                      aria-label="Filter Puskesmas"
                       className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
                     >
-                      <option value="all">Semua Formulir</option>
-                      {templates.map((t: any) => (
-                        <option key={t.id} value={String(t.id)}>
-                          {t.nama}
+                      <option value="all">Semua Puskesmas</option>
+                      {puskesmasList.map((p) => (
+                        <option key={p.id} value={String(p.id)}>
+                          {p.nama}
                         </option>
                       ))}
                     </Select>
                   )}
+                  <Select
+                    value={riwayatTemplateId}
+                    onChange={(e) => {
+                      setRiwayatTemplateId(e.target.value);
+                      setRiwayatPage(1);
+                    }}
+                    aria-label="Filter formulir"
+                    className="h-10 w-auto max-w-[200px] shrink-0 text-[12px] font-medium"
+                  >
+                    <option value="all">Semua Formulir</option>
+                    {templates.map((t: any) => (
+                      <option key={t.id} value={String(t.id)}>
+                        {t.nama}
+                      </option>
+                    ))}
+                  </Select>
                 </FilterBar>
 
                 {isLoadingRiwayat ? (

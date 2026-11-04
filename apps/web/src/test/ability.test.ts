@@ -13,13 +13,13 @@ describe("defineAbilityFor", () => {
     expect(ability.can("manage", "FileManager")).toBe(true);
     expect(ability.can("manage", "Settings")).toBe(true);
 
-    // ADMIN does not operate Puskesmas operational forms
-    expect(ability.can("read", "DashboardPkm")).toBe(false);
-    expect(ability.can("create", "Pemeriksaan")).toBe(false);
-    expect(ability.can("read", "Pemeriksaan")).toBe(false);
-    expect(ability.can("read", "FormPemeriksaan")).toBe(false);
-    expect(ability.can("create", "RencanaBulanan")).toBe(false);
-    expect(ability.can("create", "RencanaTahunan")).toBe(false);
+    // ADMIN has full access to everything
+    expect(ability.can("read", "DashboardPkm")).toBe(true);
+    expect(ability.can("create", "Pemeriksaan")).toBe(true);
+    expect(ability.can("read", "Pemeriksaan")).toBe(true);
+    expect(ability.can("read", "FormPemeriksaan")).toBe(true);
+    expect(ability.can("create", "RencanaBulanan")).toBe(true);
+    expect(ability.can("create", "RencanaTahunan")).toBe(true);
   });
 
   it("defines correct permissions for DINKES", () => {

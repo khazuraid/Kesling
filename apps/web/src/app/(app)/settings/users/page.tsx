@@ -1,13 +1,34 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Edit2, Plus, Search, Trash2, Users, X } from "lucide-react";
+import {
+  Check,
+  Edit2,
+  KeyRound,
+  Lock,
+  MoreHorizontal,
+  Plus,
+  Search,
+  ShieldAlert,
+  Trash2,
+  Unlock,
+  Users,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +68,8 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [rejectModalUser, setRejectModalUser] = useState<any | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [resetPasswordModalUser, setResetPasswordModalUser] = useState<any | null>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
 
   const [form, setForm] = useState({
     nama: "",
@@ -128,6 +151,26 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (err: any) => toast.error(err.message || "Gagal memperbarui status akun"),
+  });
+
+  const userActionMutation = useMutation({
+    mutationFn: async ({ id, action, payload = {} }: { id: number; action: string; payload?: any }) => {
+      const res = await fetch(`/api/users/${id}/actions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...payload }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal mengeksekusi aksi akun");
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Aksi berhasil diproses");
+      setResetPasswordModalUser(null);
+      setNewPasswordInput("");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Gagal memproses aksi akun"),
   });
 
   function openEdit(user: any) {
@@ -348,17 +391,72 @@ export default function UsersPage() {
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm(`Hapus "${u.nama}"?`)) deleteMutation.mutate(u.id);
-                            }}
-                            className="h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                            title="Hapus operator"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+
+                          {/* Dropdown Menu Aksi Pengguna */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:bg-surface-subtle"
+                                title="Menu Aksi Pengguna"
+                              >
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuLabel>Aksi Akun</DropdownMenuLabel>
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      `Reset sesi OTP 2FA untuk "${u.nama}"? Pengguna akan wajib verifikasi OTP saat login berikutnya.`,
+                                    )
+                                  ) {
+                                    userActionMutation.mutate({ id: u.id, action: "RESET_OTP" });
+                                  }
+                                }}
+                                className="gap-2 text-[12px] cursor-pointer"
+                              >
+                                <KeyRound className="w-3.5 h-3.5 text-primary" />
+                                <span>Reset OTP 2FA</span>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setResetPasswordModalUser(u);
+                                  setNewPasswordInput("");
+                                }}
+                                className="gap-2 text-[12px] cursor-pointer"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Ganti Password</span>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  userActionMutation.mutate({ id: u.id, action: "UNLOCK_ACCOUNT" });
+                                }}
+                                className="gap-2 text-[12px] cursor-pointer"
+                              >
+                                <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Buka Kunci Login</span>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuSeparator />
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (confirm(`Hapus permanen pengguna "${u.nama}"?`)) deleteMutation.mutate(u.id);
+                                }}
+                                className="gap-2 text-[12px] text-destructive focus:text-destructive cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Hapus Akun</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -369,6 +467,64 @@ export default function UsersPage() {
           </div>
         </Card>
       )}
+
+      {/* Reset Password Modal */}
+      <Modal
+        open={!!resetPasswordModalUser}
+        onClose={() => setResetPasswordModalUser(null)}
+        title="Ganti Password Pengguna"
+        description={`Setel kata sandi baru secara langsung untuk ${resetPasswordModalUser?.nama || ""}`}
+        icon={<Lock className="w-4 h-4 text-amber-600" />}
+        size="sm"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setResetPasswordModalUser(null)}
+              className="rounded-full"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                if (newPasswordInput.trim().length < 8) {
+                  toast.error("Password minimal 8 karakter");
+                  return;
+                }
+                userActionMutation.mutate({
+                  id: resetPasswordModalUser.id,
+                  action: "RESET_PASSWORD",
+                  payload: { newPassword: newPasswordInput.trim() },
+                });
+              }}
+              disabled={userActionMutation.isPending || newPasswordInput.trim().length < 8}
+              className="rounded-full gap-2 shadow-xs"
+            >
+              {userActionMutation.isPending ? "Menyimpan..." : "Simpan Password"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className={labelCls}>Password Baru</Label>
+            <Input
+              type="password"
+              value={newPasswordInput}
+              onChange={(e) => setNewPasswordInput(e.target.value)}
+              placeholder="Minimal 8 karakter..."
+              autoFocus
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Setelah password diganti, sesi OTP pengguna akan otomatis di-reset untuk keamanan.
+            </p>
+          </div>
+        </div>
+      </Modal>
 
       {/* Reject Modal */}
       <Modal

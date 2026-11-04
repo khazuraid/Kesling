@@ -3,12 +3,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NumberFlow } from "@/components/ui/number-flow";
+import { Select } from "@/components/ui/select";
 
 const BULAN_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -47,16 +49,38 @@ function tier(p: number) {
 }
 
 export default function RencanaTahunanPage() {
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role || "OPERATOR";
+  const sessionPkmId = (session?.user as any)?.puskesmasId;
+  const [selectedPkmId, setSelectedPkmId] = useState<number | null>(null);
+
+  const { data: puskesmasList = [] } = useQuery<{ id: number; nama: string }[]>({
+    queryKey: ["puskesmas-list"],
+    queryFn: async () => {
+      const res = await fetch("/api/puskesmas");
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: userRole === "ADMIN" || userRole === "DINKES",
+  });
+
+  const effectivePkmId =
+    userRole === "ADMIN" || userRole === "DINKES"
+      ? (selectedPkmId ?? sessionPkmId ?? puskesmasList[0]?.id ?? null)
+      : sessionPkmId;
+
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [tahun, setTahun] = useState(currentYear);
   const { data, isLoading } = useQuery<RencanaTahunan>({
-    queryKey: ["rencana-tahunan", "web", tahun],
+    queryKey: ["rencana-tahunan", "web", tahun, effectivePkmId],
     queryFn: async () => {
-      const res = await fetch(`/api/rencana-tahunan?tahun=${tahun}`);
+      const pkmParam = effectivePkmId ? `&puskesmasId=${effectivePkmId}` : "";
+      const res = await fetch(`/api/rencana-tahunan?tahun=${tahun}${pkmParam}`);
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
+    enabled: !!effectivePkmId,
   });
 
   return (
@@ -85,7 +109,23 @@ export default function RencanaTahunanPage() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {(userRole === "ADMIN" || userRole === "DINKES") && puskesmasList.length > 0 && (
+              <div className="min-w-[180px]">
+                <Select
+                  value={String(effectivePkmId || "")}
+                  onChange={(e) => setSelectedPkmId(Number(e.target.value))}
+                  aria-label="Pilih Puskesmas"
+                  className="h-8 sm:h-9 text-[11px] font-semibold"
+                >
+                  {puskesmasList.map((p) => (
+                    <option key={p.id} value={String(p.id)}>
+                      {p.nama}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
             {data && (
               <Card className="px-4 py-2 bg-primary-subtle text-primary border-primary/20 shadow-xs">
                 <div className="flex flex-col items-center justify-center">

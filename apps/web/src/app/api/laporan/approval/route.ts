@@ -78,7 +78,7 @@ export const PATCH = withRoles(["ADMIN", "DINKES"], async (req: NextRequest) => 
     where: { id: Number(laporanId) },
     data: {
       status: newStatus,
-      catatan: catatan || laporan.catatan,
+      catatan: catatan || (action === "REJECT" ? "Ditolak oleh verifikator" : laporan.catatan),
       updatedBy: user.id,
     },
   });

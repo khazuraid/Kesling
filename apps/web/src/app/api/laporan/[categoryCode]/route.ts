@@ -202,8 +202,62 @@ export const GET = withLaporanAuth(async (req: NextRequest, ctx: any) => {
       }
     }
 
-    await cacheSet(cacheKey, data, 180);
-    return NextResponse.json(data);
+    // 4. Hitung data kumulatif 1 tahun berjalan (Januari s/d Bulan aktif)
+    // Jika bulan = 1 (Januari), kumulatif sama persis dengan bulan 1 (otomatis reset dari awal tahun)
+    const cumulativeWhere: any = {
+      categoryId: category.id,
+      tahun,
+      bulan: { gte: 1, lte: bulan },
+    };
+    if (user.role === "OPERATOR" && user.puskesmasId) {
+      cumulativeWhere.puskesmasId = user.puskesmasId;
+    }
+
+    const numericParamIds = new Set(
+      category.parameters.filter((p) => p.type === "NUMBER" || p.type === "DECIMAL").map((p) => p.id),
+    );
+
+    const yearReports = await prisma.dynamicLaporan.findMany({
+      where: cumulativeWhere,
+      select: {
+        puskesmasId: true,
+        bulan: true,
+        values: {
+          select: {
+            parameterId: true,
+            subCategoryId: true,
+            value: true,
+          },
+        },
+      },
+    });
+
+    // Peta kumulatif per pkmId: key "${subCategoryId ?? ''}-${paramId}" -> total number
+    const cumulativeMap: Record<number, Record<string, number>> = {};
+
+    for (const yr of yearReports) {
+      if (!cumulativeMap[yr.puskesmasId]) {
+        cumulativeMap[yr.puskesmasId] = {};
+      }
+      const pkmCum = cumulativeMap[yr.puskesmasId];
+
+      for (const val of yr.values) {
+        if (!numericParamIds.has(val.parameterId)) continue;
+        const key = val.subCategoryId != null ? `${val.subCategoryId}-${val.parameterId}` : `${val.parameterId}`;
+        const numVal = parseFloat(val.value) || 0;
+        pkmCum[key] = (pkmCum[key] || 0) + numVal;
+      }
+    }
+
+    const payload = {
+      reports: data,
+      cumulative: cumulativeMap,
+      bulan,
+      tahun,
+    };
+
+    await cacheSet(cacheKey, payload, 180);
+    return NextResponse.json(payload);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed to fetch reports" }, { status: 500 });
   }

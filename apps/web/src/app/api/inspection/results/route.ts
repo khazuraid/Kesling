@@ -18,6 +18,12 @@ export const GET = withAuth(async (req: NextRequest) => {
   const search = (sp.get("search") || "").trim();
 
   const where: any = role === "ADMIN" ? {} : { puskesmasId: pkmId };
+  if (role === "ADMIN" && sp.get("puskesmasId")) {
+    const filterPkmId = parseInt(sp.get("puskesmasId") || "", 10);
+    if (Number.isInteger(filterPkmId) && filterPkmId > 0) {
+      where.puskesmasId = filterPkmId;
+    }
+  }
   if (search) {
     where.OR = [
       { namaSasaran: { contains: search, mode: "insensitive" } },
@@ -156,10 +162,15 @@ export const GET = withAuth(async (req: NextRequest) => {
 export const POST = withAuth(async (req: NextRequest) => {
   const body = await req.json();
   const userId = (req as any).user?.id;
-  const pkmId = (req as any).user?.puskesmasId;
+  const userRole = (req as any).user?.role;
+  const userPkmId = (req as any).user?.puskesmasId;
+  const pkmId = userRole === "ADMIN" && body.puskesmasId ? Number(body.puskesmasId) : userPkmId;
 
   if (!pkmId) {
-    return NextResponse.json({ error: "Akun Anda tidak terhubung ke Puskesmas. Hubungi admin." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Puskesmas tujuan tidak valid atau akun tidak terhubung ke Puskesmas." },
+      { status: 400 },
+    );
   }
 
   try {

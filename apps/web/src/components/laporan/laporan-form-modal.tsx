@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, FilePenLine, Loader2, Send, ShieldCheck } from "lucide-react";
+import { AlertCircle, Building2, FilePenLine, Loader2, Send, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ interface DynamicLaporan {
   puskesmas: { id: number; nama: string };
   values: DynamicLaporanValue[];
   status: string;
+  catatan?: string | null;
 }
 type ValueMap = Record<string, string>;
 
@@ -89,7 +90,9 @@ export function LaporanFormModal({
   submitMutation,
   handleSubmit,
 }: LaporanFormModalProps) {
-  const existingStatus = laporanList.find((l) => l.puskesmasId === formPuskesmasId)?.status;
+  const existingLaporan = laporanList.find((l) => l.puskesmasId === formPuskesmasId);
+  const existingStatus = existingLaporan?.status;
+  const existingCatatan = existingLaporan?.catatan;
   const reportParameters = category.parameters.filter(
     (p) => !p.isBaseline || p.type === "NUMBER" || p.type === "DECIMAL",
   );
@@ -209,6 +212,26 @@ export function LaporanFormModal({
                 {existingStatus}
               </Badge>
             )}
+          </div>
+        )}
+
+        {/* Banner Alasan Penolakan untuk Operator/Puskesmas */}
+        {(existingStatus === "REJECTED" || (existingStatus === "DRAFT" && Boolean(existingCatatan))) && (
+          <div className="flex items-start gap-3 p-3.5 rounded-card border border-destructive/30 bg-destructive/10 text-destructive">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-bold uppercase tracking-wider">Laporan Dikembalikan / Ditolak</p>
+              <p className="text-[12px] mt-0.5 text-foreground font-medium">
+                Alasan:{" "}
+                <span className="font-bold text-destructive">
+                  {existingCatatan || "Perlu revisi data sebelum diajukan kembali."}
+                </span>
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Silakan perbaiki data pada formulir di bawah ini lalu klik tombol &quot;Kirim&quot; untuk mengajukan
+                ulang.
+              </p>
+            </div>
           </div>
         )}
 
