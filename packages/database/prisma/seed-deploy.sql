@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS "app_setting" (
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
 
+ALTER TABLE "announcement" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;
+
 -- rencana_bulanan (recovery: migration loop may silently fail on pooled URL)
 CREATE TABLE IF NOT EXISTS "rencana_bulanan" (
   "id" SERIAL NOT NULL,

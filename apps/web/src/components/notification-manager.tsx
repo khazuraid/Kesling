@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCircle2, Clock, Edit, Megaphone, Plus, Send, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Bell, CheckCircle2, Clock, Edit, ImageIcon, Megaphone, Plus, Send, Trash2, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,6 +31,7 @@ interface AnnouncementItem {
   id: number;
   title: string;
   content: string;
+  imageUrl?: string | null;
   type: "INFO" | "WARNING" | "URGENT";
   isActive: boolean;
   startDate: string;
@@ -75,11 +76,13 @@ export function NotificationManager() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementItem | null>(null);
   const [annTitle, setAnnTitle] = useState("");
   const [annContent, setAnnContent] = useState("");
+  const [annImageUrl, setAnnImageUrl] = useState<string | null>(null);
   const [annType, setAnnType] = useState<"INFO" | "WARNING" | "URGENT">("INFO");
   const [annTargetRole, setAnnTargetRole] = useState<"ALL" | "OPERATOR" | "DINKES" | "ADMIN">("ALL");
   const [annIsActive, setAnnIsActive] = useState(true);
   const [annIsPopup, setAnnIsPopup] = useState(true);
   const [annEndDate, setAnnEndDate] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch data pendukung
   const { data: puskesmasList = [] } = useQuery<PuskesmasItem[]>({
@@ -176,6 +179,7 @@ export function NotificationManager() {
         body: JSON.stringify({
           title: annTitle,
           content: annContent,
+          imageUrl: annImageUrl,
           type: annType,
           targetRole: annTargetRole,
           isActive: annIsActive,
@@ -240,22 +244,26 @@ export function NotificationManager() {
     setEditingAnnouncement(null);
     setAnnTitle("");
     setAnnContent("");
+    setAnnImageUrl(null);
     setAnnType("INFO");
     setAnnTargetRole("ALL");
     setAnnIsActive(true);
     setAnnIsPopup(true);
     setAnnEndDate("");
+    if (imageInputRef.current) imageInputRef.current.value = "";
   }
 
   function openEditModal(ann: AnnouncementItem) {
     setEditingAnnouncement(ann);
     setAnnTitle(ann.title);
     setAnnContent(ann.content);
+    setAnnImageUrl(ann.imageUrl || null);
     setAnnType(ann.type);
     setAnnTargetRole(ann.targetRole);
     setAnnIsActive(ann.isActive);
     setAnnIsPopup(ann.isPopup);
     setAnnEndDate(ann.endDate ? ann.endDate.split("T")[0] : "");
+    if (imageInputRef.current) imageInputRef.current.value = "";
     setIsModalOpen(true);
   }
 
@@ -541,8 +549,18 @@ export function NotificationManager() {
                     {announcements.map((ann) => (
                       <tr key={ann.id} className="hover:bg-surface-subtle/50 transition-colors">
                         <td className="py-3 px-4 max-w-xs">
-                          <p className="font-extrabold text-foreground truncate">{ann.title}</p>
-                          <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{ann.content}</p>
+                          <div className="flex items-center gap-3">
+                            {ann.imageUrl ? (
+                              <div className="w-10 h-10 rounded-lg overflow-hidden border border-border bg-surface-subtle shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={ann.imageUrl} alt={ann.title} className="w-full h-full object-cover" />
+                              </div>
+                            ) : null}
+                            <div className="min-w-0 flex-1">
+                              <p className="font-extrabold text-foreground truncate">{ann.title}</p>
+                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{ann.content}</p>
+                            </div>
+                          </div>
                         </td>
 
                         <td className="py-3 px-3">
@@ -702,6 +720,66 @@ export function NotificationManager() {
               onChange={(e) => setAnnContent(e.target.value)}
               className="text-xs resize-none"
             />
+          </div>
+
+          {/* Lampiran Gambar Pengumuman / Popup */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-foreground/80">Gambar / Brosur (Opsional)</Label>
+            {annImageUrl ? (
+              <div className="relative rounded-xl border border-border p-2 bg-surface-subtle flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border bg-surface shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={annImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground truncate">Gambar siap disimpan</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAnnImageUrl(null);
+                    if (imageInputRef.current) imageInputRef.current.value = "";
+                  }}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) {
+                      toast.error("Ukuran gambar maksimal 5MB.");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      setAnnImageUrl(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="w-full h-11 border-dashed gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                >
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  Unggah Gambar Pengumuman (PNG, JPG, WebP max 5MB)
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">

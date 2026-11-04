@@ -2,6 +2,7 @@ import { type AnnouncementTargetRole, type AnnouncementType, prisma } from "@app
 import { type NextRequest, NextResponse } from "next/server";
 import { withAdmin } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
+import { saveBase64Photo } from "@/lib/photo-files";
 
 export const GET = withAdmin(async () => {
   try {
@@ -27,6 +28,7 @@ export const POST = withAdmin(async (req: NextRequest, { user }) => {
     const {
       title,
       content,
+      imageUrl,
       type = "INFO",
       isActive = true,
       startDate,
@@ -39,10 +41,16 @@ export const POST = withAdmin(async (req: NextRequest, { user }) => {
       return NextResponse.json({ error: "Judul dan isi pengumuman wajib diisi." }, { status: 400 });
     }
 
+    let savedImageUrl: string | null = null;
+    if (imageUrl) {
+      savedImageUrl = await saveBase64Photo(imageUrl, "announcements");
+    }
+
     const announcement = await prisma.announcement.create({
       data: {
         title: title.trim(),
         content: content.trim(),
+        imageUrl: savedImageUrl,
         type: type as AnnouncementType,
         isActive: Boolean(isActive),
         startDate: startDate ? new Date(startDate) : new Date(),

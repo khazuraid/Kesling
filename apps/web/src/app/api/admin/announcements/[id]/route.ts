@@ -2,6 +2,7 @@ import { type AnnouncementTargetRole, type AnnouncementType, prisma } from "@app
 import { type NextRequest, NextResponse } from "next/server";
 import { withAdmin } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
+import { deletePhotoFiles, saveBase64Photo } from "@/lib/photo-files";
 
 export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
   try {
@@ -16,11 +17,19 @@ export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
     }
 
     const body = await req.json();
-    const { title, content, type, isActive, startDate, endDate, targetRole, isPopup } = body;
+    const { title, content, imageUrl, type, isActive, startDate, endDate, targetRole, isPopup } = body;
 
     const data: any = {};
     if (title !== undefined) data.title = String(title).trim();
     if (content !== undefined) data.content = String(content).trim();
+    if (imageUrl !== undefined) {
+      if (imageUrl === null || imageUrl === "") {
+        if (existing.imageUrl) await deletePhotoFiles([existing.imageUrl]);
+        data.imageUrl = null;
+      } else {
+        data.imageUrl = await saveBase64Photo(imageUrl, "announcements");
+      }
+    }
     if (type !== undefined) data.type = type as AnnouncementType;
     if (isActive !== undefined) data.isActive = Boolean(isActive);
     if (startDate !== undefined) data.startDate = startDate ? new Date(startDate) : new Date();
@@ -59,6 +68,10 @@ export const DELETE = withAdmin(async (_req: NextRequest, { user, params }) => {
     const existing = await prisma.announcement.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: "Pengumuman tidak ditemukan." }, { status: 404 });
+    }
+
+    if (existing.imageUrl) {
+      await deletePhotoFiles([existing.imageUrl]);
     }
 
     await prisma.announcement.delete({ where: { id } });

@@ -266,7 +266,7 @@ async function securityLayer(req: NextRequest): Promise<NextResponse> {
             }),
           );
         }
-        return applySecurityHeaders(NextResponse.redirect(new URL("/?error=forbidden", req.url)));
+        return applySecurityHeaders(NextResponse.redirect(new URL("/dashboard?error=forbidden", req.url)));
       }
     }
   }

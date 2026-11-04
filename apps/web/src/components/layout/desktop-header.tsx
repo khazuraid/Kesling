@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notification-bell";
 
 const ROUTE_TITLES: Record<string, { title: string; subtitle: string }> = {
-  "/": { title: "Executive Dashboard", subtitle: "Ringkasan metrik kesehatan lingkungan terpadu" },
+  "/dashboard": { title: "Executive Dashboard", subtitle: "Ringkasan metrik kesehatan lingkungan terpadu" },
   "/dashboard-pkm": { title: "Command Center PKM", subtitle: "Monitoring & inspeksi sanitasi wilayah kerja" },
   "/pemeriksaan": { title: "Pemeriksaan Lapangan", subtitle: "Entri inspeksi sanitasi & verifikasi standar" },
   "/form-pemeriksaan": { title: "Form Template Builder", subtitle: "Konfigurasi instrumen dan parameter inspeksi" },

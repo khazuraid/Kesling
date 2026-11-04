@@ -58,6 +58,7 @@ export async function ensureDbSchema(): Promise<void> {
             "id" SERIAL PRIMARY KEY,
             "title" TEXT NOT NULL,
             "content" TEXT NOT NULL,
+            "imageUrl" TEXT,
             "type" "AnnouncementType" NOT NULL DEFAULT 'INFO',
             "isActive" BOOLEAN NOT NULL DEFAULT true,
             "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -67,6 +68,8 @@ export async function ensureDbSchema(): Promise<void> {
             "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
             "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
           );
+
+          ALTER TABLE "announcement" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;
 
           CREATE INDEX IF NOT EXISTS "announcement_isActive_isPopup_startDate_endDate_targetRole_idx"
             ON "announcement"("isActive", "isPopup", "startDate", "endDate", "targetRole");

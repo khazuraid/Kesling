@@ -31,6 +31,7 @@ export const GET = withAuth(async (req: NextRequest) => {
         id: true,
         title: true,
         content: true,
+        imageUrl: true,
         type: true,
         createdAt: true,
       },

@@ -357,6 +357,7 @@ model Announcement {
   id         Int                    @id @default(autoincrement())
   title      String
   content    String                 @db.Text
+  imageUrl   String?
   type       AnnouncementType       @default(INFO)
   isActive   Boolean                @default(true)
   startDate  DateTime               @default(now())

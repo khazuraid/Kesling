@@ -11,6 +11,7 @@ interface PopupAnnouncement {
   id: number;
   title: string;
   content: string;
+  imageUrl?: string | null;
   type: "INFO" | "WARNING" | "URGENT";
   createdAt: string;
 }
@@ -136,6 +137,18 @@ export function AnnouncementModal() {
             })}
           </span>
         </div>
+
+        {announcement.imageUrl && (
+          <div className="relative w-full rounded-xl overflow-hidden border border-border/80 bg-surface-subtle max-h-64 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={announcement.imageUrl}
+              alt={announcement.title}
+              className="w-full h-auto max-h-64 object-contain rounded-lg"
+              loading="lazy"
+            />
+          </div>
+        )}
 
         <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line bg-surface-subtle/50 p-4 rounded-xl border border-border/60 max-h-[50vh] overflow-y-auto">
           {announcement.content}
