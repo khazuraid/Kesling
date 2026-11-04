@@ -336,14 +336,11 @@ export function SideNav() {
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right" className="text-[11px] font-medium">
-                Notifikasi
+                Notifikasi Pengguna
               </TooltipContent>
             </Tooltip>
           ) : (
-            <div className="flex items-center rounded-lg px-2 py-1 gap-2 hover:bg-muted/60 transition-colors">
-              <NotificationBell placement="top" />
-              <span className="text-[12px] font-semibold text-muted-foreground select-none">Notifikasi</span>
-            </div>
+            <NotificationBell placement="top" showLabel />
           )}
 
           {/* Donation Quick Trigger */}
