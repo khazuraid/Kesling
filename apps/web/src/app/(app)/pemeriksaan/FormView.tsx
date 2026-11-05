@@ -737,9 +737,9 @@ export function FormView({
                   <span
                     className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black shrink-0 ${
                       isActive
-                        ? "bg-white text-primary"
+                        ? "bg-surface text-primary"
                         : isPassed
-                          ? "bg-[#00A876] text-white"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -831,7 +831,7 @@ export function FormView({
                 <div className="rounded-card border border-border p-4 sm:p-5 bg-surface-subtle space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
-                      Tanggal Pemeriksaan <span className="text-[#E15A4F]">*</span>
+                      Tanggal Pemeriksaan <span className="text-destructive font-black">*</span>
                     </label>
                     <span className="text-[11px] text-muted-foreground">Wajib diisi</span>
                   </div>
@@ -1281,7 +1281,7 @@ function FieldInput({
               }`}
             >
               {f.pertanyaan}
-              {f.isRequired && !disabled && <span className="ml-1 text-[#E15A4F] font-black">*</span>}
+              {f.isRequired && !disabled && <span className="ml-1 text-destructive font-black">*</span>}
             </label>
 
             {/* Badges / Pill Contexts */}
@@ -1437,8 +1437,8 @@ function FieldInput({
             onClick={() => onChange("TRUE")}
             className={`min-h-[44px] h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
               String(value ?? "").toUpperCase() === "TRUE"
-                ? "bg-[#00A876] text-white border-[#00A876] shadow-sm ring-2 ring-[#00A876]/30"
-                : "bg-surface border-border text-foreground hover:border-[#00A876]/60 hover:bg-[#00A876]/5"
+                ? "bg-primary text-primary-foreground border-primary shadow-xs ring-2 ring-primary/30"
+                : "bg-surface border-border text-foreground hover:border-primary/60 hover:bg-primary/5"
             }`}
           >
             <Check className="w-4 h-4 stroke-[3] shrink-0" /> Ya (Memenuhi)
@@ -1451,8 +1451,8 @@ function FieldInput({
             onClick={() => onChange("FALSE")}
             className={`min-h-[44px] h-11 px-3 sm:px-4 rounded-xl text-[12px] sm:text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
               String(value ?? "").toUpperCase() === "FALSE"
-                ? "bg-[#E15A4F] text-white border-[#E15A4F] shadow-sm ring-2 ring-[#E15A4F]/30"
-                : "bg-surface border-border text-foreground hover:border-[#E15A4F]/60 hover:bg-[#E15A4F]/5"
+                ? "bg-destructive text-destructive-foreground border-destructive shadow-xs ring-2 ring-destructive/30"
+                : "bg-surface border-border text-foreground hover:border-destructive/60 hover:bg-destructive/5"
             }`}
           >
             <X className="w-4 h-4 stroke-[3] shrink-0" /> Tidak

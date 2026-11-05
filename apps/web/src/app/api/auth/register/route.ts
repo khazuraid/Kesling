@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     let puskesmasId: number | null = null;
     if (role === "OPERATOR") {
       puskesmasId = Number(puskesmasIdRaw);
-      if (!puskesmasId || isNaN(puskesmasId)) {
+      if (!puskesmasId || Number.isNaN(puskesmasId)) {
         return NextResponse.json({ error: "Puskesmas wajib dipilih untuk Petugas Puskesmas." }, { status: 400 });
       }
     }

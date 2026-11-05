@@ -2,24 +2,15 @@ import { prisma } from "@apps-kes/database";
 import {
   Activity,
   ArrowRight,
-  BarChart3,
   Building2,
-  CheckCircle2,
-  Clock,
-  Compass,
   Droplets,
-  ExternalLink,
   FileCheck2,
-  FileText,
   Heart,
   HeartPulse,
   Home,
   MapPin,
   Megaphone,
-  Radio,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
   UtensilsCrossed,
   Waves,
 } from "lucide-react";
@@ -204,7 +195,7 @@ export default async function PublicLandingPage() {
         <section
           id="ringkasan"
           tabIndex={-1}
-          className="border-b border-border/80 bg-surface scroll-mt-20 focus:outline-none pt-12 pb-16"
+          className="border-b border-border/80 bg-gradient-to-b from-primary/5 via-surface to-surface scroll-mt-20 focus:outline-none pt-12 pb-16"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
             {/* Headline Otoritas Publik */}

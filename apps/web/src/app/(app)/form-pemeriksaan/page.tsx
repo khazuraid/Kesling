@@ -19,7 +19,6 @@ import {
   Pencil,
   Plus,
   Settings2,
-  ShieldAlert,
   Sparkles,
   Trash2,
   Upload,
@@ -1335,7 +1334,7 @@ export default function FormPemeriksaanPage() {
     const newField = {
       pertanyaan: "",
       tipe: isLab ? "NUMBER" : "BOOLEAN",
-      isRequired: isLab ? true : false,
+      isRequired: !!isLab,
       grup: targetGrup,
       skor: isLab ? 0 : 1,
       skorBenar: isLab ? 0 : 1,
@@ -1378,7 +1377,7 @@ export default function FormPemeriksaanPage() {
     const newField = {
       pertanyaan: "",
       tipe: isLab ? "NUMBER" : "BOOLEAN",
-      isRequired: isLab ? true : false,
+      isRequired: !!isLab,
       grup,
       skor: isLab ? 0 : 1,
       skorBenar: isLab ? 0 : 1,

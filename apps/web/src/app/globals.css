@@ -130,6 +130,10 @@
       --color-secondary: #1E293B;
       --color-secondary-foreground: #F8FAFC;
       --color-primary-subtle: rgba(5, 150, 105, 0.15);
+      --color-success-light: rgba(5, 150, 105, 0.15);
+      --color-warning-light: rgba(217, 119, 6, 0.15);
+      --color-info-light: rgba(2, 132, 199, 0.15);
+      --color-error-light: rgba(220, 38, 38, 0.15);
     }
   }
 
@@ -336,27 +340,27 @@
     font-weight: 600;
   }
   .badge-submitted {
-    background-color: #f0f9ff;
-    color: #0284c7;
-    border: 1px solid rgba(2, 132, 199, 0.2);
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+    border: 1px solid rgba(2, 132, 199, 0.25);
     padding: 0.1875rem 0.625rem;
     border-radius: var(--radius-pill);
     font-size: 0.75rem;
     font-weight: 600;
   }
   .badge-approved {
-    background-color: #ecfdf5;
-    color: #059669;
-    border: 1px solid rgba(5, 150, 105, 0.2);
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+    border: 1px solid rgba(5, 150, 105, 0.25);
     padding: 0.1875rem 0.625rem;
     border-radius: var(--radius-pill);
     font-size: 0.75rem;
     font-weight: 600;
   }
   .badge-rejected {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid rgba(220, 38, 38, 0.2);
+    background-color: var(--color-error-light);
+    color: var(--color-error);
+    border: 1px solid rgba(220, 38, 38, 0.25);
     padding: 0.1875rem 0.625rem;
     border-radius: var(--radius-pill);
     font-size: 0.75rem;

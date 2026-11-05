@@ -1,20 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertCircle,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  ExternalLink,
-  FileCheck,
-  FlaskConical,
-  History,
-  Loader2,
-  MapPin,
-  Plus,
-  User,
-} from "lucide-react";
+import { Building2, Calendar, ExternalLink, FileCheck, FlaskConical, History, Plus, User } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +22,12 @@ interface SasaranRiwayatDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SasaranRiwayatDialog({ sasaran, categoryCode = "", open, onOpenChange }: SasaranRiwayatDialogProps) {
+export function SasaranRiwayatDialog({
+  sasaran,
+  categoryCode: _categoryCode,
+  open,
+  onOpenChange,
+}: SasaranRiwayatDialogProps) {
   const sasaranId = sasaran?.id;
   const sasaranNama = sasaran?.nama || "Sasaran";
 
@@ -79,9 +71,21 @@ export function SasaranRiwayatDialog({ sasaran, categoryCode = "", open, onOpenC
 
         <div className="flex-1 overflow-y-auto p-6 bg-canvas space-y-4">
           {isLoading ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center">
-              <Loader2 className="w-7 h-7 animate-spin text-primary mb-2" />
-              <p className="text-xs font-semibold text-muted-foreground">Memuat riwayat pemeriksaan & sampel lab...</p>
+            <div className="space-y-3 p-1 animate-pulse">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 rounded-xl border border-border bg-surface space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-9 h-9 rounded-xl bg-muted shrink-0" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 w-48 bg-muted rounded" />
+                        <div className="h-3 w-32 bg-muted/60 rounded" />
+                      </div>
+                    </div>
+                    <div className="h-8 w-24 bg-muted rounded-lg shrink-0" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : riwayatData.length === 0 ? (
             <Card className="border border-dashed border-border bg-surface p-10 text-center flex flex-col items-center justify-center shadow-subtle">

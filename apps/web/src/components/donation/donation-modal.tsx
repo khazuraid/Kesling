@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Copy, ExternalLink, Heart, Loader2, QrCode, Sparkles } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -230,10 +231,12 @@ export function DonationModal() {
             {/* Area QRIS */}
             <div className="flex flex-col items-center justify-center p-4 bg-white dark:bg-zinc-900 border border-border rounded-xl shadow-xs">
               {activeDonation.qrCodeUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={activeDonation.qrCodeUrl}
                   alt="QRIS Donasi SumoPod"
+                  width={224}
+                  height={224}
+                  unoptimized
                   className="w-56 h-56 object-contain rounded-lg border border-border/40"
                 />
               ) : (

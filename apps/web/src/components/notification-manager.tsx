@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCircle2, Clock, Edit, ImageIcon, Megaphone, Plus, Send, Trash2, X } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -551,9 +552,15 @@ export function NotificationManager() {
                         <td className="py-3 px-4 max-w-xs">
                           <div className="flex items-center gap-3">
                             {ann.imageUrl ? (
-                              <div className="w-10 h-10 rounded-lg overflow-hidden border border-border bg-surface-subtle shrink-0">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={ann.imageUrl} alt={ann.title} className="w-full h-full object-cover" />
+                              <div className="w-10 h-10 rounded-lg overflow-hidden border border-border bg-surface-subtle shrink-0 relative">
+                                <Image
+                                  src={ann.imageUrl}
+                                  alt={ann.title}
+                                  width={40}
+                                  height={40}
+                                  unoptimized
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
                             ) : null}
                             <div className="min-w-0 flex-1">
@@ -728,9 +735,15 @@ export function NotificationManager() {
             {annImageUrl ? (
               <div className="relative rounded-xl border border-border p-2 bg-surface-subtle flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border bg-surface shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={annImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border bg-surface shrink-0 relative">
+                    <Image
+                      src={annImageUrl}
+                      alt="Preview"
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <span className="text-xs font-medium text-muted-foreground truncate">Gambar siap disimpan</span>
                 </div>

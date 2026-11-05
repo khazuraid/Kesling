@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // Cegah enumerasi akun: jika user tidak ditemukan atau belum aktif,
     // tetap kembalikan status sukses generik dengan token dummy
-    if (!user || user.status !== "ACTIVE") {
+    if (user?.status !== "ACTIVE") {
       await logSecurityEvent({
         eventType: "PASSWORD_RESET_ATTEMPT_UNKNOWN",
         ip,

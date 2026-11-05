@@ -5,7 +5,6 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
-  Building2,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -308,12 +307,14 @@ export default function PemeriksaanPage() {
         });
       }
 
-      const entry = map.get(key)!;
-      entry.items.push(res);
-      entry.totalInspeksi += 1;
-      // Perbarui metadata jika entri ini lebih baru
-      if (new Date(res.createdAt) > new Date(entry.lastInspection.createdAt)) {
-        entry.lastInspection = res;
+      const entry = map.get(key);
+      if (entry) {
+        entry.items.push(res);
+        entry.totalInspeksi += 1;
+        // Perbarui metadata jika entri ini lebih baru
+        if (new Date(res.createdAt) > new Date(entry.lastInspection.createdAt)) {
+          entry.lastInspection = res;
+        }
       }
     });
 
@@ -2303,9 +2304,22 @@ export default function PemeriksaanPage() {
                 </div>
 
                 {isLoadingRiwayat ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                    <p className="text-[12px] font-medium text-muted-foreground">Memuat data riwayat...</p>
+                  <div className="space-y-3 animate-pulse">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="p-4 sm:p-5 rounded-2xl border border-border bg-surface flex items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center gap-3.5 flex-1">
+                          <div className="w-11 h-11 rounded-xl bg-muted shrink-0" />
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 w-44 bg-muted rounded" />
+                            <div className="h-3 w-64 bg-muted/60 rounded" />
+                          </div>
+                        </div>
+                        <div className="h-9 w-28 bg-muted rounded-full shrink-0" />
+                      </div>
+                    ))}
                   </div>
                 ) : paginatedResults.length === 0 ? (
                   <div className="border border-dashed border-border bg-surface rounded-card p-10 flex flex-col items-center justify-center text-center shadow-subtle">

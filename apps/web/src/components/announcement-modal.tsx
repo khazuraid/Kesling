@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertOctagon, AlertTriangle, CheckCircle2, Megaphone } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -140,10 +141,12 @@ export function AnnouncementModal() {
 
         {announcement.imageUrl && (
           <div className="relative w-full rounded-xl overflow-hidden border border-border/80 bg-surface-subtle max-h-64 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={announcement.imageUrl}
               alt={announcement.title}
+              width={600}
+              height={300}
+              unoptimized
               className="w-full h-auto max-h-64 object-contain rounded-lg"
               loading="lazy"
             />

@@ -17,7 +17,6 @@ interface PublicInteractiveProps {
 export function PublicInteractiveSection({ puskesmasList }: PublicInteractiveProps) {
   // Search puskesmas state
   const [pkmSearch, setPkmSearch] = useState("");
-  const [selectedKecamatan, setSelectedKecamatan] = useState<string>("all");
 
   // Donasi state
   const [selectedAmount, setSelectedAmount] = useState<number>(25_000);
