@@ -48,6 +48,9 @@ export const GET = withAuth(async (req: NextRequest) => {
   const templateId = parseInt(sp.get("templateId") || "", 10);
   if (Number.isInteger(templateId) && templateId > 0) where.templateId = templateId;
 
+  const sasaranId = parseInt(sp.get("sasaranId") || "", 10);
+  if (Number.isInteger(sasaranId) && sasaranId > 0) where.sasaranId = sasaranId;
+
   const userId = parseInt(sp.get("userId") || "", 10);
   if (Number.isInteger(userId) && userId > 0) where.userId = userId;
 

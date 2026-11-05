@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Key, Loader2, RefreshCw, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ export default function DonationsSettingsPage() {
   const [webhookToken, setWebhookToken] = useState("");
   const [popupEnabled, setPopupEnabled] = useState(true);
   const [mode, setMode] = useState<"sandbox" | "live">("sandbox");
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-donations"],
@@ -31,12 +30,13 @@ export default function DonationsSettingsPage() {
     },
   });
 
-  // Sinkronkan state saat data selesai di-fetch pertama kali
-  if (data && !isConfigLoaded) {
-    setPopupEnabled(data.config?.popupEnabled ?? true);
-    setMode(data.config?.mode === "live" ? "live" : "sandbox");
-    setIsConfigLoaded(true);
-  }
+  // Sinkronkan state saat data selesai di-fetch
+  useEffect(() => {
+    if (data?.config) {
+      setPopupEnabled(data.config.popupEnabled ?? true);
+      setMode(data.config.mode === "live" ? "live" : "sandbox");
+    }
+  }, [data?.config]);
 
   const saveConfigMutation = useMutation({
     mutationFn: async (payload: any) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Copy, ExternalLink, Heart, Loader2, MapPin, QrCode, Search } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface PublicInteractiveProps {
 export function PublicInteractiveSection({ puskesmasList }: PublicInteractiveProps) {
   // Search puskesmas state
   const [pkmSearch, setPkmSearch] = useState("");
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>("all");
 
   // Donasi state
   const [selectedAmount, setSelectedAmount] = useState<number>(25_000);
@@ -53,7 +55,7 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memproses donasi");
       setActiveDonation(data.donation);
-      toast.success("Kode QRIS berhasil dibuat!");
+      toast.success("Kode QRIS resmi berhasil dibuat!");
     } catch (err: any) {
       toast.error(err.message || "Gagal memproses donasi");
     } finally {
@@ -70,25 +72,25 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
 
   return (
     <>
-      {/* ── 1. WILAYAH KERJA PUSKESMAS INTERAKTIF ── */}
+      {/* ── 1. MATRIKS CAKUPAN FASILITAS & WILAYAH PUSKESMAS ── */}
       <section
         id="wilayah"
         tabIndex={-1}
-        className="py-16 sm:py-20 border-b border-border/80 bg-surface/40 scroll-mt-20 focus:outline-none"
+        className="py-16 sm:py-20 border-b border-border/80 bg-surface/30 scroll-mt-20 focus:outline-none"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary-subtle text-primary border border-primary/20">
                 <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Cakupan Faskes Kota</span>
+                <span>Matriks Faskes & Wilayah Kerja</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
-                Jejaring 22 wilayah kerja Puskesmas.
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                Jejaring 22 Puskesmas Pembina Kota Cirebon.
               </h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Seluruh kelurahan di Kota Cirebon terhubung secara terpusat untuk pemantauan kualitas sanitasi dan
-                keamanan lingkungan masyarakat.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Setiap wilayah diawasi sanitarian tersertifikasi untuk verifikasi baku mutu air, inspeksi pangan, dan
+                pembinaan rumah sehat secara berkala.
               </p>
             </div>
 
@@ -113,8 +115,9 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
             </div>
           </div>
 
+          {/* Grid Direktori Puskesmas Civic */}
           <div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5"
             role="list"
             aria-label="Daftar Puskesmas Kota Cirebon"
           >
@@ -122,19 +125,26 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
               <div
                 key={pkm.id || pkm.nama}
                 role="listitem"
-                className="min-h-[52px] p-3 rounded-xl border border-border bg-surface hover:border-primary/50 hover:shadow-subtle transition-all flex items-center gap-2.5 group"
+                className="p-4 rounded-xl border border-border bg-surface hover:border-primary/50 hover:shadow-subtle transition-all flex items-start gap-3 group"
               >
                 <div
-                  className="w-7 h-7 rounded-lg bg-surface-subtle text-muted-foreground group-hover:bg-primary-subtle group-hover:text-primary transition-colors flex items-center justify-center shrink-0 text-xs font-bold tabular-nums"
+                  className="w-8 h-8 rounded-lg bg-surface-subtle text-muted-foreground group-hover:bg-primary-subtle group-hover:text-primary transition-colors flex items-center justify-center shrink-0 text-xs font-black tabular-nums border border-border/60"
                   aria-hidden="true"
                 >
-                  {idx + 1}
+                  {(idx + 1).toString().padStart(2, "0")}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <span className="text-xs font-bold text-foreground block truncate group-hover:text-primary transition-colors">
-                    {pkm.nama}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground font-semibold block truncate">Kota Cirebon</span>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                      Puskesmas {pkm.nama}
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                      Aktif
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground font-medium truncate">
+                    Zona Pembinaan Kesling Dinkes
+                  </p>
                 </div>
               </div>
             ))}
@@ -148,29 +158,29 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
         </div>
       </section>
 
-      {/* ── 2. DUKUNGAN SANITASI & DONASI QRIS ── */}
+      {/* ── 2. DUKUNGAN OPERASIONAL & GERBANG DONASI QRIS ── */}
       <section
         id="donasi"
         tabIndex={-1}
         className="py-16 sm:py-20 border-b border-border/80 bg-canvas scroll-mt-20 focus:outline-none"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-primary/20 bg-surface p-6 sm:p-10 shadow-subtle">
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-10 shadow-subtle">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Kolom Informasi & Form */}
               <div className="lg:col-span-7 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary-subtle text-primary border border-primary/20">
                   <Heart className="w-3.5 h-3.5 text-primary fill-primary" aria-hidden="true" />
-                  <span>Dukungan Operasional Sanitasi</span>
+                  <span>Gerbang Donasi & Operasional</span>
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
-                  Bantu akselerasi digitalisasi sanitasi Kota Cirebon.
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground leading-tight">
+                  Dukung percepatan Satu Data Sanitasi Kota Cirebon.
                 </h2>
 
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Infaq dan donasi Anda dimanfaatkan langsung untuk biaya server pelaporan, lisensi AI parsing audit,
-                  serta pengembangan fitur pelaporan lapangan sanitarian secara transparan.
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Infaq dan donasi Anda dialokasikan penuh untuk pemeliharaan server data center, pengujian sampel
+                  laboratorium air warga pra-sejahtera, serta alat digitalisasi sanitarian lapangan.
                 </p>
 
                 <div className="space-y-3 pt-2">
@@ -279,20 +289,20 @@ export function PublicInteractiveSection({ puskesmasList }: PublicInteractivePro
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground font-semibold">Total Pembayaran</p>
-                      <p className="text-2xl font-extrabold text-foreground tabular-nums">
+                      <p className="text-xs text-muted-foreground font-semibold">Total Tagihan QRIS</p>
+                      <p className="text-2xl font-black text-foreground tabular-nums">
                         Rp {activeDonation.amount.toLocaleString("id-ID")}
                       </p>
                     </div>
 
                     {activeDonation.qrCodeUrl ? (
                       <div className="p-3 bg-white rounded-xl border border-border inline-block shadow-subtle mx-auto">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={activeDonation.qrCodeUrl}
                           alt={`QRIS Donasi Sanitasi Cirebon Rp ${activeDonation.amount.toLocaleString("id-ID")}`}
                           width={224}
                           height={224}
+                          unoptimized
                           className="w-56 h-56 object-contain"
                         />
                       </div>

@@ -5,7 +5,9 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Building2,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Compass,
   Database,
@@ -15,6 +17,9 @@ import {
   Eye,
   FileCheck,
   FileText,
+  FlaskConical,
+  Layers,
+  List,
   Loader2,
   MapPin,
   MoreVertical,
@@ -145,6 +150,9 @@ export default function PemeriksaanPage() {
   const [riwayatTemplateId, setRiwayatTemplateId] = useState("all");
   const [riwayatUserId, setRiwayatUserId] = useState("all");
   const [riwayatLimit, setRiwayatLimit] = useState(10);
+  // Mode tampilan riwayat: "grouped" (1 kartu per sasaran, rapi) vs "flat" (log kronologis)
+  const [riwayatViewMode, setRiwayatViewMode] = useState<"grouped" | "flat">("grouped");
+  const [expandedSasaranKeys, setExpandedSasaranKeys] = useState<Record<string, boolean>>({});
 
   // Modal tambah sasaran baru langsung dari form (format identik Data Dasar)
   const [isNewSasaranModalOpen, setIsNewSasaranModalOpen] = useState(false);
@@ -258,6 +266,59 @@ export default function PemeriksaanPage() {
   const totalRiwayat = riwayatData.total ?? 0;
   const totalRiwayatPages = Math.max(1, riwayatData.totalPages || 1);
 
+  // Pengelompokan hasil pemeriksaan per sasaran (1 kartu per sasaran fisik)
+  const groupedSasaranList = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        key: string;
+        sasaranId: number | null;
+        nama: string;
+        alamat: string | null;
+        pemilik: string | null;
+        kontak: string | null;
+        subCategoryNama: string | null;
+        puskesmasNama: string;
+        totalInspeksi: number;
+        lastInspection: any;
+        items: any[];
+      }
+    >();
+
+    paginatedResults.forEach((res: any) => {
+      // Key unik sasaran berdasarkan sasaranId jika ada, atau fallback nama sasaran
+      const sId = res.sasaranId;
+      const sNama = res.sasaran?.nama || res.namaSasaran || "Sasaran Tanpa Nama";
+      const key = sId ? `sasaran_${sId}` : `nama_${sNama.toLowerCase().trim()}`;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          sasaranId: sId || null,
+          nama: sNama,
+          alamat: res.sasaran?.alamat || res.alamatSasaran || null,
+          pemilik: res.sasaran?.pemilik || null,
+          kontak: res.sasaran?.kontak || null,
+          subCategoryNama: res.sasaran?.subCategory?.nama || null,
+          puskesmasNama: res.puskesmas?.nama || "Puskesmas",
+          totalInspeksi: 0,
+          lastInspection: res,
+          items: [],
+        });
+      }
+
+      const entry = map.get(key)!;
+      entry.items.push(res);
+      entry.totalInspeksi += 1;
+      // Perbarui metadata jika entri ini lebih baru
+      if (new Date(res.createdAt) > new Date(entry.lastInspection.createdAt)) {
+        entry.lastInspection = res;
+      }
+    });
+
+    return Array.from(map.values());
+  }, [paginatedResults]);
+
   // Halaman detail berada di rute sendiri, sedangkan form editnya hidup di
   // sini. Tombol "Edit Pemeriksaan" di sana karena itu kembali ke daftar
   // membawa ?edit=<id>, dan efek ini yang membuka formnya.
@@ -278,6 +339,19 @@ export default function PemeriksaanPage() {
     setActiveTab("riwayat");
     void handleEditResult(row);
   }, [editParam, isLoadingRiwayat, paginatedResults]);
+
+  // Dukungan buka langsung rincian atau filter per sasaran dari URL
+  const sasaranIdParam = searchParams.get("sasaranId");
+  const resultIdParam = searchParams.get("resultId");
+  useEffect(() => {
+    if (resultIdParam) {
+      setActiveTab("riwayat");
+      void handleEditResult({ id: Number(resultIdParam) });
+    } else if (sasaranIdParam) {
+      setActiveTab("riwayat");
+      setRiwayatSearch(`sasaran_${sasaranIdParam}`);
+    }
+  }, [sasaranIdParam, resultIdParam]);
 
   // Pagination & Filtering
   const formulirCategoryOptions = useMemo(() => templateCategoryOptions(templates), [templates]);
@@ -2124,6 +2198,45 @@ export default function PemeriksaanPage() {
                   </Select>
                 </FilterBar>
 
+                {/* Sub-header Control: Mode Tampilan Grouped vs Flat */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-muted-foreground">Tampilan:</span>
+                    <div className="inline-flex items-center p-0.5 rounded-lg border border-border bg-surface-subtle/50 text-xs font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setRiwayatViewMode("grouped")}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                          riwayatViewMode === "grouped"
+                            ? "bg-primary text-white shadow-xs font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Terkelompok per Sasaran ({groupedSasaranList.length})</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRiwayatViewMode("flat")}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                          riwayatViewMode === "flat"
+                            ? "bg-primary text-white shadow-xs font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <List className="w-3.5 h-3.5" />
+                        <span>Log Kronologis ({paginatedResults.length})</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-muted-foreground">
+                    {riwayatViewMode === "grouped"
+                      ? "Menyatukan semua frekuensi pemeriksaan per tempat sasaran"
+                      : "Menampilkan semua entri baris transaksi secara terpisah"}
+                  </p>
+                </div>
+
                 {isLoadingRiwayat ? (
                   <div className="py-12 flex flex-col items-center justify-center text-center">
                     <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
@@ -2151,7 +2264,213 @@ export default function PemeriksaanPage() {
                         : "Hasil pemeriksaan akan tampil di sini."}
                     </p>
                   </div>
+                ) : riwayatViewMode === "grouped" ? (
+                  /* ── TAMPILAN 1: TERKELOMPOK PER SASARAN (1 KARTU PER TEMPAT) ── */
+                  <div className="flex flex-col gap-3">
+                    {groupedSasaranList.map((group) => {
+                      const isExpanded = !!expandedSasaranKeys[group.key];
+                      const iconInfo = getSasaranIcon(group.subCategoryNama || undefined, group.nama);
+                      const IconComp = iconInfo.icon;
+                      const lastRes = group.lastInspection;
+                      const isApproved = lastRes?.status === "APPROVED";
+
+                      return (
+                        <div
+                          key={group.key}
+                          className="rounded-2xl border border-border bg-surface shadow-subtle hover:border-primary/40 transition-all overflow-hidden"
+                        >
+                          {/* Header Sasaran Card */}
+                          <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-start gap-3.5 min-w-0">
+                              <div
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${iconInfo.bg}`}
+                              >
+                                <IconComp className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="text-sm sm:text-base font-black text-foreground truncate">
+                                    {group.nama}
+                                  </h3>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] font-bold bg-primary-subtle text-primary border-primary/20 shrink-0"
+                                  >
+                                    {group.totalInspeksi}x Diperiksa
+                                  </Badge>
+                                  {group.subCategoryNama && (
+                                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0">
+                                      {group.subCategoryNama}
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                                  <MapPin className="w-3.5 h-3.5 shrink-0 text-muted-foreground/70" />
+                                  <span>{group.alamat || "Alamat belum dilengkapi"}</span>
+                                  {group.pemilik && (
+                                    <span>
+                                      · Pengelola: <strong>{group.pemilik}</strong>
+                                    </span>
+                                  )}
+                                  <span>· {group.puskesmasNama}</span>
+                                </p>
+
+                                <p className="text-[11px] text-muted-foreground pt-0.5">
+                                  Terakhir diinspeksi:{" "}
+                                  <strong className="text-foreground font-semibold">
+                                    {new Date(lastRes.createdAt).toLocaleDateString("id-ID", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </strong>{" "}
+                                  ({lastRes.template?.nama}) · Status:{" "}
+                                  <span
+                                    className={
+                                      isApproved
+                                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                                        : "text-amber-600 dark:text-amber-400 font-bold"
+                                    }
+                                  >
+                                    {isApproved ? "Disetujui" : lastRes.status || "Selesai"}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Tombol Aksi & Toggle Buka Riwayat */}
+                            <div className="flex items-center justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  setExpandedSasaranKeys((prev) => ({
+                                    ...prev,
+                                    [group.key]: !prev[group.key],
+                                  }))
+                                }
+                                className="h-9 px-3.5 text-xs font-bold gap-1.5 rounded-full cursor-pointer"
+                                aria-expanded={isExpanded}
+                              >
+                                <span>{isExpanded ? "Tutup Riwayat" : `Lihat Riwayat (${group.totalInspeksi})`}</span>
+                                <ChevronDown
+                                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                    isExpanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Detail Timeline Sub-item Riwayat Pemeriksaan & Lab */}
+                          {isExpanded && (
+                            <div className="border-t border-border bg-surface-subtle/50 p-3 sm:p-4 space-y-2.5">
+                              <div className="px-2 pb-1 flex items-center justify-between text-xs font-bold text-muted-foreground">
+                                <span>DAFTAR RIWAYAT PEMERIKSAAN & UJI LAB ({group.items.length})</span>
+                                <span>Urutan Terbaru &rarr; Lama</span>
+                              </div>
+
+                              <div className="space-y-2">
+                                {group.items.map((res: any, idx: number) => {
+                                  const itemApproved = res.status === "APPROVED";
+                                  const isLabForm =
+                                    res.template?.nama?.toLowerCase().includes("lab") ||
+                                    res.template?.deskripsi?.toLowerCase().includes("lab") ||
+                                    res.template?.nama?.toLowerCase().includes("uji");
+
+                                  return (
+                                    <div
+                                      key={res.id}
+                                      className="p-3 rounded-xl border border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-3 min-w-0">
+                                        <div
+                                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold ${
+                                            isLabForm
+                                              ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20"
+                                              : "bg-primary-subtle text-primary border border-primary/20"
+                                          }`}
+                                        >
+                                          {isLabForm ? (
+                                            <FlaskConical className="w-4 h-4" />
+                                          ) : (
+                                            <FileCheck className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                        <div className="min-w-0">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-xs font-bold text-foreground truncate">
+                                              #{group.items.length - idx}. {res.template?.nama}
+                                            </span>
+                                            <Badge
+                                              variant={itemApproved ? "success" : "warning"}
+                                              className="text-[9px] font-extrabold uppercase shrink-0"
+                                            >
+                                              {itemApproved ? "Disetujui" : res.status || "Selesai"}
+                                            </Badge>
+                                            {isLabForm && (
+                                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+                                                Hasil Lab
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                                            Diperiksa:{" "}
+                                            <strong>
+                                              {new Date(res.tanggal || res.createdAt).toLocaleDateString("id-ID", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                              })}
+                                            </strong>{" "}
+                                            oleh {res.user?.nama || "Petugas Sanitarian"}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+                                        <Button
+                                          asChild
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-7 text-xs px-2.5 rounded-lg"
+                                        >
+                                          <Link href={`/pemeriksaan/${res.id}`}>
+                                            <Eye className="w-3.5 h-3.5 mr-1 text-primary" /> Rincian
+                                          </Link>
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleExportPDF(res)}
+                                          className="h-7 text-xs px-2 rounded-lg text-muted-foreground hover:text-foreground"
+                                          title="Cetak Dokumen"
+                                        >
+                                          <Download className="w-3.5 h-3.5" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleEditResult(res)}
+                                          className="h-7 text-xs px-2 rounded-lg text-muted-foreground hover:text-foreground"
+                                          title="Edit Form"
+                                        >
+                                          <Edit3 className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
+                  /* ── TAMPILAN 2: LOG KRONOLOGIS (FLAT LIST) ── */
                   <div className="flex flex-col gap-2.5">
                     {paginatedResults.map((res: any) => {
                       const isApproved = res.status === "APPROVED";

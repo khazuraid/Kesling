@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, MoreVertical, Pencil, Plus, Settings2, Trash } from "lucide-react";
+import { Database, History, MoreVertical, Pencil, Plus, Settings2, Trash } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { SasaranRiwayatDialog } from "@/components/sasaran/sasaran-riwayat-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -76,6 +77,7 @@ export default function DataDasarSubCatPage() {
   const [selectedId, setSelectedId] = useState<number | "new" | null>(null);
   const [selectedPkmFilter, setSelectedPkmFilter] = useState<number | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [viewRiwayatSasaran, setViewRiwayatSasaran] = useState<any | null>(null);
 
   const { data: session } = useSession();
   const userRole = (session?.user as any)?.role;
@@ -665,6 +667,16 @@ export default function DataDasarSubCatPage() {
                           <TableCell className="px-5 py-3.5 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setViewRiwayatSasaran(s)}
+                                className="h-8 px-2.5 text-[11px] font-bold gap-1 bg-primary-subtle text-primary border-primary/20 hover:bg-primary hover:text-white transition-colors"
+                                title="Lihat Riwayat Pemeriksaan & Lab"
+                              >
+                                <History className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Riwayat</span>
+                              </Button>
+                              <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleSelect(s)}
@@ -686,7 +698,14 @@ export default function DataDasarSubCatPage() {
                                     <span className="sr-only">Aksi</span>
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuContent align="end" className="w-44">
+                                  <DropdownMenuItem
+                                    onClick={() => setViewRiwayatSasaran(s)}
+                                    className="gap-2 cursor-pointer font-medium"
+                                  >
+                                    <History className="w-3.5 h-3.5 text-primary" />
+                                    <span>Riwayat & Lab</span>
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleSelect(s)} className="gap-2 cursor-pointer">
                                     <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                                     <span>Edit Entitas</span>
@@ -860,6 +879,14 @@ export default function DataDasarSubCatPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* ── DIALOG RIWAYAT PEMERIKSAAN & LAB ── */}
+        <SasaranRiwayatDialog
+          sasaran={viewRiwayatSasaran}
+          categoryCode={categoryCode}
+          open={!!viewRiwayatSasaran}
+          onOpenChange={(open) => !open && setViewRiwayatSasaran(null)}
+        />
       </div>
     </div>
   );

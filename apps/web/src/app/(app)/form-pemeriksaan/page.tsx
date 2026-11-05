@@ -185,6 +185,7 @@ export default function FormPemeriksaanPage() {
 
   const [nama, setNama] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
+  const [tipePemeriksaan, setTipePemeriksaan] = useState<"IKL" | "LAB">("IKL");
   const [subCategoryId, setSubCategoryId] = useState<number | null>(null);
   const [dataDasarCategoryId, setDataDasarCategoryId] = useState<number | null>(null);
   const [fields, setFields] = useState<any[]>([]);
@@ -282,6 +283,7 @@ export default function FormPemeriksaanPage() {
     deskripsi,
     subCategoryId,
     config: {
+      tipePemeriksaan,
       matrixColumns,
       dataDasarCategoryId,
       rumus,
@@ -1087,6 +1089,7 @@ export default function FormPemeriksaanPage() {
   function resetForm() {
     setNama("");
     setDeskripsi("");
+    setTipePemeriksaan("IKL");
     setSubCategoryId(null);
     setDataDasarCategoryId(null);
     setFields([]);
@@ -2242,6 +2245,7 @@ export default function FormPemeriksaanPage() {
                         null;
                       setSubCategoryId(tpl.subCategoryId ?? null);
                       setDataDasarCategoryId(resolvedCatId);
+                      setTipePemeriksaan(tpl.config?.tipePemeriksaan === "LAB" ? "LAB" : "IKL");
                     };
                     return (
                       <div
@@ -2267,6 +2271,11 @@ export default function FormPemeriksaanPage() {
                               <h4 className="text-[12px] sm:text-[13px] font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
                                 {tpl.nama}
                               </h4>
+                              {tpl.config?.tipePemeriksaan === "LAB" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 shrink-0">
+                                  🧪 Uji Lab
+                                </span>
+                              )}
                               {!tpl.puskesmasId ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shrink-0">
                                   🏛️ Dinkes
@@ -2571,6 +2580,41 @@ export default function FormPemeriksaanPage() {
                 <span className="text-[12px] font-bold text-foreground">Sasaran & Deskripsi Laporan</span>
               </div>
               <div className="p-5 space-y-4">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
+                    Jenis Formulir
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setTipePemeriksaan("IKL")}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
+                        tipePemeriksaan === "IKL"
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-surface border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span>📋 IKL Fisik</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTipePemeriksaan("LAB")}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
+                        tipePemeriksaan === "LAB"
+                          ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                          : "bg-surface border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span>🧪 Uji Lab / Sampel</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">
+                    {tipePemeriksaan === "IKL"
+                      ? "Formulir inspeksi sanitasi fisik lapangan dengan checklist atau matriks area"
+                      : "Formulir hasil pengujian laboratorium sampel air, pangan, atau usap alat"}
+                  </p>
+                </div>
+
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
                     Deskripsi Form
