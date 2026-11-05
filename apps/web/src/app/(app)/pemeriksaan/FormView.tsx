@@ -27,7 +27,7 @@ import { SignaturePad } from "@/components/ui/signature-pad";
 import { Textarea } from "@/components/ui/textarea";
 import { useInspectionDraft } from "@/hooks/use-inspection-draft";
 import { photoSrc } from "@/lib/photo-url";
-import { toRoman } from "./helpers";
+import { evaluateLabCompliance, toRoman } from "./helpers";
 
 export function parseDropdownOptions(raw: any): string[] {
   if (!raw) return [];
@@ -282,6 +282,10 @@ interface FormViewProps {
     valueText: string;
     pass: boolean;
     text: string;
+    isLab?: boolean;
+    countMS?: number;
+    countTMS?: number;
+    countPending?: number;
   };
   canSubmit: boolean;
   isPending: boolean;
@@ -576,15 +580,31 @@ export function FormView({
 
             {/* Mobile Score & Status Pill */}
             <div className="flex sm:hidden items-center gap-1.5 shrink-0">
-              <div
-                className={`flex items-center gap-1 px-2 py-1 rounded-xl text-white font-extrabold shadow-xs ${
-                  liveSkor.pass ? "bg-primary" : "bg-error"
-                }`}
-                title={liveSkor.text}
-              >
-                <span className="text-[13px] tabular-nums leading-none">{displayPercentage}</span>
-                <span className="text-[11px] opacity-90">{liveSkor.pass ? "MS" : "TMS"}</span>
-              </div>
+              {liveSkor.isLab ? (
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-white font-extrabold shadow-xs ${
+                    liveSkor.pass ? "bg-emerald-600" : (liveSkor.countTMS || 0) > 0 ? "bg-rose-600" : "bg-amber-600"
+                  }`}
+                  title={liveSkor.text}
+                >
+                  <span className="text-[12px] font-black">
+                    {liveSkor.pass ? "MS" : (liveSkor.countTMS || 0) > 0 ? "TMS" : "PENDING"}
+                  </span>
+                  <span className="text-[10px] opacity-90">
+                    ({liveSkor.gained}/{liveSkor.max})
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className={`flex items-center gap-1 px-2 py-1 rounded-xl text-white font-extrabold shadow-xs ${
+                    liveSkor.pass ? "bg-primary" : "bg-error"
+                  }`}
+                  title={liveSkor.text}
+                >
+                  <span className="text-[13px] tabular-nums leading-none">{displayPercentage}</span>
+                  <span className="text-[11px] opacity-90">{liveSkor.pass ? "MS" : "TMS"}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -605,14 +625,26 @@ export function FormView({
                 <div className="flex items-baseline justify-end gap-1">
                   <span
                     className={`text-[18px] sm:text-[24px] font-black tracking-tight leading-none tabular-nums ${
-                      liveSkor.pass ? "text-primary" : "text-error"
+                      liveSkor.pass
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : (liveSkor.countTMS || 0) > 0
+                          ? "text-rose-600 dark:text-rose-400"
+                          : "text-primary"
                     }`}
                   >
-                    {displayPercentage}
+                    {liveSkor.isLab
+                      ? (liveSkor.countTMS || 0) > 0
+                        ? "TMS"
+                        : liveSkor.pass
+                          ? "MS"
+                          : "PENGUJIAN"
+                      : displayPercentage}
                   </span>
                 </div>
                 <div className="text-[11px] sm:text-[10px] text-muted-foreground font-semibold tabular-nums">
-                  {liveSkor.gained} / {liveSkor.max} Poin
+                  {liveSkor.isLab
+                    ? `${liveSkor.gained} / ${liveSkor.max} Parameter MS`
+                    : `${liveSkor.gained} / ${liveSkor.max} Poin`}
                 </div>
               </div>
 
@@ -620,7 +652,11 @@ export function FormView({
               <div className="flex flex-col items-start pl-2 border-l border-border">
                 <span
                   className={`inline-flex items-center gap-1 text-[11px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                    liveSkor.pass ? "bg-primary text-white shadow-xs" : "bg-error text-white shadow-xs"
+                    liveSkor.pass
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : (liveSkor.countTMS || 0) > 0
+                        ? "bg-rose-600 text-white shadow-xs"
+                        : "bg-amber-600 text-white shadow-xs"
                   }`}
                 >
                   {liveSkor.pass ? (
@@ -1250,6 +1286,32 @@ function FieldInput({
 
             {/* Badges / Pill Contexts */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              {/* Badge Baku Mutu Standar */}
+              {(() => {
+                const conf = typeof f.config === "object" && f.config ? f.config : {};
+                const bakuMutu = conf.bakuMutu || {
+                  kadarMaksimum: f.kadarMaksimum ?? conf.kadarMaksimum,
+                  operator: f.operator ?? conf.operator,
+                  satuan: f.satuan ?? conf.satuan,
+                };
+                if (
+                  bakuMutu?.kadarMaksimum !== undefined &&
+                  bakuMutu?.kadarMaksimum !== null &&
+                  bakuMutu?.kadarMaksimum !== ""
+                ) {
+                  return (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-2 py-0.5 font-bold bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                    >
+                      Baku Mutu: {bakuMutu.operator === "range" ? "Rentang " : bakuMutu.operator || "≤ "}
+                      {bakuMutu.kadarMaksimum} {bakuMutu.satuan || ""}
+                    </Badge>
+                  );
+                }
+                return null;
+              })()}
+
               {(f.config?.autoFill === "USER_NAME" || f.pertanyaan?.toLowerCase().includes("pemeriksa")) && (
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary">
                   Akun Pemeriksa
@@ -1290,14 +1352,51 @@ function FieldInput({
           </div>
         </div>
 
-        {(f.config?.skor ?? 0) > 0 && !disabled && (
-          <Badge
-            variant="outline"
-            className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 text-primary whitespace-nowrap shrink-0 border-primary/20"
-          >
-            Bobot: {f.config.skor}
-          </Badge>
-        )}
+        {/* Evaluator Status Kepatuhan Baku Mutu Lab (MS/TMS) Real-time */}
+        {(() => {
+          const conf = typeof f.config === "object" && f.config ? f.config : {};
+          const bakuMutu = conf.bakuMutu || {
+            kadarMaksimum: f.kadarMaksimum ?? conf.kadarMaksimum,
+            operator: f.operator ?? conf.operator,
+            satuan: f.satuan ?? conf.satuan,
+          };
+          if (
+            bakuMutu?.kadarMaksimum !== undefined &&
+            bakuMutu?.kadarMaksimum !== null &&
+            bakuMutu?.kadarMaksimum !== ""
+          ) {
+            const res = evaluateLabCompliance(value, bakuMutu);
+            if (res.status === "PENDING") {
+              return (
+                <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground border-dashed">
+                  Belum Diuji
+                </Badge>
+              );
+            }
+            return (
+              <span
+                className={`inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-xs ${
+                  res.isMS ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                }`}
+                title={res.keterangan}
+              >
+                {res.isMS ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                {res.label}
+              </span>
+            );
+          }
+          if ((f.config?.skor ?? 0) > 0 && !disabled) {
+            return (
+              <Badge
+                variant="outline"
+                className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 text-primary whitespace-nowrap shrink-0 border-primary/20"
+              >
+                Bobot: {f.config.skor}
+              </Badge>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {disabled && (

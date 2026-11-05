@@ -64,6 +64,7 @@ import {
   templateCategoryOptions,
 } from "@/lib/template-filter";
 import { FormView, isFieldDisabledInfo, isSignatureField } from "./FormView";
+import { evaluateLabCompliance } from "./helpers";
 
 /** Label dropdown pemilik formulir di tab Formulir. */
 const TEMPLATE_OWNER_LABEL: Record<string, string> = {
@@ -1186,12 +1187,76 @@ export default function PemeriksaanPage() {
   const liveSkor = useMemo(() => {
     if (!activeForm) return { gained: 0, max: 0, finalValue: 0, valueText: "0", pass: false, text: "" };
     const config = activeForm.config || {};
+    const tipePemeriksaan = config.tipePemeriksaan || "IKL";
+    const isLabForm =
+      tipePemeriksaan === "LAB" ||
+      activeForm.nama?.toLowerCase().includes("baku mutu") ||
+      activeForm.nama?.toLowerCase().includes("uji lab");
+
+    const passText = config.thresholdPassText || (isLabForm ? "Memenuhi Syarat (MS)" : "Memenuhi Syarat");
+    const failText = config.thresholdFailText || (isLabForm ? "Tidak Memenuhi Syarat (TMS)" : "Tidak Memenuhi Syarat");
+    const penilaian = activeForm.fields.filter((f: any) => f.grup !== "__META__");
+
+    // Mode Evaluasi Lab Baku Mutu (Zero-Tolerance)
+    if (isLabForm) {
+      let countMS = 0;
+      let countTMS = 0;
+      let countPending = 0;
+      let totalParams = 0;
+
+      for (const f of penilaian) {
+        if (isSignatureField(f) || f.tipe === "GPS" || f.tipe === "PHOTO") continue;
+        const disabledInfo = isFieldDisabledInfo(f, formValues, selectedGolongan, activeForm.fields);
+        if (disabledInfo.isDisabled) continue;
+
+        totalParams++;
+        const val = formValues[f.id];
+        const conf =
+          typeof f.config === "string"
+            ? (() => {
+                try {
+                  return JSON.parse(f.config);
+                } catch {
+                  return {};
+                }
+              })()
+            : f.config || {};
+
+        const bakuMutuConfig = conf.bakuMutu || {
+          kadarMaksimum: f.kadarMaksimum ?? conf.kadarMaksimum,
+          operator: f.operator ?? conf.operator,
+          satuan: f.satuan ?? conf.satuan,
+        };
+
+        const res = evaluateLabCompliance(val, bakuMutuConfig);
+        if (res.status === "TMS") {
+          countTMS++;
+        } else if (res.status === "MS" || res.status === "NA") {
+          countMS++;
+        } else {
+          countPending++;
+        }
+      }
+
+      const pass = countTMS === 0 && totalParams > 0 && countPending === 0;
+      return {
+        gained: countMS,
+        max: totalParams,
+        finalValue: countTMS === 0 ? 100 : 0,
+        percentValue: totalParams > 0 ? Math.round((countMS / totalParams) * 100) : 0,
+        valueText: countTMS > 0 ? `${countTMS} Parameter TMS` : `${countMS}/${totalParams} MS`,
+        pass,
+        text: countTMS > 0 ? failText : countPending > 0 ? "Sebagian Belum Diuji" : passText,
+        isLab: true,
+        countMS,
+        countTMS,
+        countPending,
+      };
+    }
+
     const rumus = config.rumus || "sum";
     const op = config.thresholdOperator || ">=";
     const thresh = config.thresholdValue ?? 80;
-    const passText = config.thresholdPassText || "Memenuhi Syarat";
-    const failText = config.thresholdFailText || "Tidak Memenuhi Syarat";
-    const penilaian = activeForm.fields.filter((f: any) => f.grup !== "__META__");
     let gained = 0;
     let max = 0;
     let countBenar = 0;

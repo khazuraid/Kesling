@@ -322,6 +322,14 @@ export default function FormPemeriksaanPage() {
         skor: f.skor ?? 0,
         skorBenar: f.skorBenar ?? 1,
         skorSalah: f.skorSalah ?? 0,
+        bakuMutu: {
+          kadarMaksimum: f.kadarMaksimum ?? f.config?.bakuMutu?.kadarMaksimum ?? f.config?.kadarMaksimum ?? undefined,
+          satuan: f.satuan ?? f.config?.bakuMutu?.satuan ?? f.config?.satuan ?? undefined,
+          operator: f.operator ?? f.config?.bakuMutu?.operator ?? f.config?.operator ?? "<=",
+        },
+        kadarMaksimum: f.kadarMaksimum ?? f.config?.bakuMutu?.kadarMaksimum ?? f.config?.kadarMaksimum ?? undefined,
+        satuan: f.satuan ?? f.config?.bakuMutu?.satuan ?? f.config?.satuan ?? undefined,
+        operator: f.operator ?? f.config?.bakuMutu?.operator ?? f.config?.operator ?? "<=",
         dataDasarCode:
           f.config?.dataDasarCode || (f.autoFill?.startsWith("DD:") ? f.autoFill.replace("DD:", "") : undefined),
         syncToEntityField: f.config?.syncToEntityField,
@@ -1084,6 +1092,220 @@ export default function FormPemeriksaanPage() {
       },
     ]);
     toast.success("Contoh Template Jajanan Keliling (A1 & A2) berhasil dimuat!");
+  }
+
+  function loadContohBakuMutuAir() {
+    setSelectedTemplateId(null);
+    setIsCreating(true);
+    setNama("Pemeriksaan Kualitas Air Minum (Permenkes)");
+    setDeskripsi(
+      "Pengujian laboratorium kualitas air minum parameter mikrobiologi, fisik, dan kimia berdasarkan Standar Baku Mutu Kesehatan Lingkungan (Permenkes).",
+    );
+    setTipePemeriksaan("LAB");
+    setThresholdPassText("Memenuhi Syarat (MS)");
+    setThresholdFailText("Tidak Memenuhi Syarat (TMS)");
+    setDefaultYa(false);
+    setFields([
+      {
+        pertanyaan: "Nama Sarana / Titik Pengambilan Sampel",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        autoFill: "",
+      },
+      {
+        pertanyaan: "Titik Koordinat Lokasi Sampel",
+        tipe: "GPS",
+        isRequired: false,
+        grup: "__META__",
+        skor: 0,
+        autoFill: "",
+      },
+      {
+        pertanyaan: "Tanggal & Jam Pengambilan Sampel",
+        tipe: "DATE",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        autoFill: "",
+      },
+      {
+        pertanyaan: "Petugas Pengambil Sampel / Sanitarian",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        autoFill: "USER_NAME",
+      },
+      {
+        pertanyaan: "Wilayah Puskesmas",
+        tipe: "TEXT",
+        isRequired: true,
+        grup: "__META__",
+        skor: 0,
+        autoFill: "USER_PUSKESMAS",
+      },
+      // 1. Parameter Mikrobiologi
+      {
+        pertanyaan: "Escherichia coli (E. coli)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "1. Parameter Mikrobiologi",
+        kadarMaksimum: "0",
+        satuan: "CFU/100ml",
+        operator: "==",
+      },
+      {
+        pertanyaan: "Total Bakteri Koliform (Coliform)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "1. Parameter Mikrobiologi",
+        kadarMaksimum: "0",
+        satuan: "CFU/100ml",
+        operator: "==",
+      },
+      // 2. Parameter Fisik
+      {
+        pertanyaan: "Suhu (Deviasi suhu udara)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "3",
+        satuan: "°C",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Kekeruhan",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "3",
+        satuan: "NTU",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Warna",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "10",
+        satuan: "TCU",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Bau",
+        tipe: "SELECT",
+        opsi: "Tidak Berbau, Berbau",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "Tidak Berbau",
+        satuan: "Organoleptik",
+        operator: "negatif",
+      },
+      {
+        pertanyaan: "Total Dissolved Solid (TDS)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "300",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Rasa",
+        tipe: "SELECT",
+        opsi: "Tidak Berasa, Berasa",
+        isRequired: true,
+        grup: "2. Parameter Fisik",
+        kadarMaksimum: "Tidak Berasa",
+        satuan: "Organoleptik",
+        operator: "negatif",
+      },
+      // 3. Parameter Kimia
+      {
+        pertanyaan: "Derajat Keasaman (pH)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "6.5 - 8.5",
+        satuan: "pH",
+        operator: "range",
+      },
+      {
+        pertanyaan: "Nitrat (sebagai NO3)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "20",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Nitrit (sebagai NO2)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "3",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Besi (Fe)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.2",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Mangan (Mn)",
+        tipe: "NUMBER",
+        isRequired: true,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.1",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Sisa Klor (untuk air perpipaan berdesinfeksi)",
+        tipe: "NUMBER",
+        isRequired: false,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.2 - 0.5",
+        satuan: "mg/L",
+        operator: "range",
+      },
+      {
+        pertanyaan: "Arsen (As)",
+        tipe: "NUMBER",
+        isRequired: false,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.01",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Timbal (Pb)",
+        tipe: "NUMBER",
+        isRequired: false,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.01",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+      {
+        pertanyaan: "Kadmium (Cd)",
+        tipe: "NUMBER",
+        isRequired: false,
+        grup: "3. Parameter Kimia",
+        kadarMaksimum: "0.003",
+        satuan: "mg/L",
+        operator: "<=",
+      },
+    ]);
+    toast.success("Preset Standar Baku Mutu Air Minum (Permenkes) berhasil dimuat!");
   }
 
   function resetForm() {
@@ -2044,6 +2266,14 @@ export default function FormPemeriksaanPage() {
                 🍿 IKL Jajanan
               </button>
               <button
+                type="button"
+                onClick={loadContohBakuMutuAir}
+                title="Muat contoh formulir Uji Lab Kualitas Air Minum Standar Baku Mutu Permenkes"
+                className="inline-flex items-center gap-1.5 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] sm:text-[11px] font-bold hover:bg-purple-500/20 transition shadow-xs cursor-pointer"
+              >
+                🧪 Baku Mutu Air
+              </button>
+              <button
                 onClick={() => {
                   setSelectedTemplateId(null);
                   setIsCreating(true);
@@ -2227,6 +2457,10 @@ export default function FormPemeriksaanPage() {
                             allowNA: f.config?.allowNA ?? f.allowNA ?? false,
                             subNomor: f.config?.subNomor || f.subNomor || "",
                             areaScores: f.config?.areaScores || f.areaScores || {},
+                            kadarMaksimum:
+                              f.config?.bakuMutu?.kadarMaksimum ?? f.config?.kadarMaksimum ?? f.kadarMaksimum ?? "",
+                            satuan: f.config?.bakuMutu?.satuan ?? f.config?.satuan ?? f.satuan ?? "",
+                            operator: f.config?.bakuMutu?.operator ?? f.config?.operator ?? f.operator ?? "<=",
                             skor: f.config?.skor ?? f.skor ?? 0,
                             skorBenar: f.config?.skorBenar ?? f.skorBenar ?? 1,
                             skorSalah: f.config?.skorSalah ?? f.skorSalah ?? 0,
@@ -2501,6 +2735,14 @@ export default function FormPemeriksaanPage() {
             >
               🍿 IKL Jajanan
             </button>
+            <button
+              type="button"
+              onClick={loadContohBakuMutuAir}
+              title="Muat contoh formulir Uji Lab Kualitas Air Minum Standar Baku Mutu Permenkes"
+              className="flex items-center justify-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold border border-purple-500/40 bg-purple-500/10 text-purple-800 dark:text-purple-300 hover:bg-purple-500/20 transition-colors rounded-full flex-1 sm:flex-initial"
+            >
+              🧪 Baku Mutu Air
+            </button>
             {selectedTemplateId && isOwner && (
               <button
                 type="button"
@@ -2679,274 +2921,327 @@ export default function FormPemeriksaanPage() {
                   <p className="text-[11px] text-muted-foreground mt-2">Referensi input untuk agregasi laporan</p>
                 </div>
 
-                {/* Kolom Area Matriks Terpadu di Sasaran */}
-                <div className="pt-3 border-t border-border space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-[10px] font-black shrink-0">
-                        ⊞
-                      </span>
-                      <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-foreground truncate">
-                        Kolom Area Matriks ({matrixColumns.length})
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowMatrixColManager(!showMatrixColManager)}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg border border-border hover:bg-surface-subtle text-muted-foreground transition shrink-0"
-                    >
-                      {showMatrixColManager ? "Tutup" : "Kelola"}
-                    </button>
-                  </div>
-
-                  <p className="text-[10px] text-muted-foreground leading-normal">
-                    Area inspeksi sasaran dinamis. Dapat ditambah tanpa batas (A-H, I, dst).
-                  </p>
-
-                  {/* Ringkasan Kode Area Pill */}
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {matrixColumns.map((col, cIdx) => (
-                      <span
-                        key={cIdx}
-                        title={`${col.code}: ${col.label}`}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-subtle border border-border text-[10px] font-bold text-foreground"
-                      >
-                        <strong className="text-primary">{col.code}</strong>
-                        <span className="text-[11px] text-muted-foreground max-w-[80px] truncate hidden sm:inline">
-                          {col.label}
+                {/* Kolom Area Matriks Terpadu di Sasaran (Khusus IKL Fisik) */}
+                {tipePemeriksaan !== "LAB" && (
+                  <div className="pt-3 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-[10px] font-black shrink-0">
+                          ⊞
                         </span>
-                      </span>
-                    ))}
-                  </div>
+                        <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-foreground truncate">
+                          Kolom Area Matriks ({matrixColumns.length})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowMatrixColManager(!showMatrixColManager)}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg border border-border hover:bg-surface-subtle text-muted-foreground transition shrink-0"
+                      >
+                        {showMatrixColManager ? "Tutup" : "Kelola"}
+                      </button>
+                    </div>
 
-                  {/* Mode Detail / Manager */}
-                  {showMatrixColManager && (
-                    <div className="pt-2 border-t border-border space-y-2">
-                      <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
-                        {matrixColumns.map((col, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1.5 p-1 rounded-lg border border-border bg-surface-subtle/40"
-                          >
+                    <p className="text-[10px] text-muted-foreground leading-normal">
+                      Area inspeksi sasaran dinamis. Dapat ditambah tanpa batas (A-H, I, dst).
+                    </p>
+
+                    {/* Ringkasan Kode Area Pill */}
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {matrixColumns.map((col, cIdx) => (
+                        <span
+                          key={cIdx}
+                          title={`${col.code}: ${col.label}`}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-subtle border border-border text-[10px] font-bold text-foreground"
+                        >
+                          <strong className="text-primary">{col.code}</strong>
+                          <span className="text-[11px] text-muted-foreground max-w-[80px] truncate hidden sm:inline">
+                            {col.label}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Mode Detail / Manager */}
+                    {showMatrixColManager && (
+                      <div className="pt-2 border-t border-border space-y-2">
+                        <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                          {matrixColumns.map((col, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-1.5 p-1 rounded-lg border border-border bg-surface-subtle/40"
+                            >
+                              <input
+                                type="text"
+                                value={col.code}
+                                onChange={(e) => updateMatrixColumn(idx, "code", e.target.value.toUpperCase())}
+                                className="w-9 h-6 text-center text-[10px] font-black uppercase rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                                placeholder="Kode"
+                              />
+                              <input
+                                type="text"
+                                value={col.label}
+                                onChange={(e) => updateMatrixColumn(idx, "label", e.target.value)}
+                                className="flex-1 h-6 px-2 text-[10px] font-medium rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
+                                placeholder="Keterangan area..."
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeMatrixColumn(idx)}
+                                className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
+                                title="Hapus kolom"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Form Tambah Kolom Baru */}
+                        <div className="pt-2 border-t border-dashed border-border space-y-1.5">
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                            + Tambah Kolom Baru
+                          </span>
+                          <div className="flex items-center gap-1.5">
                             <input
                               type="text"
-                              value={col.code}
-                              onChange={(e) => updateMatrixColumn(idx, "code", e.target.value.toUpperCase())}
-                              className="w-9 h-6 text-center text-[10px] font-black uppercase rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
-                              placeholder="Kode"
+                              value={newColumnCode}
+                              onChange={(e) => setNewColumnCode(e.target.value.toUpperCase())}
+                              placeholder={
+                                matrixColumns.length > 0 && matrixColumns[matrixColumns.length - 1].code.length === 1
+                                  ? String.fromCharCode(matrixColumns[matrixColumns.length - 1].code.charCodeAt(0) + 1)
+                                  : `A${matrixColumns.length + 1}`
+                              }
+                              className="w-12 h-7 px-1 text-center text-[10px] font-black uppercase rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
                             />
                             <input
                               type="text"
-                              value={col.label}
-                              onChange={(e) => updateMatrixColumn(idx, "label", e.target.value)}
-                              className="flex-1 h-6 px-2 text-[10px] font-medium rounded bg-surface border border-border outline-none focus:border-primary text-foreground"
-                              placeholder="Keterangan area..."
+                              value={newColumnLabel}
+                              onChange={(e) => setNewColumnLabel(e.target.value)}
+                              placeholder="Deskripsi area..."
+                              className="flex-1 h-7 px-2 text-[10px] font-medium rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  addMatrixColumn();
+                                }
+                              }}
                             />
                             <button
                               type="button"
-                              onClick={() => removeMatrixColumn(idx)}
-                              className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
-                              title="Hapus kolom"
+                              onClick={() => addMatrixColumn()}
+                              className="h-7 px-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[10px] font-bold shrink-0 transition shadow-xs"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Plus className="w-3 h-3 inline mr-0.5" /> Tambah
                             </button>
                           </div>
-                        ))}
-                      </div>
 
-                      {/* Form Tambah Kolom Baru */}
-                      <div className="pt-2 border-t border-dashed border-border space-y-1.5">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
-                          + Tambah Kolom Baru
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            value={newColumnCode}
-                            onChange={(e) => setNewColumnCode(e.target.value.toUpperCase())}
-                            placeholder={
-                              matrixColumns.length > 0 && matrixColumns[matrixColumns.length - 1].code.length === 1
-                                ? String.fromCharCode(matrixColumns[matrixColumns.length - 1].code.charCodeAt(0) + 1)
-                                : `A${matrixColumns.length + 1}`
-                            }
-                            className="w-12 h-7 px-1 text-center text-[10px] font-black uppercase rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
-                          />
-                          <input
-                            type="text"
-                            value={newColumnLabel}
-                            onChange={(e) => setNewColumnLabel(e.target.value)}
-                            placeholder="Deskripsi area..."
-                            className="flex-1 h-7 px-2 text-[10px] font-medium rounded-lg border border-border bg-surface outline-none focus:border-primary text-foreground"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                addMatrixColumn();
-                              }
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => addMatrixColumn()}
-                            className="h-7 px-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[10px] font-bold shrink-0 transition shadow-xs"
-                          >
-                            <Plus className="w-3 h-3 inline mr-0.5" /> Tambah
-                          </button>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
-                              toast.info("Kolom area direset ke standar A s/d H");
-                            }}
-                            className="text-[11px] text-muted-foreground hover:text-foreground underline"
-                          >
-                            Reset ke Default (A-H)
-                          </button>
-                          <span className="text-[11px] font-semibold text-muted-foreground">
-                            Total: {matrixColumns.length} Kolom
-                          </span>
+                          <div className="flex items-center justify-between pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMatrixColumns(DEFAULT_MATRIX_COLUMNS);
+                                toast.info("Kolom area direset ke standar A s/d H");
+                              }}
+                              className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                            >
+                              Reset ke Default (A-H)
+                            </button>
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              Total: {matrixColumns.length} Kolom
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Rumus Penilaian */}
-            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
-              <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-surface-subtle/50">
-                <span className="text-[12px] font-bold text-foreground">Rumus Penilaian</span>
-                <span className="ml-auto text-[11px] font-bold text-muted-foreground">{rumusLabel}</span>
-              </div>
-              <div className="p-5 space-y-4">
-                <div>
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
-                    Metode
-                  </label>
-                  <Select
-                    value={rumus}
-                    onChange={(e) => setRumus(e.target.value)}
-                    className="w-full h-10 px-3 text-[13px] font-medium"
-                  >
-                    {RUMUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label} — {opt.desc}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                {rumus === "custom" && (
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
-                      Rumus Kustom
-                    </label>
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      {["SUM()", "AVG()", "MIN()", "MAX()", "COUNT()", "✓", "✗"].map((fn) => (
-                        <button
-                          key={fn}
-                          onClick={() => setCustomFormula((prev) => `${prev}${fn}`)}
-                          className="text-[10px] font-bold px-2.5 py-1 border border-border hover:bg-surface-subtle transition-colors rounded-md"
-                        >
-                          {fn === "✓" ? "✓ (Benar)" : fn === "✗" ? "✗ (Salah)" : fn}
-                        </button>
-                      ))}
-                    </div>
-                    <textarea
-                      value={customFormula}
-                      onChange={(e) => setCustomFormula(e.target.value)}
-                      placeholder="(SUM(✓) * 2) / (COUNT() + 1)"
-                      rows={2}
-                      className="w-full text-[13px] text-foreground placeholder:text-muted-foreground/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-surface resize-none font-mono transition-all"
-                    />
+                    )}
                   </div>
                 )}
-                <div className="flex items-baseline gap-2 pt-2">
-                  <span className="text-[32px] font-black text-foreground tabular-nums leading-none">
-                    {demoSkorTerisi}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">/ {totalSkor}</span>
-                  <span className="text-[13px] font-bold text-primary">{demoPersentase}%</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  {RUMUS_OPTIONS.find((r) => r.value === rumus)?.desc}
-                </p>
               </div>
             </div>
 
-            {/* Ambang Batas */}
-            <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
-              <div className="px-5 py-3 border-b border-border bg-surface-subtle/50">
-                <span className="text-[12px] font-bold text-foreground">Ambang Batas Kelulusan</span>
-              </div>
-              <div className="p-5 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold text-muted-foreground">Jika Akhir</span>
-                  <Select
-                    value={thresholdOperator}
-                    onChange={(e) => setThresholdOperator(e.target.value)}
-                    className="h-9 px-3 text-[12px] font-bold w-24"
-                  >
-                    <option value=">=">&ge;</option>
-                    <option value=">">&gt;</option>
-                    <option value="<=">&le;</option>
-                    <option value="<">&lt;</option>
-                  </Select>
-                  <input
-                    type="number"
-                    value={thresholdValue}
-                    onChange={(e) => setThresholdValue(parseInt(e.target.value, 10) || 0)}
-                    className="w-20 h-9 px-3 text-[12px] font-bold border border-border bg-surface rounded-xl outline-none focus:border-primary text-foreground"
-                  />
+            {/* Mode Lab vs IKL: Rumus Penilaian & Ambang Batas */}
+            {tipePemeriksaan === "LAB" ? (
+              <div className="rounded-card bg-surface border border-purple-200 dark:border-purple-900/50 shadow-subtle overflow-hidden">
+                <div className="px-5 py-3 border-b border-border bg-purple-500/10 flex items-center justify-between">
+                  <span className="text-[12px] font-black text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                    <span>🧪</span> Kriteria Kelaikan Baku Mutu
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-600 text-white">
+                    Zero-Tolerance
+                  </span>
                 </div>
-                <div>
-                  <input
-                    type="text"
-                    value={thresholdPassText}
-                    onChange={(e) => setThresholdPassText(e.target.value)}
-                    placeholder="Teks lulus"
-                    className="w-full h-10 px-3 text-[12px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 outline-none focus:border-emerald-500 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    value={thresholdFailText}
-                    onChange={(e) => setThresholdFailText(e.target.value)}
-                    placeholder="Teks tidak lulus"
-                    className="w-full h-10 px-3 text-[12px] text-rose-700 dark:text-rose-300 font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 outline-none focus:border-rose-500 rounded-xl"
-                  />
-                </div>
-                {/* Mode penilaian cepat */}
-                <button
-                  type="button"
-                  onClick={() => setDefaultYa(!defaultYa)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
-                    defaultYa ? "border-primary/40 bg-primary-subtle" : "border-border hover:bg-surface-subtle"
-                  }`}
-                >
-                  <span
-                    className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
-                      defaultYa ? "bg-primary" : "bg-muted"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-subtle transition-all ${
-                        defaultYa ? "left-[18px]" : "left-0.5"
-                      }`}
+                <div className="p-5 space-y-4">
+                  <div className="p-3 rounded-xl bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 text-[11px] text-purple-900 dark:text-purple-200 leading-relaxed">
+                    <strong>Standar Permenkes:</strong> Penilaian pengujian laboratorium didasarkan pada kepatuhan
+                    ambang batas kadar maksimum masing-masing parameter (bukan akumulasi skor 0-100). Bila terdapat{" "}
+                    <strong>1 parameter Tidak Memenuhi Syarat (TMS)</strong>, sampel dinyatakan <strong>TMS</strong>{" "}
+                    secara otomatis.
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block">
+                      Teks Status Memenuhi Syarat (MS)
+                    </label>
+                    <input
+                      type="text"
+                      value={thresholdPassText}
+                      onChange={(e) => setThresholdPassText(e.target.value)}
+                      placeholder="Memenuhi Syarat (MS)"
+                      className="w-full h-10 px-3 text-[12px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 outline-none focus:border-emerald-500 rounded-xl"
                     />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[12px] font-bold text-foreground">Mode Penilaian Cepat</span>
-                    <span className="block text-[10px] text-muted-foreground mt-0.5">
-                      Semua butir default Ya — operator cukup tandai yang negatif
-                    </span>
-                  </span>
-                </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block">
+                      Teks Status Tidak Memenuhi Syarat (TMS)
+                    </label>
+                    <input
+                      type="text"
+                      value={thresholdFailText}
+                      onChange={(e) => setThresholdFailText(e.target.value)}
+                      placeholder="Tidak Memenuhi Syarat (TMS)"
+                      className="w-full h-10 px-3 text-[12px] text-rose-700 dark:text-rose-300 font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 outline-none focus:border-rose-500 rounded-xl"
+                    />
+                  </div>
+                  <div className="pt-2 border-t border-border text-[11px] text-muted-foreground">
+                    Kadar ambang batas dan satuan dikonfigurasi per masing-masing parameter pada butir di sebelah kanan.
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Rumus Penilaian */}
+                <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-surface-subtle/50">
+                    <span className="text-[12px] font-bold text-foreground">Rumus Penilaian</span>
+                    <span className="ml-auto text-[11px] font-bold text-muted-foreground">{rumusLabel}</span>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
+                        Metode
+                      </label>
+                      <Select
+                        value={rumus}
+                        onChange={(e) => setRumus(e.target.value)}
+                        className="w-full h-10 px-3 text-[13px] font-medium"
+                      >
+                        {RUMUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label} — {opt.desc}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    {rumus === "custom" && (
+                      <div>
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-2 block">
+                          Rumus Kustom
+                        </label>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          {["SUM()", "AVG()", "MIN()", "MAX()", "COUNT()", "✓", "✗"].map((fn) => (
+                            <button
+                              key={fn}
+                              onClick={() => setCustomFormula((prev) => `${prev}${fn}`)}
+                              className="text-[10px] font-bold px-2.5 py-1 border border-border hover:bg-surface-subtle transition-colors rounded-md"
+                            >
+                              {fn === "✓" ? "✓ (Benar)" : fn === "✗" ? "✗ (Salah)" : fn}
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          value={customFormula}
+                          onChange={(e) => setCustomFormula(e.target.value)}
+                          placeholder="(SUM(✓) * 2) / (COUNT() + 1)"
+                          rows={2}
+                          className="w-full text-[13px] text-foreground placeholder:text-muted-foreground/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-surface resize-none font-mono transition-all"
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-2 pt-2">
+                      <span className="text-[32px] font-black text-foreground tabular-nums leading-none">
+                        {demoSkorTerisi}
+                      </span>
+                      <span className="text-[13px] text-muted-foreground">/ {totalSkor}</span>
+                      <span className="text-[13px] font-bold text-primary">{demoPersentase}%</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {RUMUS_OPTIONS.find((r) => r.value === rumus)?.desc}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Ambang Batas */}
+                <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
+                  <div className="px-5 py-3 border-b border-border bg-surface-subtle/50">
+                    <span className="text-[12px] font-bold text-foreground">Ambang Batas Kelulusan</span>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold text-muted-foreground">Jika Akhir</span>
+                      <Select
+                        value={thresholdOperator}
+                        onChange={(e) => setThresholdOperator(e.target.value)}
+                        className="h-9 px-3 text-[12px] font-bold w-24"
+                      >
+                        <option value=">=">&ge;</option>
+                        <option value=">">&gt;</option>
+                        <option value="<=">&le;</option>
+                        <option value="<">&lt;</option>
+                      </Select>
+                      <input
+                        type="number"
+                        value={thresholdValue}
+                        onChange={(e) => setThresholdValue(parseInt(e.target.value, 10) || 0)}
+                        className="w-20 h-9 px-3 text-[12px] font-bold border border-border bg-surface rounded-xl outline-none focus:border-primary text-foreground"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={thresholdPassText}
+                        onChange={(e) => setThresholdPassText(e.target.value)}
+                        placeholder="Teks lulus"
+                        className="w-full h-10 px-3 text-[12px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 outline-none focus:border-emerald-500 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={thresholdFailText}
+                        onChange={(e) => setThresholdFailText(e.target.value)}
+                        placeholder="Teks tidak lulus"
+                        className="w-full h-10 px-3 text-[12px] text-rose-700 dark:text-rose-300 font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 outline-none focus:border-rose-500 rounded-xl"
+                      />
+                    </div>
+                    {/* Mode penilaian cepat */}
+                    <button
+                      type="button"
+                      onClick={() => setDefaultYa(!defaultYa)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                        defaultYa ? "border-primary/40 bg-primary-subtle" : "border-border hover:bg-surface-subtle"
+                      }`}
+                    >
+                      <span
+                        className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
+                          defaultYa ? "bg-primary" : "bg-muted"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-subtle transition-all ${
+                            defaultYa ? "left-[18px]" : "left-0.5"
+                          }`}
+                        />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-[12px] font-bold text-foreground">Mode Penilaian Cepat</span>
+                        <span className="block text-[10px] text-muted-foreground mt-0.5">
+                          Semua butir default Ya — operator cukup tandai yang negatif
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Agregasi Laporan Bulanan */}
             <div className="rounded-card bg-surface border border-border shadow-subtle overflow-hidden">
@@ -4346,9 +4641,9 @@ export default function FormPemeriksaanPage() {
                                       )}
                                     </div>
 
-                                    {/* Kolom skor + aksi di kanan */}
+                                    {/* Kolom skor + aksi di kanan (Mode IKL vs Mode LAB) */}
                                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                      <div className="flex items-center gap-1.5">
+                                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                         <label className="flex flex-col items-center" title="Wajib diisi">
                                           <span className="text-[10px] font-bold uppercase text-muted-foreground">
                                             Wajib
@@ -4360,57 +4655,118 @@ export default function FormPemeriksaanPage() {
                                             className="w-3.5 h-3.5 accent-primary"
                                           />
                                         </label>
-                                        <label className="flex flex-col items-center" title="Skor maksimal">
-                                          <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                                            Skor
-                                          </span>
-                                          <input
-                                            type="number"
-                                            value={field.skor ?? 0}
-                                            onChange={(e) =>
-                                              updateField(index, "skor", parseFloat(e.target.value) || 0)
-                                            }
-                                            className="w-12 text-center text-[10px] font-bold border border-border bg-surface px-0.5 py-0.5 outline-none rounded-md focus:border-primary/50 text-foreground"
-                                          />
-                                        </label>
-                                        {field.tipe === "BOOLEAN" && (
+
+                                        {tipePemeriksaan === "LAB" ? (
+                                          /* Mode LAB: Konfigurasi Baku Mutu Standar */
                                           <>
-                                            <label className="flex flex-col items-center" title="Skor jawaban benar">
-                                              <span className="text-[10px] font-bold uppercase text-emerald-600">
-                                                B
+                                            <label
+                                              className="flex flex-col items-center"
+                                              title="Kadar ambang batas baku mutu"
+                                            >
+                                              <span className="text-[10px] font-black uppercase text-purple-700 dark:text-purple-300">
+                                                Kadar Maks / Standar
+                                              </span>
+                                              <input
+                                                type="text"
+                                                value={field.kadarMaksimum ?? ""}
+                                                onChange={(e) => updateField(index, "kadarMaksimum", e.target.value)}
+                                                placeholder="Contoh: 0, 50, 6.5 - 8.5"
+                                                className="w-28 text-center text-[10px] font-bold border border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 px-1 py-0.5 outline-none rounded-md focus:border-purple-500 text-foreground"
+                                              />
+                                            </label>
+                                            <label className="flex flex-col items-center" title="Satuan unit ukur">
+                                              <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                                                Satuan
+                                              </span>
+                                              <input
+                                                type="text"
+                                                value={field.satuan ?? ""}
+                                                onChange={(e) => updateField(index, "satuan", e.target.value)}
+                                                placeholder="mg/l, TCU, CFU"
+                                                className="w-16 text-center text-[10px] font-semibold border border-border bg-surface px-1 py-0.5 outline-none rounded-md focus:border-primary text-foreground"
+                                              />
+                                            </label>
+                                            <label className="flex flex-col items-center" title="Aturan kepatuhan">
+                                              <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                                                Aturan
+                                              </span>
+                                              <Select
+                                                value={field.operator || "<="}
+                                                onChange={(e) => updateField(index, "operator", e.target.value)}
+                                                className="text-[10px] font-bold h-6 py-0 px-1 w-16"
+                                              >
+                                                <option value="<=">&le; Maks</option>
+                                                <option value="<">&lt; Kurang</option>
+                                                <option value="==">= Sama</option>
+                                                <option value="range">Rentang</option>
+                                                <option value="negatif">Kualitatif</option>
+                                              </Select>
+                                            </label>
+                                          </>
+                                        ) : (
+                                          /* Mode IKL: Konfigurasi Skor & Bobot */
+                                          <>
+                                            <label className="flex flex-col items-center" title="Skor maksimal">
+                                              <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                                                Skor
                                               </span>
                                               <input
                                                 type="number"
-                                                value={field.skorBenar ?? 1}
+                                                value={field.skor ?? 0}
                                                 onChange={(e) =>
-                                                  updateField(index, "skorBenar", parseFloat(e.target.value) || 0)
+                                                  updateField(index, "skor", parseFloat(e.target.value) || 0)
                                                 }
-                                                className="w-10 text-center text-[10px] border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
+                                                className="w-12 text-center text-[10px] font-bold border border-border bg-surface px-0.5 py-0.5 outline-none rounded-md focus:border-primary/50 text-foreground"
                                               />
                                             </label>
-                                            <label className="flex flex-col items-center" title="Skor jawaban salah">
-                                              <span className="text-[10px] font-bold uppercase text-rose-500">S</span>
-                                              <input
-                                                type="number"
-                                                value={field.skorSalah ?? 0}
-                                                onChange={(e) =>
-                                                  updateField(index, "skorSalah", parseFloat(e.target.value) || 0)
-                                                }
-                                                className="w-10 text-center text-[10px] border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
-                                              />
-                                            </label>
-                                            <label
-                                              className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer select-none"
-                                              title="Izinkan jawaban T/A (Tidak Ada / tidak applicable)"
-                                            >
-                                              <input
-                                                type="checkbox"
-                                                checked={field.allowNA ?? false}
-                                                onChange={(e) => updateField(index, "allowNA", e.target.checked)}
-                                                className="w-3 h-3 accent-primary"
-                                              />
-                                              T/A
-                                            </label>
+                                            {field.tipe === "BOOLEAN" && (
+                                              <>
+                                                <label
+                                                  className="flex flex-col items-center"
+                                                  title="Skor jawaban benar"
+                                                >
+                                                  <span className="text-[10px] font-bold uppercase text-emerald-600">
+                                                    B
+                                                  </span>
+                                                  <input
+                                                    type="number"
+                                                    value={field.skorBenar ?? 1}
+                                                    onChange={(e) =>
+                                                      updateField(index, "skorBenar", parseFloat(e.target.value) || 0)
+                                                    }
+                                                    className="w-10 text-center text-[10px] border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
+                                                  />
+                                                </label>
+                                                <label
+                                                  className="flex flex-col items-center"
+                                                  title="Skor jawaban salah"
+                                                >
+                                                  <span className="text-[10px] font-bold uppercase text-rose-500">
+                                                    S
+                                                  </span>
+                                                  <input
+                                                    type="number"
+                                                    value={field.skorSalah ?? 0}
+                                                    onChange={(e) =>
+                                                      updateField(index, "skorSalah", parseFloat(e.target.value) || 0)
+                                                    }
+                                                    className="w-10 text-center text-[10px] border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20 px-0.5 py-0.5 outline-none rounded-md text-foreground"
+                                                  />
+                                                </label>
+                                                <label
+                                                  className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer select-none"
+                                                  title="Izinkan jawaban T/A (Tidak Ada / tidak applicable)"
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={field.allowNA ?? false}
+                                                    onChange={(e) => updateField(index, "allowNA", e.target.checked)}
+                                                    className="w-3 h-3 accent-primary"
+                                                  />
+                                                  T/A
+                                                </label>
+                                              </>
+                                            )}
                                           </>
                                         )}
                                         <button

@@ -5,6 +5,7 @@
 
 import { photoSrc } from "@/lib/photo-url";
 import { sasaranMetaValue } from "@/lib/sasaran-meta";
+import { evaluateLabCompliance } from "./helpers";
 
 export interface InspectionDetailData {
   id: number;
@@ -124,12 +125,72 @@ export function calculateInspectionScore(result: InspectionDetailData, template:
   const fields = template?.fields || [];
   const config = template?.config || {};
   const values = result.values || [];
+  const tipePemeriksaan = config.tipePemeriksaan || "IKL";
+  const isLabForm =
+    tipePemeriksaan === "LAB" ||
+    template?.nama?.toLowerCase().includes("baku mutu") ||
+    template?.nama?.toLowerCase().includes("uji lab");
+
+  const passText = config.thresholdPassText || (isLabForm ? "Memenuhi Syarat (MS)" : "Memenuhi Syarat (MS)");
+  const failText =
+    config.thresholdFailText || (isLabForm ? "Tidak Memenuhi Syarat (TMS)" : "Tidak Memenuhi Syarat (TMS)");
+
+  // Evaluasi Khusus Uji Lab Baku Mutu (Zero-Tolerance)
+  if (isLabForm) {
+    let countMS = 0;
+    let countTMS = 0;
+    let totalParams = 0;
+
+    fields.forEach((f: any) => {
+      if (f.grup === "__META__") return;
+      if (f.tipe === "SIGNATURE" || f.tipe === "GPS" || f.tipe === "PHOTO") return;
+      if (f.isDisabled || f.status === "DISABLED") return;
+
+      totalParams++;
+      const v = values.find((val) => val.fieldId === f.id);
+      let fConfig = f.config || {};
+      if (typeof f.config === "string") {
+        try {
+          fConfig = JSON.parse(f.config || "{}");
+        } catch {
+          fConfig = {};
+        }
+      }
+
+      const bakuMutuConfig = fConfig.bakuMutu || {
+        kadarMaksimum: f.kadarMaksimum ?? fConfig.kadarMaksimum,
+        operator: f.operator ?? fConfig.operator,
+        satuan: f.satuan ?? fConfig.satuan,
+      };
+
+      const val = v?.valueNumber !== null && v?.valueNumber !== undefined ? v.valueNumber : v?.valueString;
+      const res = evaluateLabCompliance(val, bakuMutuConfig);
+      if (res.status === "TMS") {
+        countTMS++;
+      } else {
+        countMS++;
+      }
+    });
+
+    const pass = countTMS === 0 && totalParams > 0;
+    return {
+      gained: countMS,
+      max: totalParams,
+      percentValue: totalParams > 0 ? Math.round((countMS / totalParams) * 100) : 0,
+      valueText: countTMS > 0 ? `${countTMS} TMS` : "100% MS",
+      pass,
+      statusText: pass ? passText : failText,
+      thresh: 100,
+      op: "==",
+      isLab: true,
+      countMS,
+      countTMS,
+    };
+  }
 
   const rumus = config.rumus || "percentage";
   const thresh = Number(config.thresholdValue ?? 80);
   const op = config.thresholdOperator || ">=";
-  const passText = config.thresholdPassText || "Memenuhi Syarat (MS)";
-  const failText = config.thresholdFailText || "Tidak Memenuhi Syarat (TMS)";
 
   let gained = 0;
   let max = 0;
@@ -456,7 +517,7 @@ export async function generateInspectionPDF(
   doc.setLineWidth(0.4);
   doc.roundedRect(marginX, currentY, contentWidth, cardHeight, 2.5, 2.5, "FD");
 
-  // Kolom Skor Persentase
+  // Kolom Skor Persentase / Status Kelaikan Lab
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   if (isPass) {
@@ -469,7 +530,13 @@ export async function generateInspectionPDF(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Perolehan: ${scoreData.gained} / ${scoreData.max} Poin`, marginX + 6, currentY + 12.5);
+  doc.text(
+    (scoreData as any).isLab
+      ? `Hasil Kelaikan: ${scoreData.gained} / ${scoreData.max} Parameter MS`
+      : `Perolehan: ${scoreData.gained} / ${scoreData.max} Poin`,
+    marginX + 6,
+    currentY + 12.5,
+  );
 
   // Status Badge Kanan
   const badgeWidth = 65;
@@ -493,7 +560,9 @@ export async function generateInspectionPDF(
   doc.setFontSize(7);
   doc.setTextColor(113, 113, 122);
   doc.text(
-    `Standar Kelulusan: ${scoreData.op} ${scoreData.thresh}%`,
+    (scoreData as any).isLab
+      ? "Kriteria: Zero-Tolerance (100% Parameter MS)"
+      : `Standar Kelulusan: ${scoreData.op} ${scoreData.thresh}%`,
     badgeX + badgeWidth / 2,
     currentY + cardHeight - 0.5,
     { align: "center" },
@@ -501,7 +570,8 @@ export async function generateInspectionPDF(
 
   currentY += cardHeight + 5;
 
-  // 6. Tabel Rincian Hasil Pemeriksaan (Kuesioner)
+  // 6. Tabel Rincian Hasil Pemeriksaan (Kuesioner / Hasil Uji Lab)
+  const isLab = !!(scoreData as any).isLab;
   const rows: any[] = [];
   const fields = (template.fields || []).filter(
     (f: any) => f.grup !== "__META__" && f.tipe !== "SIGNATURE" && f.tipe !== "PHOTO",
@@ -511,60 +581,95 @@ export async function generateInspectionPDF(
   let itemIndex = 1;
 
   fields.forEach((f: any) => {
-    const grp = f.grup || "Komponen Pemeriksaan";
+    const grp = f.grup || (isLab ? "Parameter Uji Laboratorium" : "Komponen Pemeriksaan");
     if (grp !== currentGrup) {
       currentGrup = grp;
       // Header bagian/grup
       rows.push([
         {
           content: currentGrup.toUpperCase(),
-          colSpan: 3,
+          colSpan: isLab ? 4 : 3,
           styles: { fontStyle: "bold", fillColor: [241, 245, 249], textColor: [15, 23, 42] },
         },
       ]);
     }
 
     const valObj = (result.values || []).find((v: any) => v.fieldId === f.id);
-    let jawaban = "-";
-
-    if (f.tipe === "MATRIX_AREA") {
-      let violated: string[] = [];
-      if (Array.isArray(valObj?.valueJson)) {
-        violated = valObj.valueJson.map(String);
-      } else if (typeof valObj?.valueString === "string" && valObj.valueString.trim()) {
-        try {
-          const p = JSON.parse(valObj.valueString);
-          violated = Array.isArray(p) ? p.map(String) : valObj.valueString.split(",").map((s) => s.trim());
-        } catch {
-          violated = valObj.valueString.split(",").map((s) => s.trim());
-        }
+    let fConfig = f.config || {};
+    if (typeof f.config === "string") {
+      try {
+        fConfig = JSON.parse(f.config || "{}");
+      } catch {
+        fConfig = {};
       }
-      if (violated.length === 0) {
-        jawaban = "100% MEMENUHI (0 TMS)";
-      } else {
-        const areaScores: Record<string, any> = f.config?.areaScores || {};
-        jawaban = `TMS: ${violated.map((c) => `${c} (${areaScores[c] ?? 1})`).join(", ")}`;
-      }
-    } else if (f.tipe === "BOOLEAN") {
-      const u = String(valObj?.valueString || "").toUpperCase();
-      jawaban = u === "TRUE" ? "YA" : u === "FALSE" ? "TIDAK" : u === "NA" ? "T/A" : "-";
-    } else if (f.tipe === "NUMBER") {
-      jawaban =
-        valObj?.valueNumber !== null && valObj?.valueNumber !== undefined
-          ? String(valObj.valueNumber)
-          : valObj?.valueString || "-";
-    } else if (valObj?.valueString) {
-      jawaban = valObj.valueString;
     }
 
-    const itemNo = f.config?.subNomor ? `${itemIndex++} (${f.config.subNomor})` : itemIndex++;
-    rows.push([itemNo, f.pertanyaan, jawaban]);
+    if (isLab) {
+      const bakuMutuConfig = fConfig.bakuMutu || {
+        kadarMaksimum: f.kadarMaksimum ?? fConfig.kadarMaksimum,
+        operator: f.operator ?? fConfig.operator,
+        satuan: f.satuan ?? fConfig.satuan,
+      };
+
+      const val =
+        valObj?.valueNumber !== null && valObj?.valueNumber !== undefined ? valObj.valueNumber : valObj?.valueString;
+      const evalRes = evaluateLabCompliance(val, bakuMutuConfig);
+
+      const standarText =
+        bakuMutuConfig?.kadarMaksimum !== undefined && bakuMutuConfig?.kadarMaksimum !== null
+          ? `${bakuMutuConfig.operator === "range" ? "Rentang " : bakuMutuConfig.operator || "≤ "}${bakuMutuConfig.kadarMaksimum} ${bakuMutuConfig.satuan || ""}`
+          : "-";
+
+      const hasilUjiText =
+        val !== null && val !== undefined && val !== ""
+          ? `${val} ${bakuMutuConfig?.satuan || ""}`.trim()
+          : "Belum Diuji";
+
+      rows.push([itemIndex++, f.pertanyaan, standarText, evalRes.label]);
+    } else {
+      let jawaban = "-";
+
+      if (f.tipe === "MATRIX_AREA") {
+        let violated: string[] = [];
+        if (Array.isArray(valObj?.valueJson)) {
+          violated = valObj.valueJson.map(String);
+        } else if (typeof valObj?.valueString === "string" && valObj.valueString.trim()) {
+          try {
+            const p = JSON.parse(valObj.valueString);
+            violated = Array.isArray(p) ? p.map(String) : valObj.valueString.split(",").map((s) => s.trim());
+          } catch {
+            violated = valObj.valueString.split(",").map((s) => s.trim());
+          }
+        }
+        if (violated.length === 0) {
+          jawaban = "100% MEMENUHI (0 TMS)";
+        } else {
+          const areaScores: Record<string, any> = f.config?.areaScores || {};
+          jawaban = `TMS: ${violated.map((c) => `${c} (${areaScores[c] ?? 1})`).join(", ")}`;
+        }
+      } else if (f.tipe === "BOOLEAN") {
+        const u = String(valObj?.valueString || "").toUpperCase();
+        jawaban = u === "TRUE" ? "YA" : u === "FALSE" ? "TIDAK" : u === "NA" ? "T/A" : "-";
+      } else if (f.tipe === "NUMBER") {
+        jawaban =
+          valObj?.valueNumber !== null && valObj?.valueNumber !== undefined
+            ? String(valObj.valueNumber)
+            : valObj?.valueString || "-";
+      } else if (valObj?.valueString) {
+        jawaban = valObj.valueString;
+      }
+
+      const itemNo = f.config?.subNomor ? `${itemIndex++} (${f.config.subNomor})` : itemIndex++;
+      rows.push([itemNo, f.pertanyaan, jawaban]);
+    }
   });
 
   autoTable(doc, {
     startY: currentY,
     margin: { left: marginX, right: marginX },
-    head: [["No", "Variabel & Komponen Penilaian", "Hasil"]],
+    head: isLab
+      ? [["No", "Parameter Pengujian", "Standar Baku Mutu", "Status"]]
+      : [["No", "Variabel & Komponen Penilaian", "Hasil"]],
     body: rows as any,
     theme: "striped",
     styles: {
@@ -579,23 +684,31 @@ export async function generateInspectionPDF(
       fontStyle: "bold",
       fontSize: 8.5,
     },
-    columnStyles: {
-      0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
-      1: { cellWidth: "auto" },
-      2: { cellWidth: 38, halign: "center", fontStyle: "bold" },
-    },
+    columnStyles: isLab
+      ? {
+          0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 42, halign: "center" },
+          3: { cellWidth: 26, halign: "center", fontStyle: "bold" },
+        }
+      : {
+          0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 38, halign: "center", fontStyle: "bold" },
+        },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
     },
     didParseCell: (data) => {
-      // Highlight warna teks Ya (hijau) dan Tidak / TMS (merah)
-      if (data.section === "body" && data.column.index === 2) {
+      // Highlight warna teks Ya / MS (hijau) dan Tidak / TMS (merah)
+      const targetCol = isLab ? 3 : 2;
+      if (data.section === "body" && data.column.index === targetCol) {
         const val = String(data.cell.raw || "");
-        if (val === "YA" || val.includes("100% MEMENUHI")) {
+        if (val === "YA" || val === "MS" || val.includes("100% MEMENUHI")) {
           data.cell.styles.textColor = [0, 168, 118];
-        } else if (val === "TIDAK" || val.startsWith("TMS:")) {
+        } else if (val === "TIDAK" || val === "TMS" || val.startsWith("TMS:")) {
           data.cell.styles.textColor = [225, 90, 79];
-        } else if (val === "T/A") {
+        } else if (val === "T/A" || val === "Belum Diuji") {
           data.cell.styles.textColor = [148, 163, 184];
         }
       }
