@@ -588,7 +588,7 @@ export async function generateInspectionPDF(
       rows.push([
         {
           content: currentGrup.toUpperCase(),
-          colSpan: isLab ? 4 : 3,
+          colSpan: isLab ? 5 : 3,
           styles: { fontStyle: "bold", fillColor: [241, 245, 249], textColor: [15, 23, 42] },
         },
       ]);
@@ -625,7 +625,7 @@ export async function generateInspectionPDF(
           ? `${val} ${bakuMutuConfig?.satuan || ""}`.trim()
           : "Belum Diuji";
 
-      rows.push([itemIndex++, f.pertanyaan, standarText, evalRes.label]);
+      rows.push([itemIndex++, f.pertanyaan, standarText, hasilUjiText, evalRes.label]);
     } else {
       let jawaban = "-";
 
@@ -668,7 +668,7 @@ export async function generateInspectionPDF(
     startY: currentY,
     margin: { left: marginX, right: marginX },
     head: isLab
-      ? [["No", "Parameter Pengujian", "Standar Baku Mutu", "Status"]]
+      ? [["No", "Parameter Pengujian", "Standar Baku Mutu", "Hasil Uji", "Status"]]
       : [["No", "Variabel & Komponen Penilaian", "Hasil"]],
     body: rows as any,
     theme: "striped",
@@ -686,10 +686,11 @@ export async function generateInspectionPDF(
     },
     columnStyles: isLab
       ? {
-          0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+          0: { cellWidth: 12, halign: "center", fontStyle: "bold" },
           1: { cellWidth: "auto" },
-          2: { cellWidth: 42, halign: "center" },
-          3: { cellWidth: 26, halign: "center", fontStyle: "bold" },
+          2: { cellWidth: 38, halign: "center" },
+          3: { cellWidth: 30, halign: "center" },
+          4: { cellWidth: 22, halign: "center", fontStyle: "bold" },
         }
       : {
           0: { cellWidth: 14, halign: "center", fontStyle: "bold" },
@@ -701,7 +702,7 @@ export async function generateInspectionPDF(
     },
     didParseCell: (data) => {
       // Highlight warna teks Ya / MS (hijau) dan Tidak / TMS (merah)
-      const targetCol = isLab ? 3 : 2;
+      const targetCol = isLab ? 4 : 2;
       if (data.section === "body" && data.column.index === targetCol) {
         const val = String(data.cell.raw || "");
         if (val === "YA" || val === "MS" || val.includes("100% MEMENUHI")) {

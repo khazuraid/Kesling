@@ -1331,13 +1331,14 @@ export default function FormPemeriksaanPage() {
 
   function addField(grup?: string) {
     const targetGrup = grup || "";
+    const isLab = tipePemeriksaan === "LAB";
     const newField = {
       pertanyaan: "",
-      tipe: "BOOLEAN",
-      isRequired: false,
+      tipe: isLab ? "NUMBER" : "BOOLEAN",
+      isRequired: isLab ? true : false,
       grup: targetGrup,
-      skor: 1,
-      skorBenar: 1,
+      skor: isLab ? 0 : 1,
+      skorBenar: isLab ? 0 : 1,
       skorSalah: 0,
       opsi: "",
       isDisabled: false,
@@ -1345,6 +1346,9 @@ export default function FormPemeriksaanPage() {
       targetGolongan: "ALL",
       allowNA: false,
       autoFill: "",
+      kadarMaksimum: isLab ? "" : undefined,
+      satuan: isLab ? "" : undefined,
+      operator: isLab ? "<=" : undefined,
     };
 
     if (!targetGrup) {
@@ -1370,19 +1374,23 @@ export default function FormPemeriksaanPage() {
   }
 
   function addFieldAt(grup: string, afterIndex: number) {
+    const isLab = tipePemeriksaan === "LAB";
     const newField = {
       pertanyaan: "",
-      tipe: "BOOLEAN",
-      isRequired: false,
+      tipe: isLab ? "NUMBER" : "BOOLEAN",
+      isRequired: isLab ? true : false,
       grup,
-      skor: 1,
-      skorBenar: 1,
+      skor: isLab ? 0 : 1,
+      skorBenar: isLab ? 0 : 1,
       skorSalah: 0,
       opsi: "",
       isDisabled: false,
       dependsOn: null,
       allowNA: false,
       autoFill: "",
+      kadarMaksimum: isLab ? "" : undefined,
+      satuan: isLab ? "" : undefined,
+      operator: isLab ? "<=" : undefined,
     };
     const next = [...fields];
     next.splice(afterIndex + 1, 0, newField);
@@ -4693,10 +4701,12 @@ export default function FormPemeriksaanPage() {
                                               <Select
                                                 value={field.operator || "<="}
                                                 onChange={(e) => updateField(index, "operator", e.target.value)}
-                                                className="text-[10px] font-bold h-6 py-0 px-1 w-16"
+                                                className="text-[10px] font-bold h-6 py-0 px-1 w-20"
                                               >
                                                 <option value="<=">&le; Maks</option>
                                                 <option value="<">&lt; Kurang</option>
+                                                <option value=">=">&ge; Minimal</option>
+                                                <option value=">">&gt; Lebih</option>
                                                 <option value="==">= Sama</option>
                                                 <option value="range">Rentang</option>
                                                 <option value="negatif">Kualitatif</option>
