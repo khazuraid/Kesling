@@ -1,11 +1,14 @@
 import { type AnnouncementTargetRole, type AnnouncementType, prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { ensureAnnouncementTables } from "@/lib/announcement";
 import { withAdmin } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { deletePhotoFiles, saveBase64Photo } from "@/lib/photo-files";
 
-export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
+export const PUT = withAdmin(async (req: NextRequest, ctx: any) => {
   try {
+    await ensureAnnouncementTables();
+    const params = await ctx?.params;
     const id = Number(params?.id);
     if (!id || Number.isNaN(id)) {
       return NextResponse.json({ error: "ID pengumuman tidak valid." }, { status: 400 });
@@ -42,6 +45,7 @@ export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
       data,
     });
 
+    const user = (req as any).user;
     await createAuditLog({
       userId: user.id,
       action: "UPDATE",
@@ -58,8 +62,10 @@ export const PUT = withAdmin(async (req: NextRequest, { user, params }) => {
   }
 });
 
-export const DELETE = withAdmin(async (_req: NextRequest, { user, params }) => {
+export const DELETE = withAdmin(async (req: NextRequest, ctx: any) => {
   try {
+    await ensureAnnouncementTables();
+    const params = await ctx?.params;
     const id = Number(params?.id);
     if (!id || Number.isNaN(id)) {
       return NextResponse.json({ error: "ID pengumuman tidak valid." }, { status: 400 });
@@ -76,6 +82,7 @@ export const DELETE = withAdmin(async (_req: NextRequest, { user, params }) => {
 
     await prisma.announcement.delete({ where: { id } });
 
+    const user = (req as any).user;
     await createAuditLog({
       userId: user.id,
       action: "DELETE",

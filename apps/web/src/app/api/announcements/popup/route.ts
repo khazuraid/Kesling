@@ -1,9 +1,11 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { ensureAnnouncementTables } from "@/lib/announcement";
 import { withAuth } from "@/lib/api-auth";
 
 export const GET = withAuth(async (req: NextRequest) => {
   try {
+    await ensureAnnouncementTables();
     const user = (req as any).user;
     if (!user) {
       return NextResponse.json({ announcement: null });

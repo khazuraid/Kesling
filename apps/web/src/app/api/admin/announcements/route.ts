@@ -1,11 +1,13 @@
 import { type AnnouncementTargetRole, type AnnouncementType, prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { ensureAnnouncementTables } from "@/lib/announcement";
 import { withAdmin } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { saveBase64Photo } from "@/lib/photo-files";
 
 export const GET = withAdmin(async () => {
   try {
+    await ensureAnnouncementTables();
     const announcements = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -24,6 +26,7 @@ export const GET = withAdmin(async () => {
 
 export const POST = withAdmin(async (req: NextRequest, { user }) => {
   try {
+    await ensureAnnouncementTables();
     const body = await req.json();
     const {
       title,

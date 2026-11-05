@@ -1,11 +1,14 @@
 import { prisma } from "@apps-kes/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { ensureAnnouncementTables } from "@/lib/announcement";
 import { withAuth } from "@/lib/api-auth";
 
 export const POST = withAuth(async (req: NextRequest, ctx: any) => {
   try {
+    await ensureAnnouncementTables();
     const user = (req as any).user;
-    const id = Number(ctx?.params?.id);
+    const params = await ctx?.params;
+    const id = Number(params?.id);
 
     if (!id || Number.isNaN(id)) {
       return NextResponse.json({ error: "ID pengumuman tidak valid." }, { status: 400 });
