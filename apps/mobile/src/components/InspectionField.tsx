@@ -1,10 +1,10 @@
+import * as Haptics from "expo-haptics";
+import { Check, X } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { Input, Text, XStack, YStack } from "tamagui";
-import { ActionSheet } from "./motion/ActionSheet";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 type FieldType = "BOOLEAN" | "TEXT" | "OPTIONS" | "SELECT" | "NUMBER" | "DATE";
 
-/** Parse options safely: JSON array or comma-separated. Never throws. */
 function parseOptions(raw: string | null): string[] {
   if (!raw) return [];
   try {
@@ -39,94 +39,186 @@ export function InspectionField({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const tipe = field.tipe.toUpperCase() as FieldType;
-
   const options = useMemo(() => parseOptions(field.options), [field.options]);
 
+  const handleBooleanPress = (opt: "Ya" | "Tidak") => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onChange(value === opt ? "" : opt);
+  };
+
   if (tipe === "BOOLEAN") {
+    const isYa = value === "Ya";
+    const isTidak = value === "Tidak";
+
     return (
-      <YStack gap="$2">
-        <Text fontSize="$4" fontWeight="600" color="$fg">
+      <View style={s.container}>
+        <Text style={s.label}>
           {field.pertanyaan}
-          {field.isRequired ? " *" : ""}
+          {field.isRequired ? <Text style={s.requiredMark}> *</Text> : null}
         </Text>
-        <XStack gap="$2">
-          {["Ya", "Tidak"].map((opt) => (
-            <YStack
-              key={opt}
-              flex={1}
-              onPress={() => onChange(value === opt ? "" : opt)}
-              pressStyle={{ opacity: 0.6 }}
-              paddingHorizontal="$4"
-              paddingVertical="$3.5"
-              borderWidth={1}
-              borderRadius={12}
-              borderColor={value === opt ? "$accent" : "$border"}
-              backgroundColor={value === opt ? "$accentSoft" : "$card"}
-              alignItems="center"
-            >
-              <Text fontSize="$4" fontWeight={value === opt ? "700" : "400"} color={value === opt ? "$accent" : "$fg"}>
-                {opt}
-              </Text>
-            </YStack>
-          ))}
-        </XStack>
-      </YStack>
+
+        <View style={s.buttonRow} accessibilityRole="radiogroup">
+          {/* Tombol Ya (48dp touch target) */}
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: isYa }}
+            accessibilityLabel={`${field.pertanyaan}: Ya, Memenuhi Syarat`}
+            onPress={() => handleBooleanPress("Ya")}
+            style={[s.segmentedBtn, isYa && s.btnYaActive]}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          >
+            <View style={[s.radioCircle, isYa && s.radioCircleYaActive]}>
+              {isYa && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+            </View>
+            <Text style={[s.btnText, isYa && s.btnTextYaActive]}>Ya (Memenuhi)</Text>
+          </Pressable>
+
+          {/* Tombol Tidak (48dp touch target) */}
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: isTidak }}
+            accessibilityLabel={`${field.pertanyaan}: Tidak, Tidak Memenuhi Syarat`}
+            onPress={() => handleBooleanPress("Tidak")}
+            style={[s.segmentedBtn, isTidak && s.btnTidakActive]}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          >
+            <View style={[s.radioCircle, isTidak && s.radioCircleTidakActive]}>
+              {isTidak && <X size={14} color="#FFFFFF" strokeWidth={3} />}
+            </View>
+            <Text style={[s.btnText, isTidak && s.btnTextTidakActive]}>Tidak (TMS)</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (tipe === "NUMBER") {
+    return (
+      <View style={s.container}>
+        <Text style={s.label}>
+          {field.pertanyaan}
+          {field.isRequired ? <Text style={s.requiredMark}> *</Text> : null}
+        </Text>
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          keyboardType="numeric"
+          placeholder="0"
+          placeholderTextColor="#94A3B8"
+          style={s.input}
+        />
+      </View>
     );
   }
 
   return (
-    <YStack gap="$2">
-      <Text fontSize="$4" fontWeight="600" color="$fg">
+    <View style={s.container}>
+      <Text style={s.label}>
         {field.pertanyaan}
-        {field.isRequired ? " *" : ""}
+        {field.isRequired ? <Text style={s.requiredMark}> *</Text> : null}
       </Text>
-
-      {tipe === "OPTIONS" || tipe === "SELECT" ? (
-        <>
-          <YStack
-            onPress={() => {
-              if (options.length) setOpen(true);
-            }}
-            pressStyle={{ opacity: 0.6 }}
-            paddingHorizontal="$4"
-            paddingVertical="$3.5"
-            borderWidth={1}
-            borderColor={value ? "$accent" : "$border"}
-            borderRadius={12}
-            backgroundColor={value ? "$accentSoft" : "$card"}
-          >
-            <Text fontSize="$4" color={value ? "$accent" : "$muted"}>
-              {value || "Pilih..."}
-            </Text>
-          </YStack>
-          <ActionSheet
-            open={open}
-            onClose={() => setOpen(false)}
-            title={field.pertanyaan}
-            items={options.map((opt) => ({
-              label: opt,
-              onPress: () => onChange(opt),
-            }))}
-          />
-        </>
-      ) : (
-        <Input
-          value={value}
-          onChangeText={onChange}
-          placeholder={tipe === "DATE" ? "YYYY-MM-DD" : "Jawaban..."}
-          placeholderTextColor="$muted"
-          color="$fg"
-          bg="$card"
-          borderWidth={1}
-          borderColor="$border"
-          borderRadius={12}
-          px="$3"
-          py="$2.5"
-          fontSize={14}
-        />
-      )}
-    </YStack>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        placeholder="Tuliskan catatan hasil pemeriksaan..."
+        placeholderTextColor="#94A3B8"
+        multiline
+        numberOfLines={3}
+        style={[s.input, s.textArea]}
+      />
+    </View>
   );
 }
+
+const s = StyleSheet.create({
+  container: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 12,
+    gap: 12,
+  },
+  label: {
+    fontSize: 14.5,
+    fontWeight: "700",
+    color: "#0F172A",
+    lineHeight: 20,
+  },
+  requiredMark: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  segmentedBtn: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  btnYaActive: {
+    borderColor: "#047857",
+    backgroundColor: "#ECFDF5",
+  },
+  btnTidakActive: {
+    borderColor: "#DC2626",
+    backgroundColor: "#FEF2F2",
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#94A3B8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioCircleYaActive: {
+    borderColor: "#047857",
+    backgroundColor: "#047857",
+  },
+  radioCircleTidakActive: {
+    borderColor: "#DC2626",
+    backgroundColor: "#DC2626",
+  },
+  btnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  btnTextYaActive: {
+    color: "#047857",
+    fontWeight: "800",
+  },
+  btnTextTidakActive: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  input: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 14,
+    color: "#0F172A",
+    backgroundColor: "#F8FAFC",
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: "top",
+    paddingVertical: 12,
+  },
+});

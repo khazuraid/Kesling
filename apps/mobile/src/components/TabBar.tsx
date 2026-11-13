@@ -1,9 +1,9 @@
-import { BarChart3, ClipboardList, Home, Plus } from "@tamagui/lucide-icons-2";
-import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import { ClipboardList, Home, MapPin, Plus, User } from "lucide-react-native";
 import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
-import { C } from "../lib/tokens";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Route = { key: string; name: string };
 type TabBarProps = {
@@ -11,13 +11,13 @@ type TabBarProps = {
   descriptors: any;
   navigation: any;
   onFabPress?: () => void;
-  fabOpen?: boolean;
 };
 
-const ICONS: Record<string, any> = {
-  index: Home,
-  pemeriksaan: ClipboardList,
-  rekap: BarChart3,
+const TAB_CONFIG: Record<string, { label: string; icon: any }> = {
+  index: { label: "Beranda", icon: Home },
+  pemeriksaan: { label: "Inspeksi", icon: ClipboardList },
+  peta: { label: "Peta", icon: MapPin },
+  akun: { label: "Akun", icon: User },
 };
 
 function TabItem({
@@ -32,197 +32,178 @@ function TabItem({
   navigation: any;
 }) {
   const { options } = descriptors[route.key];
-  const label = options.title ?? route.name;
-  const Icon = ICONS[route.name] ?? (options.tabBarIcon as any);
+  const config = TAB_CONFIG[route.name] || {
+    label: options.title || route.name,
+    icon: Home,
+  };
+  const Icon = config.icon;
 
   const scale = useSharedValue(1);
-  const pillOpacity = useSharedValue(isFocused ? 1 : 0);
 
-  useEffect(() => {
-    pillOpacity.value = withTiming(isFocused ? 1 : 0, { duration: 220 });
-  }, [isFocused]);
-
-  const pillStyle = useAnimatedStyle(() => ({ opacity: pillOpacity.value }));
-  const scaleStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const scaleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const onPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const event = navigation.emit({
       type: "tabPress",
       target: route.key,
       canPreventDefault: true,
     });
-    if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
+    if (!isFocused && !event.defaultPrevented) {
+      navigation.navigate(route.name);
+    }
   };
+
+  const activeColor = "#047857"; // Civic Emerald
+  const inactiveColor = "#94A3B8"; // Slate 400
 
   return (
     <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isFocused }}
+      accessibilityLabel={`Tab ${config.label}`}
       onPress={onPress}
-      onPressIn={() => (scale.value = withSpring(0.9, { damping: 12 }))}
-      onPressOut={() => (scale.value = withSpring(1, { damping: 12 }))}
-      style={styles.tabSlot}
+      onPressIn={() => (scale.value = withSpring(0.92, { damping: 14 }))}
+      onPressOut={() => (scale.value = withSpring(1, { damping: 14 }))}
+      style={s.tabItem}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <Animated.View style={[styles.tabInner, scaleStyle]}>
-        <View style={styles.iconWrap}>
-          <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />
-          {Icon ? <Icon color={isFocused ? C.accent : C.ink2} size={21} strokeWidth={isFocused ? 2.3 : 1.8} /> : null}
+      <Animated.View style={[s.tabItemInner, scaleStyle]}>
+        <View style={[s.iconBox, isFocused && s.iconBoxActive]}>
+          <Icon size={20} color={isFocused ? activeColor : inactiveColor} strokeWidth={isFocused ? 2.2 : 1.8} />
         </View>
-        <Text
-          style={[styles.tabLabel, { color: isFocused ? C.accent : C.ink2, fontWeight: isFocused ? "700" : "500" }]}
-        >
-          {label}
-        </Text>
+        <Text style={[s.tabLabel, { color: isFocused ? activeColor : inactiveColor }]}>{config.label}</Text>
       </Animated.View>
     </Pressable>
   );
 }
 
-export function TabBar({ state, descriptors, navigation, onFabPress, fabOpen }: TabBarProps) {
-  const routes = state.routes;
+export function TabBar({ state, descriptors, navigation, onFabPress }: TabBarProps) {
+  const insets = useSafeAreaInsets();
   const fabScale = useSharedValue(1);
-  const fabRotate = useSharedValue(0);
 
-  useEffect(() => {
-    fabRotate.value = withSpring(fabOpen ? 45 : 0, { damping: 15, stiffness: 260 });
-    fabScale.value = withSpring(fabOpen ? 0.92 : 1, { damping: 14 });
-  }, [fabOpen]);
-
-  const fabStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: fabScale.value }, { rotate: `${fabRotate.value}deg` }],
+  const fabAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: fabScale.value }],
   }));
 
+  const handleFabPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onFabPress?.();
+  };
+
   return (
-    <View style={styles.container} pointerEvents="box-none">
-      <View style={styles.bar}>
-        {/* Tab pertama (Beranda) */}
-        {routes[0] && (
-          <TabItem
-            key={routes[0].key}
-            route={routes[0]}
-            isFocused={state.index === 0}
-            descriptors={descriptors}
-            navigation={navigation}
-          />
-        )}
-
-        {/* Tab kedua jika ada 3 routes (Draft) */}
-        {routes.length > 2 && routes[1] && (
-          <TabItem
-            key={routes[1].key}
-            route={routes[1]}
-            isFocused={state.index === 1}
-            descriptors={descriptors}
-            navigation={navigation}
-          />
-        )}
-
-        {/* FAB slot TENGAH (V40) */}
-        <Pressable
-          onPress={onFabPress}
-          onPressIn={() => {
-            fabScale.value = withSpring(0.88, { damping: 14 });
-          }}
-          onPressOut={() => {
-            fabScale.value = withSpring(fabOpen ? 0.92 : 1, { damping: 14 });
-          }}
-          style={styles.tabSlot}
-        >
-          <View style={styles.fabCol}>
-            <Animated.View style={fabStyle}>
-              <LinearGradient
-                colors={["#5B8DEF", "#7C3AED"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.fabBtn}
-              >
-                <Plus size={22} color="#FFFFFF" strokeWidth={2.6} />
-              </LinearGradient>
-            </Animated.View>
-            <Text style={styles.fabLabel}>Periksa</Text>
-          </View>
-        </Pressable>
-
-        {/* Tab Rekap (route terakhir) */}
-        {routes.length > 1 && (
-          <TabItem
-            key={routes[routes.length - 1].key}
-            route={routes[routes.length - 1]}
-            isFocused={state.index === routes.length - 1}
-            descriptors={descriptors}
-            navigation={navigation}
-          />
-        )}
+    <View style={[s.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={s.container}>
+        {state.routes.map((route, i) => {
+          const isFocused = state.index === i;
+          return (
+            <TabItem
+              key={route.key}
+              route={route}
+              isFocused={isFocused}
+              descriptors={descriptors}
+              navigation={navigation}
+            />
+          );
+        })}
       </View>
+
+      {/* Floating Center Action Button */}
+      {onFabPress && (
+        <View style={s.fabWrapper} pointerEvents="box-none">
+          <Pressable
+            onPress={handleFabPress}
+            onPressIn={() => (fabScale.value = withSpring(0.88, { damping: 12 }))}
+            onPressOut={() => (fabScale.value = withSpring(1, { damping: 12 }))}
+            style={s.fabPressable}
+          >
+            <Animated.View style={[s.fab, fabAnimatedStyle]}>
+              <Plus size={24} color="#FFFFFF" strokeWidth={2.6} />
+            </Animated.View>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const s = StyleSheet.create({
+  wrapper: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 30,
-  },
-  bar: {
-    backgroundColor: "#FFFFFF",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.06)",
-    flexDirection: "row",
+    backgroundColor: "transparent",
     alignItems: "center",
-    paddingHorizontal: 6,
-    paddingBottom: 10,
   },
-  tabSlot: {
+  container: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    marginHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
+    width: "92%",
+    maxWidth: 420,
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  tabItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 48,
   },
-  tabInner: {
+  tabItemInner: {
     alignItems: "center",
-    gap: 5,
-    paddingVertical: 10,
+    justifyContent: "center",
+    gap: 3,
   },
-  iconWrap: {
-    width: 44,
-    height: 30,
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  pill: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 999,
-    backgroundColor: "rgba(37,99,235,0.08)",
+  iconBoxActive: {
+    backgroundColor: "#ECFDF5",
   },
   tabLabel: {
-    fontSize: 10,
-    letterSpacing: 0.3,
+    fontSize: 10.5,
+    fontWeight: "700",
+    letterSpacing: -0.2,
   },
-  fabCol: {
-    alignItems: "center",
-    gap: 5,
-    paddingVertical: 6,
+  fabWrapper: {
+    position: "absolute",
+    top: -24,
+    alignSelf: "center",
+    zIndex: 10,
   },
-  fabBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  fabPressable: {
+    shadowColor: "#047857",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  fab: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#047857",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 18,
-    elevation: 8,
-  },
-  fabLabel: {
-    fontSize: 10,
-    fontWeight: "500",
-    color: C.ink2,
-    letterSpacing: 0.3,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
   },
 });

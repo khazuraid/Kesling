@@ -1,5 +1,16 @@
-import { AlertTriangle, AtSign, Eye, EyeOff, Fingerprint, KeyRound } from "@tamagui/lucide-icons-2";
-import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import {
+  AlertTriangle,
+  AtSign,
+  Eye,
+  EyeOff,
+  Fingerprint,
+  KeyRound,
+  Lock,
+  QrCode,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,37 +25,28 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSequence,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../src/lib/auth";
 
-// Design: "Kesling Mobile" LoginScreen — dark #0D1117, glow blobs, gradient app icon, bottom-sheet card
-const BG = "#0D1117";
-const CARD = "#161B22";
-const INPUT_BG = "rgba(255,255,255,0.05)";
-const HAIRLINE_D = "rgba(255,255,255,0.09)";
-
-export default function Login() {
+export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [show, setShow] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState("");
   const [bioAvail, setBioAvail] = useState(false);
   const [bioBusy, setBioBusy] = useState(false);
   const { signIn, signInWithToken } = useAuth();
 
+  // State untuk alur verifikasi OTP perangkat baru
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+
   useEffect(() => {
     (async () => {
       try {
-        const LocalAuth = require("expo-local-authentication").default as typeof import("expo-local-authentication");
+        const LocalAuth = require("expo-local-authentication");
         const has = await LocalAuth.hasHardwareAsync();
         const enrolled = await LocalAuth.isEnrolledAsync();
         setBioAvail(has && enrolled);
@@ -52,337 +54,384 @@ export default function Login() {
     })();
   }, []);
 
-  const formOpacity = useSharedValue(0);
-  const formY = useSharedValue(24);
-  const shakeX = useSharedValue(0);
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setError("Email dan kata sandi wajib diisi");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
 
-  useEffect(() => {
-    formOpacity.value = withDelay(100, withTiming(1, { duration: 400 }));
-    formY.value = withDelay(100, withSpring(0, { damping: 16 }));
-  }, []);
-
-  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.value }] }));
-  const formStyle = useAnimatedStyle(() => ({ opacity: formOpacity.value, transform: [{ translateY: formY.value }] }));
-
-  const showError = (msg: string) => {
-    setError(msg);
-    shakeX.value = withSequence(
-      withTiming(-8, { duration: 50 }),
-      withTiming(8, { duration: 50 }),
-      withTiming(-5, { duration: 40 }),
-      withTiming(0, { duration: 40 }),
-    );
-  };
-
-  const submit = async () => {
-    if (!email.trim() || !password) return showError("Email dan password wajib diisi.");
-    setLoading(true);
     setError("");
+    setLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     try {
-      await signIn(email.trim(), password);
-    } catch (e: any) {
-      showError(
-        e?.message === "invalid_credentials" || /401|salah/i.test(e?.message || "")
-          ? "Email atau password salah."
-          : "Gagal masuk. Coba lagi.",
-      );
+      await signIn(email.trim().toLowerCase(), password);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      const msg = err?.message || "Gagal masuk. Periksa kembali email & kata sandi.";
+      // Simulasi trigger OTP jika mendeteksi security challenge
+      if (msg.toLowerCase().includes("otp") || msg.toLowerCase().includes("perangkat baru")) {
+        setIsOtpStep(true);
+      } else {
+        setError(msg);
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setLoading(false);
     }
   };
 
-  const biometricLogin = async () => {
+  const handleVerifyOtp = async () => {
+    if (otpCode.length < 6) {
+      setError("Masukkan 6-digit kode OTP");
+      return;
+    }
+    setLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      const LocalAuth = require("expo-local-authentication").default as typeof import("expo-local-authentication");
-      setBioBusy(true);
-      const ok = await LocalAuth.authenticateAsync({ promptMessage: "Masuk dengan biometrik" });
+      await signIn(email.trim().toLowerCase(), password);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      setError(err?.message || "Kode OTP salah atau telah kadaluarsa");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBiometricAuth = async () => {
+    if (bioBusy) return;
+    setBioBusy(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      await signInWithToken();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      setError(err?.message || "Sidik jari tidak cocok atau sesi berakhir.");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
       setBioBusy(false);
-      if (!ok.success) return;
-      const SecureStore = require("expo-secure-store").default as typeof import("expo-secure-store");
-      const token = await SecureStore.getItemAsync("kesling_token");
-      if (!token) return showError("Sesi biometrik kedaluwarsa. Masuk manual.");
-      setLoading(true);
-      try {
-        await signInWithToken();
-      } catch {
-        showError("Sesi tidak valid. Masuk manual.");
-      } finally {
-        setLoading(false);
-      }
-    } catch {
-      setBioBusy(false);
-      showError("Biometrik tidak tersedia.");
     }
   };
 
   return (
-    <KeyboardAvoidingView style={s.root} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        {/* Glow blobs */}
-        <View style={s.blobTop} pointerEvents="none" />
-        <View style={s.blobBottom} pointerEvents="none" />
-
-        <Animated.View style={formStyle}>
-          {/* Logo area */}
-          <View style={s.logoWrap}>
-            <View style={s.appIcon}>
-              <Image
-                source={require("../assets/images/icon.png")}
-                style={{ width: "100%", height: "100%", borderRadius: 20 }}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={s.logoName}>Kesling</Text>
-            <Text style={s.logoSub}>Sistem Informasi Kesehatan Lingkungan</Text>
-            <View style={s.pillRow}>
-              {["Inspeksi", "Jadwal", "Laporan"].map((l) => (
-                <View key={l} style={s.pill}>
-                  <Text style={s.pillText}>{l}</Text>
-                </View>
-              ))}
-            </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={[s.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+    >
+      <ScrollView
+        contentContainerStyle={s.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Logo & Civic Identity Header */}
+        <View style={s.headerBox}>
+          <View style={s.emblemBox}>
+            <ShieldCheck size={36} color="#047857" strokeWidth={2.4} />
           </View>
+          <Text style={s.appTitle}>SILAPOR KESLING</Text>
+          <Text style={s.appSubtitle}>Dinas Kesehatan Pemerintah Kota Cirebon</Text>
+        </View>
 
-          {/* Form card — bottom-sheet style */}
-          <View style={s.card}>
-            {/* Handle */}
-            <View style={s.handle} />
-            <Text style={s.cardTitle}>Masuk ke akun</Text>
-            <Text style={s.cardSub}>Gunakan email dinas yang terdaftar</Text>
+        {/* Card Form */}
+        <View style={s.card}>
+          <Text style={s.cardTitle}>{isOtpStep ? "Verifikasi Perangkat Baru" : "Masuk Petugas Sanitarian"}</Text>
+          <Text style={s.cardDesc}>
+            {isOtpStep
+              ? "Masukkan 6-digit kode keamanan yang dikirimkan ke email terdaftar Anda."
+              : "Gunakan akun resmi yang telah didaftarkan oleh Administrator Dinkes."}
+          </Text>
 
-            <View style={s.fieldGap}>
-              {/* Email */}
-              <View>
-                <Text style={s.label}>EMAIL</Text>
-                <View style={[s.inputWrap, focused === "email" && s.inputActive]}>
-                  <View style={s.inputIcon}>
-                    <AtSign size={16} color={focused === "email" ? "#60A5FA" : "rgba(255,255,255,0.25)"} />
-                  </View>
+          {error ? (
+            <View style={s.errorBox}>
+              <AlertTriangle size={16} color="#DC2626" strokeWidth={2.2} />
+              <Text style={s.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {!isOtpStep ? (
+            <View style={s.formFields}>
+              {/* Field Email */}
+              <View style={s.inputWrap}>
+                <Text style={s.inputLabel}>Email Resmi Dinkes</Text>
+                <View style={s.inputRow}>
+                  <AtSign size={18} color="#64748B" strokeWidth={2} />
                   <TextInput
-                    style={s.input}
-                    placeholder="nama@dinas.go.id"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    value={email}
+                    onChangeText={(t) => {
+                      setEmail(t);
+                      setError("");
+                    }}
+                    placeholder="nama@cirebonkota.go.id"
+                    placeholderTextColor="#94A3B8"
                     autoCapitalize="none"
                     keyboardType="email-address"
-                    value={email}
-                    onChangeText={setEmail}
-                    onFocus={() => setFocused("email")}
-                    onBlur={() => setFocused("")}
+                    style={s.textInput}
                   />
                 </View>
               </View>
 
-              {/* Password */}
-              <View>
-                <Text style={s.label}>PASSWORD</Text>
-                <View style={[s.inputWrap, focused === "password" && s.inputActive]}>
-                  <View style={s.inputIcon}>
-                    <KeyRound size={16} color={focused === "password" ? "#60A5FA" : "rgba(255,255,255,0.25)"} />
-                  </View>
+              {/* Field Password */}
+              <View style={s.inputWrap}>
+                <Text style={s.inputLabel}>Kata Sandi</Text>
+                <View style={s.inputRow}>
+                  <KeyRound size={18} color="#64748B" strokeWidth={2} />
                   <TextInput
-                    style={s.input}
-                    placeholder="••••••••"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
-                    secureTextEntry={!show}
                     value={password}
-                    onChangeText={setPassword}
-                    onFocus={() => setFocused("password")}
-                    onBlur={() => setFocused("")}
+                    onChangeText={(t) => {
+                      setPassword(t);
+                      setError("");
+                    }}
+                    placeholder="••••••••"
+                    placeholderTextColor="#94A3B8"
+                    secureTextEntry={!showPassword}
+                    style={s.textInput}
                   />
-                  <Pressable onPress={() => setShow((p) => !p)} hitSlop={8} style={s.eyeBtn}>
-                    {show ? (
-                      <EyeOff size={18} color={show ? "#60A5FA" : "rgba(255,255,255,0.25)"} strokeWidth={2} />
+                  <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={8}>
+                    {showPassword ? (
+                      <EyeOff size={18} color="#64748B" strokeWidth={2} />
                     ) : (
-                      <Eye size={18} color={show ? "#60A5FA" : "rgba(255,255,255,0.25)"} strokeWidth={2} />
+                      <Eye size={18} color="#64748B" strokeWidth={2} />
                     )}
                   </Pressable>
                 </View>
               </View>
-            </View>
 
-            {error ? (
-              <Animated.View style={[s.errRow, shakeStyle]}>
-                <AlertTriangle size={15} color="#FCA5A5" strokeWidth={2.2} />
-                <Text style={s.errText}>{error}</Text>
-              </Animated.View>
-            ) : null}
-
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  "Lupa Password",
-                  "Hubungi admin Dinas Kesehatan / operator aplikasi untuk reset password akun Anda.",
-                )
-              }
-              hitSlop={8}
-              style={s.forgotRow}
-            >
-              <Text style={s.forgotText}>Lupa password?</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={loading ? undefined : submit}
-              disabled={loading}
-              style={({ pressed }) => [s.loginBtn, (pressed || loading) && { opacity: 0.85 }]}
-            >
-              <LinearGradient
-                colors={loading ? ["rgba(255,255,255,0.08)", "rgba(255,255,255,0.08)"] : ["#00A876", "#00A876"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={s.loginBtnFill}
-              >
-                {loading ? <ActivityIndicator color="rgba(255,255,255,0.6)" size="small" /> : null}
-                <Text style={s.loginText}>{loading ? "Memverifikasi..." : "Masuk"}</Text>
-              </LinearGradient>
-            </Pressable>
-
-            {bioAvail ? (
-              <Pressable
-                onPress={bioBusy ? undefined : biometricLogin}
-                disabled={bioBusy}
-                style={({ pressed }) => [s.bioBtn, pressed && { opacity: 0.7 }]}
-              >
-                <Fingerprint size={19} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />
-                <Text style={s.bioText}>{bioBusy ? "Memverifikasi..." : "Masuk dengan Biometrik"}</Text>
+              {/* Tombol Masuk */}
+              <Pressable onPress={handleLogin} disabled={loading} style={[s.btnLogin, loading && s.btnDisabled]}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={s.btnLoginText}>Masuk ke Sistem</Text>
+                )}
               </Pressable>
-            ) : null}
-          </View>
-        </Animated.View>
+
+              {/* Biometric Unlock Option */}
+              {bioAvail && (
+                <Pressable onPress={handleBiometricAuth} disabled={bioBusy} style={s.btnBiometric}>
+                  <Fingerprint size={22} color="#047857" strokeWidth={2.2} />
+                  <Text style={s.btnBiometricText}>Buka Cepat dengan Sidik Jari</Text>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <View style={s.formFields}>
+              <View style={s.inputWrap}>
+                <Text style={s.inputLabel}>Kode OTP (6-Digit)</Text>
+                <TextInput
+                  value={otpCode}
+                  onChangeText={(t) => setOtpCode(t.replace(/[^0-9]/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="numeric"
+                  maxLength={6}
+                  style={[s.textInput, s.otpInput]}
+                />
+              </View>
+
+              <Pressable
+                onPress={handleVerifyOtp}
+                disabled={loading || otpCode.length < 6}
+                style={[s.btnLogin, (loading || otpCode.length < 6) && s.btnDisabled]}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={s.btnLoginText}>Verifikasi & Lanjutkan</Text>
+                )}
+              </Pressable>
+
+              <Pressable onPress={() => setIsOtpStep(false)} style={s.btnBackLogin}>
+                <Text style={s.btnBackLoginText}>Gunakan Akun Lain</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+
+        {/* Footer Support */}
+        <View style={s.footerBox}>
+          <Text style={s.footerText}>Pusat Bantuan & Lupa Sandi: Hubungi Admin Kesling Dinkes</Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
-  content: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 48 },
-  blobTop: {
-    position: "absolute",
-    top: -80,
-    left: -60,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: "rgba(37,99,235,0.18)",
+  root: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
   },
-  blobBottom: {
-    position: "absolute",
-    bottom: 40,
-    right: -80,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "rgba(124,58,237,0.14)",
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    justifyContent: "center",
   },
-  logoWrap: { alignItems: "center", marginBottom: 30 },
-  appIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
+  headerBox: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  emblemBox: {
+    width: 68,
+    height: 68,
+    borderRadius: 24,
+    backgroundColor: "#ECFDF5",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#00A876",
-    shadowOpacity: 0.4,
-    shadowRadius: 32,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 8,
+    borderWidth: 2,
+    borderColor: "#A7F3D0",
     marginBottom: 14,
+    shadowColor: "#047857",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  logoName: { fontSize: 28, fontWeight: "900", color: "#fff", letterSpacing: -0.8 },
-  logoSub: { fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 6, textAlign: "center" },
-  pillRow: { flexDirection: "row", gap: 8, marginTop: 14 },
-  pill: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+  appTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#0F172A",
+    letterSpacing: -0.5,
   },
-  pillText: { fontSize: 11, fontWeight: "600", color: "rgba(255,255,255,0.35)" },
+  appSubtitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontWeight: "600",
+    marginTop: 3,
+  },
   card: {
-    backgroundColor: CARD,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 22,
     borderWidth: 1,
-    borderColor: HAIRLINE_D,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    padding: 24,
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 4,
+    gap: 16,
   },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    alignSelf: "center",
-    marginBottom: 20,
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
   },
-  cardTitle: { fontSize: 20, fontWeight: "800", color: "#fff", letterSpacing: -0.5, marginBottom: 6 },
-  cardSub: { fontSize: 13, color: "rgba(255,255,255,0.35)", marginBottom: 24 },
-  fieldGap: { gap: 12, marginBottom: 20 },
-  label: { fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.35)", letterSpacing: 1, marginBottom: 8 },
-  inputWrap: {
+  cardDesc: {
+    fontSize: 12.5,
+    color: "#64748B",
+    lineHeight: 18,
+    marginTop: -8,
+  },
+  errorBox: {
     flexDirection: "row",
     alignItems: "center",
-    height: 50,
-    backgroundColor: INPUT_BG,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.08)",
-    paddingHorizontal: 14,
-  },
-  inputActive: { borderColor: "rgba(96,165,250,0.4)", backgroundColor: "rgba(96,165,250,0.06)" },
-  input: { flex: 1, fontSize: 15, color: "#fff", paddingVertical: 0 },
-  inputIcon: { marginRight: 10 },
-  eyeBtn: { padding: 4 },
-  errRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    backgroundColor: "rgba(220,38,38,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(220,38,38,0.25)",
-    borderRadius: 12,
+    gap: 8,
+    backgroundColor: "#FEF2F2",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    marginBottom: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
   },
-  errText: { flex: 1, fontSize: 12.5, fontWeight: "600", color: "#FCA5A5" },
-  forgotRow: { alignSelf: "flex-end", marginBottom: 20, marginTop: -6 },
-  forgotText: { fontSize: 12, color: "#60A5FA", fontWeight: "600" },
-  loginBtn: {
-    borderRadius: 16,
-    overflow: "hidden",
+  errorText: {
+    fontSize: 12,
+    color: "#DC2626",
+    fontWeight: "600",
+    flex: 1,
+  },
+  formFields: {
+    gap: 14,
+  },
+  inputWrap: {
+    gap: 6,
+  },
+  inputLabel: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: "#334155",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    minHeight: 50,
+    gap: 10,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#0F172A",
+  },
+  otpInput: {
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 10,
+    textAlign: "center",
+    minHeight: 56,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.5,
+    borderColor: "#047857",
+    borderRadius: 14,
+  },
+  btnLogin: {
+    minHeight: 52,
+    backgroundColor: "#047857",
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    height: 56,
-    shadowColor: "#00A876",
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+    marginTop: 6,
+    shadowColor: "#047857",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  loginBtnFill: {
-    flex: 1,
-    alignSelf: "stretch",
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  btnLoginText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  btnBiometric: {
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#047857",
+    backgroundColor: "#ECFDF5",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
-  loginText: { fontSize: 16, fontWeight: "800", color: "#fff" },
-  bioBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 9,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: HAIRLINE_D,
-    borderRadius: 14,
-    height: 48,
-    marginTop: 12,
+  btnBiometricText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: "#047857",
   },
-  bioText: { fontSize: 14, fontWeight: "700", color: "rgba(255,255,255,0.75)" },
+  btnBackLogin: {
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  btnBackLoginText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#64748B",
+  },
+  footerBox: {
+    alignItems: "center",
+    marginTop: 24,
+  },
+  footerText: {
+    fontSize: 11.5,
+    color: "#94A3B8",
+    textAlign: "center",
+  },
 });

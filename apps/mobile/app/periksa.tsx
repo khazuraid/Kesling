@@ -1,300 +1,567 @@
-import { ArrowLeft, Check, ChevronRight, ClipboardCheck, FileText } from "@tamagui/lucide-icons-2";
 import { useQuery } from "@tanstack/react-query";
-import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { FadeIn, ListSkeleton, ScalePress } from "../src/components/motion/primitives";
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  ClipboardCheck,
+  FileText,
+  MapPin,
+  Search,
+  Sparkles,
+} from "lucide-react-native";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "../src/lib/api";
-import { C, katColor } from "../src/lib/tokens";
 
-const katMeta = (nama: string) => {
-  const k = katColor(nama);
-  return { color: k.color, colorL: k.soft };
-};
+export default function PeriksaWizardScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [selectedKat, setSelectedKat] = useState<any>(null);
+  const [selectedForm, setSelectedForm] = useState<any>(null);
+  const [searchSasaran, setSearchSasaran] = useState("");
 
-// steps wizard: Kategori → Formulir → Sasaran → Isi Form
-function Steps({ active, onDark }: { active: number; onDark?: boolean }) {
-  const steps = ["Kategori", "Formulir", "Sasaran", "Isi Form"];
+  // 1. Fetch Kategori & Template
+  const { data: kategoris, isLoading: loadKat } = useQuery({
+    queryKey: ["kategori-list"],
+    queryFn: () => api.categories(),
+  });
+
+  const { data: allTemplates, isLoading: loadTpl } = useQuery({
+    queryKey: ["templates"],
+    queryFn: () => api.templates(),
+    enabled: !!selectedKat,
+  });
+
+  const templates = (allTemplates || []).filter((t: any) =>
+    selectedKat?.id ? t.subCategoryId === selectedKat.id || t.categoryId === selectedKat.id : true,
+  );
+
+  // 2. Fetch Sasaran Terdaftar
+  const { data: sasarans, isLoading: loadSasaran } = useQuery({
+    queryKey: ["sasaran-picker", selectedKat?.id],
+    queryFn: () => api.sasaran(selectedKat?.id),
+    enabled: !!selectedKat,
+  });
+
+  const stepNumber = !selectedKat ? 1 : !selectedForm ? 2 : 3;
+
+  const handleSelectKategori = (k: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedKat(k);
+    setSelectedForm(null);
+  };
+
+  const handleSelectForm = (t: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedForm(t);
+  };
+
+  const handlePickSasaran = (sId: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push(`/inspection/${selectedForm.id}?sasaranId=${sId}`);
+  };
+
+  const handleCreateNewSasaran = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push(`/inspection/${selectedForm.id}`);
+  };
+
+  const filteredSasaran = (sasarans || []).filter((s: any) =>
+    searchSasaran
+      ? s.nama?.toLowerCase().includes(searchSasaran.toLowerCase()) ||
+        s.alamat?.toLowerCase().includes(searchSasaran.toLowerCase())
+      : true,
+  );
+
   return (
-    <View style={s.stepsRow}>
-      {steps.map((st, i) => {
-        const done = i < active;
-        const now = i === active;
-        return (
-          <View key={st} style={s.stepItem}>
-            <View style={s.stepInner}>
-              <View
-                style={[
-                  s.stepDot,
-                  now && s.stepDotNow,
-                  done && s.stepDotDone,
-                  !now && !done && (onDark ? s.stepDotTodoDark : s.stepDotTodo),
-                ]}
-              >
-                {done ? (
-                  <Check size={9} color="#fff" strokeWidth={3.5} />
-                ) : (
-                  <Text style={[s.stepNum, { color: now ? "#06281E" : onDark ? "rgba(255,255,255,0.55)" : C.muted }]}>
-                    {i + 1}
-                  </Text>
-                )}
-              </View>
-              <Text
-                style={[
-                  s.stepLabel,
-                  {
-                    fontWeight: now ? "800" : "500",
-                    color: now ? "#fff" : done ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.45)",
-                  },
-                ]}
-              >
-                {st}
-              </Text>
-            </View>
-            {i < steps.length - 1 ? (
-              <View style={[s.stepLine, done && { backgroundColor: "rgba(255,255,255,0.5)" }]} />
-            ) : null}
+    <View style={[s.root, { paddingTop: insets.top }]}>
+      {/* 1. Header & Stepper */}
+      <View style={s.topBar}>
+        <View style={s.topBarNav}>
+          <Pressable
+            onPress={() => {
+              if (selectedForm) setSelectedForm(null);
+              else if (selectedKat) setSelectedKat(null);
+              else router.back();
+            }}
+            style={s.btnBack}
+            hitSlop={8}
+          >
+            <ArrowLeft size={20} color="#0F172A" strokeWidth={2.4} />
+          </Pressable>
+          <View>
+            <Text style={s.topBarTitle}>Mulai Inspeksi (IKL)</Text>
+            <Text style={s.topBarSub}>
+              Langkah {stepNumber} dari 3:{" "}
+              {stepNumber === 1 ? "Pilih Kategori" : stepNumber === 2 ? "Pilih Formulir" : "Pilih / Input Sasaran"}
+            </Text>
           </View>
-        );
-      })}
+        </View>
+
+        {/* Stepper Wizard Indicator */}
+        <View style={s.stepperRow}>
+          {["Kategori", "Formulir", "Sasaran"].map((step, idx) => {
+            const isDone = idx + 1 < stepNumber;
+            const isNow = idx + 1 === stepNumber;
+            return (
+              <View key={step} style={s.stepWrap}>
+                <View style={[s.stepCircle, isNow && s.stepCircleNow, isDone && s.stepCircleDone]}>
+                  {isDone ? (
+                    <Check size={12} color="#FFFFFF" strokeWidth={3} />
+                  ) : (
+                    <Text style={[s.stepNum, isNow && s.stepNumNow]}>{idx + 1}</Text>
+                  )}
+                </View>
+                <Text style={[s.stepLabel, isNow && s.stepLabelNow, isDone && s.stepLabelDone]}>{step}</Text>
+                {idx < 2 && <View style={s.stepLine} />}
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* 2. Step Views */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[s.scrollContent, { paddingBottom: 60 }]}>
+        {/* STEP 1: Pilih Kategori */}
+        {stepNumber === 1 && (
+          <View style={s.stepSection}>
+            <Text style={s.sectionPrompt}>Pilih kategori fasilitas / tempat yang akan diinspeksi:</Text>
+
+            {loadKat ? (
+              <ActivityIndicator size="small" color="#047857" style={{ marginTop: 24 }} />
+            ) : (
+              <View style={s.categoryGrid}>
+                {(kategoris || []).map((k: any) => (
+                  <Pressable key={k.id} onPress={() => handleSelectKategori(k)} style={s.categoryCard}>
+                    <View style={s.categoryIconBox}>
+                      <ClipboardCheck size={24} color="#047857" strokeWidth={2.2} />
+                    </View>
+                    <View style={s.categoryMeta}>
+                      <Text style={s.categoryNama}>{k.nama}</Text>
+                      <Text style={s.categoryKode}>{k.kode || "IKL DINKES"}</Text>
+                    </View>
+                    <ChevronRight size={18} color="#94A3B8" strokeWidth={2.4} />
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* STEP 2: Pilih Formulir */}
+        {stepNumber === 2 && (
+          <View style={s.stepSection}>
+            <View style={s.selectedBadgeRow}>
+              <Text style={s.selectedBadgeLabel}>Kategori Terpilih:</Text>
+              <View style={s.selectedPill}>
+                <Text style={s.selectedPillText}>{selectedKat.nama}</Text>
+              </View>
+            </View>
+
+            <Text style={s.sectionPrompt}>Pilih instrumen standar pemeriksaan (form IKL):</Text>
+
+            {loadTpl ? (
+              <ActivityIndicator size="small" color="#047857" style={{ marginTop: 24 }} />
+            ) : (
+              <View style={s.formList}>
+                {(templates || []).map((t: any) => (
+                  <Pressable key={t.id} onPress={() => handleSelectForm(t)} style={s.formCard}>
+                    <View style={s.formCardTop}>
+                      <View style={s.formIcon}>
+                        <FileText size={20} color="#047857" strokeWidth={2.2} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.formNama}>{t.nama}</Text>
+                        <Text style={s.formStandar}>Permenkes No. 2 Tahun 2023 • {t.kategori || "Sanitasi"}</Text>
+                      </View>
+                      <ChevronRight size={18} color="#94A3B8" strokeWidth={2.4} />
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* STEP 3: Pilih atau Input Sasaran Baru */}
+        {stepNumber === 3 && (
+          <View style={s.stepSection}>
+            <View style={s.selectedBadgeRow}>
+              <View style={s.selectedPill}>
+                <Text style={s.selectedPillText}>{selectedForm.nama}</Text>
+              </View>
+            </View>
+
+            {/* Quick Action: Sasaran Baru */}
+            <Pressable onPress={handleCreateNewSasaran} style={s.btnNewSasaran}>
+              <View style={s.btnNewSasaranIcon}>
+                <Sparkles size={18} color="#FFFFFF" strokeWidth={2.2} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.btnNewSasaranTitle}>Input Sasaran Baru di Lapangan</Text>
+                <Text style={s.btnNewSasaranSub}>Nama tempat belum terdaftar di data dasar Dinkes</Text>
+              </View>
+              <ChevronRight size={16} color="#047857" strokeWidth={2.4} />
+            </Pressable>
+
+            {/* Search Existing Sasaran */}
+            <View style={s.searchBarWrap}>
+              <Search size={16} color="#64748B" strokeWidth={2.2} />
+              <TextInput
+                value={searchSasaran}
+                onChangeText={setSearchSasaran}
+                placeholder="Cari sasaran terdaftar..."
+                placeholderTextColor="#94A3B8"
+                style={s.searchBarInput}
+              />
+            </View>
+
+            <Text style={s.sasaranListTitle}>Pilih dari Sasaran Terdaftar ({filteredSasaran.length}):</Text>
+
+            {loadSasaran ? (
+              <ActivityIndicator size="small" color="#047857" style={{ marginTop: 24 }} />
+            ) : filteredSasaran.length > 0 ? (
+              <View style={s.sasaranGrid}>
+                {filteredSasaran.map((item: any) => (
+                  <Pressable key={item.id} onPress={() => handlePickSasaran(item.id)} style={s.sasaranItemCard}>
+                    <View style={s.sasaranItemHeader}>
+                      <MapPin size={14} color="#047857" strokeWidth={2.2} />
+                      <Text style={s.sasaranItemNama}>{item.nama}</Text>
+                    </View>
+                    <Text style={s.sasaranItemAlamat} numberOfLines={2}>
+                      {item.alamat || "Kota Cirebon"}
+                    </Text>
+                    <View style={s.sasaranItemFooter}>
+                      <Text style={s.sasaranItemPkm}>{item.puskesmas?.nama || "Puskesmas Kejaksan"}</Text>
+                      <View style={s.btnPickBadge}>
+                        <Text style={s.btnPickBadgeText}>Pilih</Text>
+                        <ChevronRight size={12} color="#047857" strokeWidth={2.4} />
+                      </View>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View style={s.emptySasaranBox}>
+                <Text style={s.emptySasaranText}>
+                  Tidak ada sasaran terdaftar yang cocok. Anda dapat langsung menggunakan tombol "Input Sasaran Baru" di
+                  atas.
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-export default function Periksa() {
-  const router = useRouter();
-
-  const {
-    data: categories,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: api.categories,
-    retry: 1,
-    staleTime: 30_000,
-  });
-  const { data: templates } = useQuery({
-    queryKey: ["templates"],
-    queryFn: () => api.templates(),
-    staleTime: 30_000,
-  });
-  const cats = Array.isArray(categories) ? categories : [];
-  const tpls = Array.isArray(templates) ? templates : [];
-  const kats = cats.map((c) => {
-    const subIds = new Set((c.subCategories ?? []).map((s) => s.id));
-    return {
-      id: c.id,
-      label: c.nama,
-      subCount: tpls.filter((t) => subIds.has(t.subCategoryId)).length,
-      ...katMeta(c.nama),
-    };
-  });
-  const totalForm = kats.reduce((a, k) => a + k.subCount, 0);
-
-  return (
-    <ScrollView style={s.root} contentContainerStyle={s.content}>
-      {/* Hero — match kategori/[id] */}
-      <FadeIn>
-        <View style={s.hero}>
-          <LinearGradient
-            colors={["#0C1B16", "#123527"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1.1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={s.heroBlob} />
-          <Pressable onPress={() => router.back()} hitSlop={10} style={s.backBtn}>
-            <ArrowLeft size={13} color="#fff" strokeWidth={2.4} />
-            <Text style={s.backText}>Kembali</Text>
-          </Pressable>
-          <Text style={s.heroOverline}>PEMERIKSAAN BARU</Text>
-          <Text style={s.heroTitle}>Pilih Kategori</Text>
-          <View style={s.heroMetaRow}>
-            <View
-              style={[s.heroChip, { backgroundColor: "rgba(190,242,100,0.18)", borderColor: "rgba(190,242,100,0.35)" }]}
-            >
-              <FileText size={11} color="#D9F99D" strokeWidth={2.2} />
-              <Text style={[s.heroChipText, { color: "#D9F99D" }]}>
-                {kats.length} kategori · {totalForm} formulir
-              </Text>
-            </View>
-          </View>
-          <Steps active={0} onDark />
-        </View>
-      </FadeIn>
-
-      {/* Grid kategori 2 kolom — kartu menyelip ke hero */}
-      <View style={s.grid}>
-        {isLoading ? (
-          <ListSkeleton rows={4} />
-        ) : isError ? (
-          <View style={s.emptyCard}>
-            <ClipboardCheck size={40} color={C.muted} strokeWidth={1.5} />
-            <Text style={s.emptyText}>Gagal memuat. Coba lagi nanti.</Text>
-          </View>
-        ) : kats.length === 0 ? (
-          <View style={s.emptyCard}>
-            <ClipboardCheck size={40} color={C.muted} strokeWidth={1.5} />
-            <Text style={s.emptyText}>Belum ada kategori inspeksi</Text>
-          </View>
-        ) : (
-          <View style={s.listCol}>
-            {kats.map((k, i) => (
-              <FadeIn key={k.id} delay={70 + i * 50}>
-                <ScalePress onPress={() => router.push(`/kategori/${k.id}`)}>
-                  <View style={s.katCard}>
-                    <View style={[s.katIcon, { backgroundColor: `${k.color}14` }]}>
-                      <ClipboardCheck size={20} color={k.color} strokeWidth={1.8} />
-                    </View>
-                    <View style={{ flex: 1, gap: 3 }}>
-                      <Text style={s.katTitle} numberOfLines={2}>
-                        {k.label}
-                      </Text>
-                      <View style={s.katChips}>
-                        <View style={[s.chip, { backgroundColor: `${k.color}12` }]}>
-                          <Text style={[s.chipText, { color: k.color }]}>{k.subCount} formulir</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={[s.goCircle, { backgroundColor: k.color }]}>
-                      <ChevronRight size={14} color="#fff" strokeWidth={2.6} />
-                    </View>
-                  </View>
-                </ScalePress>
-              </FadeIn>
-            ))}
-          </View>
-        )}
-      </View>
-
-      <View style={{ height: 60 }} />
-    </ScrollView>
-  );
-}
-
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bgForm },
-  content: { paddingBottom: 60 },
-  hero: {
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "web" ? 28 : 60,
-    paddingBottom: 24,
-    overflow: "hidden",
+  root: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
   },
-  heroBlob: {
-    position: "absolute",
-    top: -80,
-    right: -70,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: "#00A876",
-    opacity: 0.14,
+  topBar: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+    gap: 14,
   },
-  backBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.18)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    alignSelf: "flex-start",
-    marginBottom: 22,
-  },
-  backText: { fontSize: 12, fontWeight: "700", color: "#fff" },
-  heroOverline: {
-    fontSize: 10.5,
-    fontWeight: "700",
-    color: "rgba(255,255,255,0.55)",
-    letterSpacing: 1.4,
-    marginBottom: 6,
-  },
-  heroTitle: { fontSize: 27, fontWeight: "900", color: "#fff", letterSpacing: -0.7, lineHeight: 32 },
-  heroMetaRow: { flexDirection: "row", marginTop: 12 },
-  heroChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-  },
-  heroChipText: { fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
-
-  // steps
-  stepsRow: { flexDirection: "row", alignItems: "center", marginTop: 24 },
-  stepItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  stepInner: { flexDirection: "row", alignItems: "center", gap: 6 },
-  stepDot: {
-    width: 21,
-    height: 21,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stepDotNow: { backgroundColor: "#fff" },
-  stepDotDone: { backgroundColor: "rgba(255,255,255,0.28)" },
-  stepDotTodo: { backgroundColor: "rgba(0,0,0,0.08)" },
-  stepDotTodoDark: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.16)",
-  },
-  stepNum: { fontSize: 10, fontWeight: "800" },
-  stepLabel: { fontSize: 10.5, letterSpacing: 0.1 },
-  stepLine: { width: 14, height: 1, backgroundColor: "rgba(255,255,255,0.16)", marginHorizontal: 2 },
-
-  // list menyelip hero
-  grid: { padding: 16 },
-  listCol: { gap: 10 },
-  katCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    padding: 14,
+  topBarNav: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    shadowColor: "#1B1917",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
   },
-  katIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  katTitle: { fontSize: 14.5, fontWeight: "800", color: C.ink, letterSpacing: -0.2, lineHeight: 19 },
-  katChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 7 },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  chipText: { fontSize: 10, fontWeight: "700" },
-  goCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  btnBack: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
   },
-  emptyCard: {
-    backgroundColor: C.surface,
-    borderRadius: 22,
-    padding: 32,
-    alignItems: "center",
-    gap: 10,
-    shadowColor: "#1B1917",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#0F172A",
+    letterSpacing: -0.3,
   },
-  emptyText: { fontSize: 14, color: C.muted, textAlign: "center" },
-  loadingText: { fontSize: 14, color: C.muted, textAlign: "center", marginTop: 40 },
+  topBarSub: {
+    fontSize: 11.5,
+    color: "#64748B",
+    marginTop: 1,
+  },
+  stepperRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+  },
+  stepWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    position: "relative",
+  },
+  stepCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepCircleNow: {
+    backgroundColor: "#047857",
+  },
+  stepCircleDone: {
+    backgroundColor: "#10B981",
+  },
+  stepNum: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#64748B",
+  },
+  stepNumNow: {
+    color: "#FFFFFF",
+  },
+  stepLabel: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: "#94A3B8",
+  },
+  stepLabelNow: {
+    color: "#047857",
+    fontWeight: "800",
+  },
+  stepLabelDone: {
+    color: "#0F172A",
+    fontWeight: "700",
+  },
+  stepLine: {
+    width: 20,
+    height: 2,
+    backgroundColor: "#E2E8F0",
+    marginLeft: 6,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  stepSection: {
+    gap: 14,
+  },
+  sectionPrompt: {
+    fontSize: 13,
+    color: "#475569",
+    fontWeight: "600",
+  },
+  categoryGrid: {
+    gap: 10,
+  },
+  categoryCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  categoryIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: "#ECFDF5",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+  },
+  categoryMeta: {
+    flex: 1,
+    gap: 2,
+  },
+  categoryNama: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  categoryKode: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#047857",
+  },
+  selectedBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  selectedBadgeLabel: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  selectedPill: {
+    backgroundColor: "#ECFDF5",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+  },
+  selectedPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#047857",
+  },
+  formList: {
+    gap: 10,
+  },
+  formCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  formCardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  formIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  formNama: {
+    fontSize: 14.5,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  formStandar: {
+    fontSize: 11.5,
+    color: "#64748B",
+    marginTop: 2,
+  },
+  btnNewSasaran: {
+    backgroundColor: "#ECFDF5",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: "#A7F3D0",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  btnNewSasaranIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#047857",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btnNewSasaranTitle: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#047857",
+  },
+  btnNewSasaranSub: {
+    fontSize: 11.5,
+    color: "#065F46",
+    marginTop: 1,
+  },
+  searchBarWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    minHeight: 46,
+    gap: 8,
+  },
+  searchBarInput: {
+    flex: 1,
+    fontSize: 13,
+    color: "#0F172A",
+  },
+  sasaranListTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#475569",
+    marginTop: 4,
+  },
+  sasaranGrid: {
+    gap: 10,
+  },
+  sasaranItemCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    gap: 4,
+  },
+  sasaranItemHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  sasaranItemNama: {
+    fontSize: 14.5,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  sasaranItemAlamat: {
+    fontSize: 12,
+    color: "#64748B",
+  },
+  sasaranItemFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+  },
+  sasaranItemPkm: {
+    fontSize: 11,
+    color: "#047857",
+    fontWeight: "700",
+  },
+  btnPickBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  btnPickBadgeText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#047857",
+  },
+  emptySasaranBox: {
+    padding: 20,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 14,
+  },
+  emptySasaranText: {
+    fontSize: 12,
+    color: "#64748B",
+    textAlign: "center",
+    lineHeight: 18,
+  },
 });

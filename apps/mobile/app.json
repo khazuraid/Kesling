@@ -15,9 +15,18 @@
     "android": {
       "package": "id.kesling.apps",
       "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "USE_BIOMETRIC",
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F5F7FB"
+        "backgroundColor": "#F8FAFC"
       }
     },
     "web": {
@@ -25,9 +34,16 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "updates": {
+      "url": "https://u.expo.dev/b6e07e49-8d9a-4706-b823-ad59ca4af149"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "plugins": [
       "expo-router",
       "expo-font",
+      "expo-updates",
       [
         "expo-build-properties",
         {
@@ -42,13 +58,13 @@
       "expo-web-browser",
       "expo-secure-store",
       "expo-sharing",
-      "expo-splash-screen",
+      "expo-sqlite",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "contain",
-          "backgroundColor": "#F5F7FB"
+          "backgroundColor": "#F8FAFC"
         }
       ]
     ],

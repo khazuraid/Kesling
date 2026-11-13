@@ -1,125 +1,256 @@
-import { Camera, X } from "@tamagui/lucide-icons-2";
+import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
+import { Camera, Image as ImageIcon, Trash2, X } from "lucide-react-native";
 import { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { C } from "../lib/tokens";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { processAndWatermarkPhoto } from "../lib/watermark-camera";
 
-export type PhotoItem = { base64: string; mimeType: string };
+export type PhotoItem = {
+  uri?: string;
+  base64: string;
+  mimeType: string;
+};
 
 export function PhotoCapture({
   photos,
   onChange,
   max = 6,
+  coords,
+  sasaranName,
 }: {
   photos: PhotoItem[];
   onChange: (p: PhotoItem[]) => void;
   max?: number;
+  coords?: { lat: number; lng: number };
+  sasaranName?: string;
 }) {
   const [busy, setBusy] = useState(false);
 
-  const take = async () => {
+  const takePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) return;
+    if (!perm.granted) {
+      Alert.alert(
+        "Izin Kamera Diperlukan",
+        "Aplikasi membutuhkan akses kamera untuk mengambil bukti dokumentasi inspeksi.",
+      );
+      return;
+    }
+
     setBusy(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       const res = await ImagePicker.launchCameraAsync({
-        quality: 0.7,
-        base64: true,
-        exif: false,
+        quality: 0.8,
+        allowsEditing: false,
       });
-      if (!res.canceled && res.assets[0]?.base64) {
+
+      if (!res.canceled && res.assets[0]?.uri) {
+        const processed = await processAndWatermarkPhoto(res.assets[0].uri, {
+          coords,
+          sasaranName,
+        });
+
         onChange(
-          [...photos, { base64: res.assets[0].base64, mimeType: res.assets[0].mimeType || "image/jpeg" }].slice(0, max),
+          [
+            ...photos,
+            {
+              uri: processed.uri,
+              base64: processed.base64,
+              mimeType: processed.mimeType,
+            },
+          ].slice(0, max),
         );
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
+    } catch (e: any) {
+      Alert.alert("Gagal Mengambil Foto", e?.message || "Terjadi kesalahan kamera.");
     } finally {
       setBusy(false);
     }
   };
 
-  const pick = async () => {
+  const pickFromGallery = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Izin Galeri Diperlukan", "Aplikasi membutuhkan akses galeri foto.");
+      return;
+    }
+
     setBusy(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       const res = await ImagePicker.launchImageLibraryAsync({
-        quality: 0.7,
-        base64: true,
+        quality: 0.8,
         allowsMultipleSelection: true,
         selectionLimit: max - photos.length,
       });
-      if (!res.canceled) {
-        const added = res.assets.flatMap((a) =>
-          a.base64 ? [{ base64: a.base64, mimeType: a.mimeType || "image/jpeg" }] : [],
-        );
-        onChange([...photos, ...added].slice(0, max));
+
+      if (!res.canceled && res.assets.length > 0) {
+        const processedList: PhotoItem[] = [];
+        for (const asset of res.assets) {
+          if (asset.uri) {
+            const p = await processAndWatermarkPhoto(asset.uri, {
+              coords,
+              sasaranName,
+            });
+            processedList.push({
+              uri: p.uri,
+              base64: p.base64,
+              mimeType: p.mimeType,
+            });
+          }
+        }
+        onChange([...photos, ...processedList].slice(0, max));
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
+    } catch (e: any) {
+      Alert.alert("Gagal Memilih Foto", e?.message || "Terjadi kesalahan galeri.");
     } finally {
       setBusy(false);
     }
   };
 
-  const remove = (i: number) => onChange(photos.filter((_, idx) => idx !== i));
+  const removePhoto = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onChange(photos.filter((_, idx) => idx !== index));
+  };
 
   return (
-    <View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingRight: 12 }}
-      >
+    <View style={s.root}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
         {photos.map((p, i) => (
-          <View key={i} style={styles.thumbWrap}>
-            <Image source={{ uri: `data:${p.mimeType};base64,${p.base64}` }} style={styles.thumb} />
-            <Pressable style={styles.removeBtn} onPress={() => remove(i)} hitSlop={6}>
-              <X size={12} color="#FFFFFF" />
+          <View key={i} style={s.thumbBox}>
+            <Image
+              source={{
+                uri: p.uri || `data:${p.mimeType};base64,${p.base64}`,
+              }}
+              style={s.thumbImg}
+            />
+            <Pressable onPress={() => removePhoto(i)} style={s.btnRemove} hitSlop={8}>
+              <X size={12} color="#FFFFFF" strokeWidth={3} />
             </Pressable>
+            <View style={s.watermarkBadge}>
+              <Text style={s.watermarkBadgeText}>TERKOMPRESI</Text>
+            </View>
           </View>
         ))}
-        {photos.length < max ? (
-          <Pressable style={styles.addBtn} onPress={take} disabled={busy}>
-            <Camera size={22} color="#00A876" />
-            <Text style={styles.addText}>{busy ? "..." : "Kamera"}</Text>
+
+        {photos.length < max && (
+          <Pressable onPress={takePhoto} disabled={busy} style={[s.btnAdd, busy && s.btnDisabled]}>
+            {busy ? (
+              <ActivityIndicator size="small" color="#047857" />
+            ) : (
+              <>
+                <Camera size={22} color="#047857" strokeWidth={2.2} />
+                <Text style={s.btnAddText}>Foto Bukti</Text>
+              </>
+            )}
           </Pressable>
-        ) : null}
-        {photos.length < max ? (
-          <Pressable style={[styles.addBtn, { backgroundColor: C.bg }]} onPress={pick} disabled={busy}>
-            <Text style={styles.addText}>📁</Text>
-            <Text style={styles.addText}>Galeri</Text>
+        )}
+
+        {photos.length < max && (
+          <Pressable onPress={pickFromGallery} disabled={busy} style={[s.btnAdd, s.btnGallery, busy && s.btnDisabled]}>
+            <ImageIcon size={22} color="#64748B" strokeWidth={2.2} />
+            <Text style={s.btnGalleryText}>Galeri</Text>
           </Pressable>
-        ) : null}
+        )}
       </ScrollView>
-      <Text style={styles.hint}>
-        {photos.length}/{max} foto · kompresi otomatis
-      </Text>
+
+      <View style={s.infoRow}>
+        <Text style={s.infoText}>
+          {photos.length} dari {max} foto terlampir • Otomatis dikompresi (~200KB)
+        </Text>
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  thumbWrap: { position: "relative" },
-  thumb: { width: 76, height: 76, borderRadius: 14, borderWidth: 1, borderColor: "#E4E4E0" },
-  removeBtn: {
+const s = StyleSheet.create({
+  root: {
+    gap: 8,
+  },
+  scrollContent: {
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 4,
+  },
+  thumbBox: {
+    position: "relative",
+    width: 90,
+    height: 90,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    overflow: "hidden",
+    backgroundColor: "#F1F5F9",
+  },
+  thumbImg: {
+    width: "100%",
+    height: "100%",
+  },
+  btnRemove: {
     position: "absolute",
-    top: -6,
-    right: -6,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#EF4444",
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "rgba(220, 38, 38, 0.9)",
     alignItems: "center",
     justifyContent: "center",
   },
-  addBtn: {
-    width: 76,
-    height: 76,
+  watermarkBadge: {
+    position: "absolute",
+    bottom: 4,
+    left: 4,
+    right: 4,
+    backgroundColor: "rgba(15, 23, 42, 0.75)",
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignItems: "center",
+  },
+  watermarkBadgeText: {
+    fontSize: 7.5,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: 0.5,
+  },
+  btnAdd: {
+    width: 90,
+    height: 90,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E4E4E0",
+    borderWidth: 1.5,
+    borderColor: "#047857",
     borderStyle: "dashed",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#ECFDF5",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
   },
-  addText: { fontSize: 10, color: "#00A876", fontWeight: "600" },
-  hint: { fontSize: 11, color: "#71717A", marginTop: 8 },
+  btnGallery: {
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+  },
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  btnAddText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#047857",
+  },
+  btnGalleryText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#64748B",
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  infoText: {
+    fontSize: 11.5,
+    color: "#64748B",
+    fontWeight: "500",
+  },
 });

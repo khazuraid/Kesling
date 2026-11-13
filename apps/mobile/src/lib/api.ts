@@ -141,6 +141,40 @@ export const api = {
 
   deleteInspection: (id: number) => request<{ success: boolean }>(`/inspection/results/${id}`, { method: "DELETE" }),
 
+  submitInspection: (body: {
+    templateId: number;
+    sasaranId?: number;
+    nama?: string;
+    alamat?: string;
+    lat?: number;
+    lng?: number;
+    values: Record<string, string>;
+    signature?: string;
+    signaturePetugas?: string;
+    photos?: Array<{ base64: string; mimeType: string }>;
+  }) =>
+    request<{ success: boolean; resultId?: number }>("/inspection/offline-sync", {
+      method: "POST",
+      body: JSON.stringify({
+        submissions: [
+          {
+            localId: `direct_${Date.now()}`,
+            templateId: body.templateId,
+            sasaranId: body.sasaranId,
+            values: {
+              ...body.values,
+              nama: body.nama || body.values.nama || "",
+              alamat: body.alamat || body.values.alamat || "",
+            },
+            photos: body.photos || [],
+            signature: body.signature ? { base64Data: body.signature } : undefined,
+            signaturePetugas: body.signaturePetugas ? { base64Data: body.signaturePetugas } : undefined,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }),
+    }),
+
   offlineSync: (body: Record<string, unknown>) =>
     request<{ id: number; status: string; syncedAt: string; duplicate?: boolean }>("/inspection/offline-sync", {
       method: "POST",
